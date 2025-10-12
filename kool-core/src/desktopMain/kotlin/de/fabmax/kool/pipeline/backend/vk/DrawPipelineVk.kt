@@ -74,16 +74,14 @@ class DrawPipelineVk(
 
         var numBuffers = 0
         if (gpuInsts?.instanceBuffer != null) numBuffers++
-        if (gpuGeom.floatBuffer != null) numBuffers++
-        if (gpuGeom.intBuffer != null) numBuffers++
+        if (gpuGeom.vertexBuffer != null) numBuffers++
         if (numBuffers > 0) {
             bufferHandles.limit(numBuffers)
             bufferOffsets.limit(numBuffers)
 
             var slot = 0
-            gpuGeom.floatBuffer?.let { bufferHandles.put(slot++, it.handle) }
-            gpuGeom.intBuffer?.let { bufferHandles.put(slot++, it.handle) }
-            gpuInsts?.instanceBuffer?.let { bufferHandles.put(slot++, it.handle) }
+            gpuGeom.vertexBuffer?.let { bufferHandles.put(slot++, it.handle) }
+            gpuInsts?.instanceBuffer?.let { bufferHandles.put(slot, it.handle) }
 
             vkCmdBindVertexBuffers(passEncoderState.commandBuffer, 0, bufferHandles, bufferOffsets)
         }

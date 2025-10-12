@@ -11,6 +11,7 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.util.*
@@ -588,7 +589,7 @@ open class UiSurface(
     }
 
     private class TextMesh(shader: DrawShader, name: String) {
-        val mesh = Mesh(MsdfUiShader.MSDF_UI_MESH_ATTRIBS, name = name, usage = Usage.DYNAMIC).apply {
+        val mesh = Mesh(IndexedVertexList(UiTextVertexLayout, usage = Usage.DYNAMIC), name = name).apply {
             isCastingShadow = false
             this.shader = shader
         }

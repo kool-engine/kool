@@ -13,22 +13,17 @@ class WgpuGeometry(val mesh: Mesh, val vertexData: IndexedVertexList<*>, val bac
     private val device: GPUDevice get() = backend.device
 
     private val createdIndexBuffer: WgpuGrowingBuffer
-    private val createdFloatBuffer: WgpuGrowingBuffer?
-    private val createdIntBuffer: WgpuGrowingBuffer?
+    private val createdVertexBuffer: WgpuGrowingBuffer?
 
     val indexBuffer: GPUBuffer get() = createdIndexBuffer.buffer.buffer
-    val floatBuffer: GPUBuffer? get() = createdFloatBuffer?.buffer?.buffer
-    val intBuffer: GPUBuffer? get() = createdIntBuffer?.buffer?.buffer
+    val vertexBuffer: GPUBuffer? get() = createdVertexBuffer?.buffer?.buffer
 
     private var updateModCount = -1
 
     init {
         createdIndexBuffer = WgpuGrowingBuffer(backend, "${mesh.name} index data", 4L * vertexData.numIndices, setOf(GPUBufferUsage.Index, GPUBufferUsage.CopyDst))
-        createdFloatBuffer = if (vertexData.byteStrideF == 0) null else {
-            WgpuGrowingBuffer(backend, "${mesh.name} vertex float data", vertexData.byteStrideF * vertexData.numVertices.toLong())
-        }
-        createdIntBuffer = if (vertexData.byteStrideI == 0) null else {
-            WgpuGrowingBuffer(backend, "${mesh.name} vertex int data", vertexData.byteStrideI * vertexData.numVertices.toLong())
+        createdVertexBuffer = if (vertexData.layout.structSize == 0) null else {
+            WgpuGrowingBuffer(backend, "${mesh.name} vertex data", vertexData.layout.structSize * vertexData.numVertices.toLong())
         }
     }
 
@@ -37,14 +32,12 @@ class WgpuGeometry(val mesh: Mesh, val vertexData: IndexedVertexList<*>, val bac
         if (vertexData.modCount.isDirty(updateModCount)) {
             updateModCount = vertexData.modCount.count
             createdIndexBuffer.writeData(vertexData.indices)
-            createdFloatBuffer?.writeData(vertexData.dataF)
-            createdIntBuffer?.writeData(vertexData.dataI)
+            createdVertexBuffer?.writeData(vertexData.vertexData.buffer)
         }
     }
 
     override fun doRelease() {
         createdIndexBuffer.release()
-        createdFloatBuffer?.release()
-        createdIntBuffer?.release()
+        createdVertexBuffer?.release()
     }
 }

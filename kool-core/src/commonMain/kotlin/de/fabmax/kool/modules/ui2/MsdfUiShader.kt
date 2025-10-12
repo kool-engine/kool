@@ -4,6 +4,8 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.util.MemoryLayout
+import de.fabmax.kool.util.Struct
 
 class MsdfUiShader(
     model: Model = Model(),
@@ -102,14 +104,14 @@ class MsdfUiShader(
     companion object {
         val ATTRIB_MSDF_PROPS = Attribute("aMsdfProps", GpuType.Float4)
         val ATTRIB_GLOW_COLOR = Attribute("aGlowColor", GpuType.Float4)
-
-        val MSDF_UI_MESH_ATTRIBS = listOf(
-            ATTRIB_MSDF_PROPS,
-            Attribute.COLORS,
-            ATTRIB_GLOW_COLOR,
-            Ui2Shader.ATTRIB_CLIP,
-            Attribute.POSITIONS,
-            Attribute.TEXTURE_COORDS
-        )
     }
+}
+
+object UiTextVertexLayout : Struct("UiTextVertex", MemoryLayout.TightlyPacked) {
+    val msdfProps = float4(MsdfUiShader.ATTRIB_MSDF_PROPS.name)
+    val color = float4(Attribute.COLORS.name)
+    val glowColor = float4(MsdfUiShader.ATTRIB_GLOW_COLOR.name)
+    val clip = float4(Ui2Shader.ATTRIB_CLIP.name)
+    val position = float3(Attribute.POSITIONS.name)
+    val texCoords = float2(Attribute.TEXTURE_COORDS.name)
 }

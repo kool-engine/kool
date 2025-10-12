@@ -21,7 +21,7 @@ class HalfEdgeMesh(geometry: IndexedVertexList<*>, val edgeHandler: EdgeHandler 
     val vertices: List<HalfEdgeVertex>
         get() = verts
 
-    private val positionOffset = geometry.attributeByteOffsets[Attribute.POSITIONS]!!
+    private val posMember = geometry.layout.getByName(Attribute.POSITIONS.name) as Float3Member<Struct>
 
     private val tmpVec1 = MutableVec3f()
     private val tmpVec2 = MutableVec3f()
@@ -160,25 +160,29 @@ class HalfEdgeMesh(geometry: IndexedVertexList<*>, val edgeHandler: EdgeHandler 
 
         geometry.batchUpdate(true) {
             // apply new indices to mesh vertex list
-            val strideF = geometry.vertexSizeF
-            val strideI = geometry.vertexSizeI
             val vertCnt = verts.size
-            val newDataF = Float32Buffer(vertCnt * strideF)
-            val newDataI = if (strideI > 0) Int32Buffer(vertCnt * strideI) else null
+            val newData = StructBuffer(geometry.layout, vertCnt)
+            val stride = geometry.layout.structSize
 
             for (i in verts.indices) {
                 // copy data from previous location
                 val oldIdx = verts[i].meshDataIndex
                 verts[i].meshDataIndex = verts[i].index
 
-                for (j in 0 until strideF) {
-                    newDataF.put(geometry.dataF[oldIdx * strideF + j])
+                for (j in 0 until stride / 4) {
+                    val srcIdx = oldIdx * stride + j * 4
+                    val dstIdx = i * stride + j * 4
+                    newData.buffer.setInt32(dstIdx, geometry.vertexData.buffer.getInt32(srcIdx))
                 }
-                newDataI?.let {
-                    for (j in 0 until strideI) {
-                        it.put(geometry.dataI[oldIdx * strideI + j])
-                    }
-                }
+
+//                for (j in 0 until strideF) {
+//                    newDataF.put(geometry.dataF[oldIdx * strideF + j])
+//                }
+//                newDataI?.let {
+//                    for (j in 0 until strideI) {
+//                        it.put(geometry.dataI[oldIdx * strideI + j])
+//                    }
+//                }
             }
 
             // rebuild triangle index list
@@ -193,12 +197,15 @@ class HalfEdgeMesh(geometry: IndexedVertexList<*>, val edgeHandler: EdgeHandler 
                 logW { "Inconsistent triangle count! MeshData: ${geometry.numIndices / 3}, HalfEdgeMesh: $faceCount" }
             }
 
-            geometry.dataF.clear()
-            geometry.dataF.put(newDataF)
-            newDataI?.let {
-                geometry.dataI.clear()
-                geometry.dataI.put(it)
-            }
+            geometry.vertexData.clear()
+            geometry.vertexData.putAll(newData)
+
+//            geometry.dataF.clear()
+//            geometry.dataF.put(newDataF)
+//            newDataI?.let {
+//                geometry.dataI.clear()
+//                geometry.dataI.put(it)
+//            }
 
             geometry.numVertices = vertCnt
             if (generateNormals) {
@@ -407,7 +414,7 @@ class HalfEdgeMesh(geometry: IndexedVertexList<*>, val edgeHandler: EdgeHandler 
     }
 
     fun subMeshOf(edges: List<HalfEdge>): IndexedVertexList<*> {
-        val subData = IndexedVertexList(geometry.vertexAttributes)
+        val subData = IndexedVertexList(geometry.layout)
         val indexMap = mutableMapOf<Int, Int>()
 
         val v = geometry.vertexIt
@@ -445,21 +452,23 @@ class HalfEdgeMesh(geometry: IndexedVertexList<*>, val edgeHandler: EdgeHandler 
         var isDeleted = false
             private set
         internal var meshDataIndex = index
+        @Suppress("UNCHECKED_CAST")
+        private val vertexData: StructBuffer<Struct> get() = geometry.vertexData as StructBuffer<Struct>
+        private val stride = geometry.layout.structSize
+        private val posCache = MutableVec3f()
 
         override val x: Float
-            get() = geometry.dataF[index * geometry.vertexSizeF + positionOffset]
+            get() = vertexData.buffer.getFloat32(index * stride + posMember.byteOffset)
         override val y: Float
-            get() = geometry.dataF[index * geometry.vertexSizeF + positionOffset + 1]
+            get() = vertexData.buffer.getFloat32(index * stride + posMember.byteOffset + 4)
         override val z: Float
-            get() = geometry.dataF[index * geometry.vertexSizeF + positionOffset + 2]
+            get() = vertexData.buffer.getFloat32(index * stride + posMember.byteOffset + 8)
 
         internal fun setPosition(x: Float, y: Float, z: Float) {
-            geometry.dataF[index * geometry.vertexSizeF + positionOffset] = x
-            geometry.dataF[index * geometry.vertexSizeF + positionOffset + 1] = y
-            geometry.dataF[index * geometry.vertexSizeF + positionOffset + 2] = z
+            vertexData.set(index) { set(posMember, x, y, z) }
         }
 
-        fun getMeshVertex(result: VertexView): VertexView {
+        fun getMeshVertex(result: VertexView<*>): VertexView<*> {
             result.index = this.index
             return result
         }

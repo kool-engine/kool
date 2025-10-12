@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.backend.GpuGeometry
-import de.fabmax.kool.pipeline.isInt
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.util.BaseReleasable
@@ -14,8 +13,7 @@ class GpuGeometryGl(
 ) : BaseReleasable(), GpuGeometry {
 
     internal val indexBuffer: GpuBufferGl
-    internal val dataBufferF: GpuBufferGl?
-    internal val dataBufferI: GpuBufferGl?
+    internal val dataBuffer: GpuBufferGl?
 
     private val gl = backend.gl
 
@@ -28,16 +26,9 @@ class GpuGeometryGl(
         val namePrefix = creationInfo.bufferName
         indexBuffer = GpuBufferGl(gl.ELEMENT_ARRAY_BUFFER, backend, creationInfo.copy(bufferName = "$namePrefix.${geometry.name}.indices"))
 
-        val hasFloatAttributes = geometry.vertexAttributes.any { !it.type.isInt }
-        dataBufferF = if (hasFloatAttributes) {
+        val hasAttributes = geometry.layout.members.isNotEmpty()
+        dataBuffer = if (hasAttributes) {
             GpuBufferGl(gl.ARRAY_BUFFER, backend, creationInfo.copy(bufferName = "$namePrefix.${geometry.name}.dataF"))
-        } else {
-            null
-        }
-
-        val hasIntAttributes = geometry.vertexAttributes.any { it.type.isInt }
-        dataBufferI = if (hasIntAttributes) {
-            GpuBufferGl(gl.ARRAY_BUFFER, backend, creationInfo.copy(bufferName = "$namePrefix.${geometry.name}.dataI"))
         } else {
             null
         }
@@ -51,8 +42,7 @@ class GpuGeometryGl(
 
             val usage = geometry.usage.glUsage
             indexBuffer.setData(geometry.indices, usage)
-            dataBufferF?.setData(geometry.dataF, usage)
-            dataBufferI?.setData(geometry.dataI, usage)
+            dataBuffer?.setData(geometry.vertexData.buffer, usage)
         }
     }
 
@@ -62,8 +52,7 @@ class GpuGeometryGl(
 
     override fun doRelease() {
         indexBuffer.release()
-        dataBufferF?.release()
-        dataBufferI?.release()
+        dataBuffer?.release()
     }
 
     private val Usage.glUsage: Int get() = when (this) {

@@ -5,7 +5,6 @@ import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.backend.GpuInstances
 import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.util.*
-import kotlin.math.max
 
 @Deprecated("Use a layout struct instead of specifying instance attributes individually")
 fun MeshInstanceList(instanceAttributes: List<Attribute>, initialSize: Int = 100): MeshInstanceList<*> {
@@ -65,14 +64,10 @@ class MeshInstanceList<T: Struct>(val layout: T, initialSize: Int = 100, val isR
     @PublishedApi
     internal fun checkBufferSize(reqSpace: Int) {
         if (reqSpace <= 0 || layout.structSize == 0) return
-        if (numInstances + reqSpace > maxInstances) {
+        val remaining = maxInstances - numInstances
+        if (remaining < reqSpace) {
             check(isResizable) { "Maximum buffer size exceeded and instance buffer is not resizable" }
-            val newSize = max(maxInstances * 2, numInstances + reqSpace)
-                .coerceAtMost(Int.MAX_VALUE / layout.structSize)
-            check(newSize >= numInstances + reqSpace) {
-                "Unable to increase instance buffer size to required size of ${numInstances + reqSpace} instances. " +
-                        "Maximum size is ${Int.MAX_VALUE / layout.structSize} instances / ${Int.MAX_VALUE} bytes."
-            }
+            val newSize = increaseBufferSize(instanceData.capacity, reqSpace - remaining, layout.structSize)
             val newData = StructBuffer(layout, newSize)
             newData.limit = instanceData.limit
             newData.putAll(instanceData)

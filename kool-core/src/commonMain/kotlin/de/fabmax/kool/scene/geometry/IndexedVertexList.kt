@@ -2,21 +2,18 @@ package de.fabmax.kool.scene.geometry
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxF
-import de.fabmax.kool.math.spatial.InRadiusTraverser
-import de.fabmax.kool.math.spatial.pointKdTree
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GpuType
+import de.fabmax.kool.pipeline.asAttribute
 import de.fabmax.kool.pipeline.backend.GpuGeometry
-import de.fabmax.kool.pipeline.isInt
 import de.fabmax.kool.util.*
 import kotlin.math.abs
-import kotlin.math.max
 
 fun IndexedVertexList(
     vararg vertexAttributes: Attribute,
     primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
     usage: Usage = Usage.STATIC
-): IndexedVertexList<*> {
+): IndexedVertexList<DynamicStruct> {
     return IndexedVertexList(vertexAttributes.toList(), primitiveType, usage)
 }
 
@@ -24,9 +21,24 @@ fun IndexedVertexList(
     vertexAttributes: List<Attribute>,
     primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
     usage: Usage = Usage.STATIC
-): IndexedVertexList<*> {
-    return IndexedVertexList<Struct>(
-        vertexAttributes,
+): IndexedVertexList<DynamicStruct> {
+    val layout = DynamicStruct("vertexLayout", MemoryLayout.TightlyPacked) {
+        vertexAttributes.forEach { attr ->
+            when (attr.type) {
+                GpuType.Float1 -> float1(attr.name)
+                GpuType.Float2 -> float2(attr.name)
+                GpuType.Float3 -> float3(attr.name)
+                GpuType.Float4 -> float4(attr.name)
+                GpuType.Int1 -> int1(attr.name)
+                GpuType.Int2 -> int2(attr.name)
+                GpuType.Int3 -> int3(attr.name)
+                GpuType.Int4 -> int4(attr.name)
+                else -> error("Unsupported vertex attribute type: ${attr.type}")
+            }
+        }
+    }
+    return IndexedVertexList(
+        layout,
         initialSize = 1000,
         primitiveType = primitiveType,
         usage = usage
@@ -34,7 +46,7 @@ fun IndexedVertexList(
 }
 
 class IndexedVertexList<T: Struct>(
-    val vertexAttributes: List<Attribute>,
+    val layout: T,
     initialSize: Int = 1000,
     val primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
     val usage: Usage = Usage.STATIC
@@ -43,34 +55,17 @@ class IndexedVertexList<T: Struct>(
     var name: String = "geometry"
 
     /**
-     * Number of floats per vertex. E.g. a vertex containing only a position consists of 3 floats.
-     */
-    val vertexSizeF: Int
-
-    /**
-     * Number of float bytes per vertex. E.g. a vertex containing only a position consists of 3 * 4 = 12 bytes.
-     */
-    val byteStrideF: Int
-
-    /**
-     * Number of ints per vertex. E.g. a vertex with 4 joint indices consists of 4 ints.
-     */
-    val vertexSizeI: Int
-
-    /**
-     * Number of int bytes per vertex. E.g. a vertex with 4 joint indices consists of 4 * 4 = 16 bytes.
-     */
-    val byteStrideI: Int
-
-    /**
-     * Vertex attribute offsets in bytes.
-     */
-    val attributeByteOffsets: Map<Attribute, Int>
-
-    /**
      * Number of vertices.
      */
-    var numVertices = 0
+    var numVertices: Int
+        get() = vertexData.limit
+        set(value) {
+            if (value > vertexData.capacity) {
+                logE { "$value > ${vertexData.capacity}" }
+            }
+            vertexData.limit = value
+            incrementModCount()
+        }
 
     val numIndices: Int
         get() = indices.position
@@ -81,16 +76,14 @@ class IndexedVertexList<T: Struct>(
     val lastIndex
         get() = numVertices - 1
 
-    var dataF: Float32Buffer
-        private set
-    var dataI: Int32Buffer
-        private set
+    var vertexData: StructBuffer<T> = StructBuffer(layout, initialSize).apply { limit = 0 }
+
     var indices = Uint32Buffer(initialSize, true)
         private set
 
     val bounds = BoundingBoxF()
 
-    val vertexIt: VertexView
+    val vertexIt: VertexView<T> = VertexView(this, 0)
 
     var isRebuildBoundsOnSync = false
 
@@ -98,66 +91,19 @@ class IndexedVertexList<T: Struct>(
 
     var gpuGeometry: GpuGeometry? = null
 
-    init {
-        var strideF = 0
-        var strideI = 0
-
-        val byteOffsets = mutableMapOf<Attribute, Int>()
-        for (attrib in vertexAttributes) {
-            if (attrib.type == GpuType.Mat2 || attrib.type == GpuType.Mat3 || attrib.type == GpuType.Mat4) {
-                throw IllegalArgumentException("Matrix types are not supported as vertex attributes")
-            }
-            if (attrib.type.isInt) {
-                byteOffsets[attrib] = strideI
-                strideI += attrib.type.byteSize
-            } else {
-                byteOffsets[attrib] = strideF
-                strideF += attrib.type.byteSize
-            }
-        }
-        attributeByteOffsets = byteOffsets
-
-        vertexSizeF = strideF / 4
-        byteStrideF = strideF
-        vertexSizeI = strideI / 4
-        byteStrideI = strideI
-
-        dataF = Float32Buffer(strideF * initialSize, true)
-        dataI = Int32Buffer(strideI * initialSize, true)
-        vertexIt = VertexView(this, 0)
-    }
-
     fun incrementModCount() = modCount.increment()
 
-    fun hasAttributes(requiredAttributes: Set<Attribute>): Boolean {
-        return vertexAttributes.containsAll(requiredAttributes)
-    }
-
     fun getMorphAttributes(): List<Attribute> {
-        val morphAttribs = mutableListOf<Attribute>()
-        vertexAttributes.forEach { a ->
-            if (a.name.startsWith(Attribute.NORMALS.name + "_") ||
-                    a.name.startsWith(Attribute.POSITIONS.name + "_") ||
-                    a.name.startsWith(Attribute.TANGENTS.name + "_")) {
-                morphAttribs += a
+        return layout.members
+            .filter { a ->
+                a.name.startsWith(Attribute.NORMALS.name + "_") ||
+                a.name.startsWith(Attribute.POSITIONS.name + "_") ||
+                a.name.startsWith(Attribute.TANGENTS.name + "_")
             }
-        }
-        return morphAttribs
+            .map { it.asAttribute() }
     }
 
     fun isEmpty(): Boolean = numVertices == 0 || numIndices == 0
-
-    private fun increaseDataSizeF(newSize: Int) {
-        val newData = Float32Buffer(newSize, true)
-        newData.put(dataF)
-        dataF = newData
-    }
-
-    private fun increaseDataSizeI(newSize: Int) {
-        val newData = Int32Buffer(newSize, true)
-        newData.put(dataI)
-        dataI = newData
-    }
 
     private fun increaseIndicesSize(newSize: Int) {
         val newIdxs = Uint32Buffer(newSize, true)
@@ -165,32 +111,30 @@ class IndexedVertexList<T: Struct>(
         indices = newIdxs
     }
 
-    fun checkBufferSizes(reqSpace: Int = 1) {
-        if (dataF.remaining < vertexSizeF * reqSpace) {
-            increaseDataSizeF(increaseSize(dataF.capacity, reqSpace * vertexSizeF))
-        }
-        if (dataI.remaining < vertexSizeI * reqSpace) {
-            increaseDataSizeI(increaseSize(dataI.capacity, reqSpace * vertexSizeI))
+    fun checkBufferSize(reqSpace: Int) {
+        if (reqSpace <= 0 || layout.structSize == 0) return
+        if (vertexData.remaining < reqSpace) {
+            val newSize = increaseBufferSize(vertexData.capacity, reqSpace - vertexData.remaining, layout.structSize)
+            val newData = StructBuffer(layout, newSize)
+            newData.limit = vertexData.limit
+            newData.putAll(vertexData)
+            vertexData = newData
         }
     }
 
-    fun checkIndexSize(reqSpace: Int = 1) {
+    fun checkIndexSize(reqSpace: Int) {
+        if (reqSpace <= 0) return
         if (indices.remaining < reqSpace) {
-            increaseIndicesSize(increaseSize(indices.capacity, reqSpace))
+            val newSize = increaseBufferSize(indices.capacity, reqSpace, 4)
+            increaseIndicesSize(newSize)
         }
     }
 
-    private fun increaseSize(currentSize: Int, requiredInc: Int, elemSize: Int = 4): Int {
-        val increased = (max(currentSize + requiredInc.toLong(), (currentSize * GROW_FACTOR).toLong()))
-            .coerceAtMost(Int.MAX_VALUE.toLong() / elemSize).toInt()
-        check(increased - currentSize >= requiredInc) {
-            "Unable to increase buffer to requested size of ${currentSize + requiredInc} elements. Underlying buffer " +
-                    "size is limited to ${Int.MAX_VALUE.toLong() / elemSize} elements / ${Int.MAX_VALUE} bytes."
-        }
-        return increased
-    }
+    fun hasAttribute(attribute: Attribute): Boolean = layout.getByName(attribute.name, attribute.type) != null
 
-    fun hasAttribute(attribute: Attribute): Boolean = vertexAttributes.contains(attribute)
+    fun hasAttributes(requiredAttributes: Set<Attribute>): Boolean {
+        return requiredAttributes.all { hasAttribute(it) }
+    }
 
     inline fun batchUpdate(rebuildBounds: Boolean = false, block: IndexedVertexList<*>.() -> Unit) {
         block.invoke(this)
@@ -199,22 +143,15 @@ class IndexedVertexList<T: Struct>(
         }
     }
 
-    inline fun addVertex(block: VertexView.() -> Unit): Int {
-        checkBufferSizes()
-
-        // initialize all vertex values with 0
-        for (i in 1..vertexSizeF) {
-            dataF += 0f
-        }
-        for (i in 1..vertexSizeI) {
-            dataI += 0
-        }
-
-        vertexIt.index = numVertices++
+    inline fun addVertex(block: VertexView<T>.() -> Unit): Int {
+        vertexData.position = numVertices
+        checkBufferSize(1)
+        val addIndex = numVertices++
+        vertexIt.index = addIndex
         vertexIt.block()
         bounds.add(vertexIt.position)
         incrementModCount()
-        return numVertices - 1
+        return addIndex
     }
 
     fun addVertex(position: Vec3f, normal: Vec3f? = null, color: Color? = null, texCoord: Vec2f? = null): Int {
@@ -234,10 +171,10 @@ class IndexedVertexList<T: Struct>(
 
     fun addGeometry(geometry: IndexedVertexList<*>) = addGeometry(geometry) { }
 
-    inline fun addGeometry(geometry: IndexedVertexList<*>, vertexMod: (VertexView.() -> Unit)) {
+    inline fun addGeometry(geometry: IndexedVertexList<*>, vertexMod: (VertexView<T>.() -> Unit)) {
         val baseIdx = numVertices
 
-        checkBufferSizes(geometry.numVertices)
+        checkBufferSize(geometry.numVertices)
         for (i in 0 until geometry.numVertices) {
             addVertex {
                 geometry.vertexIt.index = i
@@ -254,7 +191,7 @@ class IndexedVertexList<T: Struct>(
 
     fun addIndex(idx: Int) {
         if (indices.remaining == 0) {
-            checkIndexSize()
+            checkIndexSize(1)
         }
         indices += idx
         modCount.increment()
@@ -287,26 +224,24 @@ class IndexedVertexList<T: Struct>(
     }
 
     fun clear() {
-        numVertices = 0
-
-        dataF.clear()
-        dataI.clear()
+        vertexData.clear()
+        vertexData.limit = 0
         indices.clear()
-
         bounds.clear()
         modCount.increment()
     }
 
     /**
-     * Replaces all content by the content of [source]. Given source buffer must have the same vertex layout.
+     * Replaces all content by the content of [source]. The given source buffer must have the same vertex layout.
      * This vertex list's [modCount] is set to the [modCount] value of the source vertex list.
      */
     internal fun set(source: IndexedVertexList<*>) {
+        require(source.layout == layout) { "Source vertex layout does not match this vertex layout" }
         clear()
-        checkBufferSizes(source.numVertices)
+        checkBufferSize(source.numVertices)
         checkIndexSize(source.indices.position)
-        dataF.put(source.dataF)
-        dataI.put(source.dataI)
+        @Suppress("UNCHECKED_CAST")
+        vertexData.putAll(source.vertexData as StructBuffer<T>)
         indices.put(source.indices)
         numVertices = source.numVertices
         bounds.set(source.bounds)
@@ -319,25 +254,27 @@ class IndexedVertexList<T: Struct>(
     }
 
     fun shrinkIndices(newSize: Int) {
-        check(newSize <= indices.position) { "new size must be less (or equal) than old size" }
+        if (newSize > indices.position) {
+            return
+        }
         indices.position = newSize
         modCount.increment()
     }
 
     fun shrinkVertices(newSize: Int) {
-        check(newSize <= numVertices) { "new size must be less (or equal) than old size" }
+        if (newSize > numVertices) {
+            return
+        }
         numVertices = newSize
-        dataF.position = newSize * vertexSizeF
-        dataI.position = newSize * vertexSizeI
         modCount.increment()
     }
 
-    operator fun get(i: Int): VertexView {
-        check(i >= 0 && i < dataF.capacity / vertexSizeF) { "Vertex index out of bounds: $i" }
+    operator fun get(i: Int): VertexView<T> {
+        check(i in 0 ..< vertexData.capacity) { "Vertex index $i out of bounds: 0 ..< $numVertices" }
         return VertexView(this, i)
     }
 
-    inline fun forEach(block: (VertexView) -> Unit) {
+    inline fun forEach(block: (VertexView<T>) -> Unit) {
         for (i in 0 until numVertices) {
             vertexIt.index = i
             block(vertexIt)
@@ -377,78 +314,80 @@ class IndexedVertexList<T: Struct>(
     }
 
     fun mergeCloseVertices(epsilon: Float = 0.001f) {
-        val positions = mutableListOf<PointAndIndex>()
-        forEach {
-            positions += PointAndIndex(it, it.index)
-        }
-
-        val mergeMap = mutableMapOf<Int, Int>()
-
-        val tree = pointKdTree(positions)
-        val trav = InRadiusTraverser<PointAndIndex>()
-        positions.forEach { pt ->
-            trav.setup(pt, epsilon).traverse(tree)
-            trav.result.removeAll { it.index in mergeMap.keys }
-            trav.result.forEach { mergeMap[it.index] = pt.index }
-        }
-
-        val mergeDataF = Float32Buffer(dataF.capacity)
-        val mergeDataI = Int32Buffer(dataI.capacity)
-        val indexMap = mutableMapOf<Int, Int>()
-        var j = 0
-        for (i in 0 until numVertices) {
-            val mergedI = mergeMap[i] ?: i
-            if (mergedI == i) {
-                indexMap[mergedI] = j
-                for (fi in 0 until vertexSizeF) {
-                    mergeDataF.put(dataF[i * vertexSizeF + fi])
-                }
-                for (ii in 0 until vertexSizeI) {
-                    mergeDataI.put(dataI[i * vertexSizeI + ii])
-                }
-                j++
-            }
-        }
-        logD { "Removed ${numVertices - j} vertices" }
-        numVertices = j
-        dataF = mergeDataF
-        dataI = mergeDataI
-
-        val mergeIndices = Uint32Buffer(indices.capacity)
-        for (i in 0 until numIndices) {
-            val ind = indices[i]
-            mergeIndices.put(indexMap[mergeMap[ind]!!]!!)
-        }
-        indices = mergeIndices
-        modCount.increment()
+        TODO()
+//        val positions = mutableListOf<PointAndIndex>()
+//        forEach {
+//            positions += PointAndIndex(it, it.index)
+//        }
+//
+//        val mergeMap = mutableMapOf<Int, Int>()
+//
+//        val tree = pointKdTree(positions)
+//        val trav = InRadiusTraverser<PointAndIndex>()
+//        positions.forEach { pt ->
+//            trav.setup(pt, epsilon).traverse(tree)
+//            trav.result.removeAll { it.index in mergeMap.keys }
+//            trav.result.forEach { mergeMap[it.index] = pt.index }
+//        }
+//
+//        val mergeDataF = Float32Buffer(dataF.capacity)
+//        val mergeDataI = Int32Buffer(dataI.capacity)
+//        val indexMap = mutableMapOf<Int, Int>()
+//        var j = 0
+//        for (i in 0 until numVertices) {
+//            val mergedI = mergeMap[i] ?: i
+//            if (mergedI == i) {
+//                indexMap[mergedI] = j
+//                for (fi in 0 until vertexSizeF) {
+//                    mergeDataF.put(dataF[i * vertexSizeF + fi])
+//                }
+//                for (ii in 0 until vertexSizeI) {
+//                    mergeDataI.put(dataI[i * vertexSizeI + ii])
+//                }
+//                j++
+//            }
+//        }
+//        logD { "Removed ${numVertices - j} vertices" }
+//        numVertices = j
+//        dataF = mergeDataF
+//        dataI = mergeDataI
+//
+//        val mergeIndices = Uint32Buffer(indices.capacity)
+//        for (i in 0 until numIndices) {
+//            val ind = indices[i]
+//            mergeIndices.put(indexMap[mergeMap[ind]!!]!!)
+//        }
+//        indices = mergeIndices
+//        modCount.increment()
     }
 
     fun splitVertices() {
-        val splitDataF = Float32Buffer(numIndices * vertexSizeF)
-        val splitDataI = Int32Buffer(numIndices * vertexSizeI)
-        for (i in 0 until numIndices) {
-            val ind = indices[i]
-            for (fi in 0 until vertexSizeF) {
-                splitDataF.put(dataF[ind * vertexSizeF + fi])
-            }
-            for (ii in 0 until vertexSizeI) {
-                splitDataI.put(dataI[ind * vertexSizeI + ii])
-            }
-        }
-        dataF = splitDataF
-        dataI = splitDataI
-
-        val n = numIndices
-        indices.clear()
-        for (i in 0 until n) {
-            indices.put(i)
-        }
-        numVertices = numIndices
-        modCount.increment()
+        TODO()
+//        val splitDataF = Float32Buffer(numIndices * vertexSizeF)
+//        val splitDataI = Int32Buffer(numIndices * vertexSizeI)
+//        for (i in 0 until numIndices) {
+//            val ind = indices[i]
+//            for (fi in 0 until vertexSizeF) {
+//                splitDataF.put(dataF[ind * vertexSizeF + fi])
+//            }
+//            for (ii in 0 until vertexSizeI) {
+//                splitDataI.put(dataI[ind * vertexSizeI + ii])
+//            }
+//        }
+//        dataF = splitDataF
+//        dataI = splitDataI
+//
+//        val n = numIndices
+//        indices.clear()
+//        for (i in 0 until n) {
+//            indices.put(i)
+//        }
+//        numVertices = numIndices
+//        modCount.increment()
     }
 
     fun generateNormals() {
-        if (!vertexAttributes.contains(Attribute.NORMALS)) {
+        if (!hasAttribute(Attribute.NORMALS)) {
             return
         }
         check(primitiveType == PrimitiveType.TRIANGLES) { "Normal generation is only supported for triangle meshes" }
@@ -496,7 +435,7 @@ class IndexedVertexList<T: Struct>(
     }
 
     fun generateTangents(tangentSign: Float = 1f) {
-        if (!vertexAttributes.contains(Attribute.TANGENTS)) {
+        if (!hasAttribute(Attribute.TANGENTS)) {
             return
         }
         check(primitiveType == PrimitiveType.TRIANGLES) { "Normal generation is only supported for triangle meshes" }

@@ -12,12 +12,10 @@ class GeometryVk(val mesh: Mesh, val vertexData: IndexedVertexList<*>, val backe
     val device: Device get() = backend.device
 
     private val createdIndexBuffer: GrowingBufferVk
-    private val createdFloatBuffer: GrowingBufferVk?
-    private val createdIntBuffer: GrowingBufferVk?
+    private val createdVertexBuffer: GrowingBufferVk?
 
     val indexBuffer: VkBuffer get() = createdIndexBuffer.buffer.vkBuffer
-    val floatBuffer: VkBuffer? get() = createdFloatBuffer?.buffer?.vkBuffer
-    val intBuffer: VkBuffer? get() = createdIntBuffer?.buffer?.vkBuffer
+    val vertexBuffer: VkBuffer? get() = createdVertexBuffer?.buffer?.vkBuffer
 
     private var updateModCount = -1
 
@@ -28,21 +26,13 @@ class GeometryVk(val mesh: Mesh, val vertexData: IndexedVertexList<*>, val backe
             label = "${mesh.name} index data"
         )
         createdIndexBuffer = GrowingBufferVk(backend, indexBufInfo)
-        createdFloatBuffer = if (vertexData.byteStrideF == 0) null else {
+        createdVertexBuffer = if (vertexData.layout.structSize == 0) null else {
             val floatBufInfo = MemoryInfo(
-                size = vertexData.byteStrideF * vertexData.numVertices.toLong(),
+                size = vertexData.layout.structSize * vertexData.numVertices.toLong(),
                 usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                label = "${mesh.name} vertex float data"
+                label = "${mesh.name} vertex data"
             )
             GrowingBufferVk(backend, floatBufInfo)
-        }
-        createdIntBuffer = if (vertexData.byteStrideI == 0) null else {
-            val intBufInfo = MemoryInfo(
-                size = vertexData.byteStrideI * vertexData.numVertices.toLong(),
-                usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                label = "${mesh.name} vertex int data"
-            )
-            GrowingBufferVk(backend, intBufInfo)
         }
     }
 
@@ -51,14 +41,12 @@ class GeometryVk(val mesh: Mesh, val vertexData: IndexedVertexList<*>, val backe
         if (vertexData.modCount.isDirty(updateModCount)) {
             updateModCount = vertexData.modCount.count
             createdIndexBuffer.writeData(vertexData.indices, commandBuffer)
-            createdFloatBuffer?.writeData(vertexData.dataF, commandBuffer)
-            createdIntBuffer?.writeData(vertexData.dataI, commandBuffer)
+            createdVertexBuffer?.writeData(vertexData.vertexData.buffer, commandBuffer)
         }
     }
 
     override fun doRelease() {
         createdIndexBuffer.buffer.release()
-        createdFloatBuffer?.buffer?.release()
-        createdIntBuffer?.buffer?.release()
+        createdVertexBuffer?.buffer?.release()
     }
 }

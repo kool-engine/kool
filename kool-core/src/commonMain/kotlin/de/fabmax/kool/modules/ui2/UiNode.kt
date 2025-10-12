@@ -61,7 +61,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
     val marginTopPx: Float get() = modifier.marginTop.px
     val marginBottomPx: Float get() = modifier.marginBottom.px
 
-    val setBoundsVertexMod: VertexView.() -> Unit = {
+    val setBoundsVertexMod: VertexView<*>.() -> Unit = {
         getVec4fAttribute(Ui2Shader.ATTRIB_CLIP)?.set(clipLeftPx, clipTopPx, clipRightPx, clipBottomPx)
     }
 

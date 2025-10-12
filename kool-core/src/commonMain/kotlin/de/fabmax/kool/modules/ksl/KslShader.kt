@@ -112,21 +112,15 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
         val vertexStage = checkNotNull(program.vertexStage) { "vertexStage not defined" }
 
         val verts = mesh.geometry
-        val vertLayoutAttribsF = mutableListOf<VertexLayout.VertexAttribute>()
-        val vertLayoutAttribsI = mutableListOf<VertexLayout.VertexAttribute>()
+        val vertLayoutAttribs = mutableListOf<VertexLayout.VertexAttribute>()
         val instLayoutAttribs = mutableListOf<VertexLayout.VertexAttribute>()
 
         var attribLocation = 0
         vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Vertex }.forEach { vertexAttrib ->
-            val attrib = checkNotNull(verts.attributeByteOffsets.keys.find { it.name == vertexAttrib.name }) {
-                "Mesh does not include required vertex attribute: ${vertexAttrib.name} (for shader: ${program.name})"
+            val attrib = checkNotNull(verts.layout.getByName(vertexAttrib.name, vertexAttrib.expressionType.gpuType)) {
+                "Mesh does not include required vertex attribute: ${vertexAttrib.name}: ${vertexAttrib.expressionType.gpuType} (for shader: ${program.name})"
             }
-            val off = verts.attributeByteOffsets[attrib]!!
-            if (attrib.type.isInt) {
-                vertLayoutAttribsI += VertexLayout.VertexAttribute(attribLocation, off, attrib)
-            } else {
-                vertLayoutAttribsF += VertexLayout.VertexAttribute(attribLocation, off, attrib)
-            }
+            vertLayoutAttribs += VertexLayout.VertexAttribute(attribLocation, attrib.byteOffset, attrib.asAttribute())
             attribLocation++
         }
 
@@ -148,17 +142,9 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
             this += VertexLayout.Binding(
                 iBinding++,
                 InputRate.VERTEX,
-                vertLayoutAttribsF,
-                verts.byteStrideF
+                vertLayoutAttribs,
+                verts.layout.structSize
             )
-            if (vertLayoutAttribsI.isNotEmpty()) {
-                this += VertexLayout.Binding(
-                    iBinding++,
-                    InputRate.VERTEX,
-                    vertLayoutAttribsI,
-                    verts.byteStrideI
-                )
-            }
             if (instances != null) {
                 this += VertexLayout.Binding(
                     iBinding,

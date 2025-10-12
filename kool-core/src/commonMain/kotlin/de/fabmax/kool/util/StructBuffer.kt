@@ -29,10 +29,10 @@ class StructBuffer<T: Struct>(val struct: T, val capacity: Int) {
         buffer.clear()
     }
 
-    inline fun get(index: Int, block: StructBufferView<T>.(T) -> Unit) {
+    inline fun <R> get(index: Int, block: StructBufferView<T>.(T) -> R): R {
         require(index >= 0 && index < capacity) { "Out-of-bounds index: $index, capacity: $capacity" }
         defaultView.index = index
-        defaultView.block(struct)
+        return defaultView.block(struct)
     }
 
     inline fun set(index: Int, block: MutableStructBufferView<T>.(T) -> Unit) {
@@ -51,15 +51,18 @@ class StructBuffer<T: Struct>(val struct: T, val capacity: Int) {
         return index
     }
 
-    fun putAll(other: StructBuffer<T>) {
+    fun putAll(other: StructBuffer<*>) {
         check(struct.hash == other.struct.hash) { "Can only put buffers with matching structs" }
         if (strideBytes == 0) {
             return
         }
-
         check(remaining >= other.limit) { "Insufficient size: $remaining < ${other.limit}" }
-        check(other.limit == other.buffer.limit / other.strideBytes) {
-            "Buffer limit mismatch: ${other.limit} != ${other.buffer.limit / other.strideBytes}"
+//        check(other.limit == other.buffer.limit / other.strideBytes) {
+//            "Buffer limit mismatch: ${other.limit} != ${other.buffer.limit / other.strideBytes}"
+//        }
+        if (other.limit != other.buffer.limit / other.strideBytes) {
+            logE { "Buffer limit mismatch: ${other.limit} != ${other.buffer.limit / other.strideBytes}" }
+            other.buffer.limit = other.limit * strideBytes
         }
 
         limit = max(limit, position + other.limit)

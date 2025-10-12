@@ -13,8 +13,7 @@ import de.fabmax.kool.util.Struct
  * supplied shader source code has to match the rendering backend (e.g. GLSL in case an OpenGL backend is used).
  */
 abstract class DrawShader(name: String) : ShaderBase<DrawPipeline>(name) {
-
-    private var meshVertexLayout: List<Attribute>? = null
+    private var meshVertexLayout: Struct? = null
     private var meshInstanceLayout: Struct? = null
 
     fun getOrCreatePipeline(
@@ -24,14 +23,14 @@ abstract class DrawShader(name: String) : ShaderBase<DrawPipeline>(name) {
     ): DrawPipeline {
         val created = createdPipeline
         if (created == null) {
-            meshVertexLayout = mesh.geometry.vertexAttributes
+            meshVertexLayout = mesh.geometry.layout
             meshInstanceLayout = meshInstances?.layout
 
         } else {
             // if shader is used for multiple meshes, these must have identical buffer layouts
-            check(meshVertexLayout == mesh.geometry.vertexAttributes) {
+            check(meshVertexLayout == mesh.geometry.layout) {
                 "Shader pipeline was created for mesh vertex layout $meshVertexLayout but provided " +
-                "mesh has vertex layout ${mesh.geometry.vertexAttributes}"
+                "mesh has vertex layout ${mesh.geometry.layout}"
             }
             check(meshInstanceLayout == null || meshInstanceLayout == meshInstances?.layout) {
                 "Shader pipeline was created for mesh instance layout $meshInstanceLayout but provided " +

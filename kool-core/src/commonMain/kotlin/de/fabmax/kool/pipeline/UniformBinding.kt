@@ -64,7 +64,7 @@ sealed class UniformBinding<T, C, M: StructMember<*>>(
     internal abstract fun setCacheTo(value: T)
     internal abstract fun getFromCache(): T
     internal abstract fun updateBufferFromCache(buffer: StructBuffer<Struct>, member: M)
-    internal abstract fun updateCacheFromBuffer(buffer: StructBuffer<Struct>, member: M)
+    internal abstract fun updateCacheFromBuffer(buffer: StructBuffer<Struct>, member: M): Any
 }
 
 sealed class UniformArrayBinding<T, C: T, M: StructArrayMember<*>>(
@@ -137,7 +137,7 @@ sealed class UniformArrayBinding<T, C: T, M: StructArrayMember<*>>(
 
     protected abstract fun setCacheTo(index: Int, value: T)
     protected abstract fun updateBufferFromCache(buffer: StructBuffer<Struct>, member: M, index: Int)
-    protected abstract fun updateCacheFromBuffer(buffer: StructBuffer<Struct>, member: M, index: Int)
+    protected abstract fun updateCacheFromBuffer(buffer: StructBuffer<Struct>, member: M, index: Int): Any
 }
 
 class UniformStructBinding<S: Struct>(

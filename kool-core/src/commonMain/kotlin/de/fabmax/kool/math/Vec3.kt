@@ -304,19 +304,14 @@ open class MutableVec3f(override var x: Float, override var y: Float, override v
     constructor(f: Float): this(f, f, f)
     constructor(v: Vec3f): this(v.x, v.y, v.z)
 
-    fun set(x: Float, y: Float, z: Float): MutableVec3f {
+    open fun set(x: Float, y: Float, z: Float): MutableVec3f {
         this.x = x
         this.y = y
         this.z = z
         return this
     }
 
-    fun set(that: Vec3f): MutableVec3f {
-        x = that.x
-        y = that.y
-        z = that.z
-        return this
-    }
+    fun set(that: Vec3f): MutableVec3f = set(that.x, that.y, that.z)
 
     /**
      * Inplace operation: Adds the given [Vec3f] component-wise to this vector.
@@ -352,9 +347,7 @@ open class MutableVec3f(override var x: Float, override var y: Float, override v
      * Inplace operation: Divides this vector component-wise by the given [Vec3f].
      */
     operator fun divAssign(that: Vec3f) {
-        x /= that.x
-        y /= that.y
-        z /= that.z
+        set(x / that.x, y / that.y, z / that.z)
     }
 
     /**
@@ -365,65 +358,32 @@ open class MutableVec3f(override var x: Float, override var y: Float, override v
     /**
      * Inplace operation: Adds the given [Vec3f] component-wise to this vector.
      */
-    fun add(that: Vec3f): MutableVec3f {
-        x += that.x
-        y += that.y
-        z += that.z
-        return this
-    }
+    fun add(that: Vec3f): MutableVec3f = set(x + that.x, y + that.y, z + that.z)
 
     /**
      * Inplace operation: Adds the given scalar component-wise to this vector.
      */
-    fun add(that: Float): MutableVec3f {
-        x += that
-        y += that
-        z += that
-        return this
-    }
+    fun add(that: Float): MutableVec3f = set(x + that, y + that, z + that)
 
     /**
      * Inplace operation: Subtracts the given [Vec3f] component-wise from this vector.
      */
-    fun subtract(that: Vec3f): MutableVec3f {
-        x -= that.x
-        y -= that.y
-        z -= that.z
-        return this
-    }
+    fun subtract(that: Vec3f): MutableVec3f = set(x - that.x, y - that.y, z - that.z)
 
     /**
      * Inplace operation: Subtracts the given scalar component-wise from this vector.
      */
-    fun subtract(that: Float): MutableVec3f {
-        x -= that
-        y -= that
-        z -= that
-        return this
-    }
+    fun subtract(that: Float): MutableVec3f = set(x - that, y - that, z - that)
 
     /**
      * Inplace operation: Multiplies the given [Vec3f] component-wise with this vector.
      */
-    fun mul(that: Vec3f): MutableVec3f {
-        x *= that.x
-        y *= that.y
-        z *= that.z
-        return this
-    }
+    fun mul(that: Vec3f): MutableVec3f = set(x * that.x, y * that.y, z * that.z)
 
     /**
      * Inplace operation: Scales this vector by the given factor.
      */
-    fun mul(that : Float): MutableVec3f {
-        x *= that
-        y *= that
-        z *= that
-        return this
-    }
-
-    @Deprecated("Replace with mul()", ReplaceWith("mul(factor)"))
-    fun scale(factor: Float) = mul(factor)
+    fun mul(that : Float): MutableVec3f = set(x * that, y * that, z * that)
 
     // <noInt> The following section will not be included in the integer variant of this class
 
@@ -454,10 +414,7 @@ open class MutableVec3f(override var x: Float, override var y: Float, override v
         val rx = x * (axX * axX * c1 + c) + y * (axX * axY * c1 - axZ * s) + z * (axX * axZ * c1 + axY * s)
         val ry = x * (axY * axX * c1 + axZ * s) + y * (axY * axY * c1 + c) + z * (axY * axZ * c1 - axX * s)
         val rz = x * (axX * axZ * c1 - axY * s) + y * (axY * axZ * c1 + axX * s) + z * (axZ * axZ * c1 + c)
-        x = rx
-        y = ry
-        z = rz
-        return this
+        return set(rx, ry, rz)
     }
 
     // </noInt>
@@ -730,19 +687,14 @@ open class MutableVec3d(override var x: Double, override var y: Double, override
     constructor(f: Double): this(f, f, f)
     constructor(v: Vec3d): this(v.x, v.y, v.z)
 
-    fun set(x: Double, y: Double, z: Double): MutableVec3d {
+    open fun set(x: Double, y: Double, z: Double): MutableVec3d {
         this.x = x
         this.y = y
         this.z = z
         return this
     }
 
-    fun set(that: Vec3d): MutableVec3d {
-        x = that.x
-        y = that.y
-        z = that.z
-        return this
-    }
+    fun set(that: Vec3d): MutableVec3d = set(that.x, that.y, that.z)
 
     /**
      * Inplace operation: Adds the given [Vec3d] component-wise to this vector.
@@ -778,9 +730,7 @@ open class MutableVec3d(override var x: Double, override var y: Double, override
      * Inplace operation: Divides this vector component-wise by the given [Vec3d].
      */
     operator fun divAssign(that: Vec3d) {
-        x /= that.x
-        y /= that.y
-        z /= that.z
+        set(x / that.x, y / that.y, z / that.z)
     }
 
     /**
@@ -791,65 +741,32 @@ open class MutableVec3d(override var x: Double, override var y: Double, override
     /**
      * Inplace operation: Adds the given [Vec3d] component-wise to this vector.
      */
-    fun add(that: Vec3d): MutableVec3d {
-        x += that.x
-        y += that.y
-        z += that.z
-        return this
-    }
+    fun add(that: Vec3d): MutableVec3d = set(x + that.x, y + that.y, z + that.z)
 
     /**
      * Inplace operation: Adds the given scalar component-wise to this vector.
      */
-    fun add(that: Double): MutableVec3d {
-        x += that
-        y += that
-        z += that
-        return this
-    }
+    fun add(that: Double): MutableVec3d = set(x + that, y + that, z + that)
 
     /**
      * Inplace operation: Subtracts the given [Vec3d] component-wise from this vector.
      */
-    fun subtract(that: Vec3d): MutableVec3d {
-        x -= that.x
-        y -= that.y
-        z -= that.z
-        return this
-    }
+    fun subtract(that: Vec3d): MutableVec3d = set(x - that.x, y - that.y, z - that.z)
 
     /**
      * Inplace operation: Subtracts the given scalar component-wise from this vector.
      */
-    fun subtract(that: Double): MutableVec3d {
-        x -= that
-        y -= that
-        z -= that
-        return this
-    }
+    fun subtract(that: Double): MutableVec3d = set(x - that, y - that, z - that)
 
     /**
      * Inplace operation: Multiplies the given [Vec3d] component-wise with this vector.
      */
-    fun mul(that: Vec3d): MutableVec3d {
-        x *= that.x
-        y *= that.y
-        z *= that.z
-        return this
-    }
+    fun mul(that: Vec3d): MutableVec3d = set(x * that.x, y * that.y, z * that.z)
 
     /**
      * Inplace operation: Scales this vector by the given factor.
      */
-    fun mul(that : Double): MutableVec3d {
-        x *= that
-        y *= that
-        z *= that
-        return this
-    }
-
-    @Deprecated("Replace with mul()", ReplaceWith("mul(factor)"))
-    fun scale(factor: Double) = mul(factor)
+    fun mul(that : Double): MutableVec3d = set(x * that, y * that, z * that)
 
     /**
      * Inplace operation: Scales this vector to unit length. Special case: A zero-vector remains zero-length.
@@ -878,10 +795,7 @@ open class MutableVec3d(override var x: Double, override var y: Double, override
         val rx = x * (axX * axX * c1 + c) + y * (axX * axY * c1 - axZ * s) + z * (axX * axZ * c1 + axY * s)
         val ry = x * (axY * axX * c1 + axZ * s) + y * (axY * axY * c1 + c) + z * (axY * axZ * c1 - axX * s)
         val rz = x * (axX * axZ * c1 - axY * s) + y * (axY * axZ * c1 + axX * s) + z * (axZ * axZ * c1 + c)
-        x = rx
-        y = ry
-        z = rz
-        return this
+        return set(rx, ry, rz)
     }
 
 }
@@ -1071,19 +985,14 @@ open class MutableVec3i(override var x: Int, override var y: Int, override var z
     constructor(f: Int): this(f, f, f)
     constructor(v: Vec3i): this(v.x, v.y, v.z)
 
-    fun set(x: Int, y: Int, z: Int): MutableVec3i {
+    open fun set(x: Int, y: Int, z: Int): MutableVec3i {
         this.x = x
         this.y = y
         this.z = z
         return this
     }
 
-    fun set(that: Vec3i): MutableVec3i {
-        x = that.x
-        y = that.y
-        z = that.z
-        return this
-    }
+    fun set(that: Vec3i): MutableVec3i = set(that.x, that.y, that.z)
 
     /**
      * Inplace operation: Adds the given [Vec3i] component-wise to this vector.
@@ -1119,9 +1028,7 @@ open class MutableVec3i(override var x: Int, override var y: Int, override var z
      * Inplace operation: Divides this vector component-wise by the given [Vec3i].
      */
     operator fun divAssign(that: Vec3i) {
-        x /= that.x
-        y /= that.y
-        z /= that.z
+        set(x / that.x, y / that.y, z / that.z)
     }
 
     /**
@@ -1132,63 +1039,30 @@ open class MutableVec3i(override var x: Int, override var y: Int, override var z
     /**
      * Inplace operation: Adds the given [Vec3i] component-wise to this vector.
      */
-    fun add(that: Vec3i): MutableVec3i {
-        x += that.x
-        y += that.y
-        z += that.z
-        return this
-    }
+    fun add(that: Vec3i): MutableVec3i = set(x + that.x, y + that.y, z + that.z)
 
     /**
      * Inplace operation: Adds the given scalar component-wise to this vector.
      */
-    fun add(that: Int): MutableVec3i {
-        x += that
-        y += that
-        z += that
-        return this
-    }
+    fun add(that: Int): MutableVec3i = set(x + that, y + that, z + that)
 
     /**
      * Inplace operation: Subtracts the given [Vec3i] component-wise from this vector.
      */
-    fun subtract(that: Vec3i): MutableVec3i {
-        x -= that.x
-        y -= that.y
-        z -= that.z
-        return this
-    }
+    fun subtract(that: Vec3i): MutableVec3i = set(x - that.x, y - that.y, z - that.z)
 
     /**
      * Inplace operation: Subtracts the given scalar component-wise from this vector.
      */
-    fun subtract(that: Int): MutableVec3i {
-        x -= that
-        y -= that
-        z -= that
-        return this
-    }
+    fun subtract(that: Int): MutableVec3i = set(x - that, y - that, z - that)
 
     /**
      * Inplace operation: Multiplies the given [Vec3i] component-wise with this vector.
      */
-    fun mul(that: Vec3i): MutableVec3i {
-        x *= that.x
-        y *= that.y
-        z *= that.z
-        return this
-    }
+    fun mul(that: Vec3i): MutableVec3i = set(x * that.x, y * that.y, z * that.z)
 
     /**
      * Inplace operation: Scales this vector by the given factor.
      */
-    fun mul(that : Int): MutableVec3i {
-        x *= that
-        y *= that
-        z *= that
-        return this
-    }
-
-    @Deprecated("Replace with mul()", ReplaceWith("mul(factor)"))
-    fun scale(factor: Int) = mul(factor)
+    fun mul(that : Int): MutableVec3i = set(x * that, y * that, z * that)
 }

@@ -3,9 +3,18 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.math.*
+import de.fabmax.kool.pipeline.GpuType
 
-fun <S: Struct> S.indexOf(memberName: String): Int = members.indexOfFirst { it.name == memberName }
-fun <S: Struct> S.getByName(memberName: String): StructMember<S>? = members.find { it.name == memberName } as StructMember<S>?
+fun <S: Struct> S.indexOf(memberName: String, type: GpuType? = null): Int {
+    return members.indexOfFirst {
+        memberName == it.name && (type == null || type == it.type)
+    }
+}
+fun <S: Struct> S.getByName(memberName: String, type: GpuType? = null): StructMember<S>? {
+    return members.find {
+        memberName == it.name && (type == null || type == it.type)
+    } as StructMember<S>?
+}
 
 fun <S: Struct> S.getFloat1(memberIndex: Int): Float1Member<S> = members[memberIndex] as Float1Member<S>
 fun <S: Struct> S.getFloat2(memberIndex: Int): Float2Member<S> = members[memberIndex] as Float2Member<S>

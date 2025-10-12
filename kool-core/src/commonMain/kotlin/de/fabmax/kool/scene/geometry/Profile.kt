@@ -55,7 +55,7 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
     val colors = mutableListOf<Color>()
     val emissionColors = mutableListOf<Color>()
     val metallicRoughs = mutableListOf<Vec2f>()
-    val customAttribs = mutableListOf<(VertexView) -> Unit>()
+    val customAttribs = mutableListOf<(VertexView<*>) -> Unit>()
 
     private val prevIndices = mutableListOf<Int>()
     private val vertIndices = mutableListOf<Int>()
@@ -85,7 +85,7 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
         return if (i < metallicRoughs.size) metallicRoughs[i] else null
     }
 
-    private fun applyCustomAttribs(v: VertexView, i: Int) {
+    private fun applyCustomAttribs(v: VertexView<*>, i: Int) {
         if (i < customAttribs.size) {
             customAttribs[i].invoke(v)
         }
