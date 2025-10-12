@@ -194,7 +194,7 @@ class ImageNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), 
 }
 
 class ImageMesh(name: String) : Mesh(
-    geometry = IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS, usage = Usage.DYNAMIC),
+    geometry = IndexedVertexList(UiVertexLayout, usage = Usage.DYNAMIC),
     name = name
 ) {
     var defaultImageShader: ImageShader? = null

@@ -10,6 +10,7 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.geometry.generateNormals
 import de.fabmax.kool.util.PerfTimer
 import de.fabmax.kool.util.logD
 import kotlin.random.Random

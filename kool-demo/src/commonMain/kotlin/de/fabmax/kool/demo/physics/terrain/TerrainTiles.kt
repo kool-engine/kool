@@ -9,6 +9,7 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
+import de.fabmax.kool.scene.geometry.generateTangents
 import de.fabmax.kool.util.ShadowMap
 
 class TerrainTiles(val terrain: Terrain, val sky: Sky) : Node() {

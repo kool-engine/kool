@@ -8,6 +8,7 @@ import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.generateNormals
 import de.fabmax.kool.util.PerfTimer
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.logD

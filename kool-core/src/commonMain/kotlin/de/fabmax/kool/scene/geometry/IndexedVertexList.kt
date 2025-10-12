@@ -1,7 +1,10 @@
 package de.fabmax.kool.scene.geometry
 
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.BoundingBoxF
+import de.fabmax.kool.math.triArea
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.asAttribute
@@ -77,9 +80,10 @@ class IndexedVertexList<T: Struct>(
         get() = numVertices - 1
 
     var vertexData: StructBuffer<T> = StructBuffer(layout, initialSize).apply { limit = 0 }
+        internal set
 
     var indices = Uint32Buffer(initialSize, true)
-        private set
+        internal set
 
     val bounds = BoundingBoxF()
 
@@ -313,197 +317,9 @@ class IndexedVertexList<T: Struct>(
         }
     }
 
-    fun mergeCloseVertices(epsilon: Float = 0.001f) {
-        TODO()
-//        val positions = mutableListOf<PointAndIndex>()
-//        forEach {
-//            positions += PointAndIndex(it, it.index)
-//        }
-//
-//        val mergeMap = mutableMapOf<Int, Int>()
-//
-//        val tree = pointKdTree(positions)
-//        val trav = InRadiusTraverser<PointAndIndex>()
-//        positions.forEach { pt ->
-//            trav.setup(pt, epsilon).traverse(tree)
-//            trav.result.removeAll { it.index in mergeMap.keys }
-//            trav.result.forEach { mergeMap[it.index] = pt.index }
-//        }
-//
-//        val mergeDataF = Float32Buffer(dataF.capacity)
-//        val mergeDataI = Int32Buffer(dataI.capacity)
-//        val indexMap = mutableMapOf<Int, Int>()
-//        var j = 0
-//        for (i in 0 until numVertices) {
-//            val mergedI = mergeMap[i] ?: i
-//            if (mergedI == i) {
-//                indexMap[mergedI] = j
-//                for (fi in 0 until vertexSizeF) {
-//                    mergeDataF.put(dataF[i * vertexSizeF + fi])
-//                }
-//                for (ii in 0 until vertexSizeI) {
-//                    mergeDataI.put(dataI[i * vertexSizeI + ii])
-//                }
-//                j++
-//            }
-//        }
-//        logD { "Removed ${numVertices - j} vertices" }
-//        numVertices = j
-//        dataF = mergeDataF
-//        dataI = mergeDataI
-//
-//        val mergeIndices = Uint32Buffer(indices.capacity)
-//        for (i in 0 until numIndices) {
-//            val ind = indices[i]
-//            mergeIndices.put(indexMap[mergeMap[ind]!!]!!)
-//        }
-//        indices = mergeIndices
-//        modCount.increment()
-    }
-
-    fun splitVertices() {
-        TODO()
-//        val splitDataF = Float32Buffer(numIndices * vertexSizeF)
-//        val splitDataI = Int32Buffer(numIndices * vertexSizeI)
-//        for (i in 0 until numIndices) {
-//            val ind = indices[i]
-//            for (fi in 0 until vertexSizeF) {
-//                splitDataF.put(dataF[ind * vertexSizeF + fi])
-//            }
-//            for (ii in 0 until vertexSizeI) {
-//                splitDataI.put(dataI[ind * vertexSizeI + ii])
-//            }
-//        }
-//        dataF = splitDataF
-//        dataI = splitDataI
-//
-//        val n = numIndices
-//        indices.clear()
-//        for (i in 0 until n) {
-//            indices.put(i)
-//        }
-//        numVertices = numIndices
-//        modCount.increment()
-    }
-
-    fun generateNormals() {
-        if (!hasAttribute(Attribute.NORMALS)) {
-            return
-        }
-        check(primitiveType == PrimitiveType.TRIANGLES) { "Normal generation is only supported for triangle meshes" }
-
-        val v0 = this[0]
-        val v1 = this[1]
-        val v2 = this[2]
-        val e1 = MutableVec3f()
-        val e2 = MutableVec3f()
-        val nrm = MutableVec3f()
-
-        for (i in 0 until numVertices) {
-            v0.index = i
-            v0.normal.set(Vec3f.ZERO)
-        }
-
-        for (i in 0 until numIndices step 3) {
-            v0.index = indices[i]
-            v1.index = indices[i + 1]
-            v2.index = indices[i + 2]
-
-            if (v0.index > numVertices || v1.index > numVertices || v2.index > numVertices) {
-                logE { "index to large ${v0.index}, ${v1.index}, ${v2.index}, sz: $numVertices" }
-            }
-
-            v1.position.subtract(v0.position, e1).norm()
-            v2.position.subtract(v0.position, e2).norm()
-            val a = triArea(v0.position, v1.position, v2.position)
-
-            e1.cross(e2, nrm).norm().mul(a)
-            if (nrm == Vec3f.ZERO || nrm.x.isNaN() || nrm.y.isNaN() || nrm.z.isNaN()) {
-                //logW { "generate normals: degenerated triangle, a = $a, e1 = $e1, e2 = $e2" }
-            } else {
-                v0.normal += nrm
-                v1.normal += nrm
-                v2.normal += nrm
-            }
-        }
-
-        for (i in 0 until numVertices) {
-            v0.index = i
-            v0.normal.norm()
-        }
-        modCount.increment()
-    }
-
-    fun generateTangents(tangentSign: Float = 1f) {
-        if (!hasAttribute(Attribute.TANGENTS)) {
-            return
-        }
-        check(primitiveType == PrimitiveType.TRIANGLES) { "Normal generation is only supported for triangle meshes" }
-
-        val v0 = this[0]
-        val v1 = this[1]
-        val v2 = this[2]
-        val e1 = MutableVec3f()
-        val e2 = MutableVec3f()
-        val tan = MutableVec3f()
-
-        for (i in 0 until numVertices) {
-            v0.index = i
-            v0.tangent.set(Vec3f.ZERO)
-        }
-
-        for (i in 0 until numIndices step 3) {
-            v0.index = indices[i]
-            v1.index = indices[i+1]
-            v2.index = indices[i+2]
-
-            v1.position.subtract(v0.position, e1)
-            v2.position.subtract(v0.position, e2)
-
-            val du1 = v1.texCoord.x - v0.texCoord.x
-            val dv1 = v1.texCoord.y - v0.texCoord.y
-            val du2 = v2.texCoord.x - v0.texCoord.x
-            val dv2 = v2.texCoord.y - v0.texCoord.y
-            val f = 1f / (du1 * dv2 - du2 * dv1)
-            if (f.isNaN()) {
-                //logW { "generate tangents: degenerated triangle, e1 = $e1, e2 = $e2" }
-            } else {
-                tan.x = f * (dv2 * e1.x - dv1 * e2.x)
-                tan.y = f * (dv2 * e1.y - dv1 * e2.y)
-                tan.z = f * (dv2 * e1.z - dv1 * e2.z)
-
-                v0.tangent += Vec4f(tan, 0f)
-                v1.tangent += Vec4f(tan, 0f)
-                v2.tangent += Vec4f(tan, 0f)
-            }
-        }
-
-        for (i in 0 until numVertices) {
-            v0.index = i
-
-            if (v0.normal.sqrLength() == 0f) {
-                v0.normal.set(Vec3f.Y_AXIS)
-            }
-
-            if (v0.tangent.sqrLength() != 0f) {
-                v0.tangent.norm()
-                v0.tangent.w = tangentSign
-            } else {
-                v0.tangent.set(Vec3f.X_AXIS)
-            }
-        }
-        modCount.increment()
-    }
-
     override fun doRelease() {
         gpuGeometry?.releaseDelayed(1)
     }
-
-    companion object {
-        private const val GROW_FACTOR = 2.0
-    }
-
-    private class PointAndIndex(pos: Vec3f, val index: Int) : Vec3f(pos)
 }
 
 enum class PrimitiveType {

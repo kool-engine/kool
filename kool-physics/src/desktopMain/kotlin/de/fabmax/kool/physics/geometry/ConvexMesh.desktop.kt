@@ -5,6 +5,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.generateNormals
 import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.common.PxVec3

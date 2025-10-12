@@ -14,6 +14,7 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.Profile
 import de.fabmax.kool.scene.geometry.SimpleShape
+import de.fabmax.kool.scene.geometry.generateNormals
 import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor

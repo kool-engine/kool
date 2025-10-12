@@ -10,6 +10,7 @@ import de.fabmax.kool.physics.setPosition
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.geometry.generateNormals
 import de.fabmax.kool.scene.geometry.multiShape
 import de.fabmax.kool.scene.geometry.simpleShape
 

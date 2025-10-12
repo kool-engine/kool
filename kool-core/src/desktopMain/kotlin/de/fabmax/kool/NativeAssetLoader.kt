@@ -9,10 +9,7 @@ import de.fabmax.kool.platform.imageAtlasTextureData
 import de.fabmax.kool.util.Uint8BufferImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayInputStream
-import java.io.FileInputStream
-import java.io.FileNotFoundException
-import java.io.InputStream
+import java.io.*
 
 class NativeAssetLoader(val basePath: String) : AssetLoader() {
     override suspend fun loadBlob(ref: AssetRef.Blob): LoadedAsset.Blob {
@@ -73,7 +70,11 @@ class NativeAssetLoader(val basePath: String) : AssetLoader() {
         var inStream = this::class.java.classLoader.getResourceAsStream(resPath)
         if (inStream == null) {
             // if asset wasn't found in resources try to load it from file system
-            inStream = FileInputStream("${basePath}/${assetRef.path}")
+            val file = File("${basePath}/${assetRef.path}")
+            if (!file.canRead()) {
+                throw FileNotFoundException("File not found: ${file.absolutePath} (asset base path: ${File(basePath).absolutePath}, asset path: ${assetRef.path})")
+            }
+            inStream = FileInputStream(file)
         }
         return inStream
     }

@@ -16,6 +16,7 @@ import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.geometry.generateNormals
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.async

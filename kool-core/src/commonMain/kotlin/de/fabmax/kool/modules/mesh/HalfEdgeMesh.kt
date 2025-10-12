@@ -8,6 +8,8 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.TriangulatedLineMesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.VertexView
+import de.fabmax.kool.scene.geometry.generateNormals
+import de.fabmax.kool.scene.geometry.generateTangents
 import de.fabmax.kool.util.*
 
 /**
@@ -168,20 +170,11 @@ class HalfEdgeMesh(geometry: IndexedVertexList<*>, val edgeHandler: EdgeHandler 
                 // copy data from previous location
                 val oldIdx = verts[i].meshDataIndex
                 verts[i].meshDataIndex = verts[i].index
-
-                for (j in 0 until stride / 4) {
-                    val srcIdx = oldIdx * stride + j * 4
-                    val dstIdx = i * stride + j * 4
-                    newData.buffer.setInt32(dstIdx, geometry.vertexData.buffer.getInt32(srcIdx))
-                }
-
-//                for (j in 0 until strideF) {
-//                    newDataF.put(geometry.dataF[oldIdx * strideF + j])
-//                }
-//                newDataI?.let {
-//                    for (j in 0 until strideI) {
-//                        it.put(geometry.dataI[oldIdx * strideI + j])
-//                    }
+                newData.set(i, oldIdx, geometry.vertexData)
+//                for (j in 0 until stride / 4) {
+//                    val srcIdx = oldIdx * stride + j * 4
+//                    val dstIdx = i * stride + j * 4
+//                    newData.buffer.setInt32(dstIdx, geometry.vertexData.buffer.getInt32(srcIdx))
 //                }
             }
 
@@ -199,13 +192,6 @@ class HalfEdgeMesh(geometry: IndexedVertexList<*>, val edgeHandler: EdgeHandler 
 
             geometry.vertexData.clear()
             geometry.vertexData.putAll(newData)
-
-//            geometry.dataF.clear()
-//            geometry.dataF.put(newDataF)
-//            newDataI?.let {
-//                geometry.dataI.clear()
-//                geometry.dataI.put(it)
-//            }
 
             geometry.numVertices = vertCnt
             if (generateNormals) {

@@ -17,6 +17,7 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addColorMesh
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.geometry.generateNormals
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.SimpleShadowMap
 
