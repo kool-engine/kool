@@ -141,7 +141,7 @@ class KslShaderTest : DemoScene("KslShader") {
         }
 
         addMesh(
-            Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.COLORS, Attribute.TANGENTS,
+            layout = VertexLayouts.PositionNormalTexCoordColorTangent,
             instances = instances
         ) {
             generate {

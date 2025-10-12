@@ -9,7 +9,6 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.*
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
@@ -132,7 +131,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
 
     private fun ShapeType.createMesh(): Mesh {
         val mesh = Mesh(
-            attributes = listOf(Attribute.POSITIONS, Attribute.NORMALS),
+            layout = VertexLayouts.PositionNormal,
             instances = MeshInstanceList(InstanceLayouts.ModelMatColor, 2000)
         )
         mesh.generate { generateShapeMesh() }

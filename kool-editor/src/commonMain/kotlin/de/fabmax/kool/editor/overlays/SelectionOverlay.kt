@@ -43,7 +43,7 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
     private var updateOverlay = false
 
     val selectionPass = SelectionPass()
-    private val overlayMesh = Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)
+    private val overlayMesh = Mesh(layout = VertexLayouts.PositionTexCoord)
     private val outlineShader = SelectionOutlineShader(selectionPass.colorTexture)
 
     var selectionColor by outlineShader::outlineColorPrimary

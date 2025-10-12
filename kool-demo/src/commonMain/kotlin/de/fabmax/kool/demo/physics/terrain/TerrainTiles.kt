@@ -4,10 +4,10 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.physics.geometry.HeightFieldGeometry
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.scene.geometry.generateTangents
 import de.fabmax.kool.util.ShadowMap
@@ -21,10 +21,7 @@ class TerrainTiles(val terrain: Terrain, val sky: Sky) : Node() {
         for (y in 0 until TILE_CNT_XY) {
             for (x in 0 until TILE_CNT_XY) {
                 addMesh(
-                    Attribute.POSITIONS,
-                    Attribute.NORMALS,
-                    Attribute.TEXTURE_COORDS,
-                    Attribute.TANGENTS,
+                    layout = VertexLayouts.PositionNormalTexCoordTangent,
                     name = "terrain-tile[$x,$y]"
                 ) {
                     meshes[Vec2i(x, y)] = this

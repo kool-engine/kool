@@ -9,6 +9,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.geometry.*
 import de.fabmax.kool.util.*
 import kotlin.math.*
@@ -29,8 +30,8 @@ class Track(val world: VehicleWorld) : Node() {
     var subdivs = 1
     var columnDist = 64.5f
     var curbLen = 2.511f
-    val trackMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)
-    val trackSupportMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, ATTRIBUTE_ROUGHNESS)
+    val trackMesh = Mesh(VertexLayouts.PositionNormalTexCoordTangent)
+    val trackSupportMesh = Mesh(TrackSupportLayout)
 
     lateinit var trackActor: RigidStatic
         private set
@@ -185,10 +186,10 @@ class Track(val world: VehicleWorld) : Node() {
         }
 
         trackSupportMesh.generate {
-            vertexModFun = { getFloatAttribute(ATTRIBUTE_ROUGHNESS)?.f = 0.3f }
+            vertexModFun = { getFloatAttribute(TrackSupportLayout.roughness.asAttribute())?.f = 0.3f }
             generateCurbs()
 
-            vertexModFun = { getFloatAttribute(ATTRIBUTE_ROUGHNESS)?.f = 0.8f }
+            vertexModFun = { getFloatAttribute(TrackSupportLayout.roughness.asAttribute())?.f = 0.8f }
             color = VehicleDemo.color(400)
             columnPts.forEach { pt ->
                 val base = MutableVec3f(pt.x, 0f, pt.z)
@@ -197,7 +198,7 @@ class Track(val world: VehicleWorld) : Node() {
             geometry.generateNormals()
         }
 
-        val collisionMesh = IndexedVertexList(Attribute.POSITIONS)
+        val collisionMesh = IndexedVertexList(VertexLayouts.Position)
         collisionMesh.addGeometry(trackMesh.geometry)
         collisionMesh.addGeometry(trackSupportMesh.geometry)
         trackActor = world.addStaticCollisionBody(collisionMesh)
@@ -354,7 +355,7 @@ class Track(val world: VehicleWorld) : Node() {
     private fun makeSupportMeshShader() {
         trackSupportMesh.shader = deferredKslPbrShader {
             color { vertexColor() }
-            roughness { vertexProperty(ATTRIBUTE_ROUGHNESS) }
+            roughness { vertexProperty(TrackSupportLayout.roughness) }
         }
     }
 
@@ -377,7 +378,10 @@ class Track(val world: VehicleWorld) : Node() {
         }
     }
 
-    companion object {
-        val ATTRIBUTE_ROUGHNESS = Attribute("aRoughness", GpuType.Float1)
+    object TrackSupportLayout : Struct("TrackSupportLayout", MemoryLayout.TightlyPacked) {
+        val position = float3(Attribute.POSITIONS.name)
+        val normal = float3(Attribute.NORMALS.name)
+        val color = float4(Attribute.COLORS.name)
+        val roughness = float1(VertexLayouts.PositionNormalColorMetalRough.roughness.name)
     }
 }

@@ -9,10 +9,7 @@ import de.fabmax.kool.modules.ksl.blocks.noise13
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.InstanceLayouts
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.RectUvs
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.launch
@@ -148,7 +145,7 @@ class GpuBees(beeScene: Scene) {
     }
 
     private fun makeBeeMesh(beeInstances: MeshInstanceList<*>) = Mesh(
-        Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS,
+        layout = VertexLayouts.PositionNormalTexCoord,
         name = "bee-mesh",
         instances = beeInstances
     ).apply {

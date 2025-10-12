@@ -5,13 +5,13 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslPbrShader
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.asAttribute
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.InstanceLayouts
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.geometry.Profile
 import de.fabmax.kool.scene.geometry.SimpleShape
 import de.fabmax.kool.scene.geometry.generateNormals
@@ -22,12 +22,8 @@ import de.fabmax.kool.util.ShadowMap
 
 object GearChainMeshGen {
 
-    private val attribRoughness = Attribute("aRoughness", GpuType.Float1)
-    private val attribMetallic = Attribute("aMetallic", GpuType.Float1)
-    private val meshAttribs = listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, attribRoughness, attribMetallic)
-
     fun makeNiceGearMesh(ibl: EnvironmentMap, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(
-        meshAttribs,
+        VertexLayouts.PositionNormalColorMetalRough,
         MeshInstanceList(InstanceLayouts.ModelMat)
     ).apply {
         isFrustumChecked = false
@@ -35,8 +31,8 @@ object GearChainMeshGen {
             var roughness = 0.3f
             var metal = 1f
             vertexModFun = {
-                getFloatAttribute(attribRoughness)?.f = roughness
-                getFloatAttribute(attribMetallic)?.f = metal
+                getFloatAttribute(VertexLayouts.PositionNormalColorMetalRough.roughness.asAttribute())?.f = roughness
+                getFloatAttribute(VertexLayouts.PositionNormalColorMetalRough.metallic.asAttribute())?.f = metal
             }
 
             // tooth
@@ -175,7 +171,7 @@ object GearChainMeshGen {
     }
 
     fun makeNiceAxleMesh(ibl: EnvironmentMap, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(
-        meshAttribs,
+        VertexLayouts.PositionNormalColorMetalRough,
         MeshInstanceList(InstanceLayouts.ModelMat)
     ).apply {
         isFrustumChecked = false
@@ -183,8 +179,8 @@ object GearChainMeshGen {
             var roughness = 0.3f
             var metal = 1f
             vertexModFun = {
-                getFloatAttribute(attribRoughness)?.f = roughness
-                getFloatAttribute(attribMetallic)?.f = metal
+                getFloatAttribute(VertexLayouts.PositionNormalColorMetalRough.roughness.asAttribute())?.f = roughness
+                getFloatAttribute(VertexLayouts.PositionNormalColorMetalRough.metallic.asAttribute())?.f = metal
             }
 
             // dielectric mesh components
@@ -278,7 +274,7 @@ object GearChainMeshGen {
     }
 
     fun makeNiceInnerLinkMesh(ibl: EnvironmentMap, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(
-        meshAttribs,
+        VertexLayouts.PositionNormalColorMetalRough,
         MeshInstanceList(InstanceLayouts.ModelMat)
     ).apply {
         isFrustumChecked = false
@@ -286,8 +282,8 @@ object GearChainMeshGen {
             var roughness = 0.3f
             var metal = 1f
             vertexModFun = {
-                getFloatAttribute(attribRoughness)?.f = roughness
-                getFloatAttribute(attribMetallic)?.f = metal
+                getFloatAttribute(VertexLayouts.PositionNormalColorMetalRough.roughness.asAttribute())?.f = roughness
+                getFloatAttribute(VertexLayouts.PositionNormalColorMetalRough.metallic.asAttribute())?.f = metal
             }
 
             color = Color.GRAY
@@ -335,7 +331,7 @@ object GearChainMeshGen {
     }
 
     fun makeNiceOuterLinkMesh(ibl: EnvironmentMap, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(
-        meshAttribs,
+        VertexLayouts.PositionNormalColorMetalRough,
         MeshInstanceList(InstanceLayouts.ModelMat)
     ).apply {
         isFrustumChecked = false
@@ -343,8 +339,8 @@ object GearChainMeshGen {
             var roughness = 0.3f
             var metal = 1f
             vertexModFun = {
-                getFloatAttribute(attribRoughness)?.f = roughness
-                getFloatAttribute(attribMetallic)?.f = metal
+                getFloatAttribute(VertexLayouts.PositionNormalColorMetalRough.roughness.asAttribute())?.f = roughness
+                getFloatAttribute(VertexLayouts.PositionNormalColorMetalRough.metallic.asAttribute())?.f = metal
             }
 
             color = MdColor.BLUE_GREY toneLin 400
@@ -411,8 +407,8 @@ object GearChainMeshGen {
     private fun makeMeshShader(ibl: EnvironmentMap, aoMap: Texture2d, shadows: List<ShadowMap>) = KslPbrShader {
         color { vertexColor() }
         vertices { instancedModelMatrix() }
-        roughness { vertexProperty(attribRoughness) }
-        metallic { vertexProperty(attribMetallic) }
+        roughness { vertexProperty(VertexLayouts.PositionNormalColorMetalRough.roughness) }
+        metallic { vertexProperty(VertexLayouts.PositionNormalColorMetalRough.metallic) }
         enableSsao(aoMap)
         lighting {
             addShadowMaps(shadows)

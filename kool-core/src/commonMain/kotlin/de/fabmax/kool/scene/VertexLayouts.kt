@@ -22,6 +22,14 @@ object VertexLayouts {
         val color = float4(Attribute.COLORS.name)
     }
 
+    object PositionNormalColorMetalRough : Struct("PositionNormalColor", MemoryLayout.TightlyPacked) {
+        val position = float3(Attribute.POSITIONS.name)
+        val normal = float3(Attribute.NORMALS.name)
+        val color = float4(Attribute.COLORS.name)
+        val metallic = float1("aMetallic")
+        val roughness = float1("aRoughness")
+    }
+
     object PositionNormal : Struct("PositionNormal", MemoryLayout.TightlyPacked) {
         val position = float3(Attribute.POSITIONS.name)
         val normal = float3(Attribute.NORMALS.name)
@@ -42,6 +50,20 @@ object VertexLayouts {
         val position = float3(Attribute.POSITIONS.name)
         val normal = float3(Attribute.NORMALS.name)
         val textureCoords = float2(Attribute.TEXTURE_COORDS.name)
+        val tangent = float4(Attribute.TANGENTS.name)
+    }
+
+    object PositionNormalTexCoordColor : Struct("PositionNormalTexCoordColor", MemoryLayout.TightlyPacked) {
+        val position = float3(Attribute.POSITIONS.name)
+        val normal = float3(Attribute.NORMALS.name)
+        val textureCoords = float2(Attribute.TEXTURE_COORDS.name)
+        val color = float4(Attribute.COLORS.name)
+    }
+    object PositionNormalTexCoordColorTangent : Struct("PositionNormalTexCoordColorTangent", MemoryLayout.TightlyPacked) {
+        val position = float3(Attribute.POSITIONS.name)
+        val normal = float3(Attribute.NORMALS.name)
+        val textureCoords = float2(Attribute.TEXTURE_COORDS.name)
+        val color = float4(Attribute.COLORS.name)
         val tangent = float4(Attribute.TANGENTS.name)
     }
 }

@@ -68,7 +68,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
             aoPipeline?.radius = 0.6f
 
             sceneContent.apply {
-                addNode(Glas(ibl, shadowMap).also { onSwap += it })
+                addNode(Glass(ibl, shadowMap).also { onSwap += it })
                 addNode(Vase())
                 addNode(Table(this@ProceduralDemo))
 

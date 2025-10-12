@@ -14,6 +14,7 @@ import de.fabmax.kool.pipeline.ComputePass
 import de.fabmax.kool.pipeline.GradientTexture
 import de.fabmax.kool.pipeline.StorageBuffer
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.scene.geometry.PrimitiveType
@@ -132,9 +133,9 @@ class HelloComputeParticles : DemoScene("Hello Compute Particles") {
 
         // add a point mesh for rendering the particles. the mesh has no vertex attributes since all the data is
         // taken from the particle storage buffer instead of the usual vertex buffer
-        addMesh(attributes = emptyList(), primitiveType = PrimitiveType.POINTS) {
+        addMesh(layout = VertexLayouts.Empty, primitiveType = PrimitiveType.POINTS) {
             // we still need to add an (empty) vertex per particle. to do so we simply add a vertex index per particle
-            generate { repeat(N_PARTICLES) { geometry.addIndex(vertex { }) } }
+            repeat(N_PARTICLES) { geometry.addIndex(it) }
             shader = particleDrawShader
         }
 

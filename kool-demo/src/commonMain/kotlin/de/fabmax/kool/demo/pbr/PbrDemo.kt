@@ -7,7 +7,6 @@ import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.loadTexture2d
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.MipMapping
 import de.fabmax.kool.pipeline.SamplerSettings
 import de.fabmax.kool.pipeline.TexFormat
@@ -177,9 +176,9 @@ class PbrDemo : DemoScene("PBR Materials") {
     }
 
     class SphereProto {
-        val detailSphere = IndexedVertexList(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, Attribute.NORMALS, Attribute.TANGENTS)
-        val parallaxSphere = IndexedVertexList(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, Attribute.NORMALS, Attribute.TANGENTS)
-        val simpleSphere = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS)
+        val detailSphere = IndexedVertexList(VertexLayouts.PositionNormalTexCoordTangent)
+        val parallaxSphere = IndexedVertexList(VertexLayouts.PositionNormalTexCoordTangent)
+        val simpleSphere = IndexedVertexList(VertexLayouts.PositionNormal)
 
         init {
             MeshBuilder(detailSphere).apply {

@@ -10,7 +10,6 @@ import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.physics.vehicle.Vehicle
 import de.fabmax.kool.physics.vehicle.VehicleProperties
 import de.fabmax.kool.physics.vehicle.VehicleUtils
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -69,7 +68,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
         }
         makeGround()
 
-        addMesh(Attribute.POSITIONS, Attribute.NORMALS, instances = chassisInstances) {
+        addMesh(VertexLayouts.PositionNormal, instances = chassisInstances) {
             isFrustumChecked = false
             generate {
                 cube {

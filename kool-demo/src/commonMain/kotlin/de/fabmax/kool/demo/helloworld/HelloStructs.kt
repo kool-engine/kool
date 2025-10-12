@@ -9,6 +9,7 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.vertexAttribFloat3
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.util.ColorGradient
@@ -134,7 +135,7 @@ class HelloStructs : DemoScene("Hello Structs") {
         }
 
         // add a simple mesh that uses the shader
-        addMesh(Attribute.POSITIONS) {
+        addMesh(VertexLayouts.Position) {
             generate {
                 icoSphere {
                     steps = 2

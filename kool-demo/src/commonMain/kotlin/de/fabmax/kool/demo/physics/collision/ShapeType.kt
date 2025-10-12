@@ -4,7 +4,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.Material
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.*
-import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.generateNormals
@@ -222,7 +222,7 @@ enum class ShapeType {
     }
 
     fun MeshBuilder.flatIcoSphere() {
-        val icoMesh = MeshBuilder(IndexedVertexList(Attribute.POSITIONS)).apply { icoSphere { steps = 0 } }
+        val icoMesh = MeshBuilder(IndexedVertexList(VertexLayouts.Position)).apply { icoSphere { steps = 0 } }
         for (i in 0 until icoMesh.geometry.numIndices step 3) {
             val vIt = icoMesh.geometry.vertexIt
             vIt.index = icoMesh.geometry.indices[i]

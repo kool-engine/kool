@@ -15,6 +15,7 @@ import de.fabmax.kool.pipeline.deferred.DeferredPointLights
 import de.fabmax.kool.scene.InstanceLayouts
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.generateNormals
 import de.fabmax.kool.scene.geometry.simpleShape
@@ -39,7 +40,7 @@ class GuardRail {
     }
 
     private fun makeMesh() = Mesh(
-        Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS,
+        layout = VertexLayouts.PositionNormalTexCoordColor,
         instances = signInstances
     ).apply {
         isFrustumChecked = false

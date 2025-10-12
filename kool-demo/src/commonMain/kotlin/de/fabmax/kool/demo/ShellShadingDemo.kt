@@ -250,7 +250,7 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
         val modelCfg = GltfLoadConfig(generateNormals = true, applyMaterials = false)
         val model = Assets.loadGltfModel("${DemoLoader.modelPath}/bunny.gltf.gz", modelCfg, 1)
             .getOrThrow().meshes.values.first()
-        bunnyMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, instances = furShaderBunny.shells).apply {
+        bunnyMesh = Mesh(VertexLayouts.PositionNormalTexCoord, instances = furShaderBunny.shells).apply {
             generate {
                 geometry.addGeometry(model.geometry)
             }

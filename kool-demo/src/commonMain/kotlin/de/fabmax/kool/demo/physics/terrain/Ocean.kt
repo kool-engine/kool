@@ -6,12 +6,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.InViewFrustumTraverser
 import de.fabmax.kool.math.spatial.ItemAdapter
 import de.fabmax.kool.math.spatial.KdTree
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.scene.Camera
-import de.fabmax.kool.scene.InstanceLayouts
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.profiled
 
@@ -28,7 +23,7 @@ class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind, val 
             oceanMesh.shader = value?.shader
         }
 
-    val oceanMesh = Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS), instances = oceanInstances, name = "ocean-mesh").apply {
+    val oceanMesh = Mesh(VertexLayouts.PositionNormal, instances = oceanInstances, name = "ocean-mesh").apply {
         isFrustumChecked = false
         isCastingShadow = false
         generate {

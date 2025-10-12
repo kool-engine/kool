@@ -2,15 +2,15 @@ package de.fabmax.kool.demo.procedural
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.geometry.*
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-class Table(demo: ProceduralDemo) : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)) {
+class Table(demo: ProceduralDemo) : Mesh(IndexedVertexList(VertexLayouts.PositionNormalTexCoordTangent)) {
 
     init {
         isCastingShadow = false

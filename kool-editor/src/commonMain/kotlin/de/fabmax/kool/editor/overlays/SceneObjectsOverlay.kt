@@ -10,7 +10,6 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -42,7 +41,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
     private val groupInstances = MeshInstanceList(InstanceLayouts.ModelMatColor)
 
     private val dirLightMesh = Mesh(
-        Attribute.POSITIONS, Attribute.NORMALS,
+        layout = VertexLayouts.PositionNormal,
         instances = dirLightsInstances,
         name = "Directional lights"
     ).apply {
@@ -88,7 +87,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
     }
 
     private val spotLightMesh = Mesh(
-        Attribute.POSITIONS, Attribute.NORMALS,
+        layout = VertexLayouts.PositionNormal,
         instances = spotLightsInstances,
         name = "Spot lights"
     ).apply {
@@ -129,7 +128,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
     }
 
     private val pointLightMesh = Mesh(
-        Attribute.POSITIONS, Attribute.NORMALS,
+        layout = VertexLayouts.PositionNormal,
         instances = pointLightsInstances,
         name = "Point lights"
     ).apply {
@@ -165,7 +164,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
     }
 
     private val cameraMesh = Mesh(
-        Attribute.POSITIONS, Attribute.NORMALS,
+        layout = VertexLayouts.PositionNormal,
         instances = cameraInstances,
         name = "Cameras"
     ).apply {
@@ -205,7 +204,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
     }
 
     private val groupMesh = Mesh(
-        Attribute.POSITIONS, Attribute.COLORS, Attribute.NORMALS,
+        layout = VertexLayouts.PositionNormalColor,
         instances = groupInstances,
         name = "Groups"
     ).apply {
