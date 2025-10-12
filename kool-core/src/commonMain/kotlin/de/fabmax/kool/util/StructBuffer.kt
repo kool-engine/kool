@@ -41,7 +41,10 @@ class StructBuffer<T: Struct>(
     }
 
     fun set(dstIndex: Int, srcIndex: Int, src: StructBuffer<*>) {
-        check(struct.hash == src.struct.hash) { "Can only put buffers with matching structs" }
+        require(dstIndex >= 0 && dstIndex < capacity) { "Out-of-bounds dst index: $dstIndex, capacity: $capacity" }
+        require(srcIndex >= 0 && srcIndex < src.capacity) { "Out-of-bounds src index: $dstIndex, capacity: ${src.capacity}" }
+        require(struct.hash == src.struct.hash) { "Can only put buffers with matching structs" }
+        limit = max(dstIndex + 1, limit)
         if (strideBytes == 0) {
             return
         }

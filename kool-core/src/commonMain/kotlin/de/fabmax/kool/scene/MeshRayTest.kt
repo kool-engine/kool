@@ -26,7 +26,7 @@ interface MeshRayTest {
 
             override fun rayTest(test: RayTest, localRay: RayF): Boolean {
                 val mesh = this.mesh ?: return false
-                val distSqr = mesh.geometry.bounds.hitDistanceSqr(localRay)
+                val distSqr = mesh.geometryBounds.hitDistanceSqr(localRay)
                 if (distSqr < Float.POSITIVE_INFINITY) {
                     tmpVec.set(localRay.direction).mul(sqrt(distSqr))
                     val globalDist = mesh.toGlobalCoords(tmpVec, 0f).length()

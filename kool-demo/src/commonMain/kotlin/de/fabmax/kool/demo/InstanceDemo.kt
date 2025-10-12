@@ -78,11 +78,11 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
                 geometry.forEach { v ->
                     v.position.mul(0.3f).add(Vec3f(0f, -1f, 0f))
                 }
-                geometry.rebuildBounds()
+                updateGeometryBounds()
 
                 if (i == 0) {
-                    modelCenter.set(geometry.bounds.center)
-                    modelRadius = geometry.bounds.max.distance(geometry.bounds.center)
+                    modelCenter.set(geometryBounds.center)
+                    modelRadius = geometryBounds.max.distance(geometryBounds.center)
                 }
 
                 shader = instanceColorPbrShader()

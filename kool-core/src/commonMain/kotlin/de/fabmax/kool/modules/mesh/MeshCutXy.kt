@@ -7,12 +7,11 @@ import de.fabmax.kool.util.logD
 import kotlin.math.min
 import kotlin.math.sqrt
 
-class MeshCutXy(val geometry: IndexedVertexList<*>) {
+class MeshCutXy(val geometry: IndexedVertexList<*>, private val eps: Float = 1e-3f) {
 
     val ocTreeHandler = OcTreeEdgeHandler(geometry)
     val halfEdgeMesh = HalfEdgeMesh(geometry, ocTreeHandler)
 
-    private val eps: Float = geometry.bounds.min.distance(geometry.bounds.max) * FUZZY_EQ_F
     var shortEdgeThresh: Float
 
     init {

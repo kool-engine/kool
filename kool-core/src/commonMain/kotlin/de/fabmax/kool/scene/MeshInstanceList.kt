@@ -69,7 +69,6 @@ class MeshInstanceList<T: Struct>(val layout: T, initialSize: Int = 100, val isR
             check(isResizable) { "Maximum buffer size exceeded and instance buffer is not resizable" }
             val newSize = increaseBufferSize(instanceData.capacity, reqSpace - remaining, layout.structSize)
             val newData = StructBuffer(layout, newSize)
-            newData.limit = instanceData.limit
             newData.put(instanceData)
             instanceData = newData
         }
@@ -90,7 +89,6 @@ class MeshInstanceList<T: Struct>(val layout: T, initialSize: Int = 100, val isR
             return
         }
         instanceData.clear()
-        instanceData.limit = 0
         incrementModCount()
     }
 

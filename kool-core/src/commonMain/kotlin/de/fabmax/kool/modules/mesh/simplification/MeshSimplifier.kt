@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.mesh.simplification
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.modules.mesh.HalfEdgeMesh
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
@@ -25,7 +26,11 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
     val stickyVertices = mutableSetOf<HalfEdgeMesh.HalfEdgeVertex>()
     var keepBorders = false
 
-    fun simplifyMesh(mesh: HalfEdgeMesh, generateNormals: Boolean = true, generateTangents: Boolean = true) {
+    fun simplifyMesh(
+        mesh: HalfEdgeMesh,
+        generateNormals: Boolean = mesh.geometry.hasAttribute(Attribute.NORMALS),
+        generateTangents: Boolean = mesh.geometry.hasAttribute(Attribute.TANGENTS)
+    ) {
         this.mesh = mesh
 
         logD { "Simplifying mesh: ${mesh.faceCount} faces / ${mesh.vertCount} vertices..." }

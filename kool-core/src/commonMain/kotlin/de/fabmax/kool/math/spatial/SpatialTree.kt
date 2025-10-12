@@ -36,13 +36,17 @@ fun <T: Triangle> triangleOcTree(triangles: List<T> = emptyList(), bounds: Bound
 fun triangleOcTree(mesh: IndexedVertexList<*>, bucketSz: Int = 16): OcTree<Triangle> {
     val triangles = mutableListOf<Triangle>()
     val v = mesh[0]
+    val bounds = BoundingBoxF()
     for (i in 0 until mesh.numIndices step 3) {
         val p0 = Vec3f(v.apply { index = mesh.indices[i] })
         val p1 = Vec3f(v.apply { index = mesh.indices[i+1] })
         val p2 = Vec3f(v.apply { index = mesh.indices[i+2] })
         triangles += Triangle(p0, p1, p2)
+        bounds.add(p0)
+        bounds.add(p1)
+        bounds.add(p2)
     }
-    return triangleOcTree(triangles, mesh.bounds.toBoundingBoxD(), bucketSz)
+    return triangleOcTree(triangles, bounds.toBoundingBoxD(), bucketSz)
 }
 
 fun <T: Edge<*>> edgeKdTree(edges: List<T>, bucketSz: Int = 16): KdTree<T> {
