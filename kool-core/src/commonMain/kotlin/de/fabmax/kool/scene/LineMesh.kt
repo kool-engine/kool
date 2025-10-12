@@ -68,12 +68,14 @@ open class LineMesh(
 
     fun addLine(from: Vec3f, fromColor: Color, to: Vec3f, toColor: Color): Int {
         var idx0 = 0
-        geometry.batchUpdate {
+        geometry.apply {
             idx0 = addVertex(from, null, fromColor, null)
             addVertex(to, null, toColor, null)
             addIndex(idx0)
             addIndex(idx0 + 1)
         }
+        geometryBounds.add(from)
+        geometryBounds.add(to)
         return idx0
     }
 
@@ -130,7 +132,7 @@ open class LineMesh(
         }
 
         val addedEdges = mutableSetOf<Long>()
-        geometry.batchUpdate {
+        geometry.apply {
             val v = triMesh[0]
             val startI = numVertices
             for (i in 0 until triMesh.numVertices) {
@@ -138,6 +140,7 @@ open class LineMesh(
                 geometry.addVertex {
                     position.set(v.position)
                     color.set(lineColor ?: v.color)
+                    geometryBounds.add(v)
                 }
             }
             for (i in 0 until triMesh.numIndices step 3) {
@@ -178,7 +181,8 @@ open class LineMesh(
     }
 
     fun addBoundingBox(aabb: BoundingBoxF, color: Color = this.color) {
-        geometry.batchUpdate {
+        geometryBounds.add(aabb)
+        geometry.apply {
             val i0 = addVertex {
                 this.position.set(aabb.min.x, aabb.min.y, aabb.min.z)
                 this.color.set(color)

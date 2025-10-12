@@ -3,7 +3,6 @@ package de.fabmax.kool.scene.geometry
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.math.triArea
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GpuType
@@ -45,7 +44,6 @@ fun IndexedVertexList(
     }
     return IndexedVertexList(
         layout,
-        initialSize = 1000,
         primitiveType = primitiveType,
         usage = usage
     )
@@ -53,7 +51,7 @@ fun IndexedVertexList(
 
 class IndexedVertexList<T: Struct>(
     val layout: T,
-    initialSize: Int = 1000,
+    initialSize: Int = 1024,
     val primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
     val usage: Usage = Usage.STATIC
 ) : BaseReleasable() {
@@ -79,20 +77,11 @@ class IndexedVertexList<T: Struct>(
             incrementModCount()
         }
 
-    val numIndices: Int
-        get() = indices.position
-
-    val numPrimitives: Int
-        get() = primitiveType.getNumberOfPrimitives(numIndices)
-
-    val lastIndex
-        get() = numVertices - 1
-
-    val bounds = BoundingBoxF()
+    val numIndices: Int get() = indices.position
+    val numPrimitives: Int get() = primitiveType.getNumberOfPrimitives(numIndices)
+    val lastIndex get() = numVertices - 1
 
     val vertexIt: VertexView<T> = VertexView(this, 0)
-
-    var isRebuildBoundsOnSync = false
 
     val modCount = ModCounter()
 
@@ -142,19 +131,11 @@ class IndexedVertexList<T: Struct>(
         return requiredAttributes.all { hasAttribute(it) }
     }
 
-    inline fun batchUpdate(rebuildBounds: Boolean = false, block: IndexedVertexList<*>.() -> Unit) {
-        block.invoke(this)
-        if (rebuildBounds) {
-            rebuildBounds()
-        }
-    }
-
     inline fun addVertex(block: VertexView<T>.() -> Unit): Int {
         checkBufferSize(1)
         val addIndex = numVertices++
         vertexIt.index = addIndex
         vertexIt.block()
-        bounds.add(vertexIt.position)
         incrementModCount()
         return addIndex
     }
@@ -220,18 +201,9 @@ class IndexedVertexList<T: Struct>(
         addIndex(i2)
     }
 
-    fun rebuildBounds() {
-        bounds.clear()
-        for (i in 0 until numVertices) {
-            vertexIt.index = i
-            bounds.add(vertexIt.position)
-        }
-    }
-
     fun clear() {
         vertexData.clear()
         indices.clear()
-        bounds.clear()
         modCount.increment()
     }
 
@@ -247,7 +219,6 @@ class IndexedVertexList<T: Struct>(
         @Suppress("UNCHECKED_CAST")
         vertexData.put(source.vertexData as StructBuffer<T>)
         indices.put(source.indices)
-        bounds.set(source.bounds)
         modCount.reset(source.modCount)
     }
 

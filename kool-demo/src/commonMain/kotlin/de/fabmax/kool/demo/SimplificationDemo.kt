@@ -93,27 +93,25 @@ class SimplificationDemo : DemoScene("Simplification") {
 
     private fun runSimplification(ratio: Float) {
         val pt = PerfTimer()
-        dispModel.geometry.batchUpdate {
-            dispModel.geometry.clear()
-            dispModel.geometry.addGeometry(activeModel.value.geometry)
+        dispModel.geometry.clear()
+        dispModel.geometry.addGeometry(activeModel.value.geometry)
+        dispModel.updateGeometryBounds()
 
-            heMesh = HalfEdgeMesh(dispModel.geometry, ListEdgeHandler())
-            if (ratio < 0.999f) {
-                heMesh.simplify(terminateOnFaceCountRel(ratio.toDouble()))
-            }
+        heMesh = HalfEdgeMesh(dispModel.geometry, ListEdgeHandler())
+        if (ratio < 0.999f) {
+            heMesh.simplify(terminateOnFaceCountRel(ratio.toDouble()))
+        }
 
-            modelWireframe.geometry.batchUpdate {
-                modelWireframe.clear()
-                heMesh.generateWireframe(modelWireframe, MdColor.LIME, 1.5f)
-            }
+        modelWireframe.clear()
+        heMesh.generateWireframe(modelWireframe, MdColor.LIME, 1.5f)
+        modelWireframe.updateGeometryBounds()
 
-            val time = pt.takeSecs()
-            simplificationTime.set(time)
-            simplifiedNumVerts.set(heMesh.vertCount)
-            simplifiedNumFaces.set(heMesh.faceCount)
-            if (time > 0.5) {
-                isAutoSimplify.set(false)
-            }
+        val time = pt.takeSecs()
+        simplificationTime.set(time)
+        simplifiedNumVerts.set(heMesh.vertCount)
+        simplifiedNumFaces.set(heMesh.faceCount)
+        if (time > 0.5) {
+            isAutoSimplify.set(false)
         }
     }
 
@@ -126,7 +124,8 @@ class SimplificationDemo : DemoScene("Simplification") {
             geometry.vertexIt.index = i
             geometry.vertexIt.position.mul(scale).add(offset)
         }
-        logD { "loaded: $name, bounds: ${geometry.bounds}" }
+        mesh.updateGeometryBounds()
+        logD { "loaded: $name, bounds: ${mesh.geometryBounds}" }
         models += DemoModel(name, geometry)
     }
 

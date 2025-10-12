@@ -18,7 +18,6 @@ class OpticalDepthLutPass :
         name = "optical-depth-lut"
     )
 {
-
     private val lutShader = OpticalDepthLutShader()
     var atmosphereRadius by lutShader::atmosphereRadius
     var surfaceRadius by lutShader::surfaceRadius

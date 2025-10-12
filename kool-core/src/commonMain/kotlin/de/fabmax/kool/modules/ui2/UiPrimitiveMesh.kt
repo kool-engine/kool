@@ -30,7 +30,7 @@ class UiPrimitiveMesh(name: String) :
         isFrustumChecked = false
         isCastingShadow = false
 
-        generate {
+        generate(updateBounds = false) {
             val weights = MutableVec4f()
             val outerWeights = MutableVec4f()
             val innerWeights = MutableVec4f()

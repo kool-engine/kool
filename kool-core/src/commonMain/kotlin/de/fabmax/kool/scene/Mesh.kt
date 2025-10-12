@@ -9,10 +9,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.animation.Skin
 import de.fabmax.kool.scene.geometry.*
-import de.fabmax.kool.util.MemoryLayout
-import de.fabmax.kool.util.MutableStructBufferView
-import de.fabmax.kool.util.Struct
-import de.fabmax.kool.util.StructBuffer
+import de.fabmax.kool.util.*
 
 @Suppress("DEPRECATION")
 @Deprecated("Use a layout struct instead of specifying vertex attributes individually")
@@ -149,6 +146,7 @@ open class Mesh(
     private val drawGeometry = IndexedVertexList(geometry.layout, primitiveType = geometry.primitiveType)
     private val drawInstances = instances?.let { MeshInstanceList(it.layout) }
     private var geometryUpdateModCount = -1
+    val geometryBounds = BoundingBoxF()
 
     private var isAsyncRendering = true
 
@@ -207,14 +205,26 @@ open class Mesh(
     }
 
     override fun addContentToBoundingBox(localBounds: BoundingBoxF) {
-        localBounds.add(geometry.bounds)
+        localBounds.add(geometryBounds)
     }
 
     inline fun generate(updateBounds: Boolean = true, generator: MeshBuilder.() -> Unit) {
-        geometry.batchUpdate(updateBounds) {
+        geometry.apply {
             clear()
             MeshBuilder(this).generator()
         }
+        if (updateBounds) {
+            updateGeometryBounds()
+        }
+    }
+
+    fun updateGeometryBounds() {
+        if (!geometry.hasAttribute(Attribute.POSITIONS)) {
+            logW { "Mesh $name has no default positions attribute, cannot update geometry bounds" }
+            return
+        }
+        geometryBounds.clear()
+        geometry.computeBounds(geometryBounds)
     }
 
     inline fun <reified T: Struct> addInstances(numInstances: Int, clear: Boolean = false, block: (StructBuffer<T>) -> Unit) {
@@ -295,9 +305,6 @@ open class Mesh(
         // update bounds and ray test if geometry has changed
         if (geometry.modCount.isDirty(geometryUpdateModCount)) {
             geometryUpdateModCount = geometry.modCount.count
-            if (geometry.isRebuildBoundsOnSync) {
-                geometry.rebuildBounds()
-            }
             rayTest.onMeshDataChanged(this)
         }
 

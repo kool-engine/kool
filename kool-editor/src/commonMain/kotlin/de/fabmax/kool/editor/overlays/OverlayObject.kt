@@ -29,7 +29,7 @@ abstract class OverlayObject(val gameEntity: GameEntity) {
 
     fun rayTest(rayTest: RayTest, mesh: Mesh): Boolean {
         val pos = modelMat.getTranslation()
-        val radius = mesh.geometry.bounds.size.length()
+        val radius = mesh.geometryBounds.size.length()
         val n = pos.nearestPointOnRay(rayTest.ray.origin, rayTest.ray.direction, MutableVec3d())
         if (n.distance(pos) < radius) {
             val d = n.distance(rayTest.ray.origin)

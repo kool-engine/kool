@@ -6,10 +6,7 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.LineMesh
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.TriangulatedLineMesh
-import de.fabmax.kool.scene.geometry.IndexedVertexList
-import de.fabmax.kool.scene.geometry.VertexView
-import de.fabmax.kool.scene.geometry.generateNormals
-import de.fabmax.kool.scene.geometry.generateTangents
+import de.fabmax.kool.scene.geometry.*
 import de.fabmax.kool.util.*
 
 /**
@@ -53,9 +50,9 @@ class HalfEdgeMesh(geometry: IndexedVertexList<*>, val edgeHandler: EdgeHandler 
     }
 
     init {
-//        if (meshData.primitiveType != GL_TRIANGLES) {
-//            throw KoolException("Supplied meshData must be of primitive type GL_TRIANGLES")
-//        }
+        require(geometry.primitiveType == PrimitiveType.TRIANGLES) {
+            "Supplied geometry must be of primitive type TRIANGLES (but is ${geometry.primitiveType})"
+        }
 
         verts = MutableList(geometry.numVertices) { HalfEdgeVertex(it) }
 
@@ -157,25 +154,19 @@ class HalfEdgeMesh(geometry: IndexedVertexList<*>, val edgeHandler: EdgeHandler 
     /**
      * Removes all vertices / triangles marked as deleted
      */
-    fun rebuild(generateNormals: Boolean = true, generateTangents: Boolean = true) {
+    fun rebuild(generateNormals: Boolean, generateTangents: Boolean) {
         sanitize()
 
-        geometry.batchUpdate(true) {
+        geometry.apply {
             // apply new indices to mesh vertex list
             val vertCnt = verts.size
             val newData = StructBuffer(geometry.layout, vertCnt)
-            val stride = geometry.layout.structSize
 
             for (i in verts.indices) {
                 // copy data from previous location
                 val oldIdx = verts[i].meshDataIndex
                 verts[i].meshDataIndex = verts[i].index
                 newData.set(i, oldIdx, geometry.vertexData)
-//                for (j in 0 until stride / 4) {
-//                    val srcIdx = oldIdx * stride + j * 4
-//                    val dstIdx = i * stride + j * 4
-//                    newData.buffer.setInt32(dstIdx, geometry.vertexData.buffer.getInt32(srcIdx))
-//                }
             }
 
             // rebuild triangle index list

@@ -1,19 +1,33 @@
 package de.fabmax.kool.scene.geometry
 
 import de.fabmax.kool.math.*
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.math.spatial.InRadiusTraverser
 import de.fabmax.kool.math.spatial.pointKdTree
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.util.*
 
-fun <T: Struct> IndexedVertexList<T>.generateNormals() {
+fun <T: Struct> IndexedVertexList<T>.computeBounds(
+    result: BoundingBoxF = BoundingBoxF(),
+    posMember: Float3Member<T> = layout.getFloat3(Attribute.POSITIONS.name),
+): BoundingBoxF {
+    val pos = MutableVec3f()
+    for (i in 0 until numVertices) {
+        vertexData.get(i) {
+            result.add(get(posMember, pos))
+        }
+    }
+    return result
+}
+
+fun <T: Struct> IndexedVertexList<T>.generateNormals(
+    posMember: Float3Member<T> = layout.getFloat3(Attribute.POSITIONS.name),
+    nrmMember: Float3Member<T> = layout.getFloat3(Attribute.NORMALS.name),
+) {
     if (!hasAttribute(Attribute.POSITIONS) || !hasAttribute(Attribute.NORMALS)) {
         return
     }
     check(primitiveType == PrimitiveType.TRIANGLES) { "Normal generation is only supported for triangle meshes" }
-
-    val posMember = layout.getFloat3(Attribute.POSITIONS.name)
-    val nrmMember = layout.getFloat3(Attribute.NORMALS.name)
 
     val n1 = MutableVec3f()
     val n2 = MutableVec3f()
@@ -55,7 +69,12 @@ fun <T: Struct> IndexedVertexList<T>.generateNormals() {
     modCount.increment()
 }
 
-fun <T: Struct> IndexedVertexList<T>.generateTangents(tangentSign: Float = 1f) {
+fun <T: Struct> IndexedVertexList<T>.generateTangents(
+    tangentSign: Float = 1f,
+    posMember: Float3Member<T> = layout.getFloat3(Attribute.POSITIONS.name),
+    texMember: Float2Member<T> = layout.getFloat2(Attribute.TEXTURE_COORDS.name),
+    tanMember: Float4Member<T> = layout.getFloat4(Attribute.TANGENTS.name),
+) {
     if (!hasAttribute(Attribute.POSITIONS) ||
         !hasAttribute(Attribute.TEXTURE_COORDS) ||
         !hasAttribute(Attribute.TANGENTS) ||
@@ -64,10 +83,6 @@ fun <T: Struct> IndexedVertexList<T>.generateTangents(tangentSign: Float = 1f) {
         return
     }
     check(primitiveType == PrimitiveType.TRIANGLES) { "Normal generation is only supported for triangle meshes" }
-
-    val posMember = layout.getFloat3(Attribute.POSITIONS.name)
-    val texMember = layout.getFloat2(Attribute.TEXTURE_COORDS.name)
-    val tanMember = layout.getFloat4(Attribute.TANGENTS.name)
 
     val pos1 = MutableVec3f()
     val pos2 = MutableVec3f()

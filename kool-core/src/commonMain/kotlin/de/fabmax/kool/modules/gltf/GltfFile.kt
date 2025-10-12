@@ -535,15 +535,14 @@ data class GltfFile(
             transform.mul(this.transform.matrixF)
 
             children.filterIsInstance<Mesh>().forEach {
-                it.geometry.batchUpdate(true) {
-                    forEach { v ->
-                        transform.transform(v.position, 1f)
-                        transform.transform(v.normal, 0f)
-                        val tan3 = MutableVec3f(v.tangent.xyz)
-                        transform.transform(tan3, 0f)
-                        v.tangent.set(tan3, v.tangent.w)
-                    }
+                it.geometry.forEach { v ->
+                    transform.transform(v.position, 1f)
+                    transform.transform(v.normal, 0f)
+                    val tan3 = MutableVec3f(v.tangent.xyz)
+                    transform.transform(tan3, 0f)
+                    v.tangent.set(tan3, v.tangent.w)
                 }
+                it.updateGeometryBounds()
                 if (rootGroup != this) {
                     rootGroup += it
                 }

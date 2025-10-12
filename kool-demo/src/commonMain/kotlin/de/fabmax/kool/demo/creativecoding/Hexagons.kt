@@ -99,7 +99,7 @@ class Hexagons(val resources: CreativeCodingDemo.Resources) : CreativeContent("H
 
         // update parent group transform, so that the mesh is centered
         transform.setIdentity()
-        transform.translate(0f, geometry.bounds.size.y * -0.5f + settings.beltRadius * settings.endScale, 0f)
+        transform.translate(0f, geometryBounds.size.y * -0.5f + settings.beltRadius * settings.endScale, 0f)
     }
 
     override fun UiScope.settingsMenu() {
