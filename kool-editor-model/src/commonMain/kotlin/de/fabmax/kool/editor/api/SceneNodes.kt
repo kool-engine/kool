@@ -121,7 +121,7 @@ class SceneNodes(val scene: EditorScene) :
         override fun updateInstances() {
             node?.instances?.apply {
                 @Suppress("UNCHECKED_CAST")
-                this as MeshInstanceList<InstanceLayoutModelMat>
+                this as MeshInstanceList<InstanceLayouts.ModelMat>
                 clear()
                 addInstances(users.size) { buf ->
                     for (i in users.indices) {
@@ -136,7 +136,7 @@ class SceneNodes(val scene: EditorScene) :
 
         override suspend fun createNode() {
             val isInstanced = meshKey.exclusiveEntity == EntityId.NULL
-            val instances = if (isInstanced) MeshInstanceList(InstanceLayoutModelMat, 100) else null
+            val instances = if (isInstanced) MeshInstanceList(InstanceLayouts.ModelMat, 100) else null
             val attributes = listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)
             val isHeightmap = meshKey.shapes.any { it is ShapeData.Heightmap }
 
@@ -288,7 +288,7 @@ class SceneNodes(val scene: EditorScene) :
         private val isRecreatingModel = atomic(false)
 
         private val isManagedMaterial = meshKey.material != EntityId.NULL
-        private val modelInstances = mutableListOf<MeshInstanceList<InstanceLayoutModelMat>>()
+        private val modelInstances = mutableListOf<MeshInstanceList<InstanceLayouts.ModelMat>>()
 
         private var isIblShaded = false
         private var isSsaoEnabled = false
@@ -336,7 +336,7 @@ class SceneNodes(val scene: EditorScene) :
                 ),
                 applyMaterials = material == null,
                 assetLoader = AppAssets.assetLoader,
-                instanceLayout = InstanceLayoutModelMat
+                instanceLayout = InstanceLayouts.ModelMat
             )
             isIblShaded = ibl != null
             isSsaoEnabled = ssao != null
@@ -372,7 +372,7 @@ class SceneNodes(val scene: EditorScene) :
                 }
                 mesh.instances?.let {
                     @Suppress("UNCHECKED_CAST")
-                    modelInstances += it as MeshInstanceList<InstanceLayoutModelMat>
+                    modelInstances += it as MeshInstanceList<InstanceLayouts.ModelMat>
                 }
             }
             node = model

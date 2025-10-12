@@ -5,6 +5,7 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.*
 import kotlin.math.*
@@ -23,7 +24,7 @@ class DeferredSpotLights(val maxSpotAngle: AngleF) {
     val lightShader = DeferredLightShader(Light.Spot.ENCODING)
 
     val mesh = Mesh(
-        Attribute.POSITIONS,
+        layout = VertexLayouts.Position,
         instances = lightInstanceData,
         name = "DeferredSpotLights"
     ).apply {

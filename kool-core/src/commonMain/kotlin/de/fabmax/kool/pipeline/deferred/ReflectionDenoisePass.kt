@@ -8,6 +8,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.addMesh
 
 class ReflectionDenoisePass(reflectionPass: OffscreenPass2d) :
@@ -23,7 +24,7 @@ class ReflectionDenoisePass(reflectionPass: OffscreenPass2d) :
 
     init {
         drawNode.apply {
-            addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
+            addMesh(VertexLayouts.PositionTexCoord) {
                 generateFullscreenQuad()
 
                 denoiseShader = DenoiseShader(reflectionPass.colorTexture)

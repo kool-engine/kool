@@ -9,7 +9,10 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.animation.Skin
 import de.fabmax.kool.scene.geometry.*
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.MutableStructBufferView
+import de.fabmax.kool.util.Struct
+import de.fabmax.kool.util.StructBuffer
+import de.fabmax.kool.util.logW
 
 @Suppress("DEPRECATION")
 @Deprecated("Use a layout struct instead of specifying vertex attributes individually")
@@ -61,7 +64,7 @@ fun Node.addColorMesh(
     block: Mesh.() -> Unit
 ): ColorMesh {
     return addMesh(
-        layout = ColorMeshLayout,
+        layout = VertexLayouts.PositionNormalColor,
         instances = instances,
         name = name,
         primitiveType = primitiveType,
@@ -77,7 +80,7 @@ fun Node.addTextureMesh(
     block: Mesh.() -> Unit
 ): Mesh {
     val mesh = addMesh(
-        layout = if (isNormalMapped) NormalMappedTextureMeshLayout else SimpleTextureMeshLayout,
+        layout = if (isNormalMapped) VertexLayouts.PositionNormalTexCoordTangent else VertexLayouts.PositionNormalTexCoord,
         instances = instances,
         name = name,
         primitiveType = primitiveType,
@@ -351,7 +354,7 @@ fun ColorMesh(
     name: String = Node.makeNodeName("ColorMesh"),
     usage: Usage = Usage.STATIC,
 ): ColorMesh = Mesh(
-    layout = ColorMeshLayout,
+    layout = VertexLayouts.PositionNormalColor,
     instances = instances,
     name = name,
     usage = usage
@@ -368,27 +371,8 @@ fun TextureMesh(
     name: String = Node.makeNodeName("TextureMesh"),
     usage: Usage = Usage.STATIC,
 ): TextureMesh = Mesh(
-    layout = if (isNormalMapped) NormalMappedTextureMeshLayout else SimpleTextureMeshLayout,
+    layout = if (isNormalMapped) VertexLayouts.PositionNormalTexCoordTangent else VertexLayouts.PositionNormalTexCoord,
     instances = instances,
     name = name,
     usage = usage
 )
-
-object ColorMeshLayout : Struct("ColorVertex", MemoryLayout.TightlyPacked) {
-    val position = float3(Attribute.POSITIONS.name)
-    val normal = float3(Attribute.NORMALS.name)
-    val color = float4(Attribute.COLORS.name)
-}
-
-object SimpleTextureMeshLayout : Struct("TextureVertex", MemoryLayout.TightlyPacked) {
-    val position = float3(Attribute.POSITIONS.name)
-    val normal = float3(Attribute.NORMALS.name)
-    val textureCoords = float2(Attribute.TEXTURE_COORDS.name)
-}
-
-object NormalMappedTextureMeshLayout : Struct("NormalTextureVertex", MemoryLayout.TightlyPacked) {
-    val position = float3(Attribute.POSITIONS.name)
-    val normal = float3(Attribute.NORMALS.name)
-    val textureCoords = float2(Attribute.TEXTURE_COORDS.name)
-    val tangent = float4(Attribute.TANGENTS.name)
-}

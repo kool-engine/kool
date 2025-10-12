@@ -30,13 +30,13 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
 
     private val joints = mutableListOf<JointInstance>()
 
-    private val centerInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
-    private val linearXInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
-    private val linearYInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
-    private val linearZInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
-    private val angularXInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
-    private val angularYInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
-    private val angularZInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
+    private val centerInstances = MeshInstanceList(InstanceLayouts.ModelMatColor)
+    private val linearXInstances = MeshInstanceList(InstanceLayouts.ModelMatColor)
+    private val linearYInstances = MeshInstanceList(InstanceLayouts.ModelMatColor)
+    private val linearZInstances = MeshInstanceList(InstanceLayouts.ModelMatColor)
+    private val angularXInstances = MeshInstanceList(InstanceLayouts.ModelMatColor)
+    private val angularYInstances = MeshInstanceList(InstanceLayouts.ModelMatColor)
+    private val angularZInstances = MeshInstanceList(InstanceLayouts.ModelMatColor)
 
     private val jointCenterBgMesh = makeCenterJointMesh(objectBgShader, false)
     private val linearXJointBgMesh = makeLinearXJointMesh(objectBgShader, false)
@@ -146,7 +146,7 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
         angularZInstances.addInstances(joints, MdColor.CYAN.toLinear()) { it.isAngularZ }
     }
 
-    private fun MeshInstanceList<InstanceLayoutModelMatAndColor>.addInstances(objs: List<JointInstance>, color: Color, filter: (JointInstance) -> Boolean) {
+    private fun MeshInstanceList<InstanceLayouts.ModelMatColor>.addInstances(objs: List<JointInstance>, color: Color, filter: (JointInstance) -> Boolean) {
         clear()
         addInstances(objs.size) { buf ->
             for (i in objs.indices) {

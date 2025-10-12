@@ -10,6 +10,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.releaseWith
@@ -32,7 +33,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
 
     init {
         drawNode.apply {
-            addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
+            addMesh(VertexLayouts.PositionTexCoord) {
                 generateFullscreenQuad()
                 shader = ssrShader
             }

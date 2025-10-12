@@ -41,7 +41,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
     private lateinit var ao: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()
-    private val bodyInstanceData = MeshInstanceList(InstanceLayoutModelMatAndColor, 1500)
+    private val bodyInstanceData = MeshInstanceList(InstanceLayouts.ModelMatColor, 1500)
     private val bodyInstances = mutableListOf<BodyInstance>()
 
     private val ragdolls = mutableListOf<Articulation>()
@@ -492,7 +492,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         private val mutColor = MutableColor(color)
         private val bufTransform = MutableMat4f()
 
-        fun putInstanceData(buf: StructBuffer<InstanceLayoutModelMatAndColor>) {
+        fun putInstanceData(buf: StructBuffer<InstanceLayouts.ModelMatColor>) {
             buf.put {
                 bufTransform.set(trs.matrixF).scale(this@BodyInstance.size)
                 set(it.modelMat, bufTransform)

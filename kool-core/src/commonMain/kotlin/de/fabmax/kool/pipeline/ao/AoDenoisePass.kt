@@ -5,12 +5,16 @@ import de.fabmax.kool.PassData
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.AttachmentConfig
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenShaderPipelineCfg
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
+import de.fabmax.kool.pipeline.OffscreenPass2d
+import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.FrontendScope
 import de.fabmax.kool.util.launchDelayed
@@ -31,11 +35,11 @@ class AoDenoisePass(aoPass: OffscreenPass2d, depthComponent: String) :
 
     var clearAndDisable = false
 
-    private val denoiseMesh: Mesh = Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, name = "AoDenoiseMesh").apply {
+    private val denoiseMesh: Mesh = Mesh(VertexLayouts.PositionTexCoord, name = "AoDenoiseMesh").apply {
         generateFullscreenQuad()
         shader = denoiseShader
     }
-    private val clearMesh: Mesh = Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, name = "AoClearMesh").apply {
+    private val clearMesh: Mesh = Mesh(VertexLayouts.PositionTexCoord, name = "AoClearMesh").apply {
         isVisible = false
         generateFullscreenQuad()
         shader = KslShader("AO Clear", fullscreenShaderPipelineCfg) {

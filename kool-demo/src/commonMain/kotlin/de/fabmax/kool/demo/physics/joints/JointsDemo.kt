@@ -505,7 +505,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         var factory: (RigidActor) -> Mesh = { proto ->
             Mesh(
                 Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS,
-                instances = MeshInstanceList(InstanceLayoutModelMat)
+                instances = MeshInstanceList(InstanceLayouts.ModelMat)
             ).apply {
                 isFrustumChecked = false
                 generate {
@@ -541,7 +541,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
 
         fun updateInstances(bodies: List<RigidActor>) {
             if (bodies.isNotEmpty()) {
-                getOrCreate(bodies[0]).addInstances<InstanceLayoutModelMat>(bodies.size, clear = true) { buffer ->
+                getOrCreate(bodies[0]).addInstances<InstanceLayouts.ModelMat>(bodies.size, clear = true) { buffer ->
                     for (i in bodies.indices) {
                         buffer.put {
                             set(it.modelMat, bodies[i].transform.matrixF)

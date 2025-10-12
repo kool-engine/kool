@@ -13,7 +13,7 @@ import de.fabmax.kool.physics.geometry.TriangleMeshGeometry
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.Texture3d
-import de.fabmax.kool.scene.InstanceLayoutModelMat
+import de.fabmax.kool.scene.InstanceLayouts
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.Node
@@ -62,7 +62,7 @@ class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
             treeData.splitVertices()
             treeData.generateNormals()
             trees += Tree(
-                Mesh(treeData, instances = MeshInstanceList(InstanceLayoutModelMat)).apply {
+                Mesh(treeData, instances = MeshInstanceList(InstanceLayouts.ModelMat)).apply {
                     isFrustumChecked = false
                 },
                 collisionData
@@ -80,7 +80,7 @@ class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
                 val size = 0.6f + likelihood.clamp(0f, 0.4f)
                 val pose = PoseF(pos, QuatF.rotation(random.randomF(0f, 360f).deg, Vec3f.Y_AXIS))
                 tree.instances += TreeInstance(pose, size, tree)
-                mesh.addInstance<InstanceLayoutModelMat> {
+                mesh.addInstance<InstanceLayouts.ModelMat> {
                     set(it.modelMat, pose.toMat4f().scale(size))
                 }
             }

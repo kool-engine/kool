@@ -30,8 +30,8 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
     private val groundQryFilterData = FilterData { VehicleUtils.setupDrivableSurface(this) }
 
     private val numVehicles = 2048
-    private val chassisInstances = MeshInstanceList(InstanceLayoutModelMatAndColor, numVehicles)
-    private val wheelInstances = MeshInstanceList(InstanceLayoutModelMat, numVehicles * 4)
+    private val chassisInstances = MeshInstanceList(InstanceLayouts.ModelMatColor, numVehicles)
+    private val wheelInstances = MeshInstanceList(InstanceLayouts.ModelMat, numVehicles * 4)
     private val vehicleInstances = mutableListOf<VehicleInstance>()
 
     private val vehicleProps = VehicleProperties().apply {
@@ -177,14 +177,14 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
         private val tmpMat2 = MutableMat4f()
         private val color = MutableColor(color)
 
-        fun addChassisInstance(instanceData: MeshInstanceList<InstanceLayoutModelMatAndColor>) {
+        fun addChassisInstance(instanceData: MeshInstanceList<InstanceLayouts.ModelMatColor>) {
             instanceData.addInstance {
                 set(it.modelMat, vehicle.transform.matrixF)
                 set(it.color, color)
             }
         }
 
-        fun addWheelInstances(instanceData: MeshInstanceList<InstanceLayoutModelMat>) {
+        fun addWheelInstances(instanceData: MeshInstanceList<InstanceLayouts.ModelMat>) {
             for (i in 0..3) {
                 val wheelInfo = vehicle.wheelInfos[i]
                 tmpMat.set(vehicle.transform.matrixF).translate(vehicleProps.chassisCMOffset).mul(tmpMat2.set(wheelInfo.transform.matrixF))

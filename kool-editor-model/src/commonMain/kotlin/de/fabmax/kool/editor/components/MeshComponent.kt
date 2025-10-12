@@ -7,7 +7,7 @@ import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.MeshComponentData
 import de.fabmax.kool.editor.data.ShapeData
-import de.fabmax.kool.scene.InstanceLayoutModelMat
+import de.fabmax.kool.scene.InstanceLayouts
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.FrontendScope
 import de.fabmax.kool.util.StructBuffer
@@ -40,7 +40,7 @@ class MeshComponent(
         }
     }
 
-    fun addInstanceData(target: StructBuffer<InstanceLayoutModelMat>) {
+    fun addInstanceData(target: StructBuffer<InstanceLayouts.ModelMat>) {
         target.put { set(it.modelMat, gameEntity.localToViewF) }
     }
 

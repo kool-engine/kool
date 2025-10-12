@@ -15,13 +15,15 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.GpuType
+import de.fabmax.kool.pipeline.asAttribute
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.scene.geometry.VertexView
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.LineString
+import de.fabmax.kool.util.MemoryLayout
+import de.fabmax.kool.util.Struct
 import kotlin.math.max
 import kotlin.math.min
 
@@ -38,7 +40,7 @@ class TriangulatedLineMesh(geometry: IndexedVertexList<*>, name: String = makeNo
     Mesh(geometry, name = name)
 {
 
-    constructor(name: String = makeNodeName("TriangulatedLineMesh")) : this(IndexedVertexList(lineMeshAttribs), name)
+    constructor(name: String = makeNodeName("TriangulatedLineMesh")) : this(IndexedVertexList(LineVertexLayout), name)
 
     private val lineBuffer = mutableListOf<LineVertex>()
 
@@ -268,9 +270,9 @@ class TriangulatedLineMesh(geometry: IndexedVertexList<*>, name: String = makeNo
                     val camData = cameraData()
                     val ar = camData.viewport.z / camData.viewport.w
 
-                    val vPrevPos = vertexAttribFloat3(ATTRIB_PREV_DIR.name)
-                    val vNextPos = vertexAttribFloat3(ATTRIB_NEXT_DIR.name)
-                    val vAttribs = vertexAttribFloat2(ATTRIB_LINE_ATTRIBS.name)
+                    val vPrevPos = vertexAttribFloat3(LineVertexLayout.prevDir)
+                    val vNextPos = vertexAttribFloat3(LineVertexLayout.nextDir)
+                    val vAttribs = vertexAttribFloat2(LineVertexLayout.lineAttribs)
                     val pos = vertexAttribFloat3(Attribute.POSITIONS.name)
                     val shiftDir = vAttribs.x
                     val lineWidthPort = float1Port("lineWidth", vAttribs.y)
@@ -347,11 +349,17 @@ class TriangulatedLineMesh(geometry: IndexedVertexList<*>, name: String = makeNo
         }
     }
 
-    companion object {
-        val ATTRIB_LINE_ATTRIBS = Attribute("aLineAttribs", GpuType.Float2)
-        val ATTRIB_PREV_DIR = Attribute("aPrevDir", GpuType.Float3)
-        val ATTRIB_NEXT_DIR = Attribute("aNextDir", GpuType.Float3)
+    object LineVertexLayout : Struct("LineVertexLayout", MemoryLayout.TightlyPacked) {
+        val color = float4(Attribute.COLORS.name)
+        val lineAttribs = float2("aLineAttribs")
+        val position = float3(Attribute.POSITIONS.name)
+        val prevDir = float3("aPrevDir")
+        val nextDir = float3("aNextDir")
+    }
 
-        val lineMeshAttribs = listOf(Attribute.COLORS, ATTRIB_LINE_ATTRIBS, Attribute.POSITIONS, ATTRIB_PREV_DIR, ATTRIB_NEXT_DIR)
+    companion object {
+        val ATTRIB_LINE_ATTRIBS = LineVertexLayout.lineAttribs.asAttribute()
+        val ATTRIB_PREV_DIR = LineVertexLayout.prevDir.asAttribute()
+        val ATTRIB_NEXT_DIR = LineVertexLayout.nextDir.asAttribute()
     }
 }

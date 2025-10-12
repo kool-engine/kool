@@ -12,7 +12,7 @@ import de.fabmax.kool.physics.joints.FixedJoint
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.deferred.DeferredKslPbrShader
 import de.fabmax.kool.pipeline.deferred.DeferredPointLights
-import de.fabmax.kool.scene.InstanceLayoutModelMat
+import de.fabmax.kool.scene.InstanceLayouts
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -254,7 +254,7 @@ class GuardRail {
     }
 
     object InstanceLayout : Struct("", MemoryLayout.TightlyPacked) {
-        val modelMat = mat4(InstanceLayoutModelMat.modelMat.name)
+        val modelMat = mat4(InstanceLayouts.ModelMat.modelMat.name)
         val emission = float2("instEmission")
     }
 }

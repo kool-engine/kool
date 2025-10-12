@@ -9,7 +9,7 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.modules.ui2.remember
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.scene.InstanceLayoutModelMat
+import de.fabmax.kool.scene.InstanceLayouts
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.util.ColorGradient
@@ -133,7 +133,7 @@ class SmallSpheres(val resources: CreativeCodingDemo.Resources) : CreativeConten
     }
 
     private object SphereInstLayout : Struct("SphereInstLayout", MemoryLayout.TightlyPacked) {
-        val modelMat = mat4(InstanceLayoutModelMat.modelMat.name)
+        val modelMat = mat4(InstanceLayouts.ModelMat.modelMat.name)
         val color = float4("color")
         val metallic = float1("metallic")
         val roughness = float1("roughness")

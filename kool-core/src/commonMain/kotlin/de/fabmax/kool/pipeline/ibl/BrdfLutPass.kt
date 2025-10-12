@@ -5,7 +5,6 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.AttachmentConfig
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenShaderPipelineCfg
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
@@ -13,6 +12,7 @@ import de.fabmax.kool.pipeline.OffscreenPass2d
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.logT
 import de.fabmax.kool.util.releaseDelayed
@@ -31,7 +31,7 @@ class BrdfLutPass(parentScene: Scene) :
 
     init {
         drawNode.apply {
-            addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, name = "brdf-lut-mesh") {
+            addMesh(VertexLayouts.PositionTexCoord, name = "brdf-lut-mesh") {
                 generateFullscreenQuad()
                 shader = brdfLutShader()
             }

@@ -68,7 +68,7 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
         colors += MdColor.BLUE_GREY
         colors += Color(0.1f, 0.1f, 0.1f)
 
-        val instances = MeshInstanceList(InstanceLayoutModelMatAndColor, nRows * nCols) .apply {
+        val instances = MeshInstanceList(InstanceLayouts.ModelMatColor, nRows * nCols) .apply {
             val mat = MutableMat4f()
             for (y in 0 until nRows) {
                 for (x in 0 until nCols) {

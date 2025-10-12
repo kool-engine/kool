@@ -91,7 +91,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             val inactiveColor = MutableColor(MdColor.LIGHT_GREEN.toLinear())
 
             bodies.forEach { (type, typeBodies) ->
-                shapeMeshes[type]!!.addInstances<InstanceLayoutModelMatAndColor>(typeBodies.size) { buf ->
+                shapeMeshes[type]!!.addInstances<InstanceLayouts.ModelMatColor>(typeBodies.size) { buf ->
                     for (i in typeBodies.indices) {
                         val body = typeBodies[i]
                         matBuf.set(body.rigidActor.transform.matrixF).scale(body.scale)
@@ -133,7 +133,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private fun ShapeType.createMesh(): Mesh {
         val mesh = Mesh(
             attributes = listOf(Attribute.POSITIONS, Attribute.NORMALS),
-            instances = MeshInstanceList(InstanceLayoutModelMatAndColor, 2000)
+            instances = MeshInstanceList(InstanceLayouts.ModelMatColor, 2000)
         )
         mesh.generate { generateShapeMesh() }
         mesh.shader = instancedBodyShader()

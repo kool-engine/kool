@@ -418,13 +418,13 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
     }
 
-    private fun makeBoxMesh() = ColorMesh(MeshInstanceList(InstanceLayoutModelMat)).apply {
+    private fun makeBoxMesh() = ColorMesh(MeshInstanceList(InstanceLayouts.ModelMat)).apply {
         generate {
             color = MdColor.PURPLE.toLinear()
             physicsObjects.boxes[0].shapes[0].geometry.generateMesh(this)
         }
         onUpdate += {
-            addInstances<InstanceLayoutModelMat>(physicsObjects.boxes.size, clear = true) { buffer ->
+            addInstances<InstanceLayouts.ModelMat>(physicsObjects.boxes.size, clear = true) { buffer ->
                 physicsObjects.boxes.forEach { box ->
                     buffer.put { set(it.modelMat, box.transform.matrixF) }
                 }
@@ -432,7 +432,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
     }
 
-    private fun makeBridgeMesh() = ColorMesh(MeshInstanceList(InstanceLayoutModelMat)).apply {
+    private fun makeBridgeMesh() = ColorMesh(MeshInstanceList(InstanceLayouts.ModelMat)).apply {
         generate {
             color = MdColor.BROWN toneLin 700
             cube {
@@ -440,7 +440,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             }
         }
         onUpdate += {
-            addInstances<InstanceLayoutModelMat>(physicsObjects.chainBridge.segments.size, clear = true) { buffer ->
+            addInstances<InstanceLayouts.ModelMat>(physicsObjects.chainBridge.segments.size, clear = true) { buffer ->
                 physicsObjects.chainBridge.segments.forEach { seg ->
                     buffer.put { set(it.modelMat, seg.transform.matrixF) }
                 }

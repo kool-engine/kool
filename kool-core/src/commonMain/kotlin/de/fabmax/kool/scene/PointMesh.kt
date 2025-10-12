@@ -3,11 +3,13 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GpuType
+import de.fabmax.kool.pipeline.asAttribute
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.scene.geometry.VertexView
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MemoryLayout
+import de.fabmax.kool.util.Struct
 
 /**
  * @author fabmax
@@ -21,7 +23,7 @@ fun Node.addPointMesh(name: String = Node.makeNodeName("LineMesh"), block: Point
 
 open class PointMesh(
     name: String = makeNodeName("LineMesh"),
-    geometry: IndexedVertexList<*> = IndexedVertexList(Attribute.POSITIONS, ATTRIB_POINT_SIZE, Attribute.COLORS, primitiveType = PrimitiveType.POINTS)
+    geometry: IndexedVertexList<*> = IndexedVertexList(PointVertexLayout, primitiveType = PrimitiveType.POINTS)
 ) : Mesh(geometry, name = name) {
     init {
         rayTest = MeshRayTest.nopTest()
@@ -31,7 +33,7 @@ open class PointMesh(
             modelCustomizer = {
                 vertexStage {
                     main {
-                        outPointSize set vertexAttribFloat1(ATTRIB_POINT_SIZE.name)
+                        outPointSize set vertexAttribFloat1(PointVertexLayout.pointSize)
                     }
                 }
             }
@@ -48,7 +50,7 @@ open class PointMesh(
         val idx = geometry.addVertex {
             this.position.set(position)
             this.color.set(color)
-            getFloatAttribute(ATTRIB_POINT_SIZE)?.f = pointSize
+            getFloatAttribute(attrPointSize)?.f = pointSize
         }
         geometry.addIndex(idx)
         return idx
@@ -59,7 +61,13 @@ open class PointMesh(
         bounds.clear()
     }
 
+    object PointVertexLayout : Struct("PointVertexLayout", MemoryLayout.TightlyPacked) {
+        val position = float3(Attribute.POSITIONS.name)
+        val pointSize = float1("aPointSize")
+        val color = float4(Attribute.COLORS.name)
+    }
+
     companion object {
-        val ATTRIB_POINT_SIZE = Attribute("aPointSize", GpuType.Float1)
+        val attrPointSize = PointVertexLayout.pointSize.asAttribute()
     }
 }

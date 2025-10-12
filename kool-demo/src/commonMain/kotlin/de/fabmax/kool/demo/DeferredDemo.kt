@@ -30,8 +30,8 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
     private lateinit var lightPositionMesh: Mesh
     private lateinit var lightVolumeMesh: LineMesh
-    private val lightPosInsts = MeshInstanceList(InstanceLayoutModelMatAndColor, MAX_LIGHTS)
-    private val lightVolInsts = MeshInstanceList(InstanceLayoutModelMatAndColor, MAX_LIGHTS)
+    private val lightPosInsts = MeshInstanceList(InstanceLayouts.ModelMatColor, MAX_LIGHTS)
+    private val lightVolInsts = MeshInstanceList(InstanceLayouts.ModelMatColor, MAX_LIGHTS)
 
     private val rand = Random(1337)
 
@@ -129,7 +129,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                 isCastingShadow = false
                 shader = KslUnlitShader {
                     vertices { instancedModelMatrix() }
-                    color { instanceColor(InstanceLayoutModelMatAndColor.color) }
+                    color { instanceColor(InstanceLayouts.ModelMatColor.color) }
                     colorSpaceConversion = ColorSpaceConversion.LinearToSrgb()
                 }
             }
@@ -221,7 +221,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             shader = deferredKslPbrShader {
                 vertices { instancedModelMatrix() }
                 emission {
-                    instanceColor(InstanceLayoutModelMatAndColor.color)
+                    instanceColor(InstanceLayouts.ModelMatColor.color)
                     constColor(Color(6f, 6f, 6f), blendMode = ColorBlockConfig.BlendMode.Multiply)
                 }
             }

@@ -24,7 +24,7 @@ class ManyBodiesDemo : DemoScene("Many Bodies") {
     private val ibl by hdriImage("${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png")
     private val physicsWorld = PhysicsWorld(mainScene)
 
-    private val cubeInstances = MeshInstanceList(InstanceLayoutModelMatAndColor, 100000)
+    private val cubeInstances = MeshInstanceList(InstanceLayouts.ModelMatColor, 100000)
     private val physBoxes = mutableListOf<PhysBox>()
 
     override fun Scene.setupMainScene(ctx: KoolContext) {

@@ -7,7 +7,10 @@ import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.UnlitShaderConfig
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.CullMethod
+import de.fabmax.kool.pipeline.DepthMode
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.pipeline.ibl.SkyCubeIblSystem
 import de.fabmax.kool.scene.*
@@ -281,7 +284,7 @@ class Sky(val mainScene: Scene, moonTex: Texture2d) {
                         }
 
                         color.input set instanceAttribFloat4(TriangulatedPointMesh.PointInstanceLayout.pointColor)
-                        outPosition.xy += vertexAttribFloat2(TriangulatedPointMesh.ATTR_POINT_VERTEX) * outPosition.w * pointSize * pxSize
+                        outPosition.xy += vertexAttribFloat2(TriangulatedPointMesh.PointVertexLayout.posOffset) * outPosition.w * pointSize * pxSize
                     }
                 }
                 fragmentStage {

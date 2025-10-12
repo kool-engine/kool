@@ -126,7 +126,7 @@ class KslShaderTest : DemoScene("KslShader") {
             }
         }
 
-        val instances = MeshInstanceList(InstanceLayoutModelMatAndColor).apply {
+        val instances = MeshInstanceList(InstanceLayouts.ModelMatColor).apply {
             val mat = MutableMat4f()
             var i = 0
             for (y in -2 .. 2) {

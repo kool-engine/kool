@@ -264,7 +264,7 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
     }
 
     private object SelectionInstanceLayout : Struct("SelectionInstanceLayout", MemoryLayout.TightlyPacked) {
-        val modelMat = mat4(InstanceLayoutModelMat.modelMat.name)
+        val modelMat = mat4(InstanceLayouts.ModelMat.modelMat.name)
         val meshId = float4("attrib_meshid")
     }
 
