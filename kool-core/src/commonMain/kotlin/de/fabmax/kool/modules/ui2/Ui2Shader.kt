@@ -52,9 +52,6 @@ class Ui2Shader : KslShader(Model(), pipelineConfig) {
     companion object {
         val ATTRIB_CLIP = Attribute("aClip", GpuType.Float4)
 
-        @Deprecated("Use UiVertexLayout")
-        val UI_MESH_ATTRIBS = listOf(Attribute.POSITIONS, Attribute.COLORS, ATTRIB_CLIP, Attribute.TEXTURE_COORDS)
-
         private val noFontTex = SingleColorTexture(Color.WHITE)
         private val pipelineConfig = PipelineConfig(
             blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA,

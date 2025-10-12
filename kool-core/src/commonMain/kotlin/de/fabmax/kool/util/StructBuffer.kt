@@ -51,6 +51,24 @@ class StructBuffer<T: Struct>(val struct: T, val capacity: Int) {
         return index
     }
 
+    fun set(dstIndex: Int, srcIndex: Int, src: StructBuffer<*>) {
+        check(struct.hash == src.struct.hash) { "Can only put buffers with matching structs" }
+        if (strideBytes == 0) {
+            return
+        }
+        val srcOffset = srcIndex * strideBytes
+        val dstOffset = dstIndex * strideBytes
+        if (strideBytes % 4 == 0) {
+            for (i in 0 until strideBytes step 4) {
+                buffer.setInt32(dstOffset + i, src.buffer.getInt32(srcOffset + i))
+            }
+        } else {
+            for (i in 0 until strideBytes) {
+                buffer.setInt8(dstOffset + i, src.buffer.getInt8(srcOffset + i))
+            }
+        }
+    }
+
     fun putAll(other: StructBuffer<*>) {
         check(struct.hash == other.struct.hash) { "Can only put buffers with matching structs" }
         if (strideBytes == 0) {

@@ -3,6 +3,8 @@ package de.fabmax.kool.modules.gltf
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.generateNormals
+import de.fabmax.kool.scene.geometry.generateTangents
 import de.fabmax.kool.util.logW
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient

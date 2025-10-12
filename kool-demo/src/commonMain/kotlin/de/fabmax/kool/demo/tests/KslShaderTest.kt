@@ -12,6 +12,7 @@ import de.fabmax.kool.modules.ksl.blocks.TexCoordAttributeBlock
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.geometry.generateTangents
 import de.fabmax.kool.util.*
 import kotlin.math.PI
 

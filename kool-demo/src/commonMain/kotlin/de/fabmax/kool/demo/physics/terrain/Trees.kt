@@ -19,6 +19,8 @@ import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.geometry.generateNormals
+import de.fabmax.kool.scene.geometry.splitVertices
 import de.fabmax.kool.util.ShadowMap
 import kotlin.math.sqrt
 import kotlin.random.Random

@@ -5,10 +5,10 @@ import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.modules.ui2.Ui2Shader
 import de.fabmax.kool.modules.ui2.UiNode
 import de.fabmax.kool.modules.ui2.UiRenderer
 import de.fabmax.kool.modules.ui2.UiSurface
+import de.fabmax.kool.modules.ui2.UiVertexLayout
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
@@ -53,7 +53,7 @@ class TitleBgRenderer(
     }
 
     private class TitleBgMesh : Mesh(
-        IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS),
+        geometry = IndexedVertexList(UiVertexLayout),
         instances = MeshInstanceList(BgInstanceLayout),
         name = "Ui/TitleBgMesh"
     ) {

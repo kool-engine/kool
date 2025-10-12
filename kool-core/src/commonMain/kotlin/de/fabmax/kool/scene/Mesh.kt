@@ -8,10 +8,7 @@ import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.animation.Skin
-import de.fabmax.kool.scene.geometry.IndexedVertexList
-import de.fabmax.kool.scene.geometry.MeshBuilder
-import de.fabmax.kool.scene.geometry.PrimitiveType
-import de.fabmax.kool.scene.geometry.Usage
+import de.fabmax.kool.scene.geometry.*
 import de.fabmax.kool.util.MutableStructBufferView
 import de.fabmax.kool.util.Struct
 import de.fabmax.kool.util.StructBuffer
@@ -93,6 +90,17 @@ fun Mesh(
     usage: Usage = Usage.STATIC
 ): Mesh = Mesh(
     geometry = IndexedVertexList(*attributes, usage = usage),
+    instances = instances,
+    name = name
+)
+
+fun Mesh(
+    layout: Struct,
+    instances: MeshInstanceList<*>? = null,
+    name: String = Node.makeNodeName("Mesh"),
+    usage: Usage = Usage.STATIC
+): Mesh = Mesh(
+    geometry = IndexedVertexList(layout, usage = usage),
     instances = instances,
     name = name
 )

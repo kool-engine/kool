@@ -649,7 +649,7 @@ open class UiSurface(
         private val imageMeshes = mutableMapOf<Texture2d, ImageMeshes>()
         private val customLayers = mutableMapOf<String, CustomLayer>()
         private val plainMesh = Mesh(
-            attributes = Ui2Shader.UI_MESH_ATTRIBS,
+            layout = UiVertexLayout,
             name = "$name.plainMesh",
             usage = Usage.DYNAMIC
         ).apply { shader = Ui2Shader() }

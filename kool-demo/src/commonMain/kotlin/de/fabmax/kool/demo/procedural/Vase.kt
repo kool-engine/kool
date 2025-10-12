@@ -8,6 +8,7 @@ import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.geometry.generateNormals
 import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient

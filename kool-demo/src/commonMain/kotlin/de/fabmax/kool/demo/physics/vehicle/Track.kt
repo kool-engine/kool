@@ -9,10 +9,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.geometry.IndexedVertexList
-import de.fabmax.kool.scene.geometry.MeshBuilder
-import de.fabmax.kool.scene.geometry.multiShape
-import de.fabmax.kool.scene.geometry.simpleShape
+import de.fabmax.kool.scene.geometry.*
 import de.fabmax.kool.util.*
 import kotlin.math.*
 import kotlin.random.Random
