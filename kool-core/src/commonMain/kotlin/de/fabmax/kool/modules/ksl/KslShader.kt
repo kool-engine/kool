@@ -118,7 +118,11 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
         var attribLocation = 0
         vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Vertex }.forEach { vertexAttrib ->
             val attrib = checkNotNull(verts.layout.getByName(vertexAttrib.name, vertexAttrib.expressionType.gpuType)) {
-                "Mesh does not include required vertex attribute: ${vertexAttrib.name}: ${vertexAttrib.expressionType.gpuType} (for shader: ${program.name})"
+                buildString {
+                    appendLine("Mesh ${mesh.name} does not include required vertex attribute: ${vertexAttrib.name}: ${vertexAttrib.expressionType.gpuType} (for shader: ${program.name})")
+                    appendLine("  Available attributes are:")
+                    verts.layout.members.forEach { appendLine("    ${it.name}: ${it.type}") }
+                }
             }
             vertLayoutAttribs += VertexLayout.VertexAttribute(attribLocation, attrib.byteOffset, attrib.asAttribute())
             attribLocation++

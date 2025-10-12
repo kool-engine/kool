@@ -32,10 +32,8 @@ open class CachedGeometry<T: Struct>(
         for (i in 0 until cacheData.numIndices) {
             target.indices.put(i0 + cacheData.indices[i])
         }
-
-        target.vertexData.position = target.numVertices
         target.checkBufferSize(cacheData.numVertices)
-        target.vertexData.putAll(cacheData.vertexData)
+        target.vertexData.put(cacheData.vertexData)
     }
 
     fun hasSizeChanged(): Boolean {

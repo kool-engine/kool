@@ -16,6 +16,7 @@ import de.fabmax.kool.modules.ksl.ModelMatrixComposition
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.geometry.generateTangents
 import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.util.*
 import kotlinx.atomicfu.atomic

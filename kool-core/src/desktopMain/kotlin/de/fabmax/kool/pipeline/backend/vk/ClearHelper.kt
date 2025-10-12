@@ -98,6 +98,7 @@ class ClearHelper(val backend: RenderBackendVk) {
                 prevColor = clearColor
                 prevDepth = clearDepth
                 clearValues.buffer.clear()
+                clearValues.buffer.limit = 1
                 clearColor.putTo(clearValues.buffer.buffer)
                 clearValues.buffer.buffer.putFloat32(clearDepth)
                 clearValues.markDirty()

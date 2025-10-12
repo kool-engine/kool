@@ -191,7 +191,7 @@ class HalfEdgeMesh(geometry: IndexedVertexList<*>, val edgeHandler: EdgeHandler 
             }
 
             geometry.vertexData.clear()
-            geometry.vertexData.putAll(newData)
+            geometry.vertexData.put(newData)
 
             geometry.numVertices = vertCnt
             if (generateNormals) {

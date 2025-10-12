@@ -7,6 +7,7 @@ import de.fabmax.kool.editor.data.MaterialComponentData
 import de.fabmax.kool.editor.data.MaterialShaderData
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.ModelMatrixComposition
+import de.fabmax.kool.pipeline.asAttribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.FrontendScope
 import de.fabmax.kool.util.logT
@@ -40,8 +41,8 @@ class MaterialComponent(
             return true
         }
 
-        if (shader is KslShader && shader.findRequiredVertexAttributes().any { it !in mesh.geometry.vertexAttributes }) {
-            val missing = shader.findRequiredVertexAttributes() - mesh.geometry.vertexAttributes.toSet()
+        if (shader is KslShader && shader.findRequiredVertexAttributes().any { !mesh.geometry.hasAttribute(it) }) {
+            val missing = shader.findRequiredVertexAttributes() - mesh.geometry.layout.members.map { it.asAttribute() }.toSet()
             logW { "Material $name: Unable to apply material to mesh ${mesh.name}, missing attributes: $missing" }
             return false
         }

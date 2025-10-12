@@ -23,6 +23,7 @@ import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.geometry.generateTangents
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.launch
 import kotlin.math.min

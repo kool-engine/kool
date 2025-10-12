@@ -5,6 +5,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.generateNormals
 import physx.*
 
 actual fun ConvexMesh(points: List<Vec3f>): ConvexMesh = ConvexMeshImpl(points)

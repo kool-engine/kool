@@ -4,29 +4,27 @@ import de.fabmax.kool.pipeline.BufferUsage
 import de.fabmax.kool.pipeline.GpuBuffer
 import kotlin.math.max
 
-class StructBuffer<T: Struct>(val struct: T, val capacity: Int) {
+class StructBuffer<T: Struct>(
+    val struct: T,
+    val capacity: Int,
+) {
     val strideBytes: Int = struct.structSize
-    val buffer = MixedBuffer(capacity * strideBytes)
+    val buffer = MixedBuffer(capacity * strideBytes).also { it.limit = 0 }
 
     @PublishedApi
     internal val defaultView: MutableStructBufferView<T> = MutableStructBufferView(buffer, 0, strideBytes, capacity)
 
-    var position = 0
-
-    var limit = capacity
+    var limit = 0
         set(value) {
-            if (value != field) {
-                field = value
-                buffer.limit = value * strideBytes
-            }
+            field = value
+            buffer.limit = value * strideBytes
         }
 
-    val remaining: Int
-        get() = capacity - position
+    val remaining: Int get() = capacity - limit
 
     fun clear() {
-        position = 0
         buffer.clear()
+        limit = 0
     }
 
     inline fun <R> get(index: Int, block: StructBufferView<T>.(T) -> R): R {
@@ -40,15 +38,6 @@ class StructBuffer<T: Struct>(val struct: T, val capacity: Int) {
         limit = max(index + 1, limit)
         defaultView.index = index
         defaultView.block(struct)
-    }
-
-    inline fun put(block: MutableStructBufferView<T>.(T) -> Unit): Int {
-        check(position < capacity) { "StructBuffer capacity exceeded, capacity: $capacity" }
-        val index = position++
-        limit = max(position, limit)
-        defaultView.index = index
-        defaultView.block(struct)
-        return index
     }
 
     fun set(dstIndex: Int, srcIndex: Int, src: StructBuffer<*>) {
@@ -69,23 +58,28 @@ class StructBuffer<T: Struct>(val struct: T, val capacity: Int) {
         }
     }
 
-    fun putAll(other: StructBuffer<*>) {
+    inline fun put(block: MutableStructBufferView<T>.(T) -> Unit): Int {
+        check(limit < capacity) { "StructBuffer capacity exceeded, capacity: $capacity" }
+        val index = limit++
+        defaultView.index = index
+        defaultView.block(struct)
+        return index
+    }
+
+    fun put(other: StructBuffer<*>) {
         check(struct.hash == other.struct.hash) { "Can only put buffers with matching structs" }
         if (strideBytes == 0) {
             return
         }
         check(remaining >= other.limit) { "Insufficient size: $remaining < ${other.limit}" }
-//        check(other.limit == other.buffer.limit / other.strideBytes) {
-//            "Buffer limit mismatch: ${other.limit} != ${other.buffer.limit / other.strideBytes}"
-//        }
-        if (other.limit != other.buffer.limit / other.strideBytes) {
-            logE { "Buffer limit mismatch: ${other.limit} != ${other.buffer.limit / other.strideBytes}" }
-            other.buffer.limit = other.limit * strideBytes
+        check(other.limit == other.buffer.limit / other.strideBytes) {
+            "Buffer limit mismatch: ${other.limit} != ${other.buffer.limit / other.strideBytes} (${other.buffer.limit})"
         }
 
-        limit = max(limit, position + other.limit)
+        buffer.position = limit * strideBytes
+        limit += other.limit
         buffer.put(other.buffer)
-        position += other.limit
+        buffer.position = 0
     }
 
     fun view(index: Int = 0): StructBufferView<T> = mutableView(index)

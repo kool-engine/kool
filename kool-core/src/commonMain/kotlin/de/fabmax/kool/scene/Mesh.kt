@@ -9,10 +9,13 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.animation.Skin
 import de.fabmax.kool.scene.geometry.*
+import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.MutableStructBufferView
 import de.fabmax.kool.util.Struct
 import de.fabmax.kool.util.StructBuffer
 
+@Suppress("DEPRECATION")
+@Deprecated("Use a layout struct instead of specifying vertex attributes individually")
 fun Node.addMesh(
     attributes: List<Attribute>,
     instances: MeshInstanceList<*>? = null,
@@ -26,6 +29,8 @@ fun Node.addMesh(
     return mesh
 }
 
+@Suppress("DEPRECATION")
+@Deprecated("Use a layout struct instead of specifying vertex attributes individually")
 fun Node.addMesh(
     vararg attributes: Attribute,
     instances: MeshInstanceList<*>? = null,
@@ -39,14 +44,27 @@ fun Node.addMesh(
     return mesh
 }
 
+fun Node.addMesh(
+    layout: Struct,
+    instances: MeshInstanceList<*>? = null,
+    name: String = makeChildName("mesh"),
+    primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
+    block: Mesh.() -> Unit
+): Mesh {
+    val mesh = Mesh(IndexedVertexList(layout, primitiveType = primitiveType), instances, name = name)
+    mesh.block()
+    addNode(mesh)
+    return mesh
+}
+
 fun Node.addColorMesh(
     name: String = makeChildName("colorMesh"),
     primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
     instances: MeshInstanceList<*>? = null,
     block: Mesh.() -> Unit
-): Mesh {
+): ColorMesh {
     return addMesh(
-        Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS,
+        layout = ColorMeshLayout,
         instances = instances,
         name = name,
         primitiveType = primitiveType,
@@ -61,17 +79,21 @@ fun Node.addTextureMesh(
     primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
     block: Mesh.() -> Unit
 ): Mesh {
-    val attributes = mutableListOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS)
-    if (isNormalMapped) {
-        attributes += Attribute.TANGENTS
-    }
-    val mesh = addMesh(attributes, instances, name, primitiveType, block)
+    val mesh = addMesh(
+        layout = if (isNormalMapped) NormalMappedTextureMeshLayout else SimpleTextureMeshLayout,
+        instances = instances,
+        name = name,
+        primitiveType = primitiveType,
+        block = block
+    )
     if (isNormalMapped) {
         mesh.geometry.generateTangents()
     }
     return mesh
 }
 
+@Suppress("DEPRECATION")
+@Deprecated("Use a layout struct instead of specifying vertex attributes individually")
 fun Mesh(
     attributes: List<Attribute>,
     instances: MeshInstanceList<*>? = null,
@@ -83,6 +105,8 @@ fun Mesh(
     name = name
 )
 
+@Suppress("DEPRECATION")
+@Deprecated("Use a layout struct instead of specifying vertex attributes individually")
 fun Mesh(
     vararg attributes: Attribute,
     instances: MeshInstanceList<*>? = null,
@@ -308,6 +332,9 @@ open class Mesh(
     }
 }
 
+typealias ColorMesh = Mesh
+typealias TextureMesh = Mesh
+
 /**
  * Mesh with default attributes for vertex color based rendering:
  * [Attribute.POSITIONS], [Attribute.NORMALS], [Attribute.COLORS]
@@ -316,8 +343,8 @@ fun ColorMesh(
     instances: MeshInstanceList<*>? = null,
     name: String = Node.makeNodeName("ColorMesh"),
     usage: Usage = Usage.STATIC,
-) = Mesh(
-    Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS,
+): ColorMesh = Mesh(
+    layout = ColorMeshLayout,
     instances = instances,
     name = name,
     usage = usage
@@ -333,13 +360,28 @@ fun TextureMesh(
     instances: MeshInstanceList<*>? = null,
     name: String = Node.makeNodeName("TextureMesh"),
     usage: Usage = Usage.STATIC,
-) = Mesh(
-    attributes = if (isNormalMapped) {
-        listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)
-    } else {
-        listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS)
-    },
+): TextureMesh = Mesh(
+    layout = if (isNormalMapped) NormalMappedTextureMeshLayout else SimpleTextureMeshLayout,
     instances = instances,
     name = name,
     usage = usage
 )
+
+object ColorMeshLayout : Struct("ColorVertex", MemoryLayout.TightlyPacked) {
+    val position = float3(Attribute.POSITIONS.name)
+    val normal = float3(Attribute.NORMALS.name)
+    val color = float4(Attribute.COLORS.name)
+}
+
+object SimpleTextureMeshLayout : Struct("TextureVertex", MemoryLayout.TightlyPacked) {
+    val position = float3(Attribute.POSITIONS.name)
+    val normal = float3(Attribute.NORMALS.name)
+    val textureCoords = float2(Attribute.TEXTURE_COORDS.name)
+}
+
+object NormalMappedTextureMeshLayout : Struct("NormalTextureVertex", MemoryLayout.TightlyPacked) {
+    val position = float3(Attribute.POSITIONS.name)
+    val normal = float3(Attribute.NORMALS.name)
+    val textureCoords = float2(Attribute.TEXTURE_COORDS.name)
+    val tangent = float4(Attribute.TANGENTS.name)
+}
