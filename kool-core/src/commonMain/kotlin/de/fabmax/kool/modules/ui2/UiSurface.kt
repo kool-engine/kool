@@ -225,11 +225,11 @@ open class UiSurface(
         return getMeshLayer(layer).uiPrimitives
     }
 
-    fun getPlainBuilder(layer: Int): MeshBuilder {
+    fun getPlainBuilder(layer: Int): MeshBuilder<*> {
         return getMeshLayer(layer).plainBuilder
     }
 
-    fun getTextBuilder(font: Font, layer: Int): MeshBuilder {
+    fun getTextBuilder(font: Font, layer: Int): MeshBuilder<*> {
         return getMeshLayer(layer).getTextBuilder(font)
     }
 
@@ -664,14 +664,14 @@ open class UiSurface(
             addNode(plainMesh)
         }
 
-        fun getTextBuilder(font: Font): MeshBuilder {
+        fun getTextBuilder(font: Font): MeshBuilder<*> {
             return textMeshes[font]?.builder ?: when (font) {
                 is MsdfFont -> getMsdfTextBuilder(font)
                 is AtlasFont -> getAtlasTextBuilder(font)
             }
         }
 
-        private fun getMsdfTextBuilder(font: MsdfFont): MeshBuilder {
+        private fun getMsdfTextBuilder(font: MsdfFont): MeshBuilder<*> {
             val textMesh = msdfMeshes.getOrPut(font.data) {
                 TextMesh.msdfTextMesh(font, "$name.msdfTextMesh:${font.data.meta.name}").also { this += it.mesh }
             }
@@ -680,7 +680,7 @@ open class UiSurface(
             return textMesh.builder
         }
 
-        private fun getAtlasTextBuilder(font: AtlasFont): MeshBuilder {
+        private fun getAtlasTextBuilder(font: AtlasFont): MeshBuilder<*> {
             val textMesh = textMeshes.getOrPut(font) {
                 TextMesh.atlasTextMesh(font, "$name.atlasTextMesh:${font.family}").also { this += it.mesh }
             }
@@ -739,7 +739,7 @@ open class UiSurface(
 
         private val mirrorTransformScale = Vec3f(1f, -1f, 1f)
 
-        fun MeshBuilder.setupUiBuilder() {
+        fun MeshBuilder<*>.setupUiBuilder() {
             isInvertFaceOrientation = true
         }
 

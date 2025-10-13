@@ -80,7 +80,7 @@ object Playground {
         RevoluteJoint(anchor, rocker, PoseF(Vec3f(0f, 0.85f, 0f)), PoseF(Vec3f(0f, 0f, 0.2f)))
     }
 
-    private fun MeshBuilder.makeRamp(frame: Mat4f) {
+    private fun MeshBuilder<*>.makeRamp(frame: Mat4f) {
         color = VehicleDemo.color(200)
         withTransform {
             transform.mul(frame)
@@ -91,7 +91,7 @@ object Playground {
         }
     }
 
-    private fun MeshBuilder.makeBumps(frame: Mat4f) {
+    private fun MeshBuilder<*>.makeBumps(frame: Mat4f) {
         for (i in 0 until 30) {
             val c = if (i % 2 == 0) VehicleDemo.color(400) else VehicleDemo.color(200)
             for (s in -1 .. 1 step 2) {
@@ -110,7 +110,7 @@ object Playground {
         }
     }
 
-    private fun MeshBuilder.makeHalfPipe(frame: Mat4f) {
+    private fun MeshBuilder<*>.makeHalfPipe(frame: Mat4f) {
         withTransform {
             transform.mul(frame)
             profile {

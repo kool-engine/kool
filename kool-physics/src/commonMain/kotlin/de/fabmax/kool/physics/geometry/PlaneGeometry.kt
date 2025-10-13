@@ -12,7 +12,7 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 expect fun PlaneGeometry(): CommonPlaneGeometry
 
 interface CommonPlaneGeometry : CollisionGeometry {
-    override fun generateMesh(target: MeshBuilder) {
+    override fun generateMesh(target: MeshBuilder<*>) {
         // plane is infinitely large, generate a mesh with a reasonable size
         target.apply {
             withTransform {

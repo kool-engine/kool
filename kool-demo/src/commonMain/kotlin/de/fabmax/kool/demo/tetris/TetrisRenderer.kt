@@ -16,7 +16,7 @@ internal enum class BlockStyle(val displayName: String) {
 internal class TetrisRenderer(private val game: TetrisGame) {
     val blockStyle = mutableStateOf(BlockStyle.BEVELED_SPHERE)
 
-    fun MeshBuilder.render() {
+    fun MeshBuilder<*>.render() {
         drawBoardBackground()
         drawBorder()
         drawBoard()
@@ -24,7 +24,7 @@ internal class TetrisRenderer(private val game: TetrisGame) {
         drawNextPiece()
     }
 
-    private fun MeshBuilder.drawBorder() {
+    private fun MeshBuilder<*>.drawBorder() {
         val boardW = TetrisGame.WIDTH * game.blockSize
         val boardH = TetrisGame.HEIGHT * game.blockSize
         val thickness = game.blockSize * 0.5f
@@ -40,7 +40,7 @@ internal class TetrisRenderer(private val game: TetrisGame) {
         }
     }
 
-    private fun MeshBuilder.drawBoardBackground() {
+    private fun MeshBuilder<*>.drawBoardBackground() {
         val boardW = TetrisGame.WIDTH * game.blockSize
         val boardH = TetrisGame.HEIGHT * game.blockSize
         color = MdColor.GREY tone 900
@@ -70,7 +70,7 @@ internal class TetrisRenderer(private val game: TetrisGame) {
         }
     }
 
-    private fun MeshBuilder.drawBoard() {
+    private fun MeshBuilder<*>.drawBoard() {
         for (y in 0 until TetrisGame.HEIGHT) {
             for (x in 0 until TetrisGame.WIDTH) {
                 game.board[y][x]?.let {
@@ -81,7 +81,7 @@ internal class TetrisRenderer(private val game: TetrisGame) {
         }
     }
 
-    private fun MeshBuilder.drawCurrentPiece() {
+    private fun MeshBuilder<*>.drawCurrentPiece() {
         if (game.isGameOver.value) return
 
         game.getGhostPiece()?.let { ghost ->
@@ -103,7 +103,7 @@ internal class TetrisRenderer(private val game: TetrisGame) {
         }
     }
 
-    private fun MeshBuilder.drawNextPiece() {
+    private fun MeshBuilder<*>.drawNextPiece() {
         if (game.isGameOver.value) return
 
         val piecesToDraw = (listOf(game.nextPiece) + game.previewPieces).take(game.numPreviews.value)
@@ -132,7 +132,7 @@ internal class TetrisRenderer(private val game: TetrisGame) {
         }
     }
 
-    private fun MeshBuilder.renderBlock(x: Int, y: Int) {
+    private fun MeshBuilder<*>.renderBlock(x: Int, y: Int) {
         withTransform {
             translate(
                 x * game.blockSize + game.blockSize / 2f,
@@ -143,7 +143,7 @@ internal class TetrisRenderer(private val game: TetrisGame) {
         }
     }
 
-    private fun MeshBuilder.renderBlock(x: Float, y: Float, isCentered: Boolean) {
+    private fun MeshBuilder<*>.renderBlock(x: Float, y: Float, isCentered: Boolean) {
         withTransform {
             val blockOffset = if (isCentered) 0f else game.blockSize / 2f
             translate(
@@ -155,7 +155,7 @@ internal class TetrisRenderer(private val game: TetrisGame) {
         }
     }
 
-    private fun MeshBuilder.renderBlockGeometry() {
+    private fun MeshBuilder<*>.renderBlockGeometry() {
         when (blockStyle.value) {
             BlockStyle.BEVELED_CUBE -> beveledCube(game.blockSize)
             BlockStyle.BEVELED_SPHERE -> beveledCubeWithSphere(game.blockSize, 0.15f)
@@ -163,13 +163,13 @@ internal class TetrisRenderer(private val game: TetrisGame) {
     }
 }
 
-private fun MeshBuilder.beveledCube(size: Float = 1f) {
+private fun MeshBuilder<*>.beveledCube(size: Float = 1f) {
     cube {
         this.size.set(size, size, size)
     }
 }
 
-private fun MeshBuilder.beveledCubeWithSphere(size: Float = 1f, bevel: Float = 0.1f) {
+private fun MeshBuilder<*>.beveledCubeWithSphere(size: Float = 1f, bevel: Float = 0.1f) {
     val cornerR = size * bevel
     cube {
         this.size.set(size, size, size)

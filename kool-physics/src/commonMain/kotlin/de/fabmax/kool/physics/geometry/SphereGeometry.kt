@@ -9,7 +9,7 @@ expect fun SphereGeometry(radius: Float): SphereGeometry
 interface SphereGeometry : CollisionGeometry {
     val radius: Float
 
-    override fun generateMesh(target: MeshBuilder) {
+    override fun generateMesh(target: MeshBuilder<*>) {
         target.icoSphere {
             radius = this@SphereGeometry.radius
             steps = 2

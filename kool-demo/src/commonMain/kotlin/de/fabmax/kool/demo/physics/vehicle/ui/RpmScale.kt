@@ -57,7 +57,7 @@ class RpmScale(val dashboard: Dashboard) : Composable {
         }
     }
 
-    private fun MeshBuilder.fillTrack(fromX: Float, toX: Float, innerHeight: Float, indent: Float, colorLt: Color, colorRt: Color) {
+    private fun MeshBuilder<*>.fillTrack(fromX: Float, toX: Float, innerHeight: Float, indent: Float, colorLt: Color, colorRt: Color) {
         color = colorLt
         val i1 = vertex { set(fromX + indent, 0f, 0f) }
         val i2 = vertex { set(fromX, innerHeight, 0f) }

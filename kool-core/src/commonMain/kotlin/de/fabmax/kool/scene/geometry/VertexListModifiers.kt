@@ -4,30 +4,27 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.math.spatial.InRadiusTraverser
 import de.fabmax.kool.math.spatial.pointKdTree
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.util.*
 
 fun <T: Struct> IndexedVertexList<T>.computeBounds(
     result: BoundingBoxF = BoundingBoxF(),
-    posMember: Float3Member<T> = layout.getFloat3(Attribute.POSITIONS.name),
 ): BoundingBoxF {
     val pos = MutableVec3f()
+    val attr = checkNotNull(positionAttr) { "IndexedVertexList has no position attribute" }
     for (i in 0 until numVertices) {
         vertexData.get(i) {
-            result.add(get(posMember, pos))
+            result.add(get(attr, pos))
         }
     }
     return result
 }
 
-fun <T: Struct> IndexedVertexList<T>.generateNormals(
-    posMember: Float3Member<T> = layout.getFloat3(Attribute.POSITIONS.name),
-    nrmMember: Float3Member<T> = layout.getFloat3(Attribute.NORMALS.name),
-) {
-    if (!hasAttribute(Attribute.POSITIONS) || !hasAttribute(Attribute.NORMALS)) {
+fun <T: Struct> IndexedVertexList<T>.generateNormals() {
+    check(primitiveType == PrimitiveType.TRIANGLES) { "Normal generation is only supported for triangle meshes" }
+    if (positionAttr == null || normalAttr == null) {
+        logW { "generateNormals() requires non-null positionAttr and normalAttr" }
         return
     }
-    check(primitiveType == PrimitiveType.TRIANGLES) { "Normal generation is only supported for triangle meshes" }
 
     val n1 = MutableVec3f()
     val n2 = MutableVec3f()
@@ -41,48 +38,40 @@ fun <T: Struct> IndexedVertexList<T>.generateNormals(
 
     for (i in 0 until numVertices) {
         vertexData.set(i) {
-            set(nrmMember, Vec3f.ZERO)
+            set(normalAttr, Vec3f.ZERO)
         }
     }
 
     for (i in 0 until numIndices step 3) {
-        vertexData.get(indices[i])     { get(posMember, p1); get(nrmMember, n1) }
-        vertexData.get(indices[i + 1]) { get(posMember, p2); get(nrmMember, n2) }
-        vertexData.get(indices[i + 2]) { get(posMember, p3); get(nrmMember, n3) }
+        vertexData.get(indices[i])     { get(positionAttr, p1); get(normalAttr, n1) }
+        vertexData.get(indices[i + 1]) { get(positionAttr, p2); get(normalAttr, n2) }
+        vertexData.get(indices[i + 2]) { get(positionAttr, p3); get(normalAttr, n3) }
 
         p2.subtract(p1, e1).norm()
         p3.subtract(p1, e2).norm()
         e1.cross(e2, nrm).norm().mul(triArea(p1, p2, p3))
         if (!nrm.x.isNaN() && !nrm.y.isNaN() && !nrm.z.isNaN()) {
-            vertexData.set(indices[i])     { set(nrmMember, n1.add(nrm)) }
-            vertexData.set(indices[i + 1]) { set(nrmMember, n2.add(nrm)) }
-            vertexData.set(indices[i + 2]) { set(nrmMember, n3.add(nrm)) }
+            vertexData.set(indices[i])     { set(normalAttr, n1.add(nrm)) }
+            vertexData.set(indices[i + 1]) { set(normalAttr, n2.add(nrm)) }
+            vertexData.set(indices[i + 2]) { set(normalAttr, n3.add(nrm)) }
         }
     }
 
     for (i in 0 until numVertices) {
         vertexData.set(i) {
-            get(nrmMember, nrm)
-            set(nrmMember, nrm.norm())
+            get(normalAttr, nrm)
+            set(normalAttr, nrm.norm())
         }
     }
     modCount.increment()
 }
 
-fun <T: Struct> IndexedVertexList<T>.generateTangents(
-    tangentSign: Float = 1f,
-    posMember: Float3Member<T> = layout.getFloat3(Attribute.POSITIONS.name),
-    texMember: Float2Member<T> = layout.getFloat2(Attribute.TEXTURE_COORDS.name),
-    tanMember: Float4Member<T> = layout.getFloat4(Attribute.TANGENTS.name),
-) {
-    if (!hasAttribute(Attribute.POSITIONS) ||
-        !hasAttribute(Attribute.TEXTURE_COORDS) ||
-        !hasAttribute(Attribute.TANGENTS) ||
-        !hasAttribute(Attribute.NORMALS)
-    ) {
+fun <T: Struct> IndexedVertexList<T>.generateTangents(tangentSign: Float = 1f) {
+    check(primitiveType == PrimitiveType.TRIANGLES) { "Normal generation is only supported for triangle meshes" }
+    if (positionAttr == null || texCoordAttr == null || tangentsAttr == null) {
+        logW { "generateTangents() requires non-null positionAttr, texCoordAttr and tangentsAttr" }
         return
     }
-    check(primitiveType == PrimitiveType.TRIANGLES) { "Normal generation is only supported for triangle meshes" }
 
     val pos1 = MutableVec3f()
     val pos2 = MutableVec3f()
@@ -99,25 +88,25 @@ fun <T: Struct> IndexedVertexList<T>.generateTangents(
 
     for (i in 0 until numVertices) {
         vertexData.set(i) {
-            set(tanMember, Vec4f.ZERO)
+            set(tangentsAttr, Vec4f.ZERO)
         }
     }
 
     for (i in 0 until numIndices step 3) {
         vertexData.get(indices[i]) {
-            get(posMember, pos1)
-            get(tanMember, tan1)
-            get(texMember, tex1)
+            get(positionAttr, pos1)
+            get(tangentsAttr, tan1)
+            get(texCoordAttr, tex1)
         }
         vertexData.get(indices[i + 1]) {
-            get(posMember, pos2)
-            get(tanMember, tan2)
-            get(texMember, tex2)
+            get(positionAttr, pos2)
+            get(tangentsAttr, tan2)
+            get(texCoordAttr, tex2)
         }
         vertexData.get(indices[i + 2]) {
-            get(posMember, pos3)
-            get(tanMember, tan3)
-            get(texMember, tex3)
+            get(positionAttr, pos3)
+            get(tangentsAttr, tan3)
+            get(texCoordAttr, tex3)
         }
 
         pos2.subtract(pos1, e1).norm()
@@ -133,18 +122,18 @@ fun <T: Struct> IndexedVertexList<T>.generateTangents(
             tan.y = f * (dv2 * e1.y - dv1 * e2.y)
             tan.z = f * (dv2 * e1.z - dv1 * e2.z)
 
-            vertexData.set(indices[i])     { set(tanMember, tan1.add(tan)) }
-            vertexData.set(indices[i + 1]) { set(tanMember, tan2.add(tan)) }
-            vertexData.set(indices[i + 2]) { set(tanMember, tan3.add(tan)) }
+            vertexData.set(indices[i])     { set(tangentsAttr, tan1.add(tan)) }
+            vertexData.set(indices[i + 1]) { set(tangentsAttr, tan2.add(tan)) }
+            vertexData.set(indices[i + 2]) { set(tangentsAttr, tan3.add(tan)) }
         }
     }
     for (i in 0 until numVertices) {
         vertexData.set(i) {
-            get(tanMember, tan)
+            get(tangentsAttr, tan)
             tan.w = 0f
             tan.norm()
             tan.w = tangentSign
-            set(tanMember, tan)
+            set(tangentsAttr, tan)
         }
     }
     modCount.increment()

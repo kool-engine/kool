@@ -291,7 +291,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
         }
     }
 
-    private fun MeshBuilder.generateArrow() {
+    private fun MeshBuilder<*>.generateArrow() {
         line3d(Vec3f.ZERO, Vec3f(1.5f, 0f, 0f), Vec3f.Z_AXIS, lineW)
         line3d(Vec3f.ZERO, Vec3f(1.5f, 0f, 0f), Vec3f.Y_AXIS, lineW)
         withTransform {

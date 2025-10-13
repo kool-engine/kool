@@ -28,7 +28,7 @@ class Table(demo: ProceduralDemo) : Mesh(IndexedVertexList(VertexLayouts.Positio
         }
     }
 
-    private fun MeshBuilder.makeGeometry() {
+    private fun MeshBuilder<*>.makeGeometry() {
         val tableR = 30f
         val r = 1f
 

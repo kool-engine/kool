@@ -17,7 +17,7 @@ enum class ShapeType {
     BOX {
         override val label = "Box"
 
-        override fun MeshBuilder.generateShapeMesh() = bevelBox()
+        override fun MeshBuilder<*>.generateShapeMesh() = bevelBox()
 
         override fun generatePhysicsShapes(meshGeometry: IndexedVertexList<*>, material: Material, rand: Random): CollisionShapes {
             val sx = rand.randomF(2f, 3f)
@@ -31,7 +31,7 @@ enum class ShapeType {
     CAPSULE {
         override val label = "Capsule"
 
-        override fun MeshBuilder.generateShapeMesh() = capsule()
+        override fun MeshBuilder<*>.generateShapeMesh() = capsule()
 
         override fun generatePhysicsShapes(meshGeometry: IndexedVertexList<*>, material: Material, rand: Random): CollisionShapes {
             val s = rand.randomF(0.75f, 1.5f)
@@ -43,7 +43,7 @@ enum class ShapeType {
     CONVEX_HULL {
         override val label = "Convex Hull"
 
-        override fun MeshBuilder.generateShapeMesh() = flatIcoSphere()
+        override fun MeshBuilder<*>.generateShapeMesh() = flatIcoSphere()
 
         var convexMesh: ConvexMesh? = null
 
@@ -65,7 +65,7 @@ enum class ShapeType {
     CYLINDER {
         override val label = "Cylinder"
 
-        override fun MeshBuilder.generateShapeMesh() = cylinder()
+        override fun MeshBuilder<*>.generateShapeMesh() = cylinder()
 
         override fun generatePhysicsShapes(meshGeometry: IndexedVertexList<*>, material: Material, rand: Random): CollisionShapes {
             val l = rand.randomF(2f, 4f)
@@ -78,7 +78,7 @@ enum class ShapeType {
     MULTI_SHAPE {
         override val label = "Multi Shape"
 
-        override fun MeshBuilder.generateShapeMesh() {
+        override fun MeshBuilder<*>.generateShapeMesh() {
             cube {
                 size.set(0.5f, 0.5f, 2f)
                 origin.set(1f, 0f, 0f)
@@ -128,7 +128,7 @@ enum class ShapeType {
     SPHERE {
         override val label = "Sphere"
 
-        override fun MeshBuilder.generateShapeMesh() {
+        override fun MeshBuilder<*>.generateShapeMesh() {
             icoSphere { steps = 2 }
         }
 
@@ -141,7 +141,7 @@ enum class ShapeType {
     MIXED {
         override val label = "Mixed"
 
-        override fun MeshBuilder.generateShapeMesh() { }
+        override fun MeshBuilder<*>.generateShapeMesh() { }
 
         override fun generatePhysicsShapes(meshGeometry: IndexedVertexList<*>, material: Material, rand: Random): CollisionShapes {
             throw IllegalStateException()
@@ -150,14 +150,14 @@ enum class ShapeType {
 
     abstract val label: String
 
-    abstract fun MeshBuilder.generateShapeMesh()
+    abstract fun MeshBuilder<*>.generateShapeMesh()
     abstract fun generatePhysicsShapes(meshGeometry: IndexedVertexList<*>, material: Material, rand: Random): CollisionShapes
 
     override fun toString(): String {
         return label
     }
 
-    fun MeshBuilder.bevelBox(rBevel: Float = 0.02f) {
+    fun MeshBuilder<*>.bevelBox(rBevel: Float = 0.02f) {
         withTransform {
             rotate(0f.deg, 90f.deg, 0f.deg)
             rect {
@@ -208,7 +208,7 @@ enum class ShapeType {
         }
     }
 
-    fun MeshBuilder.capsule(halfHeight: Float = 1.25f, radius: Float = 1f) {
+    fun MeshBuilder<*>.capsule(halfHeight: Float = 1.25f, radius: Float = 1f) {
         profile {
             simpleShape(false) {
                 xyArc(Vec2f(halfHeight + radius, 0f), Vec2f(halfHeight, 0f), 90f.deg, 10, true)
@@ -221,7 +221,7 @@ enum class ShapeType {
         }
     }
 
-    fun MeshBuilder.flatIcoSphere() {
+    fun MeshBuilder<*>.flatIcoSphere() {
         val icoMesh = MeshBuilder(IndexedVertexList(VertexLayouts.Position)).apply { icoSphere { steps = 0 } }
         for (i in 0 until icoMesh.geometry.numIndices step 3) {
             val vIt = icoMesh.geometry.vertexIt
@@ -236,7 +236,7 @@ enum class ShapeType {
         geometry.generateNormals()
     }
 
-    fun MeshBuilder.cylinder(height: Float = 1f, radius: Float = 1f) {
+    fun MeshBuilder<*>.cylinder(height: Float = 1f, radius: Float = 1f) {
         // make a beveled cylinder which looks a bit nicer than a simple one with sharp edges
         profile {
             simpleShape(false) {

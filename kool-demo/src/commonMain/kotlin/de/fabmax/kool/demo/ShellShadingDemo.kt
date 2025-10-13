@@ -162,7 +162,7 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
         }
     }
 
-    private fun MeshBuilder.generateFurSphere() {
+    private fun MeshBuilder<*>.generateFurSphere() {
         val rot = MutableMat3f()
         var uvOffset = 0f
 

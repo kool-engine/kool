@@ -248,7 +248,7 @@ class HalfEdgeMesh(geometry: IndexedVertexList<*>, val edgeHandler: EdgeHandler 
 
     fun splitEdge(edge: HalfEdge, fraction: Float): HalfEdgeVertex {
         // spawn new vertex
-        val idx = geometry.addVertex {
+        val idx = geometry.addVertexOld {
             position.set(edge.to).subtract(edge.from).mul(fraction).add(edge.from)
 
             // interpolate texture coordinates and normals
@@ -397,12 +397,12 @@ class HalfEdgeMesh(geometry: IndexedVertexList<*>, val edgeHandler: EdgeHandler 
         val v = geometry.vertexIt
         edges.forEach { he ->
             if (he.from.index !in indexMap.keys) {
-                indexMap[he.from.index] = subData.addVertex {
+                indexMap[he.from.index] = subData.addVertexOld {
                     set(v.apply { index = he.from.index })
                 }
             }
             if (he.to.index !in indexMap.keys) {
-                indexMap[he.to.index] = subData.addVertex {
+                indexMap[he.to.index] = subData.addVertexOld {
                     set(v.apply { index = he.to.index })
                 }
             }

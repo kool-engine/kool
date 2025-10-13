@@ -15,7 +15,7 @@ interface TriangleMeshGeometry : CollisionGeometry {
     val triangleMesh: TriangleMesh
     val scale: Vec3f
 
-    override fun generateMesh(target: MeshBuilder) {
+    override fun generateMesh(target: MeshBuilder<*>) {
         target.geometry.addGeometry(triangleMesh.geometry)
     }
 

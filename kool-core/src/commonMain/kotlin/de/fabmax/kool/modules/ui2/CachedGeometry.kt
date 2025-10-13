@@ -23,8 +23,8 @@ open class CachedGeometry<T: Struct>(
     val cachedSize = MutableVec2f()
     val cachedClip = MutableVec4f()
 
-    private val posMember = cacheData.layout.getFloat3(UiVertexLayout.position.name)
-    private val clipMember = cacheData.layout.getFloat4(UiVertexLayout.clip.name)
+    private val posMember = cacheData.layout.getFloat3(UiVertexLayout.position.name)!!
+    private val clipMember = cacheData.layout.getFloat4(UiVertexLayout.clip.name)!!
 
     fun appendTo(target: IndexedVertexList<*>) {
         val i0 = target.numVertices
@@ -47,7 +47,7 @@ open class CachedGeometry<T: Struct>(
     inline fun rebuildCache(
         posX: Float = node.leftPx, posY: Float = node.topPx,
         color: Color? = null,
-        block: MeshBuilder.() -> Unit
+        block: MeshBuilder<*>.() -> Unit
     ) {
         node.apply {
             cacheBuilder.clear()

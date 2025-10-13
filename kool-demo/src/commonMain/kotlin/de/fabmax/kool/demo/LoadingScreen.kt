@@ -78,7 +78,7 @@ class LoadingScreen(val ctx: KoolContext) : Scene("Loading Screen") {
     private var arcRadii = FloatArray(colors.size) { randomF(0.2f, 0.3f) }
     private var pos = 0f
 
-    private fun MeshBuilder.animateLoading(dt: Float) {
+    private fun MeshBuilder<*>.animateLoading(dt: Float) {
         val w = mainRenderPass.viewport.width
         val h = -mainRenderPass.viewport.height
         val r = min(w, h)

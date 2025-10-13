@@ -25,15 +25,15 @@ inline fun ShapeContainer.simpleShape(isClosed: Boolean, block: SimpleShape.() -
 class Profile : ShapeContainer {
     override val shapes = mutableListOf<Shape>()
 
-    fun sample(meshBuilder: MeshBuilder, connect: Boolean, inverseOrientation: Boolean) {
+    fun sample(meshBuilder: MeshBuilder<*>, connect: Boolean, inverseOrientation: Boolean) {
         shapes.forEach { it.sample(meshBuilder, connect, inverseOrientation) }
     }
 
-    fun fillTop(meshBuilder: MeshBuilder) {
+    fun fillTop(meshBuilder: MeshBuilder<*>) {
         shapes.forEach { it.fillTop(meshBuilder) }
     }
 
-    fun fillBottom(meshBuilder: MeshBuilder) {
+    fun fillBottom(meshBuilder: MeshBuilder<*>) {
         shapes.forEach { it.fillBottom(meshBuilder) }
     }
 }
@@ -42,10 +42,10 @@ abstract class Shape {
     abstract val positions: List<Vec3f>
     abstract val sampledVertIndices: List<Int>
 
-    abstract fun sample(meshBuilder: MeshBuilder, connect: Boolean, inverseOrientation: Boolean)
+    abstract fun sample(meshBuilder: MeshBuilder<*>, connect: Boolean, inverseOrientation: Boolean)
 
-    abstract fun fillTop(meshBuilder: MeshBuilder)
-    abstract fun fillBottom(meshBuilder: MeshBuilder)
+    abstract fun fillTop(meshBuilder: MeshBuilder<*>)
+    abstract fun fillBottom(meshBuilder: MeshBuilder<*>)
 }
 
 class SimpleShape(val isClosed: Boolean) : Shape() {
@@ -167,7 +167,7 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
         texCoords.forEach { it.y = y }
     }
 
-    override fun sample(meshBuilder: MeshBuilder, connect: Boolean, inverseOrientation: Boolean) {
+    override fun sample(meshBuilder: MeshBuilder<*>, connect: Boolean, inverseOrientation: Boolean) {
         prevIndices.clear()
         prevIndices.addAll(vertIndices)
         vertIndices.clear()
@@ -189,7 +189,7 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
         }
     }
 
-    fun connect(meshBuilder: MeshBuilder, otherVertIndices: List<Int>, inverseOrientation: Boolean) {
+    fun connect(meshBuilder: MeshBuilder<*>, otherVertIndices: List<Int>, inverseOrientation: Boolean) {
         if (otherVertIndices.isNotEmpty()) {
             for (i in 1 until otherVertIndices.size) {
                 if (inverseOrientation) {
@@ -212,7 +212,7 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
         }
     }
 
-    override fun fillTop(meshBuilder: MeshBuilder) {
+    override fun fillTop(meshBuilder: MeshBuilder<*>) {
         val triangulated = PolyUtil.fillPolygon(positions)
         for (i in triangulated.indices.indices step 3) {
             val i1 = triangulated.indices[i]
@@ -222,7 +222,7 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
         }
     }
 
-    override fun fillBottom(meshBuilder: MeshBuilder) {
+    override fun fillBottom(meshBuilder: MeshBuilder<*>) {
         val triangulated = PolyUtil.fillPolygon(positions)
         for (i in triangulated.indices.indices step 3) {
             val i1 = triangulated.indices[i]
@@ -240,11 +240,11 @@ class MultiShape : Shape(), ShapeContainer {
     override val sampledVertIndices: List<Int>
         get() = shapes.flatMap { it.sampledVertIndices }
 
-    override fun sample(meshBuilder: MeshBuilder, connect: Boolean, inverseOrientation: Boolean) {
+    override fun sample(meshBuilder: MeshBuilder<*>, connect: Boolean, inverseOrientation: Boolean) {
         shapes.forEach { it.sample(meshBuilder, connect, inverseOrientation) }
     }
 
-    override fun fillTop(meshBuilder: MeshBuilder) {
+    override fun fillTop(meshBuilder: MeshBuilder<*>) {
         val joinedInds = sampledVertIndices
         val triangulated = PolyUtil.fillPolygon(positions)
         for (i in triangulated.indices.indices step 3) {
@@ -255,7 +255,7 @@ class MultiShape : Shape(), ShapeContainer {
         }
     }
 
-    override fun fillBottom(meshBuilder: MeshBuilder) {
+    override fun fillBottom(meshBuilder: MeshBuilder<*>) {
         val joinedInds = sampledVertIndices
         val triangulated = PolyUtil.fillPolygon(positions)
         for (i in triangulated.indices.indices step 3) {

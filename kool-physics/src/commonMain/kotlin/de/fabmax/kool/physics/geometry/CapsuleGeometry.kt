@@ -13,7 +13,7 @@ interface CapsuleGeometry : CollisionGeometry {
     val height: Float
     val radius: Float
 
-    override fun generateMesh(target: MeshBuilder) {
+    override fun generateMesh(target: MeshBuilder<*>) {
         target.apply {
             profile {
                 val halfHeight = height / 2f

@@ -30,7 +30,7 @@ class LowPolyTree(seed: Int = 1337) {
         return root
     }
 
-    fun trunkMesh(root: Node, tint: Float, target: MeshBuilder) {
+    fun trunkMesh(root: Node, tint: Float, target: MeshBuilder<*>) {
         target.apply {
             color = MdColor.BROWN toneLin (500 + (tint * 300f).toInt())
 
@@ -78,7 +78,7 @@ class LowPolyTree(seed: Int = 1337) {
         }
     }
 
-    fun leafMesh(root: Node, tint: Float, target: MeshBuilder) {
+    fun leafMesh(root: Node, tint: Float, target: MeshBuilder<*>) {
         val nodes = mutableListOf<Node>()
         fun traverseTree(node: Node) {
             if (node.relStrength < 0.3f && node.y - root.y > 1.5f) {
@@ -108,7 +108,7 @@ class LowPolyTree(seed: Int = 1337) {
         }
     }
 
-    private fun addLeafSphere(node: Node, leafR: Float, target: MeshBuilder) {
+    private fun addLeafSphere(node: Node, leafR: Float, target: MeshBuilder<*>) {
         target.apply {
             withTransform {
                 transform.set(node.pose)

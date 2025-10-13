@@ -10,7 +10,7 @@ expect fun BoxGeometry(size: Vec3f) : BoxGeometry
 interface BoxGeometry : CollisionGeometry {
     val size: Vec3f
 
-    override fun generateMesh(target: MeshBuilder) {
+    override fun generateMesh(target: MeshBuilder<*>) {
         target.cube {
             size.set(this@BoxGeometry.size)
         }

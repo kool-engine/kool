@@ -14,7 +14,7 @@ interface ConvexMeshGeometry : CollisionGeometry {
     val convexMesh: ConvexMesh
     val scale: Vec3f
 
-    override fun generateMesh(target: MeshBuilder) {
+    override fun generateMesh(target: MeshBuilder<*>) {
         target.apply {
             withTransform {
                 scale(scale.x, scale.y, scale.z)

@@ -232,7 +232,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         return child
     }
 
-    inline fun MeshBuilder.configured(color: Color? = null, block: MeshBuilder.() -> Unit) {
+    inline fun MeshBuilder<*>.configured(color: Color? = null, block: MeshBuilder<*>.() -> Unit) {
         val prevMod = vertexModFun
         vertexModFun = setBoundsVertexMod
         val prevColor = this.color
@@ -251,11 +251,11 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         return surface.getMeshLayer(modifier.zLayer + layerOffset).uiPrimitives
     }
 
-    fun getPlainBuilder(layerOffset: Int = 0): MeshBuilder {
+    fun getPlainBuilder(layerOffset: Int = 0): MeshBuilder<*> {
         return surface.getMeshLayer(modifier.zLayer + layerOffset).plainBuilder
     }
 
-    fun getTextBuilder(fontProps: Font, layerOffset: Int = 0): MeshBuilder {
+    fun getTextBuilder(fontProps: Font, layerOffset: Int = 0): MeshBuilder<*> {
         return surface.getMeshLayer(modifier.zLayer + layerOffset).getTextBuilder(fontProps)
     }
 

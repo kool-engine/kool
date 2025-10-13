@@ -12,7 +12,7 @@ interface CollisionGeometry : Releasable {
 
     val holder: GeometryHolder
 
-    fun generateMesh(target: MeshBuilder)
+    fun generateMesh(target: MeshBuilder<*>)
 
     /**
      * Returns the axis-aligned bounding box of this shape in local coordinates.

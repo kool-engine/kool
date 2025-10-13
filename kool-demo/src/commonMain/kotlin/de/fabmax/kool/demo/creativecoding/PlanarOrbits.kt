@@ -97,7 +97,7 @@ class PlanarOrbits(resources: CreativeCodingDemo.Resources) : CreativeContent("P
         }
     }
 
-    private fun MeshBuilder.generateOrbit(innerRadius: Float, gradient: ColorGradient) {
+    private fun MeshBuilder<*>.generateOrbit(innerRadius: Float, gradient: ColorGradient) {
         var orbitRadius = innerRadius
         for (i in 0 until settings.numRings) {
             generateRing(orbitRadius, gradient)
@@ -106,7 +106,7 @@ class PlanarOrbits(resources: CreativeCodingDemo.Resources) : CreativeContent("P
         geometry.generateNormals()
     }
 
-    private fun MeshBuilder.generateRing(radius: Float, gradient: ColorGradient) {
+    private fun MeshBuilder<*>.generateRing(radius: Float, gradient: ColorGradient) {
         val arcStep = 3f
         val startAngle = randomF(0f, 360f) * settings.randomness
         var sweep = 0f
@@ -133,7 +133,7 @@ class PlanarOrbits(resources: CreativeCodingDemo.Resources) : CreativeContent("P
         }
     }
 
-    private fun MeshBuilder.generateArc(
+    private fun MeshBuilder<*>.generateArc(
         radius: Float,
         width: Float,
         height: Float,
@@ -156,7 +156,7 @@ class PlanarOrbits(resources: CreativeCodingDemo.Resources) : CreativeContent("P
         transform.pop()
     }
 
-    private fun MeshBuilder.boxProfile(radius: Float, width: Float, height: Float) = profile {
+    private fun MeshBuilder<*>.boxProfile(radius: Float, width: Float, height: Float) = profile {
         val halfW = width * 0.5f
         val halfH = height * 0.5f
 

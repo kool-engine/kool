@@ -8,10 +8,10 @@ import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.*
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.TrsTransformF
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.FrontendScope
@@ -169,7 +169,7 @@ class RigidActorComponent(
         transform.decompose(scale = scale)
         warnOnNonUniformScale = false
 
-        val collisionGeom = IndexedVertexList(Attribute.POSITIONS)
+        val collisionGeom = IndexedVertexList(VertexLayouts.Position)
         val globalToModel = invModelMatD
         meshes.values.forEach { mesh ->
             val meshToModel = mesh.modelMatD * globalToModel

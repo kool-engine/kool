@@ -35,7 +35,7 @@ class TriangulatedPointMesh(
         geometry.apply {
             repeat(numVertices) { i ->
                 val a = 2f * PI_F / numVertices * i
-                addVertex {
+                addVertexOld {
                     getVec2fAttribute(PointVertexLayout.posOffset.asAttribute())!!.set(Vec2f(cos(a), sin(a)))
                 }
             }

@@ -154,7 +154,7 @@ class TriangulatedLineMesh(geometry: IndexedVertexList<*>, name: String = makeNo
     }
 
     private fun IndexedVertexList<*>.addLineVertex(vertex: LineVertex, u: Float, prevDir: Vec3f, nextDir: Vec3f): Int {
-        return addVertex {
+        return addVertexOld {
             set(vertex)
             color.set(vertex.color)
             lineAttribAccessor.set(u, vertex.width)
