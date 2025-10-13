@@ -227,7 +227,7 @@ class Track(val world: VehicleWorld) : Node() {
         }
     }
 
-    private fun MeshBuilder.generateCurbs() {
+    private fun MeshBuilder<*>.generateCurbs() {
         val curbColors = listOf(VehicleDemo.color(150), VehicleDemo.color(600))
         color = curbColors[0]
 
@@ -274,7 +274,7 @@ class Track(val world: VehicleWorld) : Node() {
         }
     }
 
-    private fun MeshBuilder.generateColumn(center: Vec3f, height: Float, dir: Float) {
+    private fun MeshBuilder<*>.generateColumn(center: Vec3f, height: Float, dir: Float) {
         withTransform {
             translate(center)
             rotate(dir.deg, Vec3f.Y_AXIS)

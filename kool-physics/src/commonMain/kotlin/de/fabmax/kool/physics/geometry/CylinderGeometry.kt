@@ -16,7 +16,7 @@ interface CylinderGeometry : CollisionGeometry {
     val length: Float
     val radius: Float
 
-    override fun generateMesh(target: MeshBuilder) {
+    override fun generateMesh(target: MeshBuilder<*>) {
         target.apply {
             withTransform {
                 // physics cylinder extends along the x-axis, MeshBuilder's cylinder extends along y-axis

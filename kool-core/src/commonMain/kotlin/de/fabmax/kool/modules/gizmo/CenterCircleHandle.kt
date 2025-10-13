@@ -118,7 +118,7 @@ class CenterCircleHandle(
         }
     }
 
-    private fun MeshBuilder.ring(inner: Float, outer: Float) {
+    private fun MeshBuilder<*>.ring(inner: Float, outer: Float) {
         val n = 60
         for (i in 0 .. n) {
             val ang = i.toFloat() / n * 2f * PI_F

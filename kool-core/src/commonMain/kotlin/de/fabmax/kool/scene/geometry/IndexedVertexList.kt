@@ -53,7 +53,12 @@ class IndexedVertexList<T: Struct>(
     val layout: T,
     initialSize: Int = 1024,
     val primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
-    val usage: Usage = Usage.STATIC
+    val usage: Usage = Usage.STATIC,
+    val positionAttr: Float3Member<T>? = layout.getFloat3(Attribute.POSITIONS.name),
+    val normalAttr: Float3Member<T>? = layout.getFloat3(Attribute.NORMALS.name),
+    val colorAttr: Float4Member<T>? = layout.getFloat4(Attribute.COLORS.name),
+    val texCoordAttr: Float2Member<T>? = layout.getFloat2(Attribute.TEXTURE_COORDS.name),
+    val tangentsAttr: Float4Member<T>? = layout.getFloat4(Attribute.TANGENTS.name),
 ) : BaseReleasable() {
 
     var name: String = "geometry"
@@ -128,7 +133,19 @@ class IndexedVertexList<T: Struct>(
         return requiredAttributes.all { hasAttribute(it) }
     }
 
-    inline fun addVertex(block: VertexView<T>.() -> Unit): Int {
+    /**
+     * Adds a new vertex to the vertex buffer and returns its index. The given block can be used to set the vertex
+     * attributes using the corresponding vertex layout struct members.
+     *
+     * @see addVertexOld for the now-deprecated version using a [VertexView].
+     */
+    inline fun addVertex(block: MutableStructBufferView<T>.(T) -> Unit): Int {
+        checkBufferSize(1)
+        return vertexData.put(block)
+    }
+
+    @Deprecated("Use addVertex instead")
+    inline fun addVertexOld(block: VertexView<T>.() -> Unit): Int {
         checkBufferSize(1)
         val addIndex = numVertices++
         vertexIt.index = addIndex
@@ -139,15 +156,15 @@ class IndexedVertexList<T: Struct>(
 
     fun addVertex(position: Vec3f, normal: Vec3f? = null, color: Color? = null, texCoord: Vec2f? = null): Int {
         return addVertex {
-            this.position.set(position)
+            positionAttr?.let { set(it, position) }
             if (normal != null) {
-                this.normal.set(normal)
+                normalAttr?.let { set(it, normal) }
             }
             if (color != null) {
-                this.color.set(color)
+                colorAttr?.let { set(it, color) }
             }
             if (texCoord!= null) {
-                this.texCoord.set(texCoord)
+                texCoordAttr?.let { set(it, texCoord) }
             }
         }
     }
@@ -159,7 +176,7 @@ class IndexedVertexList<T: Struct>(
 
         checkBufferSize(geometry.numVertices)
         for (i in 0 until geometry.numVertices) {
-            addVertex {
+            addVertexOld {
                 geometry.vertexIt.index = i
                 set(geometry.vertexIt)
                 vertexMod.invoke(this)

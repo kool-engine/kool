@@ -9,7 +9,7 @@ expect fun HeightFieldGeometry(heightField: HeightField): HeightFieldGeometry
 interface HeightFieldGeometry : CollisionGeometry {
     val heightField: HeightField
 
-    fun generateTiledMesh(target: MeshBuilder, gridX: Int, gridY: Int, gridSizeX: Int, gridSizeY: Int) {
+    fun generateTiledMesh(target: MeshBuilder<*>, gridX: Int, gridY: Int, gridSizeX: Int, gridSizeY: Int) {
         target.apply {
             withTransform {
                 val stepsX = heightField.heightMap.columns / gridSizeX
@@ -38,7 +38,7 @@ interface HeightFieldGeometry : CollisionGeometry {
         }
     }
 
-    override fun generateMesh(target: MeshBuilder) {
+    override fun generateMesh(target: MeshBuilder<*>) {
         target.apply {
             withTransform {
                 val szX = (heightField.heightMap.columns - 1) * heightField.rowScale

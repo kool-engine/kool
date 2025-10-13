@@ -41,13 +41,13 @@ open class PointMesh(
     }
 
     fun addPoint(block: VertexView<*>.() -> Unit): Int {
-        val idx =  geometry.addVertex(block)
+        val idx =  geometry.addVertexOld(block)
         geometry.addIndex(idx)
         return idx
     }
 
     fun addPoint(position: Vec3f, pointSize: Float, color: Color): Int {
-        val idx = geometry.addVertex {
+        val idx = geometry.addVertexOld {
             this.position.set(position)
             this.color.set(color)
             getFloatAttribute(attrPointSize)?.f = pointSize

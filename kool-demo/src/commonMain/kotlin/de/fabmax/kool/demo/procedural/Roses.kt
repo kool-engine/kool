@@ -121,7 +121,7 @@ class Roses : Node() {
             }
         }
 
-        private fun MeshBuilder.makeShaftGeometry() {
+        private fun MeshBuilder<*>.makeShaftGeometry() {
             withTransform {
                 rotate(90f.deg, Vec3f.NEG_X_AXIS)
 
@@ -186,7 +186,7 @@ class Roses : Node() {
             }
         }
 
-        private fun MeshBuilder.makeThorn() {
+        private fun MeshBuilder<*>.makeThorn() {
             withTransform {
                 val ax = MutableVec3f(rand.randomF(-1f, 1f), rand.randomF(-1f, 1f), 0f).norm()
                 rotate(90f.deg, ax)
@@ -210,7 +210,7 @@ class Roses : Node() {
             }
         }
 
-        private fun MeshBuilder.makeShaftLeafGeometry() {
+        private fun MeshBuilder<*>.makeShaftLeafGeometry() {
             transform.mul(shaftLeafTransform)
             rotate(rand.randomF(0f, 360f).deg, Vec3f.Z_AXIS)
 
@@ -317,13 +317,13 @@ class Roses : Node() {
             }
         }
 
-        private inline fun MeshBuilder.withXyScale(s: Float, block: MeshBuilder.() -> Unit) {
+        private inline fun MeshBuilder<*>.withXyScale(s: Float, block: MeshBuilder<*>.() -> Unit) {
             scale(s, s, 1f)
             block()
             scale(1/s, 1/s, 1f)
         }
 
-        private fun MeshBuilder.makeLeafGeometry() {
+        private fun MeshBuilder<*>.makeLeafGeometry() {
             withTransform {
                 transform.mul(shaftTopTransform)
 
@@ -371,7 +371,7 @@ class Roses : Node() {
             }
         }
 
-        private fun MeshBuilder.makeBlossomGeometry() {
+        private fun MeshBuilder<*>.makeBlossomGeometry() {
             withTransform {
                 transform.mul(shaftTopTransform)
 

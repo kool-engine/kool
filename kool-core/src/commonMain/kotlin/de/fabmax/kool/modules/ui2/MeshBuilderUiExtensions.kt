@@ -5,7 +5,7 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import kotlin.math.cos
 import kotlin.math.sin
 
-fun MeshBuilder.arrow(centerX: Float, centerY: Float, size: Float, rotation: Float) {
+fun MeshBuilder<*>.arrow(centerX: Float, centerY: Float, size: Float, rotation: Float) {
     val si = size * 0.3f * 0.7f
     val so = size * 0.5f * 0.7f
     val off = size * 0.15f * 0.7f

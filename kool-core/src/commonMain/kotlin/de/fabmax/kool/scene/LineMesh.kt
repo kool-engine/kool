@@ -136,7 +136,7 @@ open class LineMesh(
             val startI = numVertices
             for (i in 0 until triMesh.numVertices) {
                 v.index = i
-                geometry.addVertex {
+                geometry.addVertexOld {
                     position.set(v.position)
                     color.set(lineColor ?: v.color)
                     geometryBounds.add(v)
@@ -182,35 +182,35 @@ open class LineMesh(
     fun addBoundingBox(aabb: BoundingBoxF, color: Color = this.color) {
         geometryBounds.add(aabb)
         geometry.apply {
-            val i0 = addVertex {
+            val i0 = addVertexOld {
                 this.position.set(aabb.min.x, aabb.min.y, aabb.min.z)
                 this.color.set(color)
             }
-            val i1 = addVertex {
+            val i1 = addVertexOld {
                 this.position.set(aabb.min.x, aabb.min.y, aabb.max.z)
                 this.color.set(color)
             }
-            val i2 = addVertex {
+            val i2 = addVertexOld {
                 this.position.set(aabb.min.x, aabb.max.y, aabb.max.z)
                 this.color.set(color)
             }
-            val i3 = addVertex {
+            val i3 = addVertexOld {
                 this.position.set(aabb.min.x, aabb.max.y, aabb.min.z)
                 this.color.set(color)
             }
-            val i4 = addVertex {
+            val i4 = addVertexOld {
                 this.position.set(aabb.max.x, aabb.min.y, aabb.min.z)
                 this.color.set(color)
             }
-            val i5 = addVertex {
+            val i5 = addVertexOld {
                 this.position.set(aabb.max.x, aabb.min.y, aabb.max.z)
                 this.color.set(color)
             }
-            val i6 = addVertex {
+            val i6 = addVertexOld {
                 this.position.set(aabb.max.x, aabb.max.y, aabb.max.z)
                 this.color.set(color)
             }
-            val i7 = addVertex {
+            val i7 = addVertexOld {
                 this.position.set(aabb.max.x, aabb.max.y, aabb.min.z)
                 this.color.set(color)
             }

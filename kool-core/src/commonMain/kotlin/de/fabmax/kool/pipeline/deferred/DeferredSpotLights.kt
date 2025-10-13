@@ -116,7 +116,7 @@ class DeferredSpotLights(val maxSpotAngle: AngleF) {
         }
     }
 
-    private fun MeshBuilder.makeHalfSphereCone(angle: AngleF, radius: Float) {
+    private fun MeshBuilder<*>.makeHalfSphereCone(angle: AngleF, radius: Float) {
         val cAng = angle.deg.clamp(0f, 360f) / 2f
         val steps = 8
         val belts = (steps / 2 * cAng / 180).toInt()

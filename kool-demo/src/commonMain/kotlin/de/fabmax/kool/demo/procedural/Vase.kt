@@ -31,7 +31,7 @@ class Vase : Mesh(IndexedVertexList(VertexLayouts.PositionNormalColor)) {
         }
     }
 
-    private fun MeshBuilder.makeGeometry() {
+    private fun MeshBuilder<*>.makeGeometry() {
         rotate(90f.deg, Vec3f.NEG_X_AXIS)
         translate(-7.5f, -2.5f, 0f)
         scale(1.8f, 1.8f, 1.8f)
@@ -46,7 +46,7 @@ class Vase : Mesh(IndexedVertexList(VertexLayouts.PositionNormalColor)) {
         makeTube(tubeGrad)
     }
 
-    private fun MeshBuilder.makeGrid(gridGrad: ColorGradient) {
+    private fun MeshBuilder<*>.makeGrid(gridGrad: ColorGradient) {
         profile {
             simpleShape(true) {
                 xy(0.8f, 1f); xy(-0.8f, 1f)
@@ -82,7 +82,7 @@ class Vase : Mesh(IndexedVertexList(VertexLayouts.PositionNormalColor)) {
         }
     }
 
-    private fun MeshBuilder.makeTube(tubeGrad: ColorGradient) {
+    private fun MeshBuilder<*>.makeTube(tubeGrad: ColorGradient) {
         profile {
             circleShape(2.2f, 60)
 

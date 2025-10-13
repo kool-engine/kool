@@ -106,7 +106,7 @@ data class GltfMesh(
             val wgts = if (weightAcc != null) Vec4fAccessor(weightAcc) else null
 
             for (i in 0 until positionAcc.count) {
-                verts.addVertex {
+                verts.addVertexOld {
                     poss.next(position)
                     nrms?.next(normal)
                     tans?.next(tangent)

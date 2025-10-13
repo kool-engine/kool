@@ -323,7 +323,7 @@ class GltfDemo : DemoScene("glTF Models") {
         LabeledSwitch("Auto rotate view", isAutoRotate)
     }
 
-    private fun MeshBuilder.roundCylinder(radius: Float, height: Float) {
+    private fun MeshBuilder<*>.roundCylinder(radius: Float, height: Float) {
         val nCorner = 20
         val cornerR = height / 2
         val cornerPts = mutableListOf<Vec3f>()

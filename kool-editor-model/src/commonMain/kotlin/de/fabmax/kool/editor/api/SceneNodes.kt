@@ -195,7 +195,7 @@ class SceneNodes(val scene: EditorScene) :
             node?.let { component.applyMaterialTo(it, scene.shaderData, modelMatsInstancedMesh) }
         }
 
-        private fun MeshBuilder.generatePrimitiveShape(shape: ShapeData) = withTransform {
+        private fun MeshBuilder<*>.generatePrimitiveShape(shape: ShapeData) = withTransform {
             when (shape) {
                 is ShapeData.Box -> generateBox(shape)
                 is ShapeData.Sphere -> generateSphere(shape)
@@ -206,12 +206,12 @@ class SceneNodes(val scene: EditorScene) :
             }
         }
 
-        private fun MeshBuilder.generateBox(shape: ShapeData.Box) {
+        private fun MeshBuilder<*>.generateBox(shape: ShapeData.Box) {
             applyCommon(shape.pose, shape.color, shape.uvScale)
             cube { size.set(shape.size.toVec3f()) }
         }
 
-        private fun MeshBuilder.generateSphere(shape: ShapeData.Sphere) {
+        private fun MeshBuilder<*>.generateSphere(shape: ShapeData.Sphere) {
             applyCommon(shape.pose, shape.color, shape.uvScale)
             if (shape.sphereType == "ico") {
                 icoSphere {
@@ -226,7 +226,7 @@ class SceneNodes(val scene: EditorScene) :
             }
         }
 
-        private fun MeshBuilder.generateCylinder(shape: ShapeData.Cylinder) {
+        private fun MeshBuilder<*>.generateCylinder(shape: ShapeData.Cylinder) {
             applyCommon(shape.pose, shape.color, shape.uvScale)
             // cylinder is generated in x-axis major orientation to make it align with physics geometry
             rotate(90f.deg, Vec3f.Z_AXIS)
@@ -238,7 +238,7 @@ class SceneNodes(val scene: EditorScene) :
             }
         }
 
-        private fun MeshBuilder.generateCapsule(shape: ShapeData.Capsule) {
+        private fun MeshBuilder<*>.generateCapsule(shape: ShapeData.Capsule) {
             applyCommon(shape.pose, shape.color, shape.uvScale)
             profile {
                 val r = shape.radius.toFloat()
@@ -255,7 +255,7 @@ class SceneNodes(val scene: EditorScene) :
             }
         }
 
-        private fun MeshBuilder.generateRect(shape: ShapeData.Rect) {
+        private fun MeshBuilder<*>.generateRect(shape: ShapeData.Rect) {
             applyCommon(shape.pose, shape.color, shape.uvScale)
             grid {
                 sizeX = shape.size.x.toFloat()
@@ -263,7 +263,7 @@ class SceneNodes(val scene: EditorScene) :
             }
         }
 
-        private fun MeshBuilder.applyCommon(pose: PoseData? = null, shapeColor: ColorData? = null, uvScale: Vec2Data? = null) {
+        private fun MeshBuilder<*>.applyCommon(pose: PoseData? = null, shapeColor: ColorData? = null, uvScale: Vec2Data? = null) {
             pose?.toPoseF()?.toMat4f(transform)
             when (scene.upAxis) {
                 SceneUpAxis.X_AXIS -> rotate(90f.deg, Vec3f.NEG_Z_AXIS)

@@ -86,7 +86,7 @@ class Glass(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Defer
         }
     }
 
-    private fun MeshBuilder.makeBodyGeometry() {
+    private fun MeshBuilder<*>.makeBodyGeometry() {
         rotate(90f.deg, Vec3f.NEG_X_AXIS)
         color = Color.BLACK.withAlpha(0.1f).toLinear()
 
@@ -125,7 +125,7 @@ class Glass(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Defer
         }
     }
 
-    private fun MeshBuilder.makeShaftGeometry() {
+    private fun MeshBuilder<*>.makeShaftGeometry() {
         rotate(90f.deg, Vec3f.NEG_X_AXIS)
         color = Color.DARK_GRAY.withAlpha(0.1f).toLinear()
 
@@ -168,7 +168,7 @@ class Glass(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Defer
         }
     }
 
-    private fun MeshBuilder.makeWineGeometry() {
+    private fun MeshBuilder<*>.makeWineGeometry() {
         rotate(90f.deg, Vec3f.NEG_X_AXIS)
 
         profile {
@@ -246,9 +246,6 @@ class Glass(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Defer
                         val refractionColor = float4Var(Vec4f.ZERO.const)
                         `if`((samplePos.x gt 0f.const) and (samplePos.x lt 1f.const) and
                                 (samplePos.y gt 0f.const) and (samplePos.y lt 1f.const)) {
-//                            if (KoolSystem.requireContext().backend.isInvertedNdcY) {
-//                                samplePos.y set 1f.const - samplePos.y
-//                            }
                             refractionColor set sampleTexture(refractionColorMap, samplePos, 0f.const)
                         }
                         `if`(refractionColor.a eq 0f.const) {

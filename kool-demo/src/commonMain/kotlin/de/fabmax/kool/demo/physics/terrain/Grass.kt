@@ -109,13 +109,13 @@ class Grass(val terrain: Terrain, val wind: Wind, val sky: Sky) {
     }
 
     companion object {
-        private fun MeshBuilder.makeGrassVertex(pos: Vec3f, u: Float, v: Float, wind: Float): Int = vertex {
+        private fun MeshBuilder<*>.makeGrassVertex(pos: Vec3f, u: Float, v: Float, wind: Float): Int = vertex {
             set(pos)
             texCoord.set(u, v)
             getFloatAttribute(Wind.VertexLayoutWind.windSensitivity.asAttribute())?.f = wind
         }
 
-        fun MeshBuilder.grassSprite(pos: Vec3f, step: Vec3f, topOffset: Vec3f, midOffset: Vec3f) {
+        fun MeshBuilder<*>.grassSprite(pos: Vec3f, step: Vec3f, topOffset: Vec3f, midOffset: Vec3f) {
             val pl = MutableVec3f()
             val ph = MutableVec3f()
 

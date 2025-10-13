@@ -2,14 +2,13 @@ package de.fabmax.kool.scene.geometry
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.MsdfUiShader
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.util.*
 import kotlin.math.*
 
 /**
  * @author fabmax
  */
-open class MeshBuilder(val geometry: IndexedVertexList<*>) {
+class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
     val transform = Mat4fStack()
     var isInvertFaceOrientation = false
 
@@ -19,10 +18,22 @@ open class MeshBuilder(val geometry: IndexedVertexList<*>) {
     var roughness = 0.5f
     var vertexModFun: (VertexView<*>.() -> Unit)? = null
 
-    val hasNormals = geometry.hasAttribute(Attribute.NORMALS)
+    val positionAttr: Float3Member<T>? get() = geometry.positionAttr
+    val normalAttr: Float3Member<T>? get() = geometry.normalAttr
+    val colorAttr: Float4Member<T>? get() = geometry.colorAttr
+    val texCoordAttr: Float2Member<T>? get() = geometry.texCoordAttr
+
+    val hasNormals = geometry.normalAttr != null
+
+    inline fun vertexNew(block: MutableStructBufferView<T>.(T) -> Unit): Int {
+        return geometry.addVertex {
+            colorAttr?.let { set(it, color) }
+            block(it)
+        }
+    }
 
     inline fun vertex(block: VertexView<*>.() -> Unit): Int {
-        return geometry.addVertex {
+        return geometry.addVertexOld {
             color.set(this@MeshBuilder.color)
             setEmissiveColor(this@MeshBuilder.emissiveColor)
             setMetallic(this@MeshBuilder.metallic)
@@ -38,7 +49,7 @@ open class MeshBuilder(val geometry: IndexedVertexList<*>) {
         }
     }
 
-    open fun vertex(pos: Vec3f, nrm: Vec3f, uv: Vec2f = Vec2f.ZERO) = vertex {
+    fun vertex(pos: Vec3f, nrm: Vec3f, uv: Vec2f = Vec2f.ZERO) = vertex {
         position.set(pos)
         normal.set(nrm)
         texCoord.set(uv)
@@ -52,27 +63,27 @@ open class MeshBuilder(val geometry: IndexedVertexList<*>) {
         }
     }
 
-    inline fun withTransform(block: MeshBuilder.() -> Unit) {
+    inline fun withTransform(block: MeshBuilder<*>.() -> Unit) {
         transform.push()
         this.block()
         transform.pop()
     }
 
-    inline fun withColor(color: Color, block: MeshBuilder.() -> Unit) {
+    inline fun withColor(color: Color, block: MeshBuilder<*>.() -> Unit) {
         val c = this.color
         this.color = color
         this.block()
         this.color = c
     }
 
-    inline fun withEmissiveColor(emissiveColor: Color, block: MeshBuilder.() -> Unit) {
+    inline fun withEmissiveColor(emissiveColor: Color, block: MeshBuilder<*>.() -> Unit) {
         val c = this.emissiveColor
         this.emissiveColor = emissiveColor
         this.block()
         this.emissiveColor = c
     }
 
-    inline fun withMetallicRoughness(metallic: Float, roughness: Float, block: MeshBuilder.() -> Unit) {
+    inline fun withMetallicRoughness(metallic: Float, roughness: Float, block: MeshBuilder<*>.() -> Unit) {
         val m = this.metallic
         val r = this.roughness
         this.metallic = metallic
@@ -1242,5 +1253,5 @@ class TextProps(var font: Font) {
     var isYAxisUp = true
     var enforceSameWidthDigits = true
 
-    var charTransform: (MeshBuilder.(Float) -> Unit)? = null
+    var charTransform: (MeshBuilder<*>.(Float) -> Unit)? = null
 }

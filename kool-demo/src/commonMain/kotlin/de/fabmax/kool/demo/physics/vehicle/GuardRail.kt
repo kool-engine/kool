@@ -150,7 +150,7 @@ class GuardRail {
         }
     }
 
-    private fun MeshBuilder.lamp(center: Vec3f, poly: PolyUtil.TriangulatedPolygon) {
+    private fun MeshBuilder<*>.lamp(center: Vec3f, poly: PolyUtil.TriangulatedPolygon) {
         val inds = mutableListOf<Int>()
         poly.vertices.forEach { v ->
             inds += vertex {

@@ -211,7 +211,7 @@ open class Mesh(
         localBounds.add(geometryBounds)
     }
 
-    inline fun generate(updateBounds: Boolean = true, generator: MeshBuilder.() -> Unit) {
+    inline fun generate(updateBounds: Boolean = true, generator: MeshBuilder<*>.() -> Unit) {
         geometry.apply {
             clear()
             MeshBuilder(this).generator()
