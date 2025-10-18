@@ -5,9 +5,7 @@ import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.scene.geometry.MeshBuilder
-import de.fabmax.kool.scene.geometry.VertexView
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.*
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -61,8 +59,21 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
     val marginTopPx: Float get() = modifier.marginTop.px
     val marginBottomPx: Float get() = modifier.marginBottom.px
 
-    val setBoundsVertexMod: VertexView<*>.() -> Unit = {
-        getVec4fAttribute(Ui2Shader.ATTRIB_CLIP)?.set(clipLeftPx, clipTopPx, clipRightPx, clipBottomPx)
+    @PublishedApi
+    internal val setBoundsUiVertex: MutableStructBufferView<UiVertexLayout>.(UiVertexLayout) -> Unit = {
+        it.clip.set(clipLeftPx, clipTopPx, clipRightPx, clipBottomPx)
+    }
+
+    @PublishedApi
+    internal val setBoundsTextVertex: MutableStructBufferView<UiTextVertexLayout>.(UiTextVertexLayout) -> Unit = {
+        it.clip.set(clipLeftPx, clipTopPx, clipRightPx, clipBottomPx)
+    }
+
+    @PublishedApi
+    internal val setBoundsCustom: MutableStructBufferView<*>.(Struct) -> Unit = {
+        @Suppress("UNCHECKED_CAST")
+        this as MutableStructBufferView<Struct>
+        it.getFloat4(UiVertexLayout.clip.name)?.set(clipLeftPx, clipTopPx, clipRightPx, clipBottomPx)
     }
 
     fun toLocal(screenX: Double, screenY: Double, result: MutableVec2f = MutableVec2f()): MutableVec2f =
@@ -232,18 +243,27 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         return child
     }
 
-    inline fun MeshBuilder<*>.configured(color: Color? = null, block: MeshBuilder<*>.() -> Unit) {
-        val prevMod = vertexModFun
-        vertexModFun = setBoundsVertexMod
+    inline fun <Layout: Struct> MeshBuilder<Layout>.configured(color: Color? = null, block: MeshBuilder<Layout>.() -> Unit) {
+        val prevMod = vertexCustomizer
+        @Suppress("UNCHECKED_CAST")
+        when {
+            geometry.layout === UiVertexLayout -> {
+                this as MeshBuilder<UiVertexLayout>
+                vertexCustomizer = setBoundsUiVertex
+            }
+            geometry.layout === UiTextVertexLayout -> {
+                this as MeshBuilder<UiTextVertexLayout>
+                vertexCustomizer = setBoundsTextVertex
+            }
+            else -> vertexCustomizer = setBoundsCustom
+        }
         val prevColor = this.color
         color?.let { this.color = it }
-
         withTransform {
             translate(leftPx, topPx, 0f)
             this.block()
         }
-
-        this.vertexModFun = prevMod
+        vertexCustomizer = prevMod
         this.color = prevColor
     }
 
@@ -251,7 +271,7 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         return surface.getMeshLayer(modifier.zLayer + layerOffset).uiPrimitives
     }
 
-    fun getPlainBuilder(layerOffset: Int = 0): MeshBuilder<*> {
+    fun getPlainBuilder(layerOffset: Int = 0): MeshBuilder<UiVertexLayout> {
         return surface.getMeshLayer(modifier.zLayer + layerOffset).plainBuilder
     }
 

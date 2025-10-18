@@ -130,7 +130,7 @@ class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
     fun setupTrees() {
         val shadowShader = TreeShader.Shadow(wind.density, false)
         val aoShader = TreeShader.Shadow(wind.density, true)
-        treeGroup.children.filterIsInstance<Mesh>().forEach {
+        treeGroup.children.filterIsInstance<Mesh<*>>().forEach {
             it.depthShader = shadowShader
             it.normalLinearDepthShader = aoShader
         }
@@ -157,7 +157,7 @@ class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
         }
     }
 
-    class Tree(val drawMesh: Mesh, collisionMesh: IndexedVertexList<*>) {
+    class Tree(val drawMesh: Mesh<Wind.VertexLayoutWindColored>, collisionMesh: IndexedVertexList<*>) {
         val instances = mutableListOf<TreeInstance>()
         val physicsMesh = TriangleMesh(collisionMesh)
     }

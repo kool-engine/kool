@@ -8,7 +8,7 @@ import kotlin.math.sqrt
 interface MeshRayTest {
 
     fun rayTest(test: RayTest, localRay: RayF): Boolean
-    fun onMeshDataChanged(mesh: Mesh) { }
+    fun onMeshDataChanged(mesh: Mesh<*>) { }
 
     companion object {
         fun nopTest(): MeshRayTest = object : MeshRayTest {
@@ -16,11 +16,11 @@ interface MeshRayTest {
         }
 
         fun boundsTest(): MeshRayTest = object : MeshRayTest {
-            var mesh: Mesh? = null
+            var mesh: Mesh<*>? = null
 
             private val tmpVec = MutableVec3f()
 
-            override fun onMeshDataChanged(mesh: Mesh) {
+            override fun onMeshDataChanged(mesh: Mesh<*>) {
                 this.mesh = mesh
             }
 
@@ -39,7 +39,7 @@ interface MeshRayTest {
             }
         }
 
-        fun geometryTest(mesh: Mesh): MeshRayTest {
+        fun geometryTest(mesh: Mesh<*>): MeshRayTest {
             return when (mesh.geometry.primitiveType) {
                 PrimitiveType.TRIANGLES -> TriangleGeometry(mesh)
                 PrimitiveType.LINES -> LineGeometry(mesh)
@@ -48,14 +48,14 @@ interface MeshRayTest {
         }
     }
 
-    class TriangleGeometry(val mesh: Mesh) : MeshRayTest {
+    class TriangleGeometry(val mesh: Mesh<*>) : MeshRayTest {
         var triangleTree: KdTree<Triangle>? = null; private set
 
         private val rayD = RayD()
         private val normalF = MutableVec3f()
         private val rayTraverser = TriangleHitTraverser<Triangle>()
 
-        override fun onMeshDataChanged(mesh: Mesh) {
+        override fun onMeshDataChanged(mesh: Mesh<*>) {
             triangleTree = if (mesh.geometry.primitiveType == PrimitiveType.TRIANGLES) {
                 triangleKdTree(Triangle.getTriangles(mesh.geometry))
             } else {
@@ -84,14 +84,14 @@ interface MeshRayTest {
         }
     }
 
-    class LineGeometry(val mesh: Mesh) : MeshRayTest {
+    class LineGeometry(val mesh: Mesh<*>) : MeshRayTest {
         var edgeTree: KdTree<Edge<Vec3f>>? = null; private set
 
         private val rayTraverser = NearestEdgeToRayTraverser<Edge<Vec3f>>()
         private val tmpVec = MutableVec3f()
         private val rayD = RayD()
 
-        override fun onMeshDataChanged(mesh: Mesh) {
+        override fun onMeshDataChanged(mesh: Mesh<*>) {
             edgeTree = if (mesh.geometry.primitiveType == PrimitiveType.LINES) {
                 edgeKdTree(Edge.getEdges(mesh.geometry))
             } else {

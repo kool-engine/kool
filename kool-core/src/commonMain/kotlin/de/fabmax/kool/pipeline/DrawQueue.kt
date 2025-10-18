@@ -117,7 +117,7 @@ class DrawQueue() {
         return prevQueue
     }
 
-    fun addMesh(mesh: Mesh, pipeline: DrawPipeline): DrawCommand {
+    fun addMesh(mesh: Mesh<*>, pipeline: DrawPipeline): DrawCommand {
         val cmd = if (commandPool.isNotEmpty()) {
             commandPool.removeAt(commandPool.lastIndex)
         } else {

@@ -3,10 +3,7 @@ package de.fabmax.kool.modules.gizmo
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.RenderPass
-import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.TriangulatedLineMesh
-import de.fabmax.kool.scene.TriangulatedPointMesh
-import de.fabmax.kool.scene.TrsTransformD
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
@@ -38,10 +35,10 @@ class ScaleOverlay(val gizmo: GizmoNode) : Node(), GizmoListener {
         addNode(points)
         isVisible = false
 
-        weakLines.shader = TriangulatedLineMesh.Shader().apply {
+        weakLines.shader = CustomTriangulatedLineMesh.Shader().apply {
             pipelineConfig = pipelineConfig.copy(isWriteDepth = false, depthTest = DepthCompareOp.ALWAYS)
         }
-        points.shader = TriangulatedPointMesh.Shader().apply {
+        points.shader = CustomTriangulatedPointMesh.Shader().apply {
             pipelineConfig = pipelineConfig.copy(isWriteDepth = false, depthTest = DepthCompareOp.ALWAYS)
         }
     }

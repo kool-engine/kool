@@ -31,7 +31,7 @@ object Skybox {
         texLod: Float = 0f,
         colorSpaceConversion: ColorSpaceConversion = ColorSpaceConversion.LinearToSrgbHdr(),
         depthMode: DepthMode = DepthMode.Reversed
-    ) : Mesh(IndexedVertexList(VertexLayouts.Position), name = UniqueId.nextId("Skybox.Cube")) {
+    ) : Mesh<VertexLayouts.Position>(IndexedVertexList(VertexLayouts.Position), name = UniqueId.nextId("Skybox.Cube")) {
 
         val skyboxShader: KslSkyCubeShader
 

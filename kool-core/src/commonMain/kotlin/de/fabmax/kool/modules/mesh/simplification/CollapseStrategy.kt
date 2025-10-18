@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.mesh.simplification
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.mesh.HalfEdgeMesh
+import de.fabmax.kool.util.Struct
 
 /**
  * Implements the strategy for collapsing mesh edges.
@@ -23,7 +24,11 @@ fun defaultCollapseStrategy() = object : CollapseStrategy {
     val tmpPos0 = MutableVec3f()
     val tmpPos1 = MutableVec3f()
 
+    @Suppress("UNCHECKED_CAST")
     override fun computeCollapsePosition(q1: ErrorQuadric, q2: ErrorQuadric, resultPos: MutableVec3f): Double {
+        q1.vertex as HalfEdgeMesh<Struct>.HalfEdgeVertex
+        q2.vertex as HalfEdgeMesh<Struct>.HalfEdgeVertex
+
         // count number of triangles adjacent to edge between q1 and q2
         //  -> for inner edges in a 2d manifold (plane mesh) triCnt must be 2
         //  -> for border edges in a 2d manifold (plane mesh) triCnt can also be 1
@@ -87,7 +92,7 @@ fun defaultCollapseStrategy() = object : CollapseStrategy {
         }
     }
 
-    private fun isRejected(vert: HalfEdgeMesh.HalfEdgeVertex, excludedTo: HalfEdgeMesh.HalfEdgeVertex, newPos: Vec3f): Boolean {
+    private fun isRejected(vert: HalfEdgeMesh<*>.HalfEdgeVertex, excludedTo: HalfEdgeMesh<*>.HalfEdgeVertex, newPos: Vec3f): Boolean {
         for (edge in vert.edges) {
             if (edge.to != excludedTo) {
                 edge.computeTriNormal(tmpNrm0)
@@ -105,7 +110,7 @@ fun defaultCollapseStrategy() = object : CollapseStrategy {
         return false
     }
 
-    private fun newNormal(edge: HalfEdgeMesh.HalfEdge, newPos: Vec3f, newNormal: MutableVec3f) {
+    private fun newNormal(edge: HalfEdgeMesh<*>.HalfEdge, newPos: Vec3f, newNormal: MutableVec3f) {
         edge.to.subtract(newPos, tmpPos0)
         edge.next.to.subtract(newPos, tmpPos1)
         tmpPos0.cross(tmpPos1, newNormal)

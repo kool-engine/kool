@@ -6,25 +6,32 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.asAttribute
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
-import de.fabmax.kool.scene.geometry.VertexView
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MemoryLayout
-import de.fabmax.kool.util.Struct
+import de.fabmax.kool.util.*
 
 /**
  * @author fabmax
  */
 
-fun Node.addPointMesh(name: String = Node.makeNodeName("LineMesh"), block: PointMesh.() -> Unit): PointMesh {
+fun Node.addPointMesh(
+    name: String = Node.makeNodeName("LineMesh"),
+    block: PointMesh.() -> Unit
+): PointMesh {
     val pointMesh = PointMesh(name).apply(block)
     addNode(pointMesh)
     return pointMesh
 }
 
-open class PointMesh(
+fun PointMesh(name: String = Node.makeNodeName("LineMesh")): PointMesh =
+    PointMesh(IndexedVertexList(CustomPointMesh.PointVertexLayout, primitiveType = PrimitiveType.POINTS), name)
+
+typealias PointMesh = CustomPointMesh<CustomPointMesh.PointVertexLayout>
+
+open class CustomPointMesh<Layout: Struct>(
+    geometry: IndexedVertexList<Layout>,
     name: String = makeNodeName("LineMesh"),
-    geometry: IndexedVertexList<*> = IndexedVertexList(PointVertexLayout, primitiveType = PrimitiveType.POINTS)
-) : Mesh(geometry, name = name) {
+) : Mesh<Layout>(geometry, name = name) {
+    private val sizeAttr = geometry.layout.getFloat1(PointVertexLayout.pointSize.name)
+
     init {
         rayTest = MeshRayTest.nopTest()
 
@@ -33,24 +40,24 @@ open class PointMesh(
             modelCustomizer = {
                 vertexStage {
                     main {
-                        outPointSize set vertexAttribFloat1(PointVertexLayout.pointSize)
+                        outPointSize set vertexAttrib(PointVertexLayout.pointSize)
                     }
                 }
             }
         }
     }
 
-    fun addPoint(block: VertexView<*>.() -> Unit): Int {
-        val idx =  geometry.addVertexOld(block)
+    fun addPoint(block: MutableStructBufferView<Layout>.(Layout) -> Unit): Int {
+        val idx = geometry.addVertex(block)
         geometry.addIndex(idx)
         return idx
     }
 
     fun addPoint(position: Vec3f, pointSize: Float, color: Color): Int {
-        val idx = geometry.addVertexOld {
-            this.position.set(position)
-            this.color.set(color)
-            getFloatAttribute(attrPointSize)?.f = pointSize
+        val idx = geometry.addVertex {
+            geometry.positionAttr?.set(position)
+            geometry.colorAttr?.set(color)
+            sizeAttr?.set(pointSize)
         }
         geometry.addIndex(idx)
         return idx

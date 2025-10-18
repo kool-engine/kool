@@ -17,7 +17,7 @@ class DrawPipeline(
     shaderCodeGenerator: (DrawPipeline) -> ShaderCode
 ) : PipelineBase(name, bindGroupLayouts) {
     override val pipelineHash: LongHash
-    internal val users = mutableSetOf<Mesh>()
+    internal val users = mutableSetOf<Mesh<*>>()
 
     val cullMethod: CullMethod get() = pipelineConfig.cullMethod
     val blendMode: BlendMode get() = pipelineConfig.blendMode
@@ -57,11 +57,11 @@ class DrawPipeline(
         onUpdatePipelineData += block
     }
 
-    fun addUser(mesh: Mesh) {
+    fun addUser(mesh: Mesh<*>) {
         users.add(mesh)
     }
 
-    fun removeUser(mesh: Mesh) {
+    fun removeUser(mesh: Mesh<*>) {
         users.remove(mesh)
         if (users.isEmpty()) {
             release()

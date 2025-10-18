@@ -30,9 +30,9 @@ class AxisHandle(
             drawNode.isVisible = !value
         }
 
-    private val hitMesh: Mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-hitMesh")
-    private val mesh: Mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-mesh")
-    private val coveredMesh: Mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-coveredMesh")
+    private val hitMesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-hitMesh")
+    private val mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-mesh")
+    private val coveredMesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-coveredMesh")
 
     private var isHovered = false
     private var alphaFactor = 1f
@@ -99,7 +99,7 @@ class AxisHandle(
         isHovered = false
     }
 
-    private fun Mesh.setupGeometry(
+    private fun Mesh<VertexLayouts.PositionNormal>.setupGeometry(
         handleType: HandleType,
         innerDistance: Float,
         length: Float,
@@ -134,7 +134,7 @@ class AxisHandle(
         }
     }
 
-    private fun Mesh.setupShader(depthCompareOp: DepthCompareOp) {
+    private fun Mesh<VertexLayouts.PositionNormal>.setupShader(depthCompareOp: DepthCompareOp) {
         shader = KslUnlitShader {
             pipeline {
                 depthTest = depthCompareOp

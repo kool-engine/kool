@@ -7,7 +7,6 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.asAttribute
 import de.fabmax.kool.pipeline.deferred.DeferredPassSwapListener
 import de.fabmax.kool.pipeline.deferred.DeferredPasses
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
@@ -18,10 +17,7 @@ import de.fabmax.kool.scene.addColorMesh
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.generateNormals
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MemoryLayout
-import de.fabmax.kool.util.SimpleShadowMap
-import de.fabmax.kool.util.Struct
+import de.fabmax.kool.util.*
 
 class Glass(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), DeferredPassSwapListener {
 
@@ -125,7 +121,7 @@ class Glass(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Defer
         }
     }
 
-    private fun MeshBuilder<*>.makeShaftGeometry() {
+    private fun MeshBuilder<GlassVertex>.makeShaftGeometry() {
         rotate(90f.deg, Vec3f.NEG_X_AXIS)
         color = Color.DARK_GRAY.withAlpha(0.1f).toLinear()
 
@@ -133,8 +129,8 @@ class Glass(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Defer
             circleShape()
 
             var thickness = 0.5f
-            vertexModFun = {
-                getFloatAttribute(GlassVertex.thickness.asAttribute())?.f = thickness
+            vertexCustomizer = {
+                it.thickness.set(thickness)
             }
 
             withTransform {
@@ -221,7 +217,7 @@ class Glass(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Defer
 
                 vertexStage {
                     main {
-                        matThickness.input set vertexAttribFloat1(GlassVertex.thickness)
+                        matThickness.input set vertexAttrib(GlassVertex.thickness)
                     }
                 }
 

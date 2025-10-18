@@ -43,24 +43,24 @@ fun <T: Struct> IndexedVertexList<T>.generateNormals() {
     }
 
     for (i in 0 until numIndices step 3) {
-        vertexData.get(indices[i])     { get(positionAttr, p1); get(normalAttr, n1) }
-        vertexData.get(indices[i + 1]) { get(positionAttr, p2); get(normalAttr, n2) }
-        vertexData.get(indices[i + 2]) { get(positionAttr, p3); get(normalAttr, n3) }
+        vertexData.get(indices[i])     { positionAttr.get(p1); normalAttr.get(n1) }
+        vertexData.get(indices[i + 1]) { positionAttr.get(p2); normalAttr.get(n2) }
+        vertexData.get(indices[i + 2]) { positionAttr.get(p3); normalAttr.get(n3) }
 
         p2.subtract(p1, e1).norm()
         p3.subtract(p1, e2).norm()
         e1.cross(e2, nrm).norm().mul(triArea(p1, p2, p3))
         if (!nrm.x.isNaN() && !nrm.y.isNaN() && !nrm.z.isNaN()) {
-            vertexData.set(indices[i])     { set(normalAttr, n1.add(nrm)) }
-            vertexData.set(indices[i + 1]) { set(normalAttr, n2.add(nrm)) }
-            vertexData.set(indices[i + 2]) { set(normalAttr, n3.add(nrm)) }
+            vertexData.set(indices[i])     { normalAttr.set(n1.add(nrm)) }
+            vertexData.set(indices[i + 1]) { normalAttr.set(n2.add(nrm)) }
+            vertexData.set(indices[i + 2]) { normalAttr.set(n3.add(nrm)) }
         }
     }
 
     for (i in 0 until numVertices) {
         vertexData.set(i) {
-            get(normalAttr, nrm)
-            set(normalAttr, nrm.norm())
+            normalAttr.get(nrm)
+            normalAttr.set(nrm.norm())
         }
     }
     modCount.increment()
@@ -68,8 +68,8 @@ fun <T: Struct> IndexedVertexList<T>.generateNormals() {
 
 fun <T: Struct> IndexedVertexList<T>.generateTangents(tangentSign: Float = 1f) {
     check(primitiveType == PrimitiveType.TRIANGLES) { "Normal generation is only supported for triangle meshes" }
-    if (positionAttr == null || texCoordAttr == null || tangentsAttr == null) {
-        logW { "generateTangents() requires non-null positionAttr, texCoordAttr and tangentsAttr" }
+    if (positionAttr == null || texCoordAttr == null || tangentAttr == null) {
+        logW { "generateTangents() requires non-null positionAttr, texCoordAttr and tangentAttr" }
         return
     }
 
@@ -88,25 +88,25 @@ fun <T: Struct> IndexedVertexList<T>.generateTangents(tangentSign: Float = 1f) {
 
     for (i in 0 until numVertices) {
         vertexData.set(i) {
-            set(tangentsAttr, Vec4f.ZERO)
+            tangentAttr.set(Vec4f.ZERO)
         }
     }
 
     for (i in 0 until numIndices step 3) {
         vertexData.get(indices[i]) {
-            get(positionAttr, pos1)
-            get(tangentsAttr, tan1)
-            get(texCoordAttr, tex1)
+            positionAttr.get(pos1)
+            tangentAttr.get(tan1)
+            texCoordAttr.get(tex1)
         }
         vertexData.get(indices[i + 1]) {
-            get(positionAttr, pos2)
-            get(tangentsAttr, tan2)
-            get(texCoordAttr, tex2)
+            positionAttr.get(pos2)
+            tangentAttr.get(tan2)
+            texCoordAttr.get(tex2)
         }
         vertexData.get(indices[i + 2]) {
-            get(positionAttr, pos3)
-            get(tangentsAttr, tan3)
-            get(texCoordAttr, tex3)
+            positionAttr.get(pos3)
+            tangentAttr.get(tan3)
+            texCoordAttr.get(tex3)
         }
 
         pos2.subtract(pos1, e1).norm()
@@ -122,18 +122,18 @@ fun <T: Struct> IndexedVertexList<T>.generateTangents(tangentSign: Float = 1f) {
             tan.y = f * (dv2 * e1.y - dv1 * e2.y)
             tan.z = f * (dv2 * e1.z - dv1 * e2.z)
 
-            vertexData.set(indices[i])     { set(tangentsAttr, tan1.add(tan)) }
-            vertexData.set(indices[i + 1]) { set(tangentsAttr, tan2.add(tan)) }
-            vertexData.set(indices[i + 2]) { set(tangentsAttr, tan3.add(tan)) }
+            vertexData.set(indices[i])     { tangentAttr.set(tan1.add(tan)) }
+            vertexData.set(indices[i + 1]) { tangentAttr.set(tan2.add(tan)) }
+            vertexData.set(indices[i + 2]) { tangentAttr.set(tan3.add(tan)) }
         }
     }
     for (i in 0 until numVertices) {
         vertexData.set(i) {
-            get(tangentsAttr, tan)
+            tangentAttr.get(tan)
             tan.w = 0f
             tan.norm()
             tan.w = tangentSign
-            set(tangentsAttr, tan)
+            tangentAttr.set(tan)
         }
     }
     modCount.increment()

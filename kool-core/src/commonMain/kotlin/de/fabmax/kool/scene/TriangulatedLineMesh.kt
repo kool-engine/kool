@@ -1,7 +1,6 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.BoundingBoxF
@@ -19,11 +18,7 @@ import de.fabmax.kool.pipeline.asAttribute
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
-import de.fabmax.kool.scene.geometry.VertexView
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.LineString
-import de.fabmax.kool.util.MemoryLayout
-import de.fabmax.kool.util.Struct
+import de.fabmax.kool.util.*
 import kotlin.math.max
 import kotlin.math.min
 
@@ -36,31 +31,33 @@ fun Node.addTriangulatedLineMesh(
     return mesh
 }
 
-class TriangulatedLineMesh(geometry: IndexedVertexList<*>, name: String = makeNodeName("TriangulatedLineMesh")) :
-    Mesh(geometry, name = name)
-{
+fun TriangulatedLineMesh(name: String = Node.makeNodeName("TriangulatedLineMesh")): TriangulatedLineMesh {
+    return TriangulatedLineMesh(IndexedVertexList(CustomTriangulatedLineMesh.LineVertexLayout), name)
+}
 
-    constructor(name: String = makeNodeName("TriangulatedLineMesh")) : this(IndexedVertexList(LineVertexLayout), name)
+typealias TriangulatedLineMesh = CustomTriangulatedLineMesh<CustomTriangulatedLineMesh.LineVertexLayout>
 
+class CustomTriangulatedLineMesh<Layout: Struct>(
+    geometry: IndexedVertexList<Layout>,
+    name: String = makeNodeName("TriangulatedLineMesh")
+) : Mesh<Layout>(geometry, name = name) {
     private val lineBuffer = mutableListOf<LineVertex>()
 
-    private val lineAttribAccessor: MutableVec2f
-    private val prevDirAccessor: MutableVec3f
-    private val nextDirAccessor: MutableVec3f
+    private val lineAttr = requireNotNull(geometry.layout.getFloat2(LineVertexLayout.lineAttribs.name)) {
+        "Mesh geometry misses required vertex attribute: $ATTRIB_LINE_ATTRIBS"
+    }
+    private val prevAttr = requireNotNull(geometry.layout.getFloat3(LineVertexLayout.prevDir.name)) {
+        "Mesh geometry misses required vertex attribute: $ATTRIB_PREV_DIR"
+    }
+    private val nextAttr = requireNotNull(geometry.layout.getFloat3(LineVertexLayout.nextDir.name)) {
+        "Mesh geometry misses required vertex attribute: $ATTRIB_NEXT_DIR"
+    }
 
     var color = Color.RED
     var width = 1f
 
     init {
         isCastingShadow = false
-
-        lineAttribAccessor = geometry.vertexIt.getVec2fAttribute(ATTRIB_LINE_ATTRIBS)
-            ?: throw IllegalStateException("Mesh geometry misses required vertex attribute: $ATTRIB_LINE_ATTRIBS")
-        prevDirAccessor = geometry.vertexIt.getVec3fAttribute(ATTRIB_PREV_DIR)
-            ?: throw IllegalStateException("Mesh geometry misses required vertex attribute: $ATTRIB_PREV_DIR")
-        nextDirAccessor = geometry.vertexIt.getVec3fAttribute(ATTRIB_NEXT_DIR)
-            ?: throw IllegalStateException("Mesh geometry misses required vertex attribute: $ATTRIB_NEXT_DIR")
-
         shader = Shader()
     }
 
@@ -69,7 +66,7 @@ class TriangulatedLineMesh(geometry: IndexedVertexList<*>, name: String = makeNo
         geometry.clear()
     }
 
-    fun addLine(from: Vec3f, to: Vec3f, color: Color = this.color, width: Float = this.width): TriangulatedLineMesh {
+    fun addLine(from: Vec3f, to: Vec3f, color: Color = this.color, width: Float = this.width): CustomTriangulatedLineMesh<Layout> {
         return addLine(from, color, width, to, color, width)
     }
 
@@ -80,24 +77,24 @@ class TriangulatedLineMesh(geometry: IndexedVertexList<*>, name: String = makeNo
         to: Vec3f,
         toColor: Color,
         toWidth: Float
-    ): TriangulatedLineMesh {
+    ): CustomTriangulatedLineMesh<Layout> {
         moveTo(from, fromColor, fromWidth)
         lineTo(to, toColor, toWidth)
         return stroke()
     }
 
-    fun addLine(vararg points: Vec3f): TriangulatedLineMesh {
+    fun addLine(vararg points: Vec3f): CustomTriangulatedLineMesh<Layout> {
         return addLine(color, width, *points)
     }
 
-    fun addLine(color: Color, width: Float, vararg points: Vec3f): TriangulatedLineMesh {
+    fun addLine(color: Color, width: Float, vararg points: Vec3f): CustomTriangulatedLineMesh<Layout> {
         for (i in 0 until points.lastIndex) {
             addLine(points[i], color, width, points[i+1], color, width)
         }
         return this
     }
 
-    fun addLineString(lineString: LineString<*>, color: Color = this.color, width: Float = this.width): TriangulatedLineMesh {
+    fun addLineString(lineString: LineString<*>, color: Color = this.color, width: Float = this.width): CustomTriangulatedLineMesh<Layout> {
         for (i in 0 until lineString.lastIndex) {
             addLine(lineString[i], color, width, lineString[i+1], color, width)
         }
@@ -110,8 +107,8 @@ class TriangulatedLineMesh(geometry: IndexedVertexList<*>, name: String = makeNo
         position: Vec3f,
         color: Color = this.color,
         width: Float = this.width,
-        vertexMod: (VertexView<*>.() -> Unit)? = null
-    ): TriangulatedLineMesh {
+        vertexMod: (MutableStructBufferView<Layout>.(Layout) -> Unit)? = null
+    ): CustomTriangulatedLineMesh<Layout> {
         if (lineBuffer.isNotEmpty()) {
             stroke()
         }
@@ -125,13 +122,13 @@ class TriangulatedLineMesh(geometry: IndexedVertexList<*>, name: String = makeNo
         position: Vec3f,
         color: Color = this.color,
         width: Float = this.width,
-        vertexMod: (VertexView<*>.() -> Unit)? = null
-    ): TriangulatedLineMesh {
+        vertexMod: (MutableStructBufferView<Layout>.(Layout) -> Unit)? = null
+    ): CustomTriangulatedLineMesh<Layout> {
         lineBuffer.add(LineVertex(position, color, width, vertexMod))
         return this
     }
 
-    fun stroke(): TriangulatedLineMesh {
+    fun stroke(): CustomTriangulatedLineMesh<Layout> {
         if (lineBuffer.size > 1) {
             val startPos = MutableVec3f(lineBuffer.first()).mul(2f).subtract(lineBuffer[1])
             val endPos = MutableVec3f(lineBuffer.last()).mul(2f)
@@ -153,14 +150,14 @@ class TriangulatedLineMesh(geometry: IndexedVertexList<*>, name: String = makeNo
         return this
     }
 
-    private fun IndexedVertexList<*>.addLineVertex(vertex: LineVertex, u: Float, prevDir: Vec3f, nextDir: Vec3f): Int {
-        return addVertexOld {
-            set(vertex)
-            color.set(vertex.color)
-            lineAttribAccessor.set(u, vertex.width)
-            prevDirAccessor.set(prevDir)
-            nextDirAccessor.set(nextDir)
-            vertex.vertexMod?.invoke(this)
+    private fun IndexedVertexList<Layout>.addLineVertex(vertex: LineVertex, u: Float, prevDir: Vec3f, nextDir: Vec3f): Int {
+        return addVertex {
+            positionAttr?.set(vertex)
+            colorAttr?.set(vertex.color)
+            lineAttr.set(u, vertex.width)
+            prevAttr.set(prevDir)
+            nextAttr.set(nextDir)
+            vertex.vertexMod?.invoke(this, it)
         }
     }
 
@@ -233,7 +230,7 @@ class TriangulatedLineMesh(geometry: IndexedVertexList<*>, name: String = makeNo
         addLine(p3, p7, color, width)
     }
 
-    class LineVertex(position: Vec3f, val color: Color, val width: Float, val vertexMod: (VertexView<*>.() -> Unit)?): Vec3f(position)
+    inner class LineVertex(position: Vec3f, val color: Color, val width: Float, val vertexMod: (MutableStructBufferView<Layout>.(Layout) -> Unit)?): Vec3f(position)
 
     open class Shader(cfg: Config = defaultCfg) : KslShader("Triangulated Line Shader") {
 
@@ -270,9 +267,9 @@ class TriangulatedLineMesh(geometry: IndexedVertexList<*>, name: String = makeNo
                     val camData = cameraData()
                     val ar = camData.viewport.z / camData.viewport.w
 
-                    val vPrevPos = vertexAttribFloat3(LineVertexLayout.prevDir)
-                    val vNextPos = vertexAttribFloat3(LineVertexLayout.nextDir)
-                    val vAttribs = vertexAttribFloat2(LineVertexLayout.lineAttribs)
+                    val vPrevPos = vertexAttrib(LineVertexLayout.prevDir)
+                    val vNextPos = vertexAttrib(LineVertexLayout.nextDir)
+                    val vAttribs = vertexAttrib(LineVertexLayout.lineAttribs)
                     val pos = vertexAttribFloat3(Attribute.POSITIONS.name)
                     val shiftDir = vAttribs.x
                     val lineWidthPort = float1Port("lineWidth", vAttribs.y)

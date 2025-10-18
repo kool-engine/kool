@@ -40,7 +40,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         "${DemoLoader.modelPath}/teapot.gltf.gz",
         GltfLoadConfig(generateNormals = true, applyMaterials = false)
     )
-    private val teapotMesh: Mesh get() = teapot.meshes.values.first()
+    private val teapotMesh: Mesh<*> get() = teapot.meshes.values.first()
 
     private val isAoEnabled = mutableStateOf(true).onChange { _, new -> aoPipeline.isEnabled = new }
     private val isAutoRotate = mutableStateOf(true)

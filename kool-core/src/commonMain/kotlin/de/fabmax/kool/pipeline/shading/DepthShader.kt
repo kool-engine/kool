@@ -103,7 +103,7 @@ open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pi
     ) {
         companion object {
             fun forMesh(
-                mesh: Mesh,
+                mesh: Mesh<*>,
                 cullMethod: CullMethod = CullMethod.CULL_BACK_FACES,
                 alphaMode: AlphaMode? = null,
                 alphaMask: Texture2d? = null

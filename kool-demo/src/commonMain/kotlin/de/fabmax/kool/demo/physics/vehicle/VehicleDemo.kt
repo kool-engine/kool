@@ -5,10 +5,7 @@ import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.demo.physics.vehicle.ui.VehicleUi
-import de.fabmax.kool.math.QuatF
-import de.fabmax.kool.math.SimpleSpline3f
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.deg
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.gltf.GltfMaterialConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
@@ -22,9 +19,7 @@ import de.fabmax.kool.pipeline.deferred.DeferredPipeline
 import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.CascadedShadowMap
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.*
 
 class VehicleDemo : DemoScene("Vehicle Demo") {
 
@@ -221,8 +216,9 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
         addTextureMesh(isNormalMapped = true, name = "ground") {
             generate {
                 isCastingShadow = false
-                vertexModFun = {
-                    texCoord.set(x / 10f, z / 10f)
+                vertexCustomizer = {
+                    val pos = it.position.get(MutableVec3f())
+                    it.texCoord.set(pos.x / 10f, pos.z / 10f)
                 }
                 grid {
                     sizeX = 5000f

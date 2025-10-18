@@ -34,9 +34,9 @@ class PlaneHandle(
             drawNode.isVisible = !value
         }
 
-    private val mesh: Mesh
-    private val coveredMesh: Mesh
-    private val lineMesh: Mesh
+    private val mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-mesh")
+    private val coveredMesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-coveredMesh")
+    private val lineMesh = Mesh(IndexedVertexList(VertexLayouts.Position, primitiveType = PrimitiveType.LINES), name = "${name}-lineMesh")
 
     private var isHovered = false
     private var alphaFactor = 1f
@@ -47,15 +47,10 @@ class PlaneHandle(
             markDirty()
         }
 
-        mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-mesh")
         mesh.setup(size, innerDistance, DepthCompareOp.LESS)
         mesh.rayTest = MeshRayTest.geometryTest(mesh)
-
-        coveredMesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-coveredMesh")
         coveredMesh.setup(size, innerDistance, DepthCompareOp.ALWAYS)
         coveredMesh.isPickable = false
-
-        lineMesh = Mesh(IndexedVertexList(VertexLayouts.Position, primitiveType = PrimitiveType.LINES), name = "${name}-lineMesh")
         lineMesh.makeOutline(size, innerDistance, mesh)
 
         addNode(coveredMesh)
@@ -106,7 +101,7 @@ class PlaneHandle(
         isHovered = false
     }
 
-    private fun Mesh.setup(
+    private fun Mesh<VertexLayouts.PositionNormal>.setup(
         planeSize: Float,
         innerDistance: Float,
         depthCompareOp: DepthCompareOp
@@ -131,10 +126,10 @@ class PlaneHandle(
         }
     }
 
-    private fun Mesh.makeOutline(
+    private fun Mesh<VertexLayouts.Position>.makeOutline(
         planeSize: Float,
         innerDistance: Float,
-        planeMesh: Mesh
+        planeMesh: Mesh<VertexLayouts.PositionNormal>
     ) {
         val center = innerDistance + planeSize * 0.5f
 

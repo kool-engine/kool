@@ -240,7 +240,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
 }
 
 private class DeltaTGraph : UiRenderer<UiNode> {
-    val graphMesh: Mesh
+    val graphMesh: Mesh<UiVertexLayout>
     val graphGeom = IndexedVertexList(UiVertexLayout, usage = Usage.DYNAMIC)
     val graphBuilder = MeshBuilder(graphGeom).apply { isInvertFaceOrientation = true }
     val graphVertex = graphGeom[0]

@@ -6,54 +6,56 @@ interface StructBufferView<S: Struct> {
     var index: Int
 
     fun get(member: Float1Member<S>): Float
-    fun get(member: Float2Member<S>, result: MutableVec2f = MutableVec2f()): Vec2f
-    fun get(member: Float3Member<S>, result: MutableVec3f = MutableVec3f()): Vec3f
-    fun get(member: Float4Member<S>, result: MutableVec4f = MutableVec4f()): Vec4f
-    fun get(member: Float4Member<S>, result: MutableQuatF): QuatF
-    fun get(member: Float4Member<S>, result: MutableColor): Color
+    fun get(member: Float2Member<S>, result: MutableVec2f = MutableVec2f()): MutableVec2f
+    fun get(member: Float3Member<S>, result: MutableVec3f = MutableVec3f()): MutableVec3f
+    fun get(member: Float4Member<S>, result: MutableVec4f = MutableVec4f()): MutableVec4f
+    fun get(member: Float4Member<S>, result: MutableQuatF): MutableQuatF
+    fun get(member: Float4Member<S>, result: MutableColor): MutableColor
 
     fun get(member: Int1Member<S>): Int
-    fun get(member: Int2Member<S>, result: MutableVec2i = MutableVec2i()): Vec2i
-    fun get(member: Int3Member<S>, result: MutableVec3i = MutableVec3i()): Vec3i
-    fun get(member: Int4Member<S>, result: MutableVec4i = MutableVec4i()): Vec4i
+    fun get(member: Int2Member<S>, result: MutableVec2i = MutableVec2i()): MutableVec2i
+    fun get(member: Int3Member<S>, result: MutableVec3i = MutableVec3i()): MutableVec3i
+    fun get(member: Int4Member<S>, result: MutableVec4i = MutableVec4i()): MutableVec4i
 
     fun get(member: Uint1Member<S>): UInt
-    fun get(member: Uint2Member<S>, result: MutableVec2i = MutableVec2i()): Vec2i
-    fun get(member: Uint3Member<S>, result: MutableVec3i = MutableVec3i()): Vec3i
-    fun get(member: Uint4Member<S>, result: MutableVec4i = MutableVec4i()): Vec4i
+    fun get(member: Uint2Member<S>, result: MutableVec2i = MutableVec2i()): MutableVec2i
+    fun get(member: Uint3Member<S>, result: MutableVec3i = MutableVec3i()): MutableVec3i
+    fun get(member: Uint4Member<S>, result: MutableVec4i = MutableVec4i()): MutableVec4i
 
     fun get(member: Bool1Member<S>): Boolean
-    fun get(member: Bool2Member<S>, result: MutableVec2i = MutableVec2i()): Vec2i
-    fun get(member: Bool3Member<S>, result: MutableVec3i = MutableVec3i()): Vec3i
-    fun get(member: Bool4Member<S>, result: MutableVec4i = MutableVec4i()): Vec4i
+    fun get(member: Bool2Member<S>, result: MutableVec2i = MutableVec2i()): MutableVec2i
+    fun get(member: Bool3Member<S>, result: MutableVec3i = MutableVec3i()): MutableVec3i
+    fun get(member: Bool4Member<S>, result: MutableVec4i = MutableVec4i()): MutableVec4i
 
     fun get(member: Float1ArrayMember<S>, index: Int): Float
-    fun get(member: Float2ArrayMember<S>, index: Int, result: MutableVec2f = MutableVec2f()): Vec2f
-    fun get(member: Float3ArrayMember<S>, index: Int, result: MutableVec3f = MutableVec3f()): Vec3f
-    fun get(member: Float4ArrayMember<S>, index: Int, result: MutableVec4f = MutableVec4f()): Vec4f
+    fun get(member: Float2ArrayMember<S>, index: Int, result: MutableVec2f = MutableVec2f()): MutableVec2f
+    fun get(member: Float3ArrayMember<S>, index: Int, result: MutableVec3f = MutableVec3f()): MutableVec3f
+    fun get(member: Float4ArrayMember<S>, index: Int, result: MutableVec4f = MutableVec4f()): MutableVec4f
+    fun get(member: Float4ArrayMember<S>, index: Int, result: MutableQuatF): MutableQuatF
+    fun get(member: Float4ArrayMember<S>, index: Int, result: MutableColor): MutableColor
 
     fun get(member: Int1ArrayMember<S>, index: Int): Int
-    fun get(member: Int2ArrayMember<S>, index: Int, result: MutableVec2i = MutableVec2i()): Vec2i
-    fun get(member: Int3ArrayMember<S>, index: Int, result: MutableVec3i = MutableVec3i()): Vec3i
-    fun get(member: Int4ArrayMember<S>, index: Int, result: MutableVec4i = MutableVec4i()): Vec4i
+    fun get(member: Int2ArrayMember<S>, index: Int, result: MutableVec2i = MutableVec2i()): MutableVec2i
+    fun get(member: Int3ArrayMember<S>, index: Int, result: MutableVec3i = MutableVec3i()): MutableVec3i
+    fun get(member: Int4ArrayMember<S>, index: Int, result: MutableVec4i = MutableVec4i()): MutableVec4i
 
     fun get(member: Uint1ArrayMember<S>, index: Int): UInt
-    fun get(member: Uint2ArrayMember<S>, index: Int, result: MutableVec2i = MutableVec2i()): Vec2i
-    fun get(member: Uint3ArrayMember<S>, index: Int, result: MutableVec3i = MutableVec3i()): Vec3i
-    fun get(member: Uint4ArrayMember<S>, index: Int, result: MutableVec4i = MutableVec4i()): Vec4i
+    fun get(member: Uint2ArrayMember<S>, index: Int, result: MutableVec2i = MutableVec2i()): MutableVec2i
+    fun get(member: Uint3ArrayMember<S>, index: Int, result: MutableVec3i = MutableVec3i()): MutableVec3i
+    fun get(member: Uint4ArrayMember<S>, index: Int, result: MutableVec4i = MutableVec4i()): MutableVec4i
 
     fun get(member: Bool1ArrayMember<S>, index: Int): Boolean
-    fun get(member: Bool2ArrayMember<S>, index: Int, result: MutableVec2i = MutableVec2i()): Vec2i
-    fun get(member: Bool3ArrayMember<S>, index: Int, result: MutableVec3i = MutableVec3i()): Vec3i
-    fun get(member: Bool4ArrayMember<S>, index: Int, result: MutableVec4i = MutableVec4i()): Vec4i
+    fun get(member: Bool2ArrayMember<S>, index: Int, result: MutableVec2i = MutableVec2i()): MutableVec2i
+    fun get(member: Bool3ArrayMember<S>, index: Int, result: MutableVec3i = MutableVec3i()): MutableVec3i
+    fun get(member: Bool4ArrayMember<S>, index: Int, result: MutableVec4i = MutableVec4i()): MutableVec4i
 
-    fun get(member: Mat2Member<S>, result: MutableMat2f = MutableMat2f()): Mat2f
-    fun get(member: Mat3Member<S>, result: MutableMat3f = MutableMat3f()): Mat3f
-    fun get(member: Mat4Member<S>, result: MutableMat4f = MutableMat4f()): Mat4f
+    fun get(member: Mat2Member<S>, result: MutableMat2f = MutableMat2f()): MutableMat2f
+    fun get(member: Mat3Member<S>, result: MutableMat3f = MutableMat3f()): MutableMat3f
+    fun get(member: Mat4Member<S>, result: MutableMat4f = MutableMat4f()): MutableMat4f
 
-    fun get(member: Mat2ArrayMember<S>, index: Int, result: MutableMat2f = MutableMat2f()): Mat2f
-    fun get(member: Mat3ArrayMember<S>, index: Int, result: MutableMat3f = MutableMat3f()): Mat3f
-    fun get(member: Mat4ArrayMember<S>, index: Int, result: MutableMat4f = MutableMat4f()): Mat4f
+    fun get(member: Mat2ArrayMember<S>, index: Int, result: MutableMat2f = MutableMat2f()): MutableMat2f
+    fun get(member: Mat3ArrayMember<S>, index: Int, result: MutableMat3f = MutableMat3f()): MutableMat3f
+    fun get(member: Mat4ArrayMember<S>, index: Int, result: MutableMat4f = MutableMat4f()): MutableMat4f
 
     fun <S: Struct, N: Struct> get(member: NestedStructMember<S, N>, block: StructBufferView<N>.(N) -> Unit)
     fun <S: Struct, N: Struct> get(member: NestedStructArrayMember<S, N>, index: Int, block: StructBufferView<N>.(N) -> Unit)
@@ -71,7 +73,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
 
     override fun get(member: Float1Member<T>): Float = buffer.getFloat32(bytePosition + member.byteOffset)
 
-    override fun get(member: Float2Member<T>, result: MutableVec2f): Vec2f {
+    override fun get(member: Float2Member<T>, result: MutableVec2f): MutableVec2f {
         val offset = bytePosition + member.byteOffset
         return result.set(
             buffer.getFloat32(offset + 0),
@@ -79,26 +81,16 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Float3Member<T>, result: MutableVec3f): Vec3f {
-        val offset = bytePosition + member.byteOffset
-        return result.set(
-            buffer.getFloat32(offset + 0),
-            buffer.getFloat32(offset + 4),
-            buffer.getFloat32(offset + 8),
-        )
-    }
-
-    override fun get(member: Float4Member<T>, result: MutableVec4f): Vec4f {
+    override fun get(member: Float3Member<T>, result: MutableVec3f): MutableVec3f {
         val offset = bytePosition + member.byteOffset
         return result.set(
             buffer.getFloat32(offset + 0),
             buffer.getFloat32(offset + 4),
             buffer.getFloat32(offset + 8),
-            buffer.getFloat32(offset + 12),
         )
     }
 
-    override fun get(member: Float4Member<T>, result: MutableQuatF): QuatF {
+    override fun get(member: Float4Member<T>, result: MutableVec4f): MutableVec4f {
         val offset = bytePosition + member.byteOffset
         return result.set(
             buffer.getFloat32(offset + 0),
@@ -108,7 +100,17 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Float4Member<T>, result: MutableColor): Color {
+    override fun get(member: Float4Member<T>, result: MutableQuatF): MutableQuatF {
+        val offset = bytePosition + member.byteOffset
+        return result.set(
+            buffer.getFloat32(offset + 0),
+            buffer.getFloat32(offset + 4),
+            buffer.getFloat32(offset + 8),
+            buffer.getFloat32(offset + 12),
+        )
+    }
+
+    override fun get(member: Float4Member<T>, result: MutableColor): MutableColor {
         val offset = bytePosition + member.byteOffset
         return result.set(
             buffer.getFloat32(offset + 0),
@@ -120,7 +122,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
 
     override fun get(member: Int1Member<T>): Int = buffer.getInt32(bytePosition + member.byteOffset)
 
-    override fun get(member: Int2Member<T>, result: MutableVec2i): Vec2i {
+    override fun get(member: Int2Member<T>, result: MutableVec2i): MutableVec2i {
         val offset = bytePosition + member.byteOffset
         return result.set(
             buffer.getInt32(offset + 0),
@@ -128,7 +130,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Int3Member<T>, result: MutableVec3i): Vec3i {
+    override fun get(member: Int3Member<T>, result: MutableVec3i): MutableVec3i {
         val offset = bytePosition + member.byteOffset
         return result.set(
             buffer.getInt32(offset + 0),
@@ -137,7 +139,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Int4Member<T>, result: MutableVec4i): Vec4i {
+    override fun get(member: Int4Member<T>, result: MutableVec4i): MutableVec4i {
         val offset = bytePosition + member.byteOffset
         return result.set(
             buffer.getInt32(offset + 0),
@@ -149,7 +151,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
 
     override fun get(member: Uint1Member<T>): UInt = buffer.getUint32(bytePosition + member.byteOffset)
 
-    override fun get(member: Uint2Member<T>, result: MutableVec2i): Vec2i {
+    override fun get(member: Uint2Member<T>, result: MutableVec2i): MutableVec2i {
         val offset = bytePosition + member.byteOffset
         return result.set(
             buffer.getInt32(offset + 0),
@@ -157,7 +159,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Uint3Member<T>, result: MutableVec3i): Vec3i {
+    override fun get(member: Uint3Member<T>, result: MutableVec3i): MutableVec3i {
         val offset = bytePosition + member.byteOffset
         return result.set(
             buffer.getInt32(offset + 0),
@@ -166,7 +168,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Uint4Member<T>, result: MutableVec4i): Vec4i {
+    override fun get(member: Uint4Member<T>, result: MutableVec4i): MutableVec4i {
         val offset = bytePosition + member.byteOffset
         return result.set(
             buffer.getInt32(offset + 0),
@@ -178,7 +180,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
 
     override fun get(member: Bool1Member<T>): Boolean = buffer.getInt32(bytePosition + member.byteOffset) != 0
 
-    override fun get(member: Bool2Member<T>, result: MutableVec2i): Vec2i {
+    override fun get(member: Bool2Member<T>, result: MutableVec2i): MutableVec2i {
         val offset = bytePosition + member.byteOffset
         return result.set(
             buffer.getInt32(offset + 0),
@@ -186,7 +188,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Bool3Member<T>, result: MutableVec3i): Vec3i {
+    override fun get(member: Bool3Member<T>, result: MutableVec3i): MutableVec3i {
         val offset = bytePosition + member.byteOffset
         return result.set(
             buffer.getInt32(offset + 0),
@@ -195,7 +197,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Bool4Member<T>, result: MutableVec4i): Vec4i {
+    override fun get(member: Bool4Member<T>, result: MutableVec4i): MutableVec4i {
         val offset = bytePosition + member.byteOffset
         return result.set(
             buffer.getInt32(offset + 0),
@@ -210,7 +212,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         return buffer.getFloat32(bytePosition + member.byteOffset + member.arrayStride * index)
     }
 
-    override fun get(member: Float2ArrayMember<T>, index: Int, result: MutableVec2f): Vec2f {
+    override fun get(member: Float2ArrayMember<T>, index: Int, result: MutableVec2f): MutableVec2f {
         require(index >= 0 && index < member.arraySize)
         val offset = bytePosition + member.byteOffset + member.arrayStride * index
         return result.set(
@@ -219,7 +221,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Float3ArrayMember<T>, index: Int, result: MutableVec3f): Vec3f {
+    override fun get(member: Float3ArrayMember<T>, index: Int, result: MutableVec3f): MutableVec3f {
         require(index >= 0 && index < member.arraySize)
         val offset = bytePosition + member.byteOffset + member.arrayStride * index
         return result.set(
@@ -229,7 +231,29 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Float4ArrayMember<T>, index: Int, result: MutableVec4f): Vec4f {
+    override fun get(member: Float4ArrayMember<T>, index: Int, result: MutableVec4f): MutableVec4f {
+        require(index >= 0 && index < member.arraySize)
+        val offset = bytePosition + member.byteOffset + member.arrayStride * index
+        return result.set(
+            buffer.getFloat32(offset + 0),
+            buffer.getFloat32(offset + 4),
+            buffer.getFloat32(offset + 8),
+            buffer.getFloat32(offset + 12),
+        )
+    }
+
+    override fun get(member: Float4ArrayMember<T>, index: Int, result: MutableQuatF): MutableQuatF {
+        require(index >= 0 && index < member.arraySize)
+        val offset = bytePosition + member.byteOffset + member.arrayStride * index
+        return result.set(
+            buffer.getFloat32(offset + 0),
+            buffer.getFloat32(offset + 4),
+            buffer.getFloat32(offset + 8),
+            buffer.getFloat32(offset + 12),
+        )
+    }
+
+    override fun get(member: Float4ArrayMember<T>, index: Int, result: MutableColor): MutableColor {
         require(index >= 0 && index < member.arraySize)
         val offset = bytePosition + member.byteOffset + member.arrayStride * index
         return result.set(
@@ -245,7 +269,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         return buffer.getInt32(bytePosition + member.byteOffset + member.arrayStride * index)
     }
 
-    override fun get(member: Int2ArrayMember<T>, index: Int, result: MutableVec2i): Vec2i {
+    override fun get(member: Int2ArrayMember<T>, index: Int, result: MutableVec2i): MutableVec2i {
         require(index >= 0 && index < member.arraySize)
         val offset = bytePosition + member.byteOffset + member.arrayStride * index
         return result.set(
@@ -254,7 +278,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Int3ArrayMember<T>, index: Int, result: MutableVec3i): Vec3i {
+    override fun get(member: Int3ArrayMember<T>, index: Int, result: MutableVec3i): MutableVec3i {
         require(index >= 0 && index < member.arraySize)
         val offset = bytePosition + member.byteOffset + member.arrayStride * index
         return result.set(
@@ -264,7 +288,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Int4ArrayMember<T>, index: Int, result: MutableVec4i): Vec4i {
+    override fun get(member: Int4ArrayMember<T>, index: Int, result: MutableVec4i): MutableVec4i {
         require(index >= 0 && index < member.arraySize)
         val offset = bytePosition + member.byteOffset + member.arrayStride * index
         return result.set(
@@ -280,7 +304,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         return buffer.getUint32(bytePosition + member.byteOffset + member.arrayStride * index)
     }
 
-    override fun get(member: Uint2ArrayMember<T>, index: Int, result: MutableVec2i): Vec2i {
+    override fun get(member: Uint2ArrayMember<T>, index: Int, result: MutableVec2i): MutableVec2i {
         require(index >= 0 && index < member.arraySize)
         val offset = bytePosition + member.byteOffset + member.arrayStride * index
         return result.set(
@@ -289,7 +313,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Uint3ArrayMember<T>, index: Int, result: MutableVec3i): Vec3i {
+    override fun get(member: Uint3ArrayMember<T>, index: Int, result: MutableVec3i): MutableVec3i {
         require(index >= 0 && index < member.arraySize)
         val offset = bytePosition + member.byteOffset + member.arrayStride * index
         return result.set(
@@ -299,7 +323,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Uint4ArrayMember<T>, index: Int, result: MutableVec4i): Vec4i {
+    override fun get(member: Uint4ArrayMember<T>, index: Int, result: MutableVec4i): MutableVec4i {
         require(index >= 0 && index < member.arraySize)
         val offset = bytePosition + member.byteOffset + member.arrayStride * index
         return result.set(
@@ -315,7 +339,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         return buffer.getInt32(bytePosition + member.byteOffset + member.arrayStride * index) != 0
     }
 
-    override fun get(member: Bool2ArrayMember<T>, index: Int, result: MutableVec2i): Vec2i {
+    override fun get(member: Bool2ArrayMember<T>, index: Int, result: MutableVec2i): MutableVec2i {
         require(index >= 0 && index < member.arraySize)
         val offset = bytePosition + member.byteOffset + member.arrayStride * index
         return result.set(
@@ -324,7 +348,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Bool3ArrayMember<T>, index: Int, result: MutableVec3i): Vec3i {
+    override fun get(member: Bool3ArrayMember<T>, index: Int, result: MutableVec3i): MutableVec3i {
         require(index >= 0 && index < member.arraySize)
         val offset = bytePosition + member.byteOffset + member.arrayStride * index
         return result.set(
@@ -334,7 +358,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Bool4ArrayMember<T>, index: Int, result: MutableVec4i): Vec4i {
+    override fun get(member: Bool4ArrayMember<T>, index: Int, result: MutableVec4i): MutableVec4i {
         require(index >= 0 && index < member.arraySize)
         val offset = bytePosition + member.byteOffset + member.arrayStride * index
         return result.set(
@@ -345,7 +369,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Mat2Member<T>, result: MutableMat2f): Mat2f {
+    override fun get(member: Mat2Member<T>, result: MutableMat2f): MutableMat2f {
         val offset = bytePosition + member.byteOffset
         return result.set(
             buffer.getFloat32(offset +  0), buffer.getFloat32(offset + 16),
@@ -353,7 +377,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Mat3Member<T>, result: MutableMat3f): Mat3f {
+    override fun get(member: Mat3Member<T>, result: MutableMat3f): MutableMat3f {
         val offset = bytePosition + member.byteOffset
         return result.set(
             buffer.getFloat32(offset +  0), buffer.getFloat32(offset + 16), buffer.getFloat32(offset + 32),
@@ -362,7 +386,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Mat4Member<T>, result: MutableMat4f): Mat4f {
+    override fun get(member: Mat4Member<T>, result: MutableMat4f): MutableMat4f {
         val offset = bytePosition + member.byteOffset
         return result.set(
             buffer.getFloat32(offset +  0), buffer.getFloat32(offset + 16), buffer.getFloat32(offset + 32), buffer.getFloat32(offset + 48),
@@ -372,7 +396,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Mat2ArrayMember<T>, index: Int, result: MutableMat2f): Mat2f {
+    override fun get(member: Mat2ArrayMember<T>, index: Int, result: MutableMat2f): MutableMat2f {
         require(index >= 0 && index < member.arraySize)
         val offset = bytePosition + member.byteOffset + member.arrayStride * index
         return result.set(
@@ -381,7 +405,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Mat3ArrayMember<T>, index: Int, result: MutableMat3f): Mat3f {
+    override fun get(member: Mat3ArrayMember<T>, index: Int, result: MutableMat3f): MutableMat3f {
         require(index >= 0 && index < member.arraySize)
         val offset = bytePosition + member.byteOffset + member.arrayStride * index
         return result.set(
@@ -391,7 +415,7 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         )
     }
 
-    override fun get(member: Mat4ArrayMember<T>, index: Int, result: MutableMat4f): Mat4f {
+    override fun get(member: Mat4ArrayMember<T>, index: Int, result: MutableMat4f): MutableMat4f {
         require(index >= 0 && index < member.arraySize)
         val offset = bytePosition + member.byteOffset + member.arrayStride * index
         return result.set(
@@ -619,6 +643,24 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         buffer.setFloat32(offset + 4, value.y)
         buffer.setFloat32(offset + 8, value.z)
         buffer.setFloat32(offset + 12, value.w)
+    }
+
+    fun set(member: Float4ArrayMember<T>, index: Int, value: QuatF) {
+        require(index >= 0 && index < member.arraySize)
+        val offset = bytePosition + member.byteOffset + member.arrayStride * index
+        buffer.setFloat32(offset + 0, value.x)
+        buffer.setFloat32(offset + 4, value.y)
+        buffer.setFloat32(offset + 8, value.z)
+        buffer.setFloat32(offset + 12, value.w)
+    }
+
+    fun set(member: Float4ArrayMember<T>, index: Int, value: Color) {
+        require(index >= 0 && index < member.arraySize)
+        val offset = bytePosition + member.byteOffset + member.arrayStride * index
+        buffer.setFloat32(offset + 0, value.r)
+        buffer.setFloat32(offset + 4, value.g)
+        buffer.setFloat32(offset + 8, value.b)
+        buffer.setFloat32(offset + 12, value.a)
     }
 
     fun set(member: Int1ArrayMember<T>, index: Int, value: Int) {

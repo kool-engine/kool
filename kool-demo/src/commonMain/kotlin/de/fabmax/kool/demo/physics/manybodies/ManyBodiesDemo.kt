@@ -5,19 +5,13 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.Platform
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
-import de.fabmax.kool.math.MutableMat4f
-import de.fabmax.kool.math.QuatF
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.deg
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ColorGradient
-import de.fabmax.kool.util.MutableColor
-import de.fabmax.kool.util.logI
+import de.fabmax.kool.util.*
 
 class ManyBodiesDemo : DemoScene("Many Bodies") {
 
@@ -85,8 +79,9 @@ class ManyBodiesDemo : DemoScene("Many Bodies") {
         addTextureMesh(isNormalMapped = true, name = "ground") {
             generate {
                 isCastingShadow = false
-                vertexModFun = {
-                    texCoord.set(x / 10f, z / 10f)
+                vertexCustomizer = {
+                    val pos = it.position.get(MutableVec3f())
+                    it.texCoord.set(pos.x / 10, pos.z / 10)
                 }
                 grid {
                     sizeX = 1000f

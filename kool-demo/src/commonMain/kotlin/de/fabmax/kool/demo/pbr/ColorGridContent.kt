@@ -17,7 +17,7 @@ import de.fabmax.kool.util.MdColor
 
 class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("Color grid") {
     private val shaders = mutableListOf<KslPbrShader>()
-    private var contentMesh: Mesh? = null
+    private var contentMesh: Mesh<VertexLayouts.PositionNormal>? = null
 
     private val roughness = mutableStateOf(0.3f).onChange { _, new -> shaders.forEach { s -> s.roughness = new } }
     private val metallic = mutableStateOf(0f).onChange { _, new -> shaders.forEach { s -> s.metallic = new } }
@@ -52,7 +52,7 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
         }
     }
 
-    private fun Node.makeSpheres(withIbl: Boolean, environmentMap: EnvironmentMap): Mesh {
+    private fun Node.makeSpheres(withIbl: Boolean, environmentMap: EnvironmentMap): Mesh<VertexLayouts.PositionNormal> {
         val nRows = 4
         val nCols = 5
         val spacing = 4.5f

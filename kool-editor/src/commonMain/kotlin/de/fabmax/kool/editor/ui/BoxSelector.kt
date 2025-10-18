@@ -167,7 +167,7 @@ class BoxSelector : Composable {
             }
             val drawNode = gameEntity.getComponent<MeshComponent>()?.sceneNode
             return when (drawNode) {
-                is Mesh -> gameEntity.testMesh(drawNode)
+                is Mesh<*> -> gameEntity.testMesh(drawNode)
                 is Model -> drawNode.meshes.values.any { gameEntity.testMesh(it) }
                 else -> true
             }
@@ -182,7 +182,7 @@ class BoxSelector : Composable {
             return testBoundingSphere(globalCenter, globalRadius)
         }
 
-        private fun GameEntity.testMesh(mesh: Mesh): Boolean {
+        private fun GameEntity.testMesh(mesh: Mesh<*>): Boolean {
             return when (val meshTest = mesh.rayTest) {
                 is MeshRayTest.TriangleGeometry -> testTriMesh(mesh, meshTest)
                 is MeshRayTest.LineGeometry -> testLineMesh()
@@ -190,7 +190,7 @@ class BoxSelector : Composable {
             }
         }
 
-        private fun GameEntity.testTriMesh(mesh: Mesh, meshTest: MeshRayTest.TriangleGeometry): Boolean {
+        private fun GameEntity.testTriMesh(mesh: Mesh<*>, meshTest: MeshRayTest.TriangleGeometry): Boolean {
             meshTest.triangleTree?.let { triTree ->
                 triTrav.setup(this, mesh)
                 triTrav.traverse(triTree)
@@ -212,11 +212,11 @@ class BoxSelector : Composable {
             private val toGlobal = MutableMat4f()
 
             private lateinit var gameEntity: GameEntity
-            private lateinit var mesh: Mesh
+            private lateinit var mesh: Mesh<*>
 
             var isIntersect = false
 
-            fun setup(gameEntity: GameEntity, mesh: Mesh) {
+            fun setup(gameEntity: GameEntity, mesh: Mesh<*>) {
                 this.gameEntity = gameEntity
                 this.mesh = mesh
                 toGlobal.set(gameEntity.localToGlobalF).mul(mesh.modelMatF)

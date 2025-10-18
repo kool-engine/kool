@@ -17,7 +17,7 @@ import kotlin.math.max
 
 class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("Material grid") {
     private val shaders = mutableListOf<KslPbrShader>()
-    private var contentMesh: Mesh? = null
+    private var contentMesh: Mesh<VertexLayouts.PositionNormal>? = null
 
     private val selectedColorIdx = mutableStateOf(0)
 
@@ -54,7 +54,7 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
         }
     }
 
-    private fun Node.makeSpheres(withIbl: Boolean, envMap: EnvironmentMap): Mesh {
+    private fun Node.makeSpheres(withIbl: Boolean, envMap: EnvironmentMap): Mesh<VertexLayouts.PositionNormal> {
         val nRows = 7
         val nCols = 7
         val spacing = 2.5f

@@ -5,14 +5,12 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.asAttribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.generateNormals
-import de.fabmax.kool.util.PerfTimer
-import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.*
 import kotlin.random.Random
 
 class Grass(val terrain: Terrain, val wind: Wind, val sky: Sky) {
@@ -72,7 +70,7 @@ class Grass(val terrain: Terrain, val wind: Wind, val sky: Sky) {
 
     fun setIsCastingShadow(enabled: Boolean) {
         grassQuads.children.forEach {
-            it as Mesh
+            it as Mesh<*>
             it.isCastingShadow = false
             if (enabled) {
                 it.setIsCastingShadow(0, true)
@@ -83,7 +81,7 @@ class Grass(val terrain: Terrain, val wind: Wind, val sky: Sky) {
     }
 
     fun setupGrass(grassColor: Texture2d) {
-        val childMeshes = grassQuads.children.filterIsInstance<Mesh>()
+        val childMeshes = grassQuads.children.filterIsInstance<Mesh<*>>()
         val grassDepthShader = GrassShader.Shadow(grassColor, wind.density, false, false)
         val grassAoShader = GrassShader.Shadow(grassColor, wind.density, false, true)
         childMeshes.forEach {
@@ -109,10 +107,10 @@ class Grass(val terrain: Terrain, val wind: Wind, val sky: Sky) {
     }
 
     companion object {
-        private fun MeshBuilder<*>.makeGrassVertex(pos: Vec3f, u: Float, v: Float, wind: Float): Int = vertex {
-            set(pos)
-            texCoord.set(u, v)
-            getFloatAttribute(Wind.VertexLayoutWind.windSensitivity.asAttribute())?.f = wind
+        private fun <T: Struct> MeshBuilder<T>.makeGrassVertex(pos: Vec3f, u: Float, v: Float, wind: Float): Int = vertex {
+            positionAttr?.set(pos)
+            texCoordAttr?.set(u, v)
+            geometry.layout.getFloat1(Wind.VertexLayoutWind.windSensitivity.name)?.set(wind)
         }
 
         fun MeshBuilder<*>.grassSprite(pos: Vec3f, step: Vec3f, topOffset: Vec3f, midOffset: Vec3f) {

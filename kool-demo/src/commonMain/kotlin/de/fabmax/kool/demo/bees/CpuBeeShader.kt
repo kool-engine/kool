@@ -21,7 +21,7 @@ class CpuBeeShader(
             val aliveness = interStageFloat1()
             vertexStage {
                 main {
-                    val rotQuat = instanceAttribFloat4(CpuBees.BeeInstanceLayout.rotation)
+                    val rotQuat = instanceAttrib(CpuBees.BeeInstanceLayout.rotation)
                     val r = rotQuat.w
                     val i = rotQuat.x
                     val j = rotQuat.y
@@ -44,7 +44,7 @@ class CpuBeeShader(
                         1f.const - 2f.const * (i*i + j*j)
                     )
 
-                    val globalPos = instanceAttribFloat4(CpuBees.BeeInstanceLayout.position)
+                    val globalPos = instanceAttrib(CpuBees.BeeInstanceLayout.position)
                     val vertexNormal = vertexAttribFloat3(Attribute.NORMALS.name)
                     val vertexPos = float3Var(vertexAttribFloat3(Attribute.POSITIONS.name))
 

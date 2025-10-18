@@ -108,7 +108,7 @@ class SceneShaderCache : EditorScene.SceneShaderDataListener {
     }
 }
 
-fun MeshLayoutInfo(mesh: Mesh): MeshLayoutInfo = MeshLayoutInfo(
+fun MeshLayoutInfo(mesh: Mesh<*>): MeshLayoutInfo = MeshLayoutInfo(
     vertexLayout = mesh.geometry.layout,
     instanceLayout = mesh.instances?.layout,
     primitiveType = mesh.geometry.primitiveType,

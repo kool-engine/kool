@@ -5,6 +5,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.set
 
 class NavDemoButton(val menu: DemoMenu) : Composable {
 
@@ -46,9 +47,9 @@ class NavDemoButton(val menu: DemoMenu) : Composable {
                 translate((widthPx - r * 0.4f) / 2f, heightPx / 2f, 0f)
                 rotate(120f.deg * animationP, Vec3f.Z_AXIS)
 
-                val i0 = vertex { set(r, 0f, 0f) }
-                val i1 = vertex { set(r * -0.5f, r * 0.866f, 0f) }
-                val i2 = vertex { set(r * -0.5f, r * -0.866f, 0f) }
+                val i0 = vertex { it.position.set(r, 0f, 0f) }
+                val i1 = vertex { it.position.set(r * -0.5f, r * 0.866f, 0f) }
+                val i2 = vertex { it.position.set(r * -0.5f, r * -0.866f, 0f) }
                 addTriIndices(i0, i1, i2)
             }
         }

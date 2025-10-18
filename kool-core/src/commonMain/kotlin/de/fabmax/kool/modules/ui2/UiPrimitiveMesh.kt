@@ -1,6 +1,5 @@
 package de.fabmax.kool.modules.ui2
 
-import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
@@ -14,10 +13,11 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.Struct
+import de.fabmax.kool.util.set
 import kotlin.math.*
 
 class UiPrimitiveMesh(name: String) :
-    Mesh(
+    Mesh<UiPrimitiveMesh.UiPrimVertexLayout>(
         geometry = IndexedVertexList(UiPrimVertexLayout),
         instances = MeshInstanceList(InstanceLayout, 1024),
         name = name
@@ -31,41 +31,33 @@ class UiPrimitiveMesh(name: String) :
         isCastingShadow = false
 
         generate(updateBounds = false) {
-            val weights = MutableVec4f()
-            val outerWeights = MutableVec4f()
-            val innerWeights = MutableVec4f()
-            vertexModFun = {
-                getVec4fAttribute(attrOuterWeights)!!.set(outerWeights)
-                getVec4fAttribute(attrInnerWeights)!!.set(innerWeights)
-            }
-
             fun addOuterInnerVerts(weights: Vec4f) {
                 vertex {
-                    outerWeights.set(weights)
-                    innerWeights.set(Vec4f.ZERO)
+                    it.outerWeights.set(weights)
+                    it.innerWeights.set(Vec4f.ZERO)
                 }
                 vertex {
-                    outerWeights.set(Vec4f.ZERO)
-                    innerWeights.set(weights)
+                    it.outerWeights.set(Vec4f.ZERO)
+                    it.innerWeights.set(weights)
                 }
             }
 
-            addOuterInnerVerts(weights.set(-0.5f, -0.5f, 0f, -1f))
+            addOuterInnerVerts(Vec4f(-0.5f, -0.5f, 0f, -1f))
             for (i in 0..7) {
                 val a = PI.toFloat() / 2f * i / 7f
-                addOuterInnerVerts(weights.set(0.5f, -0.5f, sin(a), -cos(a)))
+                addOuterInnerVerts(Vec4f(0.5f, -0.5f, sin(a), -cos(a)))
             }
             for (i in 0..7) {
                 val a = PI.toFloat() / 2f * i / 7f
-                addOuterInnerVerts(weights.set(0.5f, 0.5f, cos(a), sin(a)))
+                addOuterInnerVerts(Vec4f(0.5f, 0.5f, cos(a), sin(a)))
             }
             for (i in 0..7) {
                 val a = PI.toFloat() / 2f * i / 7f
-                addOuterInnerVerts(weights.set(-0.5f, 0.5f, -sin(a), cos(a)))
+                addOuterInnerVerts(Vec4f(-0.5f, 0.5f, -sin(a), cos(a)))
             }
             for (i in 0..7) {
                 val a = PI.toFloat() / 2f * i / 7f
-                addOuterInnerVerts(weights.set(-0.5f, -0.5f, -cos(a), -sin(a)))
+                addOuterInnerVerts(Vec4f(-0.5f, -0.5f, -cos(a), -sin(a)))
             }
 
             for (i in 3 until geometry.numVertices step 2) {
@@ -242,19 +234,19 @@ class UiPrimitiveMesh(name: String) :
                     main {
                         clipBounds.input set instanceAttribFloat4(Ui2Shader.ATTRIB_CLIP.name)
 
-                        val center = float2Var(instanceAttribFloat2(InstanceLayout.center))
-                        val outerDimens = float4Var(instanceAttribFloat4(InstanceLayout.outerDimens))
-                        val innerDimens = float4Var(instanceAttribFloat4(InstanceLayout.innerDimens))
-                        val outerPosWeights = float4Var(vertexAttribFloat4(UiPrimVertexLayout.outerWeights))
-                        val innerPosWeights = float4Var(vertexAttribFloat4(UiPrimVertexLayout.innerWeights))
+                        val center = float2Var(instanceAttrib(InstanceLayout.center))
+                        val outerDimens = float4Var(instanceAttrib(InstanceLayout.outerDimens))
+                        val innerDimens = float4Var(instanceAttrib(InstanceLayout.innerDimens))
+                        val outerPosWeights = float4Var(vertexAttrib(UiPrimVertexLayout.outerWeights))
+                        val innerPosWeights = float4Var(vertexAttrib(UiPrimVertexLayout.innerWeights))
                         val pos = float3Var(Vec3f.ZERO.const)
 
                         pos.xy set center + outerPosWeights.xy * outerDimens.xy + outerPosWeights.zw * outerDimens.zw
                         pos.xy += innerPosWeights.xy * innerDimens.xy + innerPosWeights.zw * innerDimens.zw
 
-                        colorA.input set instanceAttribFloat4(InstanceLayout.colorA)
-                        colorB.input set instanceAttribFloat4(InstanceLayout.colorB)
-                        gradientCfg.input set instanceAttribFloat4(InstanceLayout.gradientCfg)
+                        colorA.input set instanceAttrib(InstanceLayout.colorA)
+                        colorB.input set instanceAttrib(InstanceLayout.colorB)
+                        gradientCfg.input set instanceAttrib(InstanceLayout.gradientCfg)
 
                         screenPos.input set pos.xy
                         outPosition set mvpMatrix().matrix * float4Value(pos, 1f.const)

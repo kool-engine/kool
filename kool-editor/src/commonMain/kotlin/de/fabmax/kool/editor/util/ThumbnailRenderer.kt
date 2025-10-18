@@ -280,7 +280,7 @@ fun ThumbnailRenderer.materialThumbnail(material: MaterialComponent): ThumbnailR
 }
 
 private class MaterialPreviewMesh :
-    Mesh(IndexedVertexList(VertexLayouts.PositionNormalTexCoordColorTangent), name = "material-preview-mesh")
+    Mesh<VertexLayouts.PositionNormalTexCoordColorTangent>(IndexedVertexList(VertexLayouts.PositionNormalTexCoordColorTangent), name = "material-preview-mesh")
 {
     init {
         geometry.addGeometry(sphereMeshData)
@@ -289,7 +289,10 @@ private class MaterialPreviewMesh :
     companion object {
         val sphereMeshData = IndexedVertexList(VertexLayouts.PositionNormalTexCoordColorTangent).apply {
             MeshBuilder(this).apply {
-                vertexModFun = { texCoord.x *= 2f }
+                vertexCustomizer = {
+                    val uv = it.texCoord.get(MutableVec2f())
+                    it.texCoord.set(uv.x * 2f, uv.y)
+                }
                 uvSphere { steps = 35 }
             }
             generateTangents()
@@ -297,7 +300,7 @@ private class MaterialPreviewMesh :
     }
 }
 
-private class SceneBgMesh(val shaderData: SceneShaderData) : Mesh(IndexedVertexList(VertexLayouts.PositionTexCoord)) {
+private class SceneBgMesh(val shaderData: SceneShaderData) : Mesh<VertexLayouts.PositionTexCoord>(IndexedVertexList(VertexLayouts.PositionTexCoord)) {
     init {
         generateThumbnailRoundRect()
         shader = KslShader("scene-bg-shader", PipelineConfig(depthTest = DepthCompareOp.ALWAYS)) {
@@ -333,7 +336,7 @@ private class SceneBgMesh(val shaderData: SceneShaderData) : Mesh(IndexedVertexL
     }
 }
 
-private class ClearMesh : Mesh(IndexedVertexList(VertexLayouts.PositionTexCoord)) {
+private class ClearMesh : Mesh<VertexLayouts.PositionTexCoord>(IndexedVertexList(VertexLayouts.PositionTexCoord)) {
     init {
         generateFullscreenQuad()
         shader = KslShader("clear-shader", PipelineConfig(blendMode = BlendMode.DISABLED, depthTest = DepthCompareOp.ALWAYS)) {
@@ -348,7 +351,7 @@ private class ClearMesh : Mesh(IndexedVertexList(VertexLayouts.PositionTexCoord)
     }
 }
 
-private fun Mesh.generateThumbnailRoundRect(ar: Float = 1f) = generate {
+private fun Mesh<*>.generateThumbnailRoundRect(ar: Float = 1f) = generate {
     rect {
         if (ar > 1f) size.set(2f, 2f / ar) else size.set(2f * ar, 2f)
         cornerRadius = min(size.x, size.y) * 0.1f

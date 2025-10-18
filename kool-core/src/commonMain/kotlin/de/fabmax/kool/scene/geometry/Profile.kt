@@ -1,8 +1,7 @@
 package de.fabmax.kool.scene.geometry
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.PolyUtil
+import de.fabmax.kool.util.*
 
 interface ShapeContainer {
     val shapes: MutableList<Shape>
@@ -42,10 +41,9 @@ abstract class Shape {
     abstract val positions: List<Vec3f>
     abstract val sampledVertIndices: List<Int>
 
-    abstract fun sample(meshBuilder: MeshBuilder<*>, connect: Boolean, inverseOrientation: Boolean)
-
-    abstract fun fillTop(meshBuilder: MeshBuilder<*>)
-    abstract fun fillBottom(meshBuilder: MeshBuilder<*>)
+    abstract fun <Layout: Struct> sample(meshBuilder: MeshBuilder<Layout>, connect: Boolean, inverseOrientation: Boolean)
+    abstract fun <Layout: Struct> fillTop(meshBuilder: MeshBuilder<Layout>)
+    abstract fun <Layout: Struct> fillBottom(meshBuilder: MeshBuilder<Layout>)
 }
 
 class SimpleShape(val isClosed: Boolean) : Shape() {
@@ -55,7 +53,7 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
     val colors = mutableListOf<Color>()
     val emissionColors = mutableListOf<Color>()
     val metallicRoughs = mutableListOf<Vec2f>()
-    val customAttribs = mutableListOf<(VertexView<*>) -> Unit>()
+    val customAttribs = mutableListOf<(MutableStructBufferView<*>) -> Unit>()
 
     private val prevIndices = mutableListOf<Int>()
     private val vertIndices = mutableListOf<Int>()
@@ -85,7 +83,7 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
         return if (i < metallicRoughs.size) metallicRoughs[i] else null
     }
 
-    private fun applyCustomAttribs(v: VertexView<*>, i: Int) {
+    private fun applyCustomAttribs(v: MutableStructBufferView<*>, i: Int) {
         if (i < customAttribs.size) {
             customAttribs[i].invoke(v)
         }
@@ -167,19 +165,22 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
         texCoords.forEach { it.y = y }
     }
 
-    override fun sample(meshBuilder: MeshBuilder<*>, connect: Boolean, inverseOrientation: Boolean) {
+    override fun <Layout: Struct> sample(meshBuilder: MeshBuilder<Layout>, connect: Boolean, inverseOrientation: Boolean) {
         prevIndices.clear()
         prevIndices.addAll(vertIndices)
         vertIndices.clear()
 
         positions.forEachIndexed { i, pos ->
             vertIndices += meshBuilder.vertex {
-                set(pos)
-                normal.set(getNormal(i))
-                texCoord.set(getTexCoord(i))
-                getColor(i)?.let { color.set(it) }
-                getEmissionColor(i)?.let { emissiveColor.set(it.r, it.g, it.b) }
-                getMetallicRoughness(i)?.let { metallicRoughness.set(it) }
+                meshBuilder.positionAttr?.set(pos)
+                meshBuilder.normalAttr?.set(getNormal(i))
+                meshBuilder.texCoordAttr?.set(getTexCoord(i))
+                getColor(i)?.let { meshBuilder.colorAttr?.set(it) }
+                getEmissionColor(i)?.let { meshBuilder.emissiveColorAttr?.set(it.r, it.g, it.b) }
+                getMetallicRoughness(i)?.let {
+                    meshBuilder.metallicAttr?.set(it.x)
+                    meshBuilder.roughnessAttr?.set(it.y)
+                }
                 applyCustomAttribs(this, i)
             }
         }
@@ -212,7 +213,7 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
         }
     }
 
-    override fun fillTop(meshBuilder: MeshBuilder<*>) {
+    override fun <Layout: Struct> fillTop(meshBuilder: MeshBuilder<Layout>) {
         val triangulated = PolyUtil.fillPolygon(positions)
         for (i in triangulated.indices.indices step 3) {
             val i1 = triangulated.indices[i]
@@ -222,7 +223,7 @@ class SimpleShape(val isClosed: Boolean) : Shape() {
         }
     }
 
-    override fun fillBottom(meshBuilder: MeshBuilder<*>) {
+    override fun <Layout: Struct> fillBottom(meshBuilder: MeshBuilder<Layout>) {
         val triangulated = PolyUtil.fillPolygon(positions)
         for (i in triangulated.indices.indices step 3) {
             val i1 = triangulated.indices[i]
@@ -240,11 +241,11 @@ class MultiShape : Shape(), ShapeContainer {
     override val sampledVertIndices: List<Int>
         get() = shapes.flatMap { it.sampledVertIndices }
 
-    override fun sample(meshBuilder: MeshBuilder<*>, connect: Boolean, inverseOrientation: Boolean) {
+    override fun <Layout: Struct> sample(meshBuilder: MeshBuilder<Layout>, connect: Boolean, inverseOrientation: Boolean) {
         shapes.forEach { it.sample(meshBuilder, connect, inverseOrientation) }
     }
 
-    override fun fillTop(meshBuilder: MeshBuilder<*>) {
+    override fun <Layout: Struct> fillTop(meshBuilder: MeshBuilder<Layout>) {
         val joinedInds = sampledVertIndices
         val triangulated = PolyUtil.fillPolygon(positions)
         for (i in triangulated.indices.indices step 3) {
@@ -255,7 +256,7 @@ class MultiShape : Shape(), ShapeContainer {
         }
     }
 
-    override fun fillBottom(meshBuilder: MeshBuilder<*>) {
+    override fun <Layout: Struct> fillBottom(meshBuilder: MeshBuilder<Layout>) {
         val joinedInds = sampledVertIndices
         val triangulated = PolyUtil.fillPolygon(positions)
         for (i in triangulated.indices.indices step 3) {

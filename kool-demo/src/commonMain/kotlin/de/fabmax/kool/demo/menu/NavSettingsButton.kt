@@ -6,6 +6,7 @@ import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.PolyUtil
+import de.fabmax.kool.util.set
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -79,7 +80,7 @@ class NavSettingsButton(val menu: DemoMenu) : Composable {
 
                 val i0 = geometry.numVertices
                 for (v in gearPoly.vertices) {
-                    vertex { set(v.x * r, v.y * r, 0f) }
+                    vertex { it.position.set(v.x * r, v.y * r, 0f) }
                 }
                 for (i in gearPoly.indices) {
                     geometry.addIndex(i0 + i)

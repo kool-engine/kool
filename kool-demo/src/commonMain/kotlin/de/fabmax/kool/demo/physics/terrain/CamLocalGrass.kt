@@ -24,7 +24,7 @@ class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind, va
     private var updateFrameIdx = 0
     private var lastTraversalPos = MutableVec3f()
 
-    val grassQuads: Mesh
+    val grassQuads: Mesh<Wind.VertexLayoutWind>
 
     var grassShader: WindAffectedShader? = null
         set(value) {

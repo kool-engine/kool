@@ -8,7 +8,7 @@ import de.fabmax.kool.util.checkIsNotReleased
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 
-class GeometryVk(val mesh: Mesh, val vertexData: IndexedVertexList<*>, val backend: RenderBackendVk) : BaseReleasable(), GpuGeometry {
+class GeometryVk(val mesh: Mesh<*>, val vertexData: IndexedVertexList<*>, val backend: RenderBackendVk) : BaseReleasable(), GpuGeometry {
     val device: Device get() = backend.device
 
     private val createdIndexBuffer: GrowingBufferVk

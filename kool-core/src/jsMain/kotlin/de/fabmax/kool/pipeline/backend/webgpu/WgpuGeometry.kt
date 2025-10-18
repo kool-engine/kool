@@ -6,7 +6,7 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.checkIsNotReleased
 
-class WgpuGeometry(val mesh: Mesh, val vertexData: IndexedVertexList<*>, val backend: RenderBackendWebGpu) : BaseReleasable(), GpuGeometry {
+class WgpuGeometry(val mesh: Mesh<*>, val vertexData: IndexedVertexList<*>, val backend: RenderBackendWebGpu) : BaseReleasable(), GpuGeometry {
     private val device: GPUDevice get() = backend.device
 
     private val createdIndexBuffer: WgpuGrowingBuffer

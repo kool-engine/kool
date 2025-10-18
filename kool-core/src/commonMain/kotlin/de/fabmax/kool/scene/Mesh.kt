@@ -9,10 +9,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.animation.Skin
 import de.fabmax.kool.scene.geometry.*
-import de.fabmax.kool.util.MutableStructBufferView
-import de.fabmax.kool.util.Struct
-import de.fabmax.kool.util.StructBuffer
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.*
 
 @Suppress("DEPRECATION")
 @Deprecated("Use a layout struct instead of specifying vertex attributes individually")
@@ -21,8 +18,8 @@ fun Node.addMesh(
     instances: MeshInstanceList<*>? = null,
     name: String = makeChildName("mesh"),
     primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
-    block: Mesh.() -> Unit
-): Mesh {
+    block: Mesh<DynamicStruct>.() -> Unit
+): Mesh<DynamicStruct> {
     val mesh = Mesh(IndexedVertexList(attributes, primitiveType), instances, name = name)
     mesh.block()
     addNode(mesh)
@@ -36,21 +33,21 @@ fun Node.addMesh(
     instances: MeshInstanceList<*>? = null,
     name: String = makeChildName("mesh"),
     primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
-    block: Mesh.() -> Unit
-): Mesh {
+    block: Mesh<DynamicStruct>.() -> Unit
+): Mesh<DynamicStruct> {
     val mesh = Mesh(IndexedVertexList(attributes.toList(), primitiveType), instances, name = name)
     mesh.block()
     addNode(mesh)
     return mesh
 }
 
-fun Node.addMesh(
-    layout: Struct,
+fun <Layout: Struct> Node.addMesh(
+    layout: Layout,
     instances: MeshInstanceList<*>? = null,
     name: String = makeChildName("mesh"),
     primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
-    block: Mesh.() -> Unit
-): Mesh {
+    block: Mesh<Layout>.() -> Unit
+): Mesh<Layout> {
     val mesh = Mesh(IndexedVertexList(layout, primitiveType = primitiveType), instances, name = name)
     mesh.block()
     addNode(mesh)
@@ -61,7 +58,7 @@ fun Node.addColorMesh(
     name: String = makeChildName("colorMesh"),
     primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
     instances: MeshInstanceList<*>? = null,
-    block: Mesh.() -> Unit
+    block: ColorMesh.() -> Unit
 ): ColorMesh {
     return addMesh(
         layout = VertexLayouts.PositionNormalColor,
@@ -77,10 +74,10 @@ fun Node.addTextureMesh(
     isNormalMapped: Boolean = false,
     instances: MeshInstanceList<*>? = null,
     primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
-    block: Mesh.() -> Unit
-): Mesh {
+    block: TextureMesh.() -> Unit
+): TextureMesh {
     val mesh = addMesh(
-        layout = if (isNormalMapped) VertexLayouts.PositionNormalTexCoordTangent else VertexLayouts.PositionNormalTexCoord,
+        layout = TextureMeshLayout,
         instances = instances,
         name = name,
         primitiveType = primitiveType,
@@ -99,7 +96,7 @@ fun Mesh(
     instances: MeshInstanceList<*>? = null,
     name: String = Node.makeNodeName("Mesh"),
     usage: Usage = Usage.STATIC
-): Mesh = Mesh(
+): Mesh<DynamicStruct> = Mesh(
     geometry = IndexedVertexList(attributes, usage = usage),
     instances = instances,
     name = name
@@ -112,18 +109,18 @@ fun Mesh(
     instances: MeshInstanceList<*>? = null,
     name: String = Node.makeNodeName("Mesh"),
     usage: Usage = Usage.STATIC
-): Mesh = Mesh(
+): Mesh<DynamicStruct> = Mesh(
     geometry = IndexedVertexList(*attributes, usage = usage),
     instances = instances,
     name = name
 )
 
-fun Mesh(
-    layout: Struct,
+fun <Layout: Struct> Mesh(
+    layout: Layout,
     instances: MeshInstanceList<*>? = null,
     name: String = Node.makeNodeName("Mesh"),
     usage: Usage = Usage.STATIC
-): Mesh = Mesh(
+): Mesh<Layout> = Mesh(
     geometry = IndexedVertexList(layout, usage = usage),
     instances = instances,
     name = name
@@ -132,8 +129,8 @@ fun Mesh(
 /**
  * Class for renderable geometry (triangles, lines, points).
  */
-open class Mesh(
-    val geometry: IndexedVertexList<*>,
+open class Mesh<Layout: Struct>(
+    val geometry: IndexedVertexList<Layout>,
     val instances: MeshInstanceList<*>? = null,
     val morphWeights: FloatArray? = null,
     val skin: Skin? = null,
@@ -211,11 +208,11 @@ open class Mesh(
         localBounds.add(geometryBounds)
     }
 
-    inline fun generate(updateBounds: Boolean = true, generator: MeshBuilder<*>.() -> Unit) {
-        geometry.apply {
-            clear()
-            MeshBuilder(this).generator()
+    inline fun generate(updateBounds: Boolean = true, clearGeometry: Boolean = true, generator: MeshBuilder<Layout>.() -> Unit) {
+        if (clearGeometry) {
+            geometry.clear()
         }
+        MeshBuilder(geometry).generator()
         if (updateBounds) {
             updateGeometryBounds()
         }
@@ -342,12 +339,11 @@ open class Mesh(
     }
 }
 
-typealias ColorMesh = Mesh
-typealias TextureMesh = Mesh
+typealias ColorMeshLayout = VertexLayouts.PositionNormalColor
+typealias ColorMesh = Mesh<ColorMeshLayout>
 
 /**
- * Mesh with default attributes for vertex color based rendering:
- * [Attribute.POSITIONS], [Attribute.NORMALS], [Attribute.COLORS]
+ * Creates a [Mesh] with [ColorMeshLayout] for vertex color based rendering.
  */
 fun ColorMesh(
     instances: MeshInstanceList<*>? = null,
@@ -360,18 +356,19 @@ fun ColorMesh(
     usage = usage
 )
 
+typealias TextureMeshLayout = VertexLayouts.PositionNormalTexCoordTangent
+typealias TextureMesh = Mesh<TextureMeshLayout>
+
 /**
- * Mesh with default attributes for texture color based rendering:
- * [Attribute.POSITIONS], [Attribute.NORMALS], [Attribute.TEXTURE_COORDS] and [Attribute.TANGENTS] if
- * isNormalMapped is true.
+ * Creates a [Mesh] with [TextureMeshLayout] for texture color based rendering. The default [TextureMeshLayout] also
+ * includes a tangent attribute in case normal mapping is used.
  */
 fun TextureMesh(
-    isNormalMapped: Boolean = false,
     instances: MeshInstanceList<*>? = null,
     name: String = Node.makeNodeName("TextureMesh"),
     usage: Usage = Usage.STATIC,
 ): TextureMesh = Mesh(
-    layout = if (isNormalMapped) VertexLayouts.PositionNormalTexCoordTangent else VertexLayouts.PositionNormalTexCoord,
+    layout = TextureMeshLayout,
     instances = instances,
     name = name,
     usage = usage

@@ -48,8 +48,8 @@ class ReflectionDemo : DemoScene("Reflections") {
     private val roughness = mutableStateOf(0.1f)
     private val metallic = mutableStateOf(0.0f)
 
-    private var bunnyMesh: Mesh? = null
-    private var groundMesh: Mesh? = null
+    private var bunnyMesh: Mesh<*>? = null
+    private var groundMesh: TextureMesh? = null
 
     private var modelShader: DeferredKslPbrShader? = null
 

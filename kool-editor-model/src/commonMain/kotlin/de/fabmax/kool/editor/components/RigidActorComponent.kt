@@ -159,7 +159,7 @@ class RigidActorComponent(
 
     private suspend fun MeshComponent.makeCollisionShapes(): List<Pair<CollisionGeometry, Mat4f>> {
         return when (val node = sceneNode) {
-            is Mesh -> data.shapes.mapNotNull { shape -> shape.makeCollisionGeometry(node) }
+            is Mesh<*> -> data.shapes.mapNotNull { shape -> shape.makeCollisionGeometry(node) }
             is Model -> node.makeCollisionShapes()
             else -> emptyList()
         }
@@ -180,7 +180,7 @@ class RigidActorComponent(
         return listOf(collisionGeom.makeTriMeshGeometry(scale.toVec3f()) to Mat4f.IDENTITY)
     }
 
-    private suspend fun ShapeData.makeCollisionGeometry(mesh: Mesh? = null): Pair<CollisionGeometry, Mat4f>? {
+    private suspend fun ShapeData.makeCollisionGeometry(mesh: Mesh<*>? = null): Pair<CollisionGeometry, Mat4f>? {
         return when (this) {
             is ShapeData.Box -> BoxGeometry(size.toVec3f()) to Mat4f.IDENTITY
             is ShapeData.Capsule -> CapsuleGeometry(length.toFloat(), radius.toFloat()) to Mat4f.IDENTITY

@@ -3,7 +3,7 @@ package de.fabmax.kool.modules.mesh.simplification
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.mesh.HalfEdgeMesh
 
-class ErrorQuadric(val vertex: HalfEdgeMesh.HalfEdgeVertex) {
+class ErrorQuadric(val vertex: HalfEdgeMesh<*>.HalfEdgeVertex) {
 
     val errQuadric = MutableMat4d().set(Mat4d.ZERO)
     var isStickyVertex = false

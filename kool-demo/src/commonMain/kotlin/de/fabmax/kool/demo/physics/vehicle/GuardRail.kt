@@ -24,7 +24,7 @@ import kotlin.math.*
 
 class GuardRail {
 
-    val guardRailMesh: Mesh
+    val guardRailMesh: Mesh<VertexLayouts.PositionNormalTexCoordColor>
     val signs = mutableListOf<SignInstance>()
 
     var isReverse = false
@@ -52,8 +52,8 @@ class GuardRail {
             val poleColor = VehicleDemo.color(400)
 
             val emmision = MutableVec2f(0f, 0f)
-            vertexModFun = {
-                texCoord.set(emmision)
+            vertexCustomizer = {
+                it.texCoord.set(emmision)
             }
 
             val arrowLtPos = mutableListOf(
@@ -150,12 +150,12 @@ class GuardRail {
         }
     }
 
-    private fun MeshBuilder<*>.lamp(center: Vec3f, poly: PolyUtil.TriangulatedPolygon) {
+    private fun MeshBuilder<VertexLayouts.PositionNormalTexCoordColor>.lamp(center: Vec3f, poly: PolyUtil.TriangulatedPolygon) {
         val inds = mutableListOf<Int>()
         poly.vertices.forEach { v ->
             inds += vertex {
-                position.set(v).add(center)
-                normal.set(Vec3f.Z_AXIS)
+                it.position.set(v + center)
+                it.normal.set(Vec3f.Z_AXIS)
             }
         }
         for (i in poly.indices.indices step 3) {
@@ -234,7 +234,7 @@ class GuardRail {
                         vertexStage {
                             main {
                                 val emissionDir = vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
-                                val emissionInst = instanceAttribFloat2(InstanceLayout.emission)
+                                val emissionInst = instanceAttrib(InstanceLayout.emission)
                                 val emissionLt = emissionDir.x * emissionInst.x
                                 val emissionRt = emissionDir.y * emissionInst.y
                                 emissionFactor.input set max(emissionLt, emissionRt)

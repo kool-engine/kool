@@ -1,14 +1,14 @@
 package de.fabmax.kool.scene.geometry
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.modules.ui2.MsdfUiShader
+import de.fabmax.kool.modules.ui2.UiTextVertexLayout
 import de.fabmax.kool.util.*
 import kotlin.math.*
 
 /**
  * @author fabmax
  */
-class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
+class MeshBuilder<Layout: Struct>(val geometry: IndexedVertexList<Layout>) {
     val transform = Mat4fStack()
     var isInvertFaceOrientation = false
 
@@ -16,23 +16,58 @@ class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
     var emissiveColor = Color.BLACK
     var metallic = 0f
     var roughness = 0.5f
-    var vertexModFun: (VertexView<*>.() -> Unit)? = null
 
-    val positionAttr: Float3Member<T>? get() = geometry.positionAttr
-    val normalAttr: Float3Member<T>? get() = geometry.normalAttr
-    val colorAttr: Float4Member<T>? get() = geometry.colorAttr
-    val texCoordAttr: Float2Member<T>? get() = geometry.texCoordAttr
+    var vertexCustomizer: (MutableStructBufferView<Layout>.(Layout) -> Unit)? = null
+
+    val positionAttr: Float3Member<Layout>? = geometry.positionAttr
+    val normalAttr: Float3Member<Layout>? = geometry.normalAttr
+    val tangentAttr: Float4Member<Layout>? = geometry.tangentAttr
+    val colorAttr: Float4Member<Layout>? = geometry.colorAttr
+    val emissiveColorAttr: Float3Member<Layout>? = geometry.emissiveColorAttr
+    val metallicAttr: Float1Member<Layout>? = geometry.metallicAttr
+    val roughnessAttr: Float1Member<Layout>? = geometry.roughnessAttr
+    val texCoordAttr: Float2Member<Layout>? = geometry.texCoordAttr
 
     val hasNormals = geometry.normalAttr != null
 
-    inline fun vertexNew(block: MutableStructBufferView<T>.(T) -> Unit): Int {
+    @PublishedApi
+    internal val transformCache = MutableVec3f()
+
+    @Suppress("DEPRECATION")
+    @Deprecated("Use vertexCustomizer instead")
+    var vertexModFun: (VertexView<Layout>.() -> Unit)? = null
+
+    inline fun vertex(block: MutableStructBufferView<Layout>.(Layout) -> Unit): Int {
         return geometry.addVertex {
-            colorAttr?.let { set(it, color) }
+            colorAttr?.let { attr -> set(attr, color) }
+            emissiveColorAttr?.let { attr -> set(attr, emissiveColor.r, emissiveColor.g, emissiveColor.b) }
+            metallicAttr?.let { attr -> set(attr, metallic) }
+            roughnessAttr?.let { attr -> set(attr, roughness) }
             block(it)
+
+            positionAttr?.let { attr ->
+                get(attr, transformCache)
+                transform.transform(transformCache)
+                set(attr, transformCache)
+            }
+            if (hasNormals && normalAttr != null) {
+                normalAttr.let { attr ->
+                    get(attr, transformCache)
+                    transform.transform(transformCache, 0f)
+                    set(attr, transformCache.norm())
+                }
+            }
+            vertexCustomizer?.invoke(this, it)
+            @Suppress("DEPRECATION")
+            if (vertexModFun != null) {
+                logW { "${geometry.name}: Ignoring non-null vertexModFun, use vertexCustomizer instead" }
+            }
         }
     }
 
-    inline fun vertex(block: VertexView<*>.() -> Unit): Int {
+    @Suppress("DEPRECATION")
+    @Deprecated("Use vertex { } instead")
+    inline fun vertexOld(block: VertexView<*>.() -> Unit): Int {
         return geometry.addVertexOld {
             color.set(this@MeshBuilder.color)
             setEmissiveColor(this@MeshBuilder.emissiveColor)
@@ -50,9 +85,9 @@ class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
     }
 
     fun vertex(pos: Vec3f, nrm: Vec3f, uv: Vec2f = Vec2f.ZERO) = vertex {
-        position.set(pos)
-        normal.set(nrm)
-        texCoord.set(uv)
+        positionAttr?.set(pos)
+        normalAttr?.set(nrm)
+        texCoordAttr?.set(uv)
     }
 
     fun addTriIndices(i0: Int, i1: Int, i2: Int) {
@@ -63,7 +98,7 @@ class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
         }
     }
 
-    inline fun withTransform(block: MeshBuilder<*>.() -> Unit) {
+    inline fun withTransform(block: MeshBuilder<Layout>.() -> Unit) {
         transform.push()
         this.block()
         transform.pop()
@@ -185,8 +220,8 @@ class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
         val meshIndices = IntArray(poly.vertices.size)
         poly.vertices.forEachIndexed { i, v ->
             meshIndices[i] = vertex {
-                set(v)
-                normal.set(poly.normal)
+                positionAttr?.set(v)
+                normalAttr?.set(poly.normal)
             }
         }
         for (i in poly.indices.indices step 3) {
@@ -197,9 +232,8 @@ class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
     fun fillPolygon(points: List<Vec3f>, normal: Vec3f? = null) {
         val indices = points.map { pt ->
             vertex {
-                position.set(pt)
-                color.set(this@MeshBuilder.color)
-                normal?.let { this.normal.set(it) }
+                positionAttr?.set(pt)
+                normalAttr?.set(normal ?: Vec3f.ZERO)
             }
         }
         fillPolygon(indices)
@@ -227,9 +261,9 @@ class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
             val py = props.center.y + props.radius * sin
 
             val idx = vertex {
-                position.set(px, py, props.center.z)
-                normal.set(Vec3f.Z_AXIS)
-                texCoord.set(cos, -sin).mul(props.uvRadius).add(props.uvCenter)
+                positionAttr?.set(px, py, props.center.z)
+                normalAttr?.set(Vec3f.Z_AXIS)
+                texCoordAttr?.set(cos * props.uvRadius + props.uvCenter.x, -sin * props.uvRadius + props.uvCenter.y)
             }
 
             if (i > 0) {
@@ -260,23 +294,23 @@ class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
             val z = sin(-phi).toFloat() * r
 
             rowIndices[i] = vertex {
-                position.set(x, y, z).add(props.center)
-                normal.set(x, y, z).mul(1f / props.radius)
-                texCoord.set(props.texCoordGenerator(theta.toFloat(), phi.toFloat()))
+                val n = 1f / props.radius
+                positionAttr?.set(x + props.center.x, y + props.center.y, z + props.center.z)
+                normalAttr?.set(x * n, y * n, z * n)
+                texCoordAttr?.set(props.texCoordGenerator(theta.toFloat(), phi.toFloat()))
             }
-
             if (i > 0) {
                 val iCenter = vertex {
-                    position.set(props.center.x, props.center.y-props.radius, props.center.z)
-                    normal.set(Vec3f.NEG_Y_AXIS)
-                    texCoord.set(props.texCoordGenerator(PI.toFloat(), phi.toFloat()))
+                    positionAttr?.set(props.center.x, props.center.y - props.radius, props.center.z)
+                    normalAttr?.set(Vec3f.NEG_Y_AXIS)
+                    texCoordAttr?.set(props.texCoordGenerator(PI_F, phi.toFloat()))
                 }
                 addTriIndices(iCenter, rowIndices[i], rowIndices[i - 1])
             }
         }
 
         // belt
-        for (row in 2..steps-1) {
+        for (row in 2 until steps) {
             val tmp = prevIndices
             prevIndices = rowIndices
             rowIndices = tmp
@@ -289,11 +323,11 @@ class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
                 val x = cos(-phi).toFloat() * r
                 val z = sin(-phi).toFloat() * r
                 rowIndices[i] = vertex {
-                    position.set(x, y, z).add(props.center)
-                    normal.set(x, y, z).mul(1f / props.radius)
-                    texCoord.set(props.texCoordGenerator(theta.toFloat(), phi.toFloat()))
+                    val n = 1f / props.radius
+                    positionAttr?.set(x + props.center.x, y + props.center.y, z + props.center.z)
+                    normalAttr?.set(x * n, y * n, z * n)
+                    texCoordAttr?.set(props.texCoordGenerator(theta.toFloat(), phi.toFloat()))
                 }
-
                 if (i > 0) {
                     addTriIndices(prevIndices[i - 1], rowIndices[i], rowIndices[i - 1])
                     addTriIndices(prevIndices[i - 1], prevIndices[i], rowIndices[i])
@@ -304,9 +338,9 @@ class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
         // top cap
         for (i in 1..(steps * 2)) {
             val iCenter = vertex {
-                position.set(props.center.x, props.center.y + props.radius, props.center.z)
-                normal.set(Vec3f.Y_AXIS)
-                texCoord.set(props.texCoordGenerator(0f, (PI * i / steps).toFloat()))
+                positionAttr?.set(props.center.x, props.center.y + props.radius, props.center.z)
+                normalAttr?.set(Vec3f.Y_AXIS)
+                texCoordAttr?.set(props.texCoordGenerator(0f, PI_F * i / steps))
             }
             addTriIndices(iCenter, rowIndices[i - 1], rowIndices[i])
         }
@@ -322,8 +356,8 @@ class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
      * Based on https://schneide.blog/2016/07/15/generating-an-icosphere-in-c/
      */
     class IcoGenerator {
-        val x = 0.525731112f
-        val z = 0.850650808f
+        val x = 0.5257311f
+        val z = 0.8506508f
         val n = 0f
         val verts = mutableListOf(
                 Vec3f(-x, n, z), Vec3f(x, n, z), Vec3f(-x, n, -z), Vec3f(x, n, -z),
@@ -388,13 +422,13 @@ class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
         icoGenerator.generateUvs()
 
         // insert geometry
-        val pif = PI.toFloat()
         val i0 = geometry.numVertices
+        val cache = MutableVec3f()
         for (v in icoGenerator.uvVerts) {
             vertex {
-                normal.set(v.first).norm()
-                position.set(v.first).mul(props.radius).add(props.center)
-                texCoord.set(props.texCoordGenerator(v.second.y * pif, v.second.x * 2 * pif))
+                normalAttr?.set(v.first.normed(cache))
+                positionAttr?.set(cache.set(v.first).mul(props.radius).add(props.center))
+                texCoordAttr?.set(props.texCoordGenerator(v.second.y * PI_F, v.second.x * 2f * PI_F))
             }
         }
         for (i in icoGenerator.faces.indices step 3) {
@@ -421,24 +455,24 @@ class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
 
         if (props.cornerRadius == 0f) {
             val i0 = vertex {
-                position.set(props.origin.x - hx, props.origin.y - hy, props.origin.z)
-                normal.set(Vec3f.Z_AXIS)
-                texCoord.set(props.texCoordLowerLeft)
+                positionAttr?.set(props.origin.x - hx, props.origin.y - hy, props.origin.z)
+                normalAttr?.set(Vec3f.Z_AXIS)
+                texCoordAttr?.set(props.texCoordLowerLeft)
             }
             val i1 = vertex {
-                position.set(props.origin.x + hx, props.origin.y - hy, props.origin.z)
-                normal.set(Vec3f.Z_AXIS)
-                texCoord.set(props.texCoordLowerRight)
+                positionAttr?.set(props.origin.x + hx, props.origin.y - hy, props.origin.z)
+                normalAttr?.set(Vec3f.Z_AXIS)
+                texCoordAttr?.set(props.texCoordLowerRight)
             }
             val i2 = vertex {
-                position.set(props.origin.x + hx, props.origin.y + hy, props.origin.z)
-                normal.set(Vec3f.Z_AXIS)
-                texCoord.set(props.texCoordUpperRight)
+                positionAttr?.set(props.origin.x + hx, props.origin.y + hy, props.origin.z)
+                normalAttr?.set(Vec3f.Z_AXIS)
+                texCoordAttr?.set(props.texCoordUpperRight)
             }
             val i3 = vertex {
-                position.set(props.origin.x - hx, props.origin.y + hy, props.origin.z)
-                normal.set(Vec3f.Z_AXIS)
-                texCoord.set(props.texCoordUpperLeft)
+                positionAttr?.set(props.origin.x - hx, props.origin.y + hy, props.origin.z)
+                normalAttr?.set(Vec3f.Z_AXIS)
+                texCoordAttr?.set(props.texCoordUpperLeft)
             }
             addTriIndices(i0, i1, i2)
             addTriIndices(i0, i2, i3)
@@ -560,10 +594,10 @@ class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
         val qx3 = x1 - addX - dyu
         val qy3 = y1 - addY + dxu
 
-        val i0 = vertex { position.set(qx0, qy0, 0f); normal.set(Vec3f.Z_AXIS) }
-        val i1 = vertex { position.set(qx1, qy1, 0f); normal.set(Vec3f.Z_AXIS) }
-        val i2 = vertex { position.set(qx2, qy2, 0f); normal.set(Vec3f.Z_AXIS) }
-        val i3 = vertex { position.set(qx3, qy3, 0f); normal.set(Vec3f.Z_AXIS) }
+        val i0 = vertex { positionAttr?.set(qx0, qy0, 0f); normalAttr?.set(Vec3f.Z_AXIS) }
+        val i1 = vertex { positionAttr?.set(qx1, qy1, 0f); normalAttr?.set(Vec3f.Z_AXIS) }
+        val i2 = vertex { positionAttr?.set(qx2, qy2, 0f); normalAttr?.set(Vec3f.Z_AXIS) }
+        val i3 = vertex { positionAttr?.set(qx3, qy3, 0f); normalAttr?.set(Vec3f.Z_AXIS) }
         addTriIndices(i0, i1, i2)
         addTriIndices(i0, i2, i3)
     }
@@ -590,10 +624,10 @@ class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
         val d = p2.subtract(p1, MutableVec3f()).norm()
         val o = d.cross(normal, MutableVec3f()).norm().mul(width * 0.5f)
 
-        val i0 = vertex { position.set(p1).add(o); this.normal.set(normal) }
-        val i1 = vertex { position.set(p1).subtract(o); this.normal.set(normal) }
-        val i2 = vertex { position.set(p2).subtract(o); this.normal.set(normal) }
-        val i3 = vertex { position.set(p2).add(o); this.normal.set(normal) }
+        val i0 = vertex { positionAttr?.set(p1 + o); normalAttr?.set(normal) }
+        val i1 = vertex { positionAttr?.set(p1 - o); normalAttr?.set(normal) }
+        val i2 = vertex { positionAttr?.set(p2 - o); normalAttr?.set(normal) }
+        val i3 = vertex { positionAttr?.set(p2 + o); normalAttr?.set(normal) }
 
         addTriIndices(i0, i1, i2)
         addTriIndices(i0, i2, i3)
@@ -737,12 +771,12 @@ class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
 
             tmpNrm.set(c, 0f, s).rotate(nrmAng.deg, Vec3f(s, 0f, c))
             val i2 = vertex {
-                position.set(px2, yb, pz2)
-                normal.set(tmpNrm)
+                positionAttr?.set(px2, yb, pz2)
+                normalAttr?.set(tmpNrm)
             }
             val i3 = vertex {
-                position.set(px3, yt, pz3)
-                normal.set(tmpNrm)
+                positionAttr?.set(px3, yt, pz3)
+                normalAttr?.set(tmpNrm)
             }
 
             if (i > 0) {
@@ -762,6 +796,7 @@ class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
 
     fun grid(props: GridProps) {
         val gridNormal = MutableVec3f()
+        val pos = MutableVec3f()
 
         val bx = -props.sizeX / 2
         val by = -props.sizeY / 2
@@ -777,11 +812,12 @@ class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
                 val h = props.heightFun(x, y)
 
                 val idx = vertex {
-                    position.set(props.center)
-                    position.x += props.xDir.x * px + props.yDir.x * py + gridNormal.x * h
-                    position.y += props.xDir.y * px + props.yDir.y * py + gridNormal.y * h
-                    position.z += props.xDir.z * px + props.yDir.z * py + gridNormal.z * h
-                    texCoord.set(x / props.stepsX.toFloat() * props.texCoordScale.x + props.texCoordOffset.x,
+                    pos.set(props.center)
+                    pos.x += props.xDir.x * px + props.yDir.x * py + gridNormal.x * h
+                    pos.y += props.xDir.y * px + props.yDir.y * py + gridNormal.y * h
+                    pos.z += props.xDir.z * px + props.yDir.z * py + gridNormal.z * h
+                    positionAttr?.set(pos)
+                    texCoordAttr?.set(x / props.stepsX.toFloat() * props.texCoordScale.x + props.texCoordOffset.x,
                         (1f - y / props.stepsY.toFloat()) * props.texCoordScale.y + props.texCoordOffset.y)
                 }
 
@@ -854,6 +890,13 @@ class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
 
     private fun renderMsdfFont(font: MsdfFont, props: TextProps) {
         withTransform {
+            val msdfAttr = checkNotNull(geometry.layout.getFloat4(UiTextVertexLayout.msdfProps.name)) {
+                "Missing ${UiTextVertexLayout.msdfProps.name} attribute in geometry layout"
+            }
+            val glowAttr = checkNotNull(geometry.layout.getFloat4(UiTextVertexLayout.glowColor.name)) {
+                "Missing ${UiTextVertexLayout.glowColor.name} attribute in geometry layout"
+            }
+
             if (props.roundOriginToUnits) {
                 translate(round(props.origin.x), round(props.origin.y), props.origin.z)
             } else {
@@ -896,39 +939,31 @@ class MeshBuilder<T: Struct>(val geometry: IndexedVertexList<T>) {
                 val yBot = if (props.isYAxisUp) g.planeBounds.bottom * s else -g.planeBounds.bottom * s
                 val h = yTop - yBot
                 val lt = (advanced + g.planeBounds.left) * s
-                // individual char positions are currently not rounded for MSDF fonts, as it's not really needed
-                // and can produce artefacts
-                // if (props.roundOriginToUnits) {
-                //     lt = round(lt)
-                //     yBot = round(yBot) + 0.5f
-                // }
                 val w = (g.planeBounds.right - g.planeBounds.left) * s
 
-                val msdfProps = geometry.vertexIt.getVec4fAttribute(MsdfUiShader.ATTRIB_MSDF_PROPS)
-                val glowColor = geometry.vertexIt.getVec4fAttribute(MsdfUiShader.ATTRIB_GLOW_COLOR)
                 val iBtLt = vertex {
-                    set(lt, yBot, 0f)
-                    texCoord.set(g.atlasBounds.left * us, 1f - g.atlasBounds.bottom * vs)
-                    msdfProps?.set(pxRange, font.weight, font.cutoff, 0f)
-                    glowColor?.let { font.glowColor?.toMutableVec4f(it) }
+                    positionAttr?.set(lt, yBot, 0f)
+                    texCoordAttr?.set(g.atlasBounds.left * us, 1f - g.atlasBounds.bottom * vs)
+                    msdfAttr.set(pxRange, font.weight, font.cutoff, 0f)
+                    font.glowColor?.let { glowAttr.set(it) }
                 }
                 val iBtRt = vertex {
-                    set(lt + w, yBot, 0f)
-                    texCoord.set(g.atlasBounds.right * us, 1f - g.atlasBounds.bottom * vs)
-                    msdfProps?.set(pxRange, font.weight, font.cutoff, 0f)
-                    glowColor?.let { font.glowColor?.toMutableVec4f(it) }
+                    positionAttr?.set(lt + w, yBot, 0f)
+                    texCoordAttr?.set(g.atlasBounds.right * us, 1f - g.atlasBounds.bottom * vs)
+                    msdfAttr.set(pxRange, font.weight, font.cutoff, 0f)
+                    font.glowColor?.let { glowAttr.set(it) }
                 }
                 val iTpLt = vertex {
-                    set(lt - h * font.italic, yBot + h, 0f)
-                    texCoord.set(g.atlasBounds.left * us, 1f - g.atlasBounds.top * vs)
-                    msdfProps?.set(pxRange, font.weight, font.cutoff, 0f)
-                    glowColor?.let { font.glowColor?.toMutableVec4f(it) }
+                    positionAttr?.set(lt - h * font.italic, yBot + h, 0f)
+                    texCoordAttr?.set(g.atlasBounds.left * us, 1f - g.atlasBounds.top * vs)
+                    msdfAttr.set(pxRange, font.weight, font.cutoff, 0f)
+                    font.glowColor?.let { glowAttr.set(it) }
                 }
                 val iTpRt = vertex {
-                    set(lt + w - h * font.italic, yBot + h, 0f)
-                    texCoord.set(g.atlasBounds.right * us, 1f - g.atlasBounds.top * vs)
-                    msdfProps?.set(pxRange, font.weight, font.cutoff, 0f)
-                    glowColor?.let { font.glowColor?.toMutableVec4f(it) }
+                    positionAttr?.set(lt + w - h * font.italic, yBot + h, 0f)
+                    texCoordAttr?.set(g.atlasBounds.right * us, 1f - g.atlasBounds.top * vs)
+                    msdfAttr.set(pxRange, font.weight, font.cutoff, 0f)
+                    font.glowColor?.let { glowAttr.set(it) }
                 }
                 addTriIndices(iBtLt, iBtRt, iTpRt)
                 addTriIndices(iBtLt, iTpRt, iTpLt)

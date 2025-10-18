@@ -3,13 +3,14 @@ package de.fabmax.kool.modules.mesh
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.util.Struct
 import de.fabmax.kool.util.logD
 import kotlin.math.min
 import kotlin.math.sqrt
 
-class MeshCutXy(val geometry: IndexedVertexList<*>, private val eps: Float = 1e-3f) {
+class MeshCutXy<Layout: Struct>(val geometry: IndexedVertexList<Layout>, private val eps: Float = 1e-3f) {
 
-    val ocTreeHandler = OcTreeEdgeHandler(geometry)
+    val ocTreeHandler = OcTreeEdgeHandler<Layout>(geometry)
     val halfEdgeMesh = HalfEdgeMesh(geometry, ocTreeHandler)
 
     var shortEdgeThresh: Float
@@ -67,7 +68,7 @@ class MeshCutXy(val geometry: IndexedVertexList<*>, private val eps: Float = 1e-
         ocTreeHandler.edgeTree
     }
 
-    private fun Vec2f.computeSplitFraction(edge: HalfEdgeMesh.HalfEdge): Float {
+    private fun Vec2f.computeSplitFraction(edge: HalfEdgeMesh<Layout>.HalfEdge): Float {
         val pt = Vec3f(x, y, 0f)
         val a = Vec3f(edge.from.x, edge.from.y, 0f)
         val b = Vec3f(edge.to.x, edge.to.y, 0f)
@@ -137,18 +138,18 @@ class MeshCutXy(val geometry: IndexedVertexList<*>, private val eps: Float = 1e-
         //logD { "Deleted $delCnt inner triangles" }
     }
 
-    private class CoveringTriXyTrav : KNearestTraverser<HalfEdgeMesh.HalfEdge>() {
+    private inner class CoveringTriXyTrav : KNearestTraverser<HalfEdgeMesh<Layout>.HalfEdge>() {
         val triPts = MutableList(3) { MutableVec2f() }
         private val tmpVec = MutableVec3f()
 
         init {
-            pointDistance = object : PointDistance<HalfEdgeMesh.HalfEdge> {
-                override fun nodeSqrDistanceToPoint(node: SpatialTree<HalfEdgeMesh.HalfEdge>.Node, point: Vec3d): Double {
+            pointDistance = object : PointDistance<HalfEdgeMesh<Layout>.HalfEdge> {
+                override fun nodeSqrDistanceToPoint(node: SpatialTree<HalfEdgeMesh<Layout>.HalfEdge>.Node, point: Vec3d): Double {
                     val pt = Vec3d(point.x, point.y, node.bounds.center.z)
                     return node.bounds.pointDistanceSqr(pt)
                 }
 
-                override fun itemSqrDistanceToPoint(tree: SpatialTree<HalfEdgeMesh.HalfEdge>, item: HalfEdgeMesh.HalfEdge, point: Vec3d): Double {
+                override fun itemSqrDistanceToPoint(tree: SpatialTree<HalfEdgeMesh<Layout>.HalfEdge>, item: HalfEdgeMesh<Layout>.HalfEdge, point: Vec3d): Double {
                     triPts[0].set(item.from.x, item.from.y)
                     triPts[1].set(item.next.from.x, item.next.from.y)
                     triPts[2].set(item.next.next.from.x, item.next.next.from.y)
@@ -168,20 +169,20 @@ class MeshCutXy(val geometry: IndexedVertexList<*>, private val eps: Float = 1e-
         }
     }
 
-    private inner class ShortEdgeOnEdgeTraverser : InRadiusTraverser<HalfEdgeMesh.HalfEdge>() {
+    private inner class ShortEdgeOnEdgeTraverser : InRadiusTraverser<HalfEdgeMesh<Layout>.HalfEdge>() {
         lateinit var edge: Edge<Vec3f>
 
         fun setup(edge: Edge<Vec3f>): ShortEdgeOnEdgeTraverser {
             super.setup(MutableVec3f(edge.pt0).add(edge.pt1).mul(0.5f), edge.length / 2)
             this.edge = edge
 
-            pointDistance = object : PointDistance<HalfEdgeMesh.HalfEdge> {
-                override fun nodeSqrDistanceToPoint(node: SpatialTree<HalfEdgeMesh.HalfEdge>.Node, point: Vec3d): Double {
+            pointDistance = object : PointDistance<HalfEdgeMesh<Layout>.HalfEdge> {
+                override fun nodeSqrDistanceToPoint(node: SpatialTree<HalfEdgeMesh<Layout>.HalfEdge>.Node, point: Vec3d): Double {
                     val pt = Vec3d(point.x, point.y, node.bounds.center.z)
                     return super.nodeSqrDistanceToPoint(node, pt)
                 }
 
-                override fun itemSqrDistanceToPoint(tree: SpatialTree<HalfEdgeMesh.HalfEdge>, item: HalfEdgeMesh.HalfEdge, point: Vec3d): Double {
+                override fun itemSqrDistanceToPoint(tree: SpatialTree<HalfEdgeMesh<Layout>.HalfEdge>, item: HalfEdgeMesh<Layout>.HalfEdge, point: Vec3d): Double {
                     if (/*item.opp == null &&*/ item.computeLength() < shortEdgeThresh) {
                         val d0 = Vec3f(item.from.x, item.from.y, 0f).distanceToEdge(edge.pt0, edge.pt1)
                         val d1 = Vec3f(item.to.x, item.to.y, 0f).distanceToEdge(edge.pt0, edge.pt1)
@@ -196,13 +197,13 @@ class MeshCutXy(val geometry: IndexedVertexList<*>, private val eps: Float = 1e-
         }
     }
 
-    private inner class EdgeXyIntersectionTrav : InRadiusTraverser<HalfEdgeMesh.HalfEdge>() {
+    private inner class EdgeXyIntersectionTrav : InRadiusTraverser<HalfEdgeMesh<Layout>.HalfEdge>() {
         lateinit var edge: Edge<Vec3f>
         val intersectionPt = MutableVec3f()
 
-        val splitEdges = mutableListOf<Pair<HalfEdgeMesh.HalfEdge, Vec3f>>()
+        val splitEdges = mutableListOf<Pair<HalfEdgeMesh<Layout>.HalfEdge, Vec3f>>()
 
-        override fun traverse(tree: SpatialTree<HalfEdgeMesh.HalfEdge>) {
+        override fun traverse(tree: SpatialTree<HalfEdgeMesh<Layout>.HalfEdge>) {
             splitEdges.clear()
             super.traverse(tree)
             splitEdges.sortBy { it.second.distance(edge.pt0) }
@@ -212,13 +213,13 @@ class MeshCutXy(val geometry: IndexedVertexList<*>, private val eps: Float = 1e-
             super.setup(MutableVec3f(edge.pt0).add(edge.pt1).mul(0.5f), edge.length / 2)
             this.edge = edge
 
-            pointDistance = object : PointDistance<HalfEdgeMesh.HalfEdge> {
-                override fun nodeSqrDistanceToPoint(node: SpatialTree<HalfEdgeMesh.HalfEdge>.Node, point: Vec3d): Double {
+            pointDistance = object : PointDistance<HalfEdgeMesh<Layout>.HalfEdge> {
+                override fun nodeSqrDistanceToPoint(node: SpatialTree<HalfEdgeMesh<Layout>.HalfEdge>.Node, point: Vec3d): Double {
                     val pt = Vec3d(point.x, point.y, node.bounds.center.z)
                     return super.nodeSqrDistanceToPoint(node, pt)
                 }
 
-                override fun itemSqrDistanceToPoint(tree: SpatialTree<HalfEdgeMesh.HalfEdge>, item: HalfEdgeMesh.HalfEdge, point: Vec3d): Double {
+                override fun itemSqrDistanceToPoint(tree: SpatialTree<HalfEdgeMesh<Layout>.HalfEdge>, item: HalfEdgeMesh<Layout>.HalfEdge, point: Vec3d): Double {
                     return if (computeXyEdgeIntersectionPoint(edge.pt0, edge.pt1, item.from, item.to, intersectionPt)) {
                         val d = intersectionPt.distXy(item.from) / item.to.distXy(item.from)
 

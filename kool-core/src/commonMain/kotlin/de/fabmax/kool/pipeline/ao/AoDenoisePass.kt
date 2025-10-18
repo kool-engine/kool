@@ -35,11 +35,11 @@ class AoDenoisePass(aoPass: OffscreenPass2d, depthComponent: String) :
 
     var clearAndDisable = false
 
-    private val denoiseMesh: Mesh = Mesh(VertexLayouts.PositionTexCoord, name = "AoDenoiseMesh").apply {
+    private val denoiseMesh = Mesh(VertexLayouts.PositionTexCoord, name = "AoDenoiseMesh").apply {
         generateFullscreenQuad()
         shader = denoiseShader
     }
-    private val clearMesh: Mesh = Mesh(VertexLayouts.PositionTexCoord, name = "AoClearMesh").apply {
+    private val clearMesh = Mesh(VertexLayouts.PositionTexCoord, name = "AoClearMesh").apply {
         isVisible = false
         generateFullscreenQuad()
         shader = KslShader("AO Clear", fullscreenShaderPipelineCfg) {

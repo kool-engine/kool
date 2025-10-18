@@ -21,8 +21,8 @@ import kotlin.math.*
 class ShellShadingDemo : DemoScene("Shell Shading") {
 
     private val envMap by hdriImage("${DemoLoader.hdriPath}/mossy_forest_1k.rgbe.png")
-    private lateinit var sphereMesh: Mesh
-    private lateinit var bunnyMesh: Mesh
+    private lateinit var sphereMesh: TextureMesh
+    private lateinit var bunnyMesh: Mesh<*>
 
     private val themes = mutableListOf<ColorTheme>()
 
@@ -162,19 +162,24 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
         }
     }
 
-    private fun MeshBuilder<*>.generateFurSphere() {
+    private fun MeshBuilder<TextureMeshLayout>.generateFurSphere() {
         val rot = MutableMat3f()
         var uvOffset = 0f
 
-        vertexModFun = {
+        vertexCustomizer = {
+            val pos = it.position.get(MutableVec3f())
+            val uv = it.texCoord.get(MutableVec2f())
+
             // tangent warp function
             val theta = PI_F / 4f
-            x = tan(x * theta) / tan(theta)
-            z = tan(z * theta) / tan(theta)
-            texCoord.y += uvOffset
+            pos.x = tan(pos.x * theta) / tan(theta)
+            pos.z = tan(pos.z * theta) / tan(theta)
+            uv.y += uvOffset
+            it.texCoord.set(uv)
 
-            norm()
-            rot.transform(this)
+            pos.norm()
+            rot.transform(pos)
+            it.position.set(pos)
         }
 
         val stps = 20
@@ -421,7 +426,7 @@ class FurShader(uvBased: Boolean) : KslShader("Fur shader") {
                 if (uvBased) {
                     uv.input.set(vertexAttribFloat2(Attribute.TEXTURE_COORDS))
                 }
-                shell.input set instanceAttribFloat1(ShellShadingDemo.ShellInstanceLayout.shell)
+                shell.input set instanceAttrib(ShellShadingDemo.ShellInstanceLayout.shell)
                 val nrm = float3Var(vertexAttribFloat3(Attribute.NORMALS))
                 val pos = float3Var(vertexAttribFloat3(Attribute.POSITIONS))
                 basePos.input set pos

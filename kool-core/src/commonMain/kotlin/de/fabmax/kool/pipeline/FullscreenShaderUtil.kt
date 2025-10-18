@@ -10,7 +10,7 @@ object FullscreenShaderUtil {
     /**
      * Generates a single quad stretching from (-1, -1, 0) to (1, 1, 0) as used by most fullscreen shaders.
      */
-    fun Mesh.generateFullscreenQuad(mirrorTexCoordsY: Boolean = !KoolSystem.requireContext().backend.isInvertedNdcY) {
+    fun Mesh<*>.generateFullscreenQuad(mirrorTexCoordsY: Boolean = !KoolSystem.requireContext().backend.isInvertedNdcY) {
         isFrustumChecked = false
         generate {
             rect {
@@ -34,7 +34,7 @@ object FullscreenShaderUtil {
         }
     }
 
-    fun Mesh.generateFullscreenCube() {
+    fun Mesh<*>.generateFullscreenCube() {
         isFrustumChecked = false
         generate {
             cube { }

@@ -3,7 +3,7 @@ package de.fabmax.kool.physics.geometry
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.*
-import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.generateNormals
 import physx.*
@@ -28,7 +28,7 @@ class ConvexMeshImpl(override val points: List<Vec3f>, override var releaseWithG
 
     private fun makeConvexHull(convexMesh: PxConvexMesh): IndexedVertexList<*> {
         return MemoryStack.stackPush().use { mem ->
-            val geometry = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS)
+            val geometry = IndexedVertexList(VertexLayouts.PositionNormal)
             val v = MutableVec3f()
             val polyIndices = mutableListOf<Int>()
             val poly = mem.createPxHullPolygon()

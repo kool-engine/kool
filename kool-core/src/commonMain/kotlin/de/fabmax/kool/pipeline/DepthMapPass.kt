@@ -47,7 +47,7 @@ open class DepthMapPass(
         }
     }
 
-    protected open fun getDepthPipeline(mesh: Mesh, ctx: KoolContext): DrawPipeline? {
+    protected open fun getDepthPipeline(mesh: Mesh<*>, ctx: KoolContext): DrawPipeline? {
         return shadowPipelines.getOrPut(mesh.id) {
             val depthShader = mesh.depthShader
                 ?: mesh.depthShaderConfig?.let { cfg -> DepthShader(cfg.copy(outputLinearDepth = false, outputNormals = false)) }
@@ -56,7 +56,7 @@ open class DepthMapPass(
         }
     }
 
-    private fun defaultDepthShader(mesh: Mesh, ctx: KoolContext): DepthShader? {
+    private fun defaultDepthShader(mesh: Mesh<*>, ctx: KoolContext): DepthShader? {
         if (!mesh.geometry.hasAttribute(Attribute.POSITIONS)) {
             return null
         }
@@ -70,7 +70,7 @@ open class DepthMapPass(
         return depthShaders.getOrPut(key) { DepthShader(cfg) }
     }
 
-    protected fun getMeshCullMethod(mesh: Mesh, ctx: KoolContext): CullMethod {
+    protected fun getMeshCullMethod(mesh: Mesh<*>, ctx: KoolContext): CullMethod {
         return this.cullMethod ?: mesh.getOrCreatePipeline(ctx)?.cullMethod ?: CullMethod.CULL_BACK_FACES
     }
 
@@ -104,7 +104,7 @@ class NormalLinearDepthMapPass(
         mirrorIfInvertedClipY()
     }
 
-    override fun getDepthPipeline(mesh: Mesh, ctx: KoolContext): DrawPipeline? {
+    override fun getDepthPipeline(mesh: Mesh<*>, ctx: KoolContext): DrawPipeline? {
         return shadowPipelines.getOrPut(mesh.id) {
             val depthShader = mesh.normalLinearDepthShader
                 ?: mesh.depthShaderConfig?.let { cfg -> DepthShader(cfg.copy(outputLinearDepth = true, outputNormals = true)) }
@@ -113,7 +113,7 @@ class NormalLinearDepthMapPass(
         }
     }
 
-    private fun defaultDepthShader(mesh: Mesh, ctx: KoolContext): DepthShader? {
+    private fun defaultDepthShader(mesh: Mesh<*>, ctx: KoolContext): DepthShader? {
         if (!mesh.geometry.hasAttribute(Attribute.POSITIONS) || !mesh.geometry.hasAttribute(Attribute.NORMALS)) {
             return null
         }

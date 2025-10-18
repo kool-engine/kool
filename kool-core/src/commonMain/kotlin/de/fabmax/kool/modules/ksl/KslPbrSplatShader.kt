@@ -88,7 +88,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
         program.makeProgram()
     }
 
-    override fun createPipeline(mesh: Mesh, instances: MeshInstanceList<*>?, ctx: KoolContext): DrawPipeline {
+    override fun createPipeline(mesh: Mesh<*>, instances: MeshInstanceList<*>?, ctx: KoolContext): DrawPipeline {
         return super.createPipeline(mesh, instances, ctx).also {
             if (brdfLut == null) {
                 brdfLut = ctx.defaultPbrBrdfLut

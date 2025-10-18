@@ -270,7 +270,7 @@ class Sky(val mainScene: Scene, moonTex: Texture2d) {
                         val camData = cameraData()
                         val modelMat = modelMatrix()
 
-                        val pointCfg = instanceAttribFloat4(TriangulatedPointMesh.PointInstanceLayout.pointPosSize)
+                        val pointCfg = instanceAttrib(CustomTriangulatedPointMesh.PointInstanceLayout.pointPosSize)
                         val pointPos = float3Var(pointCfg.xyz)
                         val pointSize = float1Var(pointCfg.w)
                         val pxSize = float2Var(float2Value(1f.const / camData.viewport.z, 1f.const / camData.viewport.w))
@@ -283,8 +283,8 @@ class Sky(val mainScene: Scene, moonTex: Texture2d) {
                             outPosition set (mvpMat * float4Value(orientation * pointPos, 0f)).float4("xyww")
                         }
 
-                        color.input set instanceAttribFloat4(TriangulatedPointMesh.PointInstanceLayout.pointColor)
-                        outPosition.xy += vertexAttribFloat2(TriangulatedPointMesh.PointVertexLayout.posOffset) * outPosition.w * pointSize * pxSize
+                        color.input set instanceAttrib(CustomTriangulatedPointMesh.PointInstanceLayout.pointColor)
+                        outPosition.xy += vertexAttrib(CustomTriangulatedPointMesh.PointVertexLayout.posOffset) * outPosition.w * pointSize * pxSize
                     }
                 }
                 fragmentStage {

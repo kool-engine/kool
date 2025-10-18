@@ -17,6 +17,8 @@ import de.fabmax.kool.physics.joints.RevoluteJoint
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
@@ -498,10 +500,10 @@ class JointsDemo : DemoScene("Physics - Joints") {
         return link
     }
 
-    private inner class BodyMesh(val color: Color, val onCreate: (Mesh) -> Unit) {
-        private var mesh: Mesh? = null
+    private inner class BodyMesh(val color: Color, val onCreate: (Mesh<*>) -> Unit) {
+        private var mesh: Mesh<*>? = null
 
-        var factory: (RigidActor) -> Mesh = { proto ->
+        var factory: (RigidActor) -> Mesh<*> = { proto ->
             Mesh(
                 layout = VertexLayouts.PositionNormalColor,
                 instances = MeshInstanceList(InstanceLayouts.ModelMat)
@@ -530,7 +532,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
             }
         }
 
-        fun getOrCreate(protoBody: RigidActor): Mesh {
+        fun getOrCreate(protoBody: RigidActor): Mesh<*> {
             if (mesh == null) {
                 mesh = factory(protoBody)
                 onCreate(mesh!!)
@@ -588,7 +590,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
         }
     }
 
-    private inner class ConstraintsInfoMesh : LineMesh() {
+    private inner class ConstraintsInfoMesh : LineMesh(IndexedVertexList(VertexLayouts.PositionColor, primitiveType = PrimitiveType.LINES)) {
         val gradient = ColorGradient.RED_YELLOW_GREEN.inverted()
 
         // keep temp vectors as members to not re-allocate them all the time

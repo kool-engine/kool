@@ -11,9 +11,7 @@ import de.fabmax.kool.physics.vehicle.Vehicle
 import de.fabmax.kool.physics.vehicle.VehicleProperties
 import de.fabmax.kool.physics.vehicle.VehicleUtils
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.MutableColor
+import de.fabmax.kool.util.*
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -119,8 +117,9 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
         addTextureMesh(isNormalMapped = true, name = "ground") {
             generate {
                 isCastingShadow = false
-                vertexModFun = {
-                    texCoord.set(x / 10f, z / 10f)
+                vertexCustomizer = {
+                    val pos = it.position.get(MutableVec3f())
+                    it.texCoord.set(pos.x / 10, pos.z / 10)
                 }
                 grid {
                     sizeX = 1000f

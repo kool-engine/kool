@@ -26,7 +26,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private lateinit var aoPipeline: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()
 
-    private val shapeMeshes = mutableMapOf<ShapeType, Mesh>()
+    private val shapeMeshes = mutableMapOf<ShapeType, Mesh<VertexLayouts.PositionNormal>>()
 
     private val shapeTypes = ShapeType.entries
     private val selectedShapeType = mutableStateOf(6)
@@ -129,7 +129,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         addNode(Skybox.cube(ibl.reflectionMap, 1.5f))
     }
 
-    private fun ShapeType.createMesh(): Mesh {
+    private fun ShapeType.createMesh(): Mesh<VertexLayouts.PositionNormal> {
         val mesh = Mesh(
             layout = VertexLayouts.PositionNormal,
             instances = MeshInstanceList(InstanceLayouts.ModelMatColor, 2000)
@@ -274,8 +274,9 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         // render textured ground box
         addTextureMesh(isNormalMapped = true) {
             generate {
-                vertexModFun = {
-                    texCoord.set(x / 10, z / 10)
+                vertexCustomizer = {
+                    val pos = it.position.get(MutableVec3f())
+                    it.texCoord.set(pos.x / 10, pos.z / 10)
                 }
                 cube {
                     size.set(groundShape.size)

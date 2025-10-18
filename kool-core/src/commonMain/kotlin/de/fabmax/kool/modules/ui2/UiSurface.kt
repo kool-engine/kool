@@ -671,7 +671,7 @@ open class UiSurface(
             }
         }
 
-        private fun getMsdfTextBuilder(font: MsdfFont): MeshBuilder<*> {
+        private fun getMsdfTextBuilder(font: MsdfFont): MeshBuilder<UiTextVertexLayout> {
             val textMesh = msdfMeshes.getOrPut(font.data) {
                 TextMesh.msdfTextMesh(font, "$name.msdfTextMesh:${font.data.meta.name}").also { this += it.mesh }
             }

@@ -193,7 +193,7 @@ class ImageNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), 
     }
 }
 
-class ImageMesh(name: String) : Mesh(
+class ImageMesh(name: String) : Mesh<UiVertexLayout>(
     geometry = IndexedVertexList(UiVertexLayout, usage = Usage.DYNAMIC),
     name = name
 ) {

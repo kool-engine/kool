@@ -5,6 +5,7 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.set
 import kotlin.math.min
 
 class RpmScale(val dashboard: Dashboard) : Composable {
@@ -57,13 +58,13 @@ class RpmScale(val dashboard: Dashboard) : Composable {
         }
     }
 
-    private fun MeshBuilder<*>.fillTrack(fromX: Float, toX: Float, innerHeight: Float, indent: Float, colorLt: Color, colorRt: Color) {
+    private fun MeshBuilder<UiVertexLayout>.fillTrack(fromX: Float, toX: Float, innerHeight: Float, indent: Float, colorLt: Color, colorRt: Color) {
         color = colorLt
-        val i1 = vertex { set(fromX + indent, 0f, 0f) }
-        val i2 = vertex { set(fromX, innerHeight, 0f) }
+        val i1 = vertex { it.position.set(fromX + indent, 0f, 0f) }
+        val i2 = vertex { it.position.set(fromX, innerHeight, 0f) }
         color = colorRt
-        val i3 = vertex { set(toX, innerHeight, 0f) }
-        val i4 = vertex { set(toX + indent, 0f, 0f) }
+        val i3 = vertex { it.position.set(toX, innerHeight, 0f) }
+        val i4 = vertex { it.position.set(toX + indent, 0f, 0f) }
 
         addTriIndices(i1, i2, i3)
         addTriIndices(i1, i3, i4)

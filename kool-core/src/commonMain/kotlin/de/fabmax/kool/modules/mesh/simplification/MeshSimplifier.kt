@@ -11,7 +11,7 @@ fun IndexedVertexList<*>.simplify(termCrit: TermCriterion) {
     HalfEdgeMesh(this).simplify(termCrit, emptySet())
 }
 
-fun HalfEdgeMesh.simplify(termCrit: TermCriterion, excludedEdges: Set<HalfEdgeMesh.HalfEdge> = emptySet()) {
+fun HalfEdgeMesh<*>.simplify(termCrit: TermCriterion, excludedEdges: Set<HalfEdgeMesh<*>.HalfEdge> = emptySet()) {
     MeshSimplifier(termCrit).apply { this.excludedEdges += excludedEdges }.simplifyMesh(this)
 }
 
@@ -20,14 +20,14 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
     private val quadrics = mutableMapOf<Int, ErrorQuadric>()
     private val candidates = CollapseCandidates()
 
-    private lateinit var mesh: HalfEdgeMesh
+    private lateinit var mesh: HalfEdgeMesh<*>
 
-    val excludedEdges = mutableSetOf<HalfEdgeMesh.HalfEdge>()
-    val stickyVertices = mutableSetOf<HalfEdgeMesh.HalfEdgeVertex>()
+    val excludedEdges = mutableSetOf<HalfEdgeMesh<*>.HalfEdge>()
+    val stickyVertices = mutableSetOf<HalfEdgeMesh<*>.HalfEdgeVertex>()
     var keepBorders = false
 
     fun simplifyMesh(
-        mesh: HalfEdgeMesh,
+        mesh: HalfEdgeMesh<*>,
         generateNormals: Boolean = mesh.geometry.hasAttribute(Attribute.NORMALS),
         generateTangents: Boolean = mesh.geometry.hasAttribute(Attribute.TANGENTS)
     ) {
@@ -127,7 +127,7 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
         }
     }
 
-    private fun insertEdge(edge: HalfEdgeMesh.HalfEdge) {
+    private fun insertEdge(edge: HalfEdgeMesh<*>.HalfEdge) {
         // only add one half edge per edge
         if (edge !in excludedEdges && (edge.from.index < edge.to.index || edge.opp == null)) {
             val q1 = quadrics.getOrPut(edge.from.index) { ErrorQuadric(edge.from).apply { isStickyVertex = edge.from in stickyVertices } }
@@ -139,7 +139,7 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
         }
     }
 
-    private inner class CollapseCandidate(val edge: HalfEdgeMesh.HalfEdge, val q1: ErrorQuadric, val q2: ErrorQuadric) {
+    private inner class CollapseCandidate(val edge: HalfEdgeMesh<*>.HalfEdge, val q1: ErrorQuadric, val q2: ErrorQuadric) {
         var error = 0.0
         var isDeleted = false
         val collapsePos = MutableVec3f()
@@ -159,7 +159,7 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
                 throw IllegalStateException("Quadric removal failed!")
             }
 
-            val affectedEdges = mutableSetOf<HalfEdgeMesh.HalfEdge>()
+            val affectedEdges = mutableSetOf<HalfEdgeMesh<*>.HalfEdge>()
             collectAffectedEdges(q1.vertex, affectedEdges)
             collectAffectedEdges(q2.vertex, affectedEdges)
             affectedEdges.forEach {
@@ -180,7 +180,7 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
         }
 
 
-        private fun collectAffectedEdges(v: HalfEdgeMesh.HalfEdgeVertex, result: MutableSet<HalfEdgeMesh.HalfEdge>) {
+        private fun collectAffectedEdges(v: HalfEdgeMesh<*>.HalfEdgeVertex, result: MutableSet<HalfEdgeMesh<*>.HalfEdge>) {
             // collect all collapse candidates adjacent to given vertex
             v.edges.forEach { ed ->
                 result += ed

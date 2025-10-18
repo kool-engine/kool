@@ -19,7 +19,7 @@ import kotlin.random.Random
 
 class CpuBees(val team: Int) {
     val beeInstances = MeshInstanceList(BeeInstanceLayout, BeeConfig.maxBeesPerTeamCpu)
-    val beeMesh: Mesh
+    val beeMesh: Mesh<VertexLayouts.PositionNormalTexCoord>
 
     val positions = Array(BeeConfig.maxBeesPerTeamCpu + 1) { MutableVec4f(0f, 0f, 0f, BeeConfig.decayTime) }
     val rotations = Array(BeeConfig.maxBeesPerTeamCpu) { MutableQuatF(QuatF.IDENTITY) }

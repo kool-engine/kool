@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.loadTexture2d
+import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.MipMapping
@@ -16,6 +17,8 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.get
+import de.fabmax.kool.util.set
 import kotlinx.coroutines.launch
 
 /**
@@ -182,9 +185,11 @@ class PbrDemo : DemoScene("PBR Materials") {
 
         init {
             MeshBuilder(detailSphere).apply {
-                vertexModFun = {
-                    texCoord.x *= 4
-                    texCoord.y *= 2
+                vertexCustomizer = {
+                    val uv = it.texCoord.get(MutableVec2f())
+                    uv.x *= 4
+                    uv.y *= 2
+                    it.texCoord.set(uv)
                 }
                 uvSphere {
                     steps = 700
@@ -193,9 +198,11 @@ class PbrDemo : DemoScene("PBR Materials") {
             }
 
             MeshBuilder(parallaxSphere).apply {
-                vertexModFun = {
-                    texCoord.x *= 4
-                    texCoord.y *= 2
+                vertexCustomizer = {
+                    val uv = it.texCoord.get(MutableVec2f())
+                    uv.x *= 4
+                    uv.y *= 2
+                    it.texCoord.set(uv)
                 }
                 uvSphere {
                     steps = 250

@@ -1,14 +1,15 @@
 package de.fabmax.kool.modules.mesh
 
+import de.fabmax.kool.util.Struct
 import de.fabmax.kool.util.logW
 
-class ListEdgeHandler : HalfEdgeMesh.EdgeHandler {
-    val edgeList = mutableListOf<HalfEdgeMesh.HalfEdge>()
+class ListEdgeHandler<Layout: Struct> : HalfEdgeMesh.EdgeHandler<Layout> {
+    val edgeList = mutableListOf<HalfEdgeMesh<Layout>.HalfEdge>()
 
     override var numEdges = 0
         private set
 
-    override fun plusAssign(edge: HalfEdgeMesh.HalfEdge) {
+    override fun plusAssign(edge: HalfEdgeMesh<Layout>.HalfEdge) {
         if (edge.isDeleted) {
             logW { "edge was deleted before" }
             edge.isDeleted = false
@@ -18,7 +19,7 @@ class ListEdgeHandler : HalfEdgeMesh.EdgeHandler {
         numEdges++
     }
 
-    override fun minusAssign(edge: HalfEdgeMesh.HalfEdge) {
+    override fun minusAssign(edge: HalfEdgeMesh<Layout>.HalfEdge) {
         if (!edge.isDeleted) {
             numEdges--
         } else {
@@ -27,15 +28,15 @@ class ListEdgeHandler : HalfEdgeMesh.EdgeHandler {
         }
     }
 
-    override fun checkedUpdateEdgeTo(edge: HalfEdgeMesh.HalfEdge, newTo: HalfEdgeMesh.HalfEdgeVertex) {
+    override fun checkedUpdateEdgeTo(edge: HalfEdgeMesh<Layout>.HalfEdge, newTo: HalfEdgeMesh<Layout>.HalfEdgeVertex) {
         edge.to = newTo
     }
 
-    override fun checkedUpdateEdgeFrom(edge: HalfEdgeMesh.HalfEdge, newFrom: HalfEdgeMesh.HalfEdgeVertex) {
+    override fun checkedUpdateEdgeFrom(edge: HalfEdgeMesh<Layout>.HalfEdge, newFrom: HalfEdgeMesh<Layout>.HalfEdgeVertex) {
         edge.from = newFrom
     }
 
-    override fun checkedUpdateVertexPosition(vertex: HalfEdgeMesh.HalfEdgeVertex, x: Float, y: Float, z: Float) {
+    override fun checkedUpdateVertexPosition(vertex: HalfEdgeMesh<Layout>.HalfEdgeVertex, x: Float, y: Float, z: Float) {
         vertex.setPosition(x, y, z)
     }
 
@@ -47,7 +48,7 @@ class ListEdgeHandler : HalfEdgeMesh.EdgeHandler {
         }
     }
 
-    override fun iterator(): Iterator<HalfEdgeMesh.HalfEdge> = object : Iterator<HalfEdgeMesh.HalfEdge> {
+    override fun iterator(): Iterator<HalfEdgeMesh<Layout>.HalfEdge> = object : Iterator<HalfEdgeMesh<Layout>.HalfEdge> {
         var i = 0
 
         override fun hasNext(): Boolean {
@@ -57,7 +58,7 @@ class ListEdgeHandler : HalfEdgeMesh.EdgeHandler {
             return i < edgeList.size
         }
 
-        override fun next(): HalfEdgeMesh.HalfEdge {
+        override fun next(): HalfEdgeMesh<Layout>.HalfEdge {
             if (!hasNext()) {
                 throw NoSuchElementException()
             }

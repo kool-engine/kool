@@ -6,7 +6,7 @@ import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.checkIsNotReleased
 
-class WgpuInstances(val instances: MeshInstanceList<*>, val backend: RenderBackendWebGpu, mesh: Mesh) : BaseReleasable(), GpuInstances {
+class WgpuInstances(val instances: MeshInstanceList<*>, val backend: RenderBackendWebGpu, mesh: Mesh<*>) : BaseReleasable(), GpuInstances {
     private val device: GPUDevice get() = backend.device
 
     private val createdInstanceBuffer: WgpuGrowingBuffer? = if (instances.layout.structSize == 0) null else {

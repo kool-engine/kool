@@ -27,7 +27,7 @@ abstract class OverlayObject(val gameEntity: GameEntity) {
         }
     }
 
-    fun rayTest(rayTest: RayTest, mesh: Mesh): Boolean {
+    fun rayTest(rayTest: RayTest, mesh: Mesh<*>): Boolean {
         val pos = modelMat.getTranslation()
         val radius = mesh.geometryBounds.size.length()
         val n = pos.nearestPointOnRay(rayTest.ray.origin, rayTest.ray.direction, MutableVec3d())
@@ -41,7 +41,7 @@ abstract class OverlayObject(val gameEntity: GameEntity) {
         return false
     }
 
-    private fun meshRayTest(rayTest: RayTest, mesh: Mesh): Boolean {
+    private fun meshRayTest(rayTest: RayTest, mesh: Mesh<*>): Boolean {
         modelMat.invert(invModelMat)
         val localRay = rayTest.getRayTransformed(invModelMat)
         val isHit = mesh.rayTest.rayTest(rayTest, localRay)

@@ -70,7 +70,7 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
     }
 
     override fun createPipeline(
-        mesh: Mesh,
+        mesh: Mesh<*>,
         instances: MeshInstanceList<*>?,
         ctx: KoolContext
     ): DrawPipeline {
@@ -108,7 +108,7 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
         program.shaderListeners.forEach { it.onShaderCreated(this) }
     }
 
-    private fun makeVertexLayout(mesh: Mesh, instances: MeshInstanceList<*>?): VertexLayout {
+    private fun makeVertexLayout(mesh: Mesh<*>, instances: MeshInstanceList<*>?): VertexLayout {
         val vertexStage = checkNotNull(program.vertexStage) { "vertexStage not defined" }
 
         val verts = mesh.geometry
@@ -120,7 +120,7 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
             val attrib = checkNotNull(verts.layout.getByName(vertexAttrib.name, vertexAttrib.expressionType.gpuType)) {
                 buildString {
                     appendLine("Mesh ${mesh.name} does not include required vertex attribute: ${vertexAttrib.name}: ${vertexAttrib.expressionType.gpuType} (for shader: ${program.name})")
-                    appendLine("  Available attributes are:")
+                    appendLine("  ${verts.layout.members.size} available attributes:")
                     verts.layout.members.forEach { appendLine("    ${it.name}: ${it.type}") }
                 }
             }

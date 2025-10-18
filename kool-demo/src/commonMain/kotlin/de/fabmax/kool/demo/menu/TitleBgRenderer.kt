@@ -50,7 +50,7 @@ class TitleBgRenderer(
         val gradientRange = float4("gradientRange")
     }
 
-    class BgMesh : Mesh(
+    class BgMesh : Mesh<UiVertexLayout>(
         geometry = IndexedVertexList(UiVertexLayout),
         instances = MeshInstanceList(BgInstanceLayout),
         name = "DemoMenu/TitleBgMesh"
@@ -90,21 +90,21 @@ class TitleBgRenderer(
 
                 vertexStage {
                     main {
-                        clipBounds.input set instanceAttribFloat4(BgInstanceLayout.clip)
-                        val uvRange = float4Var(instanceAttribFloat4(BgInstanceLayout.gradientRange))
-                        val meshUv = float2Var(vertexAttribFloat2(Attribute.TEXTURE_COORDS.name))
+                        clipBounds.input set instanceAttrib(BgInstanceLayout.clip)
+                        val uvRange by instanceAttrib(BgInstanceLayout.gradientRange)
+                        val meshUv by vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
                         clipCornerRadius.input set uvRange.zw
                         meshUv.x += uniformFloat1("uNoiseOffset")
                         meshUv.y += uvRange.x
 
                         val noise = sampleTexture(texture2d("tNoise"), meshUv, 0f.const)
-                        val pos = float3Var(vertexAttribFloat3(Attribute.POSITIONS.name))
+                        val pos by vertexAttribFloat3(Attribute.POSITIONS.name)
                         pos.xy set pos.xy + (noise.xy * 2f.const - 1f.const) * Vec2f(0.1f, 0.5f).const
 
                         texCoords.input set pos.xy
                         texCoords.input.x set uvRange.x + clamp(pos.x + pos.y * 0.2f.const, (-0.1f).const, 1.1f.const) * (uvRange.y - uvRange.x)
 
-                        val dimens = float4Var(instanceAttribFloat4(BgInstanceLayout.dimens))
+                        val dimens by instanceAttrib(BgInstanceLayout.dimens)
                         pos.x set dimens.x + pos.x * dimens.z
                         pos.y set dimens.y + pos.y * dimens.w
 
@@ -127,8 +127,8 @@ class TitleBgRenderer(
                             val up = clipBounds.output.y
                             val rt = clipBounds.output.z
                             val dn = clipBounds.output.w
-                            val cLt = float2Var(float2Value(lt + r, up + r))
-                            val cRt = float2Var(float2Value(rt - r, up + r))
+                            val cLt by float2Value(lt + r, up + r)
+                            val cRt by float2Value(rt - r, up + r)
                             `if` ((all(p lt cLt) and (length(cLt - p) gt r)) or
                                     ((p.x gt cRt.x) and (p.y lt cRt.y) and (length(cRt - p) gt r))) {
                                 discard()
