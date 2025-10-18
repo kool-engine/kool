@@ -10,6 +10,8 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.instanceAttrib
+import de.fabmax.kool.scene.vertexAttrib
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.Struct
@@ -201,19 +203,19 @@ class UiPrimitiveMesh(name: String) :
     }
 
     object InstanceLayout : Struct("InstanceAttribs", MemoryLayout.TightlyPacked) {
-        val clip = float4("aClip")
-        val center = float2("aCenter")
-        val outerDimens = float4("aOuterDimens")
-        val innerDimens = float4("aInnerDimens")
-        val colorA = float4("aColorA")
-        val colorB = float4("aColorB")
-        val gradientCfg = float4("aGradientCfg")
+        val clip = include(UiVertexLayout.clip)
+        val center = float2("instattr_center")
+        val outerDimens = float4("instattr_outer_dimens")
+        val innerDimens = float4("instattr_inner_dimens")
+        val colorA = float4("instattr_color_a")
+        val colorB = float4("instattr_color_b")
+        val gradientCfg = float4("instattr_gradient_cfg")
 
     }
 
     object UiPrimVertexLayout : Struct("UiPrimitiveAttribs", MemoryLayout.TightlyPacked) {
-        val outerWeights = float4("aOuterW")
-        val innerWeights = float4("aInnerW")
+        val outerWeights = float4("attr_outer_w")
+        val innerWeights = float4("a_inner_w")
     }
 
     companion object {
@@ -232,7 +234,7 @@ class UiPrimitiveMesh(name: String) :
 
                 vertexStage {
                     main {
-                        clipBounds.input set instanceAttribFloat4(Ui2Shader.ATTRIB_CLIP.name)
+                        clipBounds.input set instanceAttrib(UiVertexLayout.clip)
 
                         val center = float2Var(instanceAttrib(InstanceLayout.center))
                         val outerDimens = float4Var(instanceAttrib(InstanceLayout.outerDimens))

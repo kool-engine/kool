@@ -3,7 +3,10 @@ package de.fabmax.kool.modules.ui2
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.BlendMode
+import de.fabmax.kool.pipeline.CullMethod
+import de.fabmax.kool.pipeline.PipelineConfig
+import de.fabmax.kool.scene.vertexAttrib
 import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.Struct
 
@@ -28,14 +31,14 @@ class MsdfUiShader(
 
             vertexStage {
                 main {
-                    fgColor.input set vertexAttribFloat4(Attribute.COLORS.name)
-                    glowColor.input set vertexAttribFloat4(ATTRIB_GLOW_COLOR.name)
-                    msdfProps.input set vertexAttribFloat4(ATTRIB_MSDF_PROPS.name)
-                    clipBounds.input set vertexAttribFloat4(Ui2Shader.ATTRIB_CLIP.name)
-                    uv.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
+                    fgColor.input set vertexAttrib(UiTextVertexLayout.color)
+                    glowColor.input set vertexAttrib(UiTextVertexLayout.glowColor)
+                    msdfProps.input set vertexAttrib(UiTextVertexLayout.msdfProps)
+                    clipBounds.input set vertexAttrib(UiTextVertexLayout.clip)
+                    uv.input set vertexAttrib(UiTextVertexLayout.texCoord)
 
                     val mvp = mat4Var(mvpMatrix().matrix)
-                    val vertexPos = float4Var(float4Value(vertexAttribFloat3(Attribute.POSITIONS.name), 1f))
+                    val vertexPos = float4Var(float4Value(vertexAttrib(UiTextVertexLayout.position), 1f))
                     screenPos.input set vertexPos.xy
                     outPosition set mvp * vertexPos
                 }
@@ -100,18 +103,13 @@ class MsdfUiShader(
             }
         }
     }
-
-    companion object {
-        val ATTRIB_MSDF_PROPS = Attribute("aMsdfProps", GpuType.Float4)
-        val ATTRIB_GLOW_COLOR = Attribute("aGlowColor", GpuType.Float4)
-    }
 }
 
 object UiTextVertexLayout : Struct("UiTextVertex", MemoryLayout.TightlyPacked) {
-    val msdfProps = float4(MsdfUiShader.ATTRIB_MSDF_PROPS.name)
-    val color = float4(Attribute.COLORS.name)
-    val glowColor = float4(MsdfUiShader.ATTRIB_GLOW_COLOR.name)
-    val clip = float4(Ui2Shader.ATTRIB_CLIP.name)
-    val position = float3(Attribute.POSITIONS.name)
-    val texCoords = float2(Attribute.TEXTURE_COORDS.name)
+    val msdfProps = float4("aMsdfProps")
+    val color = include(UiVertexLayout.color)
+    val glowColor = float4("aGlowColor")
+    val clip = include(UiVertexLayout.clip)
+    val position = include(UiVertexLayout.position)
+    val texCoord = include(UiVertexLayout.texCoord)
 }

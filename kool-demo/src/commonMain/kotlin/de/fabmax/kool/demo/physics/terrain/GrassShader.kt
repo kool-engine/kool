@@ -14,6 +14,7 @@ import de.fabmax.kool.pipeline.Texture3d
 import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.InstanceLayouts
+import de.fabmax.kool.scene.instanceAttrib
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.ShadowMap

@@ -16,9 +16,7 @@ import de.fabmax.kool.modules.ksl.lang.rem
 import de.fabmax.kool.modules.ksl.lang.times
 import de.fabmax.kool.modules.ksl.lang.toFloat1
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.addTextureMesh
-import de.fabmax.kool.scene.defaultOrbitCamera
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.Uint8Buffer
@@ -93,8 +91,8 @@ class ArrayTexturesTest : DemoScene("Array Textures Test") {
                 val uv = interStageFloat2()
                 vertexStage {
                     main {
-                        uv.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS)
-                        outPosition set mvpMatrix().matrix * float4Value(vertexAttribFloat3(Attribute.POSITIONS), 1f.const)
+                        uv.input set vertexAttrib(VertexLayouts.TexCoord.texCoord)
+                        outPosition set mvpMatrix().matrix * float4Value(vertexAttrib(VertexLayouts.Position.position), 1f.const)
                     }
                 }
                 fragmentStage {
@@ -158,8 +156,8 @@ class ArrayTexturesTest : DemoScene("Array Textures Test") {
                 val pos = interStageFloat3()
                 vertexStage {
                     main {
-                        pos.input set vertexAttribFloat3(Attribute.POSITIONS)
-                        outPosition set mvpMatrix().matrix * float4Value(vertexAttribFloat3(Attribute.POSITIONS), 1f.const)
+                        pos.input set vertexAttrib(VertexLayouts.Position.position)
+                        outPosition set mvpMatrix().matrix * float4Value(vertexAttrib(VertexLayouts.Position.position), 1f.const)
                     }
                 }
                 fragmentStage {

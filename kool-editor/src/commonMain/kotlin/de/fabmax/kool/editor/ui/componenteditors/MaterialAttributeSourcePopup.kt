@@ -5,7 +5,7 @@ import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.ui.*
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.util.Color
 
 class MaterialAttributeSourcePopup(
@@ -199,7 +199,7 @@ class MaterialAttributeSourcePopup(
     private fun defaultColorAttrib() = ConstColorAttribute(ColorData(defaultColor))
     private fun defaultValueAttrib() = ConstValueAttribute(defaultValue)
     private fun defaultTextureAttrib() = MapAttribute(availableTextures.getOrNull(0)?.path ?: "")
-    private fun defaultVertexAttrib() = VertexAttribute(Attribute.COLORS.name)
+    private fun defaultVertexAttrib() = VertexAttribute(VertexLayouts.Color.name)
 
     enum class ColorMode {
         VALUE,

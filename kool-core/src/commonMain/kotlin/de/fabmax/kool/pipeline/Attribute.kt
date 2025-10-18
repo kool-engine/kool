@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.scene.InstanceLayouts
 import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.util.StructMember
 
@@ -10,17 +11,17 @@ data class Attribute(val name: String, val type: GpuType) {
     }
 
     companion object {
-        val POSITIONS = Attribute(VertexLayouts.Position.position.name, GpuType.Float3)
-        val NORMALS = Attribute(VertexLayouts.Normal.normal.name, GpuType.Float3)
-        val TANGENTS = Attribute(VertexLayouts.Tangent.tangent.name, GpuType.Float4)
-        val TEXTURE_COORDS = Attribute(VertexLayouts.TexCoord.texCoord.name, GpuType.Float2)
-        val COLORS = Attribute(VertexLayouts.Color.color.name, GpuType.Float4)
-        val JOINTS = Attribute(VertexLayouts.Joint.joint.name, GpuType.Int4)
-        val WEIGHTS = Attribute(VertexLayouts.Weight.weight.name, GpuType.Float4)
+        val POSITIONS = Attribute(VertexLayouts.Position.name, GpuType.Float3)
+        val NORMALS = Attribute(VertexLayouts.Normal.name, GpuType.Float3)
+        val TANGENTS = Attribute(VertexLayouts.Tangent.name, GpuType.Float4)
+        val TEXTURE_COORDS = Attribute(VertexLayouts.TexCoord.name, GpuType.Float2)
+        val COLORS = Attribute(VertexLayouts.Color.name, GpuType.Float4)
+        val JOINTS = Attribute(VertexLayouts.Joint.name, GpuType.Int4)
+        val WEIGHTS = Attribute(VertexLayouts.Weight.name, GpuType.Float4)
         val EMISSIVE_COLOR = Attribute(VertexLayouts.EmissiveColor.emissiveColor.name, GpuType.Float3)
 
-        val INSTANCE_MODEL_MAT = Attribute("attrib_model_mat", GpuType.Mat4)
-        val INSTANCE_COLOR = Attribute("attrib_instance_color", GpuType.Float4)
+        val INSTANCE_MODEL_MAT = Attribute(InstanceLayouts.ModelMat.name, GpuType.Mat4)
+        val INSTANCE_COLOR = Attribute(InstanceLayouts.Color.name, GpuType.Float4)
     }
 }
 
@@ -140,4 +141,3 @@ fun KslVertexStage.instanceAttribMat4(attrib: Attribute): KslExprMat4 {
     check(attrib.type == GpuType.Mat4) { "Attribute $attrib is expected to have type Mat4 but has ${attrib.type}" }
     return instanceAttribMat4(attrib.name)
 }
-

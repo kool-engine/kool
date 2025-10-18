@@ -277,10 +277,6 @@ class SceneNodes(val scene: EditorScene) :
                         texCoordAttr?.set(uv.x * scale.x.toFloat(), uv.y * scale.y.toFloat())
                     }
                 }
-                vertexModFun = {
-                    texCoord.x *= scale.x.toFloat()
-                    texCoord.y *= scale.y.toFloat()
-                }
             }
         }
     }

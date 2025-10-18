@@ -420,15 +420,15 @@ class FurShader(uvBased: Boolean) : KslShader("Fur shader") {
 
         vertexStage {
             main {
-                val modelMat = instanceAttribMat4(Attribute.INSTANCE_MODEL_MAT)
+                val modelMat = instanceAttrib(InstanceLayouts.ModelMat.modelMat)
                 val camData = cameraData()
 
                 if (uvBased) {
-                    uv.input.set(vertexAttribFloat2(Attribute.TEXTURE_COORDS))
+                    uv.input.set(vertexAttrib(VertexLayouts.TexCoord.texCoord))
                 }
                 shell.input set instanceAttrib(ShellShadingDemo.ShellInstanceLayout.shell)
-                val nrm = float3Var(vertexAttribFloat3(Attribute.NORMALS))
-                val pos = float3Var(vertexAttribFloat3(Attribute.POSITIONS))
+                val nrm = float3Var(vertexAttrib(VertexLayouts.Normal.normal))
+                val pos = float3Var(vertexAttrib(VertexLayouts.Position.position))
                 basePos.input set pos
 
                 // noise based displacement: static and dynamic (wind) part
@@ -451,7 +451,7 @@ class FurShader(uvBased: Boolean) : KslShader("Fur shader") {
                 localPos.input set pos
                 val worldPos4 = float4Var(modelMat * float4Value(pos, 1f))
 
-                worldNormal.input set (modelMat * float4Value(vertexAttribFloat3(Attribute.NORMALS), 0f)).xyz
+                worldNormal.input set (modelMat * float4Value(vertexAttrib(VertexLayouts.Normal.normal), 0f)).xyz
                 val camDir = float3Var(worldPos4.xyz - camData.position)
                 camCos.input set abs(dot(normalize(worldNormal.input), normalize(camDir)))
 

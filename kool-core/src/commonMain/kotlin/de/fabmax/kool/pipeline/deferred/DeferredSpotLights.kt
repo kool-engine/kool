@@ -1,11 +1,7 @@
 package de.fabmax.kool.pipeline.deferred
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.scene.Light
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.scene.VertexLayouts
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.*
 import kotlin.math.*
@@ -175,9 +171,9 @@ class DeferredSpotLights(val maxSpotAngle: AngleF) {
     }
 
     object SpotLightInstanceLayout : Struct("SpotLightInstanceLayout", MemoryLayout.TightlyPacked) {
-        val modelMat = mat4(Attribute.INSTANCE_MODEL_MAT.name)
-        val lightPos = float4("lightPos")
-        val lightDir = float4("lightDir")
-        val lightColor = float4("lightColor")
+        val modelMat = include(InstanceLayouts.ModelMat.modelMat)
+        val lightPos = float4("instattr_lightPos")
+        val lightDir = float4("instattr_lightDir")
+        val lightColor = float4("instattr_lightColor")
     }
 }

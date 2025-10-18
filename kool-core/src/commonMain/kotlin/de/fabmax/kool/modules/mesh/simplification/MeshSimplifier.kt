@@ -2,7 +2,7 @@ package de.fabmax.kool.modules.mesh.simplification
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.modules.mesh.HalfEdgeMesh
-import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
@@ -28,8 +28,8 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
 
     fun simplifyMesh(
         mesh: HalfEdgeMesh<*>,
-        generateNormals: Boolean = mesh.geometry.hasAttribute(Attribute.NORMALS),
-        generateTangents: Boolean = mesh.geometry.hasAttribute(Attribute.TANGENTS)
+        generateNormals: Boolean = mesh.geometry.hasAttribute(VertexLayouts.Normal.normal),
+        generateTangents: Boolean = mesh.geometry.hasAttribute(VertexLayouts.Tangent.tangent)
     ) {
         this.mesh = mesh
 

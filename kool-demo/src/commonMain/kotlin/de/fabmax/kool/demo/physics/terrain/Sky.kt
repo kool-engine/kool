@@ -7,7 +7,6 @@ import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.UnlitShaderConfig
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.DepthMode
 import de.fabmax.kool.pipeline.Texture2d
@@ -236,7 +235,7 @@ class Sky(val mainScene: Scene, moonTex: Texture2d) {
                     vertexStage {
                         main {
                             val mvpMat = mvpMatrix().matrix
-                            val localPos = vertexAttribFloat3(Attribute.POSITIONS.name)
+                            val localPos = vertexAttrib(VertexLayouts.Position.position)
                             val orientation = uniformMat3("uOrientation")
                             if (depthMode == DepthMode.Reversed) {
                                 outPosition set (mvpMat * float4Value(orientation * localPos * 1e9f.const, 1f)).float4("xyzw")

@@ -187,8 +187,8 @@ fun ThumbnailRenderer.textureThumbnail(texPath: String): ThumbnailRenderer.Thumb
             val uv = interStageFloat2()
             vertexStage {
                 main {
-                    val pos = vertexAttribFloat3(Attribute.POSITIONS)
-                    uv.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS)
+                    val pos = vertexAttrib(VertexLayouts.Position.position)
+                    uv.input set vertexAttrib(VertexLayouts.TexCoord.texCoord)
                     outPosition set float4Value(pos, 1f.const) * cameraData().viewProjMat
                 }
             }
@@ -230,8 +230,8 @@ fun ThumbnailRenderer.hdriThumbnail(texPath: String): ThumbnailRenderer.Thumbnai
             val uv = interStageFloat2()
             vertexStage {
                 main {
-                    val pos = vertexAttribFloat3(Attribute.POSITIONS)
-                    uv.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS)
+                    val pos = vertexAttrib(VertexLayouts.Position.position)
+                    uv.input set vertexAttrib(VertexLayouts.TexCoord.texCoord)
                     outPosition set float4Value(pos, 1f.const) * cameraData().viewProjMat
                 }
             }
@@ -307,8 +307,8 @@ private class SceneBgMesh(val shaderData: SceneShaderData) : Mesh<VertexLayouts.
             val uv = interStageFloat2()
             vertexStage {
                 main {
-                    val pos = vertexAttribFloat3(Attribute.POSITIONS)
-                    uv.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS)
+                    val pos = vertexAttrib(VertexLayouts.Position.position)
+                    uv.input set vertexAttrib(VertexLayouts.TexCoord.texCoord)
                     outPosition set float4Value(pos, 1f.const) * viewProj.const
                 }
             }

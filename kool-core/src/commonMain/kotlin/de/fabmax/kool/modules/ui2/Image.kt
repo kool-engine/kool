@@ -10,6 +10,7 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.Usage
+import de.fabmax.kool.scene.vertexAttrib
 import de.fabmax.kool.util.Color
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -228,18 +229,18 @@ class ImageShader : KslShader(Model(), pipelineConfig) {
 
             vertexStage {
                 main {
-                    texCoords.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
-                    tint.input set vertexAttribFloat4(Attribute.COLORS.name)
-                    clipBounds.input set vertexAttribFloat4(Ui2Shader.ATTRIB_CLIP.name)
+                    texCoords.input set vertexAttrib(UiVertexLayout.texCoord)
+                    tint.input set vertexAttrib(UiVertexLayout.color)
+                    clipBounds.input set vertexAttrib(UiVertexLayout.clip)
 
-                    val vertexPos = float4Var(float4Value(vertexAttribFloat3(Attribute.POSITIONS.name), 1f))
+                    val vertexPos by float4Value(vertexAttrib(UiVertexLayout.position), 1f)
                     screenPos.input set vertexPos.xy
                     outPosition set mvpMatrix().matrix * vertexPos
                 }
             }
             fragmentStage {
                 main {
-                    val color = float4Var(sampleTexture(texture2d("uImageTex"), texCoords.output) * tint.output)
+                    val color by sampleTexture(texture2d("uImageTex"), texCoords.output) * tint.output
                     `if` (all(screenPos.output gt clipBounds.output.xy) and
                             all(screenPos.output lt clipBounds.output.zw)) {
                         colorOutput(color.rgb * color.a, color.a)

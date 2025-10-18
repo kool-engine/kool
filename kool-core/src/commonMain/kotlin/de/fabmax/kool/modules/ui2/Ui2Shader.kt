@@ -5,6 +5,8 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.scene.VertexLayouts
+import de.fabmax.kool.scene.vertexAttrib
 import de.fabmax.kool.util.AtlasFont
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MemoryLayout
@@ -26,18 +28,18 @@ class Ui2Shader : KslShader(Model(), pipelineConfig) {
 
             vertexStage {
                 main {
-                    texCoords.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
-                    color.input set vertexAttribFloat4(Attribute.COLORS.name)
-                    clipBounds.input set vertexAttribFloat4(ATTRIB_CLIP.name)
+                    texCoords.input set vertexAttrib(UiVertexLayout.texCoord)
+                    color.input set vertexAttrib(UiVertexLayout.color)
+                    clipBounds.input set vertexAttrib(UiVertexLayout.clip)
 
-                    val vertexPos = float4Var(float4Value(vertexAttribFloat3(Attribute.POSITIONS.name), 1f))
+                    val vertexPos by float4Value(vertexAttrib(UiVertexLayout.position), 1f)
                     screenPos.input set vertexPos.xy
                     outPosition set mvpMatrix().matrix * vertexPos
                 }
             }
             fragmentStage {
                 main {
-                    val alpha = float1Var(sampleTexture(texture2d("uFontTex"), texCoords.output).r * color.output.a)
+                    val alpha by sampleTexture(texture2d("uFontTex"), texCoords.output).r * color.output.a
                     `if` (any(screenPos.output lt clipBounds.output.xy) or
                             any(screenPos.output gt clipBounds.output.zw)) {
                         discard()
@@ -50,8 +52,6 @@ class Ui2Shader : KslShader(Model(), pipelineConfig) {
     }
 
     companion object {
-        val ATTRIB_CLIP = Attribute("aClip", GpuType.Float4)
-
         private val noFontTex = SingleColorTexture(Color.WHITE)
         private val pipelineConfig = PipelineConfig(
             blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA,
@@ -66,8 +66,8 @@ class Ui2Shader : KslShader(Model(), pipelineConfig) {
 }
 
 object UiVertexLayout : Struct("UiVertex", MemoryLayout.TightlyPacked) {
-    val position = float3(Attribute.POSITIONS.name)
-    val color = float4(Attribute.COLORS.name)
-    val clip = float4(Ui2Shader.ATTRIB_CLIP.name)
-    val texCoords = float2(Attribute.TEXTURE_COORDS.name)
+    val position = include(VertexLayouts.Position.position)
+    val color = include(VertexLayouts.Color.color)
+    val clip = float4("attr_clip")
+    val texCoord = include(VertexLayouts.TexCoord.texCoord)
 }

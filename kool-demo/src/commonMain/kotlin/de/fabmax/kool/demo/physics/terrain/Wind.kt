@@ -4,7 +4,11 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.noise.MultiPerlin3d
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.BufferedImageData3d
+import de.fabmax.kool.pipeline.MipMapping
+import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.Texture3d
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import kotlin.math.max
@@ -71,16 +75,16 @@ class Wind {
     }
 
     object VertexLayoutWind : Struct("VertexLayoutWind", MemoryLayout.TightlyPacked) {
-        val position = float3(Attribute.POSITIONS.name)
-        val normal = float3(Attribute.NORMALS.name)
-        val texCoord = float2(Attribute.TEXTURE_COORDS.name)
-        val windSensitivity = float1("aWindSensitivity")
+        val position = include(VertexLayouts.Position.position)
+        val normal = include(VertexLayouts.Normal.normal)
+        val texCoord = include(VertexLayouts.TexCoord.texCoord)
+        val windSensitivity = float1("attr_wind_sensitivity")
     }
 
     object VertexLayoutWindColored : Struct("VertexLayoutWind", MemoryLayout.TightlyPacked) {
-        val position = float3(Attribute.POSITIONS.name)
-        val normal = float3(Attribute.NORMALS.name)
-        val color = float4(Attribute.COLORS.name)
-        val windSensitivity = float1("aWindSensitivity")
+        val position = include(VertexLayouts.Position.position)
+        val normal = include(VertexLayouts.Normal.normal)
+        val color = include(VertexLayouts.Color.color)
+        val windSensitivity = float1("attr_wind_sensitivity")
     }
 }

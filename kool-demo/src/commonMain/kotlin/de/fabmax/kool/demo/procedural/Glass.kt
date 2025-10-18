@@ -6,15 +6,12 @@ import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.deferred.DeferredPassSwapListener
 import de.fabmax.kool.pipeline.deferred.DeferredPasses
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.pipeline.shading.AlphaMode
-import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.addColorMesh
-import de.fabmax.kool.scene.addMesh
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.generateNormals
 import de.fabmax.kool.util.*
@@ -261,9 +258,9 @@ class Glass(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Defer
     private class ExtrudeProps(val r: Float, val h: Float, val t: Float)
 
     private object GlassVertex : Struct("GlassVertex", MemoryLayout.TightlyPacked) {
-        val position = float3(Attribute.POSITIONS.name)
-        val normal = float3(Attribute.NORMALS.name)
-        val color = float4(Attribute.COLORS.name)
-        val thickness = float1("aMatThickness")
+        val position = include(VertexLayouts.Position.position)
+        val normal = include(VertexLayouts.Normal.normal)
+        val color = include(VertexLayouts.Color.color)
+        val thickness = float1("attr_mat_thickness")
     }
 }

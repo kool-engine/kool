@@ -9,13 +9,9 @@ import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.joints.FixedJoint
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.deferred.DeferredKslPbrShader
 import de.fabmax.kool.pipeline.deferred.DeferredPointLights
-import de.fabmax.kool.scene.InstanceLayouts
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.scene.VertexLayouts
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.generateNormals
 import de.fabmax.kool.scene.geometry.simpleShape
@@ -233,7 +229,7 @@ class GuardRail {
 
                         vertexStage {
                             main {
-                                val emissionDir = vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
+                                val emissionDir = vertexAttrib(VertexLayouts.TexCoord.texCoord)
                                 val emissionInst = instanceAttrib(InstanceLayout.emission)
                                 val emissionLt = emissionDir.x * emissionInst.x
                                 val emissionRt = emissionDir.y * emissionInst.y

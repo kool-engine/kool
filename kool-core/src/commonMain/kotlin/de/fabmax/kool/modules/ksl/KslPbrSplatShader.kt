@@ -11,6 +11,8 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.scene.VertexLayouts
+import de.fabmax.kool.scene.vertexAttrib
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
@@ -109,9 +111,9 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
         vertexStage {
             main {
                 val vertexBlock = vertexTransformBlock(cfg.vertexCfg) {
-                    inLocalPos(vertexAttribFloat3(Attribute.POSITIONS.name))
-                    inLocalNormal(vertexAttribFloat3(Attribute.NORMALS.name))
-                    inLocalTangent(vertexAttribFloat4(Attribute.TANGENTS.name))
+                    inLocalPos(vertexAttrib(VertexLayouts.Position.position))
+                    inLocalNormal(vertexAttrib(VertexLayouts.Normal.normal))
+                    inLocalTangent(vertexAttrib(VertexLayouts.Tangent.tangent))
                 }
 
                 // world position and normal are made available via ports for custom models to modify them

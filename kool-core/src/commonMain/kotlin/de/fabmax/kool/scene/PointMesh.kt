@@ -2,8 +2,6 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslUnlitShader
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.asAttribute
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.*
@@ -69,12 +67,8 @@ open class CustomPointMesh<Layout: Struct>(
     }
 
     object PointVertexLayout : Struct("PointVertexLayout", MemoryLayout.TightlyPacked) {
-        val position = float3(Attribute.POSITIONS.name)
-        val pointSize = float1("aPointSize")
-        val color = float4(Attribute.COLORS.name)
-    }
-
-    companion object {
-        val attrPointSize = PointVertexLayout.pointSize.asAttribute()
+        val position = include(VertexLayouts.Position.position)
+        val pointSize = float1("attr_point_size")
+        val color = include(VertexLayouts.Color.color)
     }
 }

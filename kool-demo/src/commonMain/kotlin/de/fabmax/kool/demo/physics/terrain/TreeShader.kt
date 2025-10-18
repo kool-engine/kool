@@ -9,6 +9,7 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.Texture3d
 import de.fabmax.kool.pipeline.shading.DepthShader
+import de.fabmax.kool.scene.vertexAttrib
 import de.fabmax.kool.util.ShadowMap
 
 interface EnvMapShader {

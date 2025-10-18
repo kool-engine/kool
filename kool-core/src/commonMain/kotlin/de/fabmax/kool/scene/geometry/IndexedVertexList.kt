@@ -133,11 +133,9 @@ class IndexedVertexList<Layout: Struct>(
         }
     }
 
-    fun hasAttribute(attribute: Attribute): Boolean = layout.getByName(attribute.name, attribute.type) != null
+    fun hasAttribute(member: StructMember<*>): Boolean = layout.getByName(member.name, member.type) != null
 
-    fun hasAttributes(requiredAttributes: Set<Attribute>): Boolean {
-        return requiredAttributes.all { hasAttribute(it) }
-    }
+    fun hasAttribute(attribute: Attribute): Boolean = layout.getByName(attribute.name, attribute.type) != null
 
     /**
      * Adds a new vertex to the vertex buffer and returns its index. The given block can be used to set the vertex

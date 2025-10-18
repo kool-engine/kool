@@ -2,11 +2,12 @@ package de.fabmax.kool.modules.ksl
 
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.PipelineConfig
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shading.AlphaMode
+import de.fabmax.kool.scene.VertexLayouts
+import de.fabmax.kool.scene.vertexAttrib
 import de.fabmax.kool.util.Color
 
 open class KslUnlitShader(cfg: UnlitShaderConfig) : KslShader("Unlit Shader") {
@@ -29,7 +30,7 @@ open class KslUnlitShader(cfg: UnlitShaderConfig) : KslShader("Unlit Shader") {
             main {
                 val viewProj = mat4Var(cameraData().viewProjMat)
                 val vertexBlock = vertexTransformBlock(cfg.vertexCfg) {
-                    inLocalPos(vertexAttribFloat3(Attribute.POSITIONS.name))
+                    inLocalPos(vertexAttrib(VertexLayouts.Position.position))
                 }
 
                 val worldPos = float3Port("worldPos", vertexBlock.outWorldPos)

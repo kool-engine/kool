@@ -3,8 +3,10 @@ package de.fabmax.kool.demo.bees
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShaderConfig
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CullMethod
+import de.fabmax.kool.scene.VertexLayouts
+import de.fabmax.kool.scene.instanceAttrib
+import de.fabmax.kool.scene.vertexAttrib
 import de.fabmax.kool.util.Color
 
 class CpuBeeShader(
@@ -44,9 +46,9 @@ class CpuBeeShader(
                         1f.const - 2f.const * (i*i + j*j)
                     )
 
-                    val globalPos = instanceAttrib(CpuBees.BeeInstanceLayout.position)
-                    val vertexNormal = vertexAttribFloat3(Attribute.NORMALS.name)
-                    val vertexPos = float3Var(vertexAttribFloat3(Attribute.POSITIONS.name))
+                    val globalPos by instanceAttrib(CpuBees.BeeInstanceLayout.position)
+                    val vertexNormal by vertexAttrib(VertexLayouts.Normal.normal)
+                    val vertexPos by vertexAttrib(VertexLayouts.Position.position)
 
                     val scale = float1Var(1f.const - clamp(globalPos.w - (BeeConfig.decayTime - 1f).const, 0f.const, 1f.const))
 

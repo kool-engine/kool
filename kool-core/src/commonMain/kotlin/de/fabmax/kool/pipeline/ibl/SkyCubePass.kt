@@ -168,7 +168,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
 
                 vertexStage {
                     main {
-                        val localPos = vertexAttribFloat3(Attribute.POSITIONS.name)
+                        val localPos = vertexAttrib(VertexLayouts.Position.position)
                         val globalPos = float4Var(modelMat.matrix * float4Value(localPos, 1f.const))
                         worldPos.input set globalPos.xyz
                         outPosition set camData.viewProjMat * globalPos

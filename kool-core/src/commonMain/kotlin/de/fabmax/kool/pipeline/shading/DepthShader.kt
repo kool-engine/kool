@@ -7,9 +7,14 @@ import de.fabmax.kool.modules.ksl.blocks.VertexTransformBlock
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.blocks.vertexTransformBlock
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.BlendMode
+import de.fabmax.kool.pipeline.CullMethod
+import de.fabmax.kool.pipeline.PipelineConfig
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.InstanceLayouts
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.VertexLayouts
+import de.fabmax.kool.scene.vertexAttrib
 import de.fabmax.kool.util.Mat4Member
 import de.fabmax.kool.util.getByName
 import de.fabmax.kool.util.logE
@@ -33,9 +38,9 @@ open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pi
                 main {
                     val camData = cameraData()
                     val vertexBlock = vertexTransformBlock(cfg.vertexCfg) {
-                        inLocalPos(vertexAttribFloat3(Attribute.POSITIONS.name))
+                        inLocalPos(vertexAttrib(VertexLayouts.Position.position))
                         if (cfg.outputNormals) {
-                            inLocalNormal(vertexAttribFloat3(Attribute.NORMALS.name))
+                            inLocalNormal(vertexAttrib(VertexLayouts.Normal.normal))
                         }
                     }
                     val worldPos = float3Port("worldPos", vertexBlock.outWorldPos)
@@ -49,7 +54,7 @@ open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pi
                     }
                     if (cfg.alphaMode is AlphaMode.Mask) {
                         alphaMaskUv = interStageFloat2("alphaMaskUv").apply {
-                            input set vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
+                            input set vertexAttrib(VertexLayouts.TexCoord.texCoord)
                         }
                     }
                     if (cfg.outputNormals) {

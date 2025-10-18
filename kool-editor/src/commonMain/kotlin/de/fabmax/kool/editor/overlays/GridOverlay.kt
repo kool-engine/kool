@@ -1,7 +1,6 @@
 package de.fabmax.kool.editor.overlays
 
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.overlays.GridOverlay.PlaneOffset
 import de.fabmax.kool.editor.sceneOrigin
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
@@ -11,12 +10,7 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.blocks.vertexTransformBlock
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.vertexAttribFloat4
-import de.fabmax.kool.scene.Camera
-import de.fabmax.kool.scene.LineMesh
-import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.addLineMesh
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import kotlin.math.roundToLong
 
@@ -145,7 +139,7 @@ class GridOverlay(val overlay: OverlayScene) : Node("Grid overlay"), EditorOverl
                     val scale = uniformFloat2("uScale")
                     val viewProj = mat4Var(cameraData().viewProjMat)
 
-                    val localPos = float3Var(vertexAttribFloat3(Attribute.POSITIONS.name) * scale.y)
+                    val localPos = float3Var(vertexAttrib(VertexLayouts.Position.position) * scale.y)
                     val vertexBlock = vertexTransformBlock(BasicVertexConfig.Builder().build()) {
                         inLocalPos(localPos)
                     }
@@ -156,7 +150,7 @@ class GridOverlay(val overlay: OverlayScene) : Node("Grid overlay"), EditorOverl
                     outPosition set proj
                     clipPos.input set proj
                     fragPos.input set worldPos
-                    fragColor.input set vertexAttribFloat4(Attribute.COLORS)
+                    fragColor.input set vertexAttrib(VertexLayouts.Color.color)
                 }
             }
             fragmentStage {

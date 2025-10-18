@@ -1,7 +1,7 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.util.MemoryLayout
-import de.fabmax.kool.util.Struct
+import de.fabmax.kool.modules.ksl.lang.KslVertexStage
+import de.fabmax.kool.util.*
 
 object VertexLayouts {
 
@@ -104,3 +104,18 @@ object VertexLayouts {
         val tangent = include(Tangent.tangent)
     }
 }
+
+fun KslVertexStage.vertexAttrib(layoutMember: Float1Member<*>) = vertexAttribFloat1(layoutMember.name)
+fun KslVertexStage.vertexAttrib(layoutMember: Float2Member<*>) = vertexAttribFloat2(layoutMember.name)
+fun KslVertexStage.vertexAttrib(layoutMember: Float3Member<*>) = vertexAttribFloat3(layoutMember.name)
+fun KslVertexStage.vertexAttrib(layoutMember: Float4Member<*>) = vertexAttribFloat4(layoutMember.name)
+
+fun KslVertexStage.vertexAttrib(layoutMember: Int1Member<*>) = vertexAttribInt1(layoutMember.name)
+fun KslVertexStage.vertexAttrib(layoutMember: Int2Member<*>) = vertexAttribInt2(layoutMember.name)
+fun KslVertexStage.vertexAttrib(layoutMember: Int3Member<*>) = vertexAttribInt3(layoutMember.name)
+fun KslVertexStage.vertexAttrib(layoutMember: Int4Member<*>) = vertexAttribInt4(layoutMember.name)
+
+fun KslVertexStage.vertexAttrib(layoutMember: Uint1Member<*>) = vertexAttribUint1(layoutMember.name)
+fun KslVertexStage.vertexAttrib(layoutMember: Uint2Member<*>) = vertexAttribUint2(layoutMember.name)
+fun KslVertexStage.vertexAttrib(layoutMember: Uint3Member<*>) = vertexAttribUint3(layoutMember.name)
+fun KslVertexStage.vertexAttrib(layoutMember: Uint4Member<*>) = vertexAttribUint4(layoutMember.name)

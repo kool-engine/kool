@@ -1,7 +1,8 @@
 package de.fabmax.kool.modules.ksl.blocks
 
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.scene.VertexLayouts
+import de.fabmax.kool.scene.vertexAttrib
 
 fun KslScopeBuilder.vertexDisplacementBlock(cfg: PropertyBlockConfig): VertexDisplacementBlock {
     val displacementBlock = VertexDisplacementBlock(cfg, this)
@@ -38,7 +39,7 @@ class VertexDisplacementBlock(
                         if (sampleValue == null) {
                             val tex = parentStage.program.texture2d(source.textureName).also { textures[source] = it }
                             sampleValue = parentScope.run {
-                                val texCoords = this@apply.parentStage.vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
+                                val texCoords = this@apply.parentStage.vertexAttrib(VertexLayouts.TexCoord.texCoord)
                                 float4Var(sampleTexture(tex, texCoords, 0f.const)).also {
                                     outSamplerValues[source.textureName] = it
                                 }
@@ -58,7 +59,7 @@ class VertexDisplacementBlock(
                         if (sampleValue == null) {
                             val tex = parentStage.program.texture2dArray(source.textureName)
                             sampleValue = parentScope.run {
-                                val texCoords = this@apply.parentStage.vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
+                                val texCoords = this@apply.parentStage.vertexAttrib(VertexLayouts.TexCoord.texCoord)
                                 float4Var(sampleTextureArray(tex, source.arrayIndex.const, texCoords, 0f.const)).also {
                                     outSamplerValues[texKey] = it
                                 }

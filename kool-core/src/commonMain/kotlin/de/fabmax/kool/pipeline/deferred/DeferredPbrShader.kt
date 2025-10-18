@@ -4,10 +4,11 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.shading.AlphaMode
+import de.fabmax.kool.scene.VertexLayouts
+import de.fabmax.kool.scene.vertexAttrib
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logE
 
@@ -63,12 +64,12 @@ open class DeferredKslPbrShader(cfg: Config) : KslShader(deferredPbrModel(cfg), 
             vertexStage {
                 main {
                     val vertexBlock = vertexTransformBlock(cfg.vertexCfg) {
-                        inLocalPos(vertexAttribFloat3(Attribute.POSITIONS.name))
-                        inLocalNormal(vertexAttribFloat3(Attribute.NORMALS.name))
+                        inLocalPos(vertexAttrib(VertexLayouts.Position.position))
+                        inLocalNormal(vertexAttrib(VertexLayouts.Normal.normal))
 
                         if (cfg.normalMapCfg.isNormalMapped) {
                             // if normal mapping is enabled, the input vertex data is expected to have a tangent attribute
-                            inLocalTangent(vertexAttribFloat4(Attribute.TANGENTS.name))
+                            inLocalTangent(vertexAttrib(VertexLayouts.Tangent.tangent))
                         }
                     }
 

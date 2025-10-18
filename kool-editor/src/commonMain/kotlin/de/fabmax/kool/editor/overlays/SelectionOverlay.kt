@@ -204,7 +204,7 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
 
         private fun getPipeline(mesh: Mesh<*>, ctx: KoolContext): DrawPipeline? {
             val meshSelection = selectedMeshes[mesh.id]
-            if (!mesh.geometry.hasAttribute(Attribute.POSITIONS) || meshSelection == null) {
+            if (!mesh.geometry.hasAttribute(VertexLayouts.Position.position) || meshSelection == null) {
                 return null
             }
             return selectionPipelines.getOrPut(mesh.id) {
