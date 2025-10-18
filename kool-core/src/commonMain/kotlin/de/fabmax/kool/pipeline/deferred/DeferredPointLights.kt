@@ -2,11 +2,7 @@ package de.fabmax.kool.pipeline.deferred
 
 import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.scene.Light
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.scene.VertexLayouts
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 
 
@@ -95,8 +91,8 @@ class DeferredPointLights(var isDynamic: Boolean) {
     }
 
     object PointLightInstanceLayout : Struct("PointLightInstanceLayout", MemoryLayout.TightlyPacked) {
-        val modelMat = mat4(Attribute.INSTANCE_MODEL_MAT.name)
-        val lightPos = float4("lightPos")
-        val lightColor = float4("lightColor")
+        val modelMat = include(InstanceLayouts.ModelMat.modelMat)
+        val lightPos = float4("instattr_lightPos")
+        val lightColor = float4("instattr_lightColor")
     }
 }

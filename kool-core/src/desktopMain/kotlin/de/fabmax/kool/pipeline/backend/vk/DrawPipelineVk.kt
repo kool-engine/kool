@@ -229,7 +229,7 @@ class DrawPipelineVk(
             bindings.forEach { binding ->
                 binding.vertexAttributes.forEach { attrib ->
                     for (i in 0 until attrib.locationSize) {
-                        val (slotOffset, slotType) = attrib.attribute.vkProps()
+                        val (slotOffset, slotType) = attrib.vkProps()
                         this[iAttrib++].apply {
                             binding(binding.binding)
                             location(locations[attrib]!! + i)
@@ -311,7 +311,7 @@ class DrawPipelineVk(
 
     private data class AttributeVkProps(val slotOffset: Int, val slotType: Int)
 
-    private fun Attribute.vkProps() = when (type) {
+    private fun VertexLayout.VertexAttribute.vkProps() = when (type) {
         GpuType.Float1 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32_SFLOAT)
         GpuType.Float2 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32_SFLOAT)
         GpuType.Float3 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32_SFLOAT)

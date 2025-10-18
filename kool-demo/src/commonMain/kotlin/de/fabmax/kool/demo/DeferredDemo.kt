@@ -9,7 +9,6 @@ import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.deferred.*
 import de.fabmax.kool.scene.*
@@ -536,7 +535,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     val uv = interStageFloat2()
                     vertexStage {
                         main {
-                            uv.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
+                            uv.input set vertexAttrib(VertexLayouts.TexCoord.texCoord)
                         }
                     }
                     fragmentStage {

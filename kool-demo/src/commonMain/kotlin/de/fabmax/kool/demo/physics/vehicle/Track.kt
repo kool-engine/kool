@@ -381,9 +381,9 @@ class Track(val world: VehicleWorld) : Node() {
     }
 
     object TrackSupportLayout : Struct("TrackSupportLayout", MemoryLayout.TightlyPacked) {
-        val position = float3(Attribute.POSITIONS.name)
-        val normal = float3(Attribute.NORMALS.name)
-        val color = float4(Attribute.COLORS.name)
-        val roughness = float1(VertexLayouts.PositionNormalColorMetalRough.roughness.name)
+        val position = include(VertexLayouts.Position.position)
+        val normal = include(VertexLayouts.Normal.normal)
+        val color = include(VertexLayouts.Color.color)
+        val roughness = include(VertexLayouts.Roughness.roughness)
     }
 }

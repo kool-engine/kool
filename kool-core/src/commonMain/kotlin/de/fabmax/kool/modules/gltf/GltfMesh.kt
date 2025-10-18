@@ -4,8 +4,6 @@ import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.MutableVec4i
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.generateNormals
@@ -77,7 +75,7 @@ data class GltfMesh(
                 float3(VertexLayouts.Position.name)
                 float3(VertexLayouts.Normal.name)
 
-                if (colorAcc != null || cfg.setVertexAttribsFromMaterial) { float4(Attribute.COLORS.name) }
+                if (colorAcc != null || cfg.setVertexAttribsFromMaterial) { float4(VertexLayouts.Color.name) }
                 if (cfg.setVertexAttribsFromMaterial) {
                     float3(VertexLayouts.EmissiveColor.name)
                     float1(VertexLayouts.Metallic.name)
@@ -93,10 +91,8 @@ data class GltfMesh(
                 if (jointAcc != null) { int4(VertexLayouts.Joint.name) }
                 if (weightAcc != null) { float4(VertexLayouts.Weight.name) }
 
-                morphAccessors.keys.forEach { attrib ->
-                    check(attrib.type == GpuType.Float3)
-                    float3(attrib.name)
-                }
+                // at the moment all supported morph attributes are of type float 3
+                morphAccessors.keys.forEach { attrib -> float3(attrib) }
             }
 
             val verts = IndexedVertexList(layout)
@@ -141,7 +137,7 @@ data class GltfMesh(
                     }
 
                     morphAccessors.forEach { (attrib, acc) ->
-                        struct.getFloat3(attrib.name)?.set(acc.next())
+                        struct.getFloat3(attrib)?.set(acc.next())
                     }
                 }
             }
@@ -166,20 +162,20 @@ data class GltfMesh(
             return verts
         }
 
-        private fun makeMorphTargetAccessors(gltfAccessors: List<GltfAccessor>): Map<Attribute, Vec3fAccessor> {
-            val accessors = mutableMapOf<Attribute, Vec3fAccessor>()
+        private fun makeMorphTargetAccessors(gltfAccessors: List<GltfAccessor>): Map<String, Vec3fAccessor> {
+            val accessors = mutableMapOf<String, Vec3fAccessor>()
             targets.forEachIndexed { index, morphTarget ->
                 val postfix = "_${index + 1}"
                 morphTarget[ATTRIBUTE_NORMAL]?.let { iAccessor ->
-                    val attrib = Attribute("${Attribute.NORMALS.name}$postfix", GpuType.Float3)
+                    val attrib = "${VertexLayouts.Normal.name}$postfix"
                     accessors[attrib] = Vec3fAccessor(gltfAccessors[iAccessor])
                 }
                 morphTarget[ATTRIBUTE_POSITION]?.let { iAccessor ->
-                    val attrib = Attribute("${Attribute.POSITIONS.name}$postfix", GpuType.Float3)
+                    val attrib = "${VertexLayouts.Position.name}$postfix"
                     accessors[attrib] = Vec3fAccessor(gltfAccessors[iAccessor])
                 }
                 morphTarget[ATTRIBUTE_TANGENT]?.let { iAccessor ->
-                    val attrib = Attribute("${Attribute.TANGENTS.name}$postfix", GpuType.Float3)
+                    val attrib = "${VertexLayouts.Tangent.name}$postfix"
                     accessors[attrib] = Vec3fAccessor(gltfAccessors[iAccessor])
                 }
             }

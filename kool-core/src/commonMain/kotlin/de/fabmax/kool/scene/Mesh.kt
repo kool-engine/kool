@@ -219,7 +219,7 @@ open class Mesh<Layout: Struct>(
     }
 
     fun updateGeometryBounds() {
-        if (!geometry.hasAttribute(Attribute.POSITIONS)) {
+        if (!geometry.hasAttribute(VertexLayouts.Position.position)) {
             logW { "Mesh $name has no default positions attribute, cannot update geometry bounds" }
             return
         }

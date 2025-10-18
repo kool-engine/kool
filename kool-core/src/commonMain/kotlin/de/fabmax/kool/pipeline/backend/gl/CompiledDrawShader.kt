@@ -11,11 +11,11 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
     private val attributes: Map<String, VertexLayout.VertexAttribute> = pipeline.vertexLayout.bindings
         .filter { it.inputRate == InputRate.VERTEX }
         .flatMap { it.vertexAttributes }
-        .associateBy { it.attribute.name }
+        .associateBy { it.name }
     private val instanceAttributes: Map<String, VertexLayout.VertexAttribute> = pipeline.vertexLayout.bindings
         .filter { it.inputRate == InputRate.INSTANCE }
         .flatMap { it.vertexAttributes }
-        .associateBy { it.attribute.name }
+        .associateBy { it.name }
 
     val mappedAttribLocations = pipeline.vertexLayout.getAttribLocations()
     private val attributeLocations: IntArray = attributes.values

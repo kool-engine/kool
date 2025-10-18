@@ -7,6 +7,7 @@ import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.NodeId
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.util.Struct
 import de.fabmax.kool.util.UniqueId
 import de.fabmax.kool.util.releaseDelayed
@@ -57,7 +58,7 @@ open class DepthMapPass(
     }
 
     private fun defaultDepthShader(mesh: Mesh<*>, ctx: KoolContext): DepthShader? {
-        if (!mesh.geometry.hasAttribute(Attribute.POSITIONS)) {
+        if (!mesh.geometry.hasAttribute(VertexLayouts.Position.position)) {
             return null
         }
 
@@ -114,7 +115,7 @@ class NormalLinearDepthMapPass(
     }
 
     private fun defaultDepthShader(mesh: Mesh<*>, ctx: KoolContext): DepthShader? {
-        if (!mesh.geometry.hasAttribute(Attribute.POSITIONS) || !mesh.geometry.hasAttribute(Attribute.NORMALS)) {
+        if (!mesh.geometry.hasAttribute(VertexLayouts.Position.position) || !mesh.geometry.hasAttribute(VertexLayouts.Normal.normal)) {
             return null
         }
 

@@ -6,12 +6,7 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.blocks.modelMatrix
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.vertexAttribFloat3
-import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.VertexLayouts
-import de.fabmax.kool.scene.addMesh
-import de.fabmax.kool.scene.defaultOrbitCamera
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.Struct
@@ -90,7 +85,7 @@ class HelloStructs : DemoScene("Hello Structs") {
             main {
                 // compute vertex position. nothing special here...
                 val cam = cameraData()
-                val pos = modelMatrix().matrix * float4Value(vertexAttribFloat3(Attribute.POSITIONS), 1f.const)
+                val pos = modelMatrix().matrix * float4Value(vertexAttrib(VertexLayouts.Position.position), 1f.const)
                 outPosition set cam.viewProjMat * pos
 
                 // take the flat color uniform defined at the top and call colorTransformFun() to get colors as

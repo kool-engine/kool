@@ -13,8 +13,7 @@ import de.fabmax.kool.modules.ui2.UiRenderer
 import de.fabmax.kool.modules.ui2.UiSurface
 import de.fabmax.kool.modules.ui2.UiVertexLayout
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.Struct
@@ -92,13 +91,13 @@ class TitleBgRenderer(
                     main {
                         clipBounds.input set instanceAttrib(BgInstanceLayout.clip)
                         val uvRange by instanceAttrib(BgInstanceLayout.gradientRange)
-                        val meshUv by vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
+                        val meshUv by vertexAttrib(VertexLayouts.TexCoord.texCoord)
                         clipCornerRadius.input set uvRange.zw
                         meshUv.x += uniformFloat1("uNoiseOffset")
                         meshUv.y += uvRange.x
 
                         val noise = sampleTexture(texture2d("tNoise"), meshUv, 0f.const)
-                        val pos by vertexAttribFloat3(Attribute.POSITIONS.name)
+                        val pos by vertexAttrib(VertexLayouts.Position.position)
                         pos.xy set pos.xy + (noise.xy * 2f.const - 1f.const) * Vec2f(0.1f, 0.5f).const
 
                         texCoords.input set pos.xy

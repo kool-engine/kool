@@ -6,6 +6,7 @@ import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureCube
+import de.fabmax.kool.scene.InstanceLayouts
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Mat4Member
 import de.fabmax.kool.util.ShadowMap
@@ -58,7 +59,7 @@ data class BasicVertexConfig(
 
         fun instancedModelMatrix(layoutMember: Mat4Member<*>) = instancedModelMatrix(layoutMember.name)
 
-        fun instancedModelMatrix(attributeName: String = Attribute.INSTANCE_MODEL_MAT.name) {
+        fun instancedModelMatrix(attributeName: String = InstanceLayouts.ModelMat.name) {
             instanceModelMatItem = ModelMatrixComposition.InstanceModelMat(attributeName)
         }
 
@@ -79,7 +80,7 @@ data class BasicVertexConfig(
 
 sealed interface ModelMatrixComposition {
     data object UniformModelMat : ModelMatrixComposition
-    data class InstanceModelMat(val attributeName: String = Attribute.INSTANCE_MODEL_MAT.name) : ModelMatrixComposition
+    data class InstanceModelMat(val attributeName: String = InstanceLayouts.ModelMat.name) : ModelMatrixComposition
 }
 
 data class AmbientOcclusionConfig(

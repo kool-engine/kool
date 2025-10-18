@@ -7,8 +7,11 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.blocks.pbrLightBlock
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.Light
+import de.fabmax.kool.pipeline.BlendMode
+import de.fabmax.kool.pipeline.CullMethod
+import de.fabmax.kool.pipeline.DepthCompareOp
+import de.fabmax.kool.pipeline.PipelineConfig
+import de.fabmax.kool.scene.*
 
 /**
  * 2nd pass shader for deferred pbr shading: Uses textures with view space position, normals, albedo, roughness,
@@ -50,9 +53,9 @@ class DeferredLightShader(encodedLightType: Float, model: Model = Model(encodedL
 
             vertexStage {
                 main {
-                    val instanceMvp = instanceAttribMat4(Attribute.INSTANCE_MODEL_MAT.name)
+                    val instanceMvp = instanceAttrib(InstanceLayouts.ModelMat.modelMat)
                     val mvp = mat4Var(mvpMatrix().matrix * instanceMvp)
-                    outPosition set mvp * float4Value(vertexAttribFloat3(Attribute.POSITIONS.name), 1f.const)
+                    outPosition set mvp * float4Value(vertexAttrib(VertexLayouts.Position.position), 1f.const)
                     fragPos.input set outPosition
 
                     lightRadius.input set length(instanceMvp * Vec4f.X_AXIS.const)

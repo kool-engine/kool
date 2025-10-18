@@ -8,9 +8,7 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.addTextureMesh
-import de.fabmax.kool.scene.defaultOrbitCamera
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.launch
 
@@ -77,8 +75,8 @@ class HelloComputeTexture : DemoScene("Hello Compute Texture") {
                 val uv = interStageFloat2()
                 vertexStage {
                     main {
-                        uv.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS)
-                        outPosition set mvpMatrix().matrix * float4Value(vertexAttribFloat3(Attribute.POSITIONS), 1f.const)
+                        uv.input set vertexAttrib(VertexLayouts.TexCoord.texCoord)
+                        outPosition set mvpMatrix().matrix * float4Value(vertexAttrib(VertexLayouts.Position.position), 1f.const)
                     }
                 }
                 fragmentStage {

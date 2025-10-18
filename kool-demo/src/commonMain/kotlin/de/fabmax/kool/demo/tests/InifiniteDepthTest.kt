@@ -6,13 +6,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.vertexAttribFloat3
-import de.fabmax.kool.pipeline.vertexAttribFloat4
-import de.fabmax.kool.scene.Camera
-import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.VertexLayouts
-import de.fabmax.kool.scene.addMesh
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
@@ -81,8 +75,8 @@ class InifiniteDepthTest : DemoScene("Infinite Depth Test") {
                 val vColor = interStageFloat4()
                 vertexStage {
                     main {
-                        vColor.input set vertexAttribFloat4(Attribute.COLORS)
-                        outPosition set float4Value(vertexAttribFloat3(Attribute.POSITIONS), 1f.const)
+                        vColor.input set vertexAttrib(VertexLayouts.Color.color)
+                        outPosition set float4Value(vertexAttrib(VertexLayouts.Position.position), 1f.const)
                     }
                 }
                 fragmentStage {

@@ -64,9 +64,8 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
         val vertexStage = program.vertexStage ?: return emptySet()
         return vertexStage.attributes.values
             .filter { it.inputRate == KslInputRate.Vertex }
-            .map {
-                Attribute(it.name, it.expressionType.gpuType)
-            }.toSet()
+            .map { Attribute(it.name, it.expressionType.gpuType) }
+            .toSet()
     }
 
     override fun createPipeline(
@@ -124,7 +123,7 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
                     verts.layout.members.forEach { appendLine("    ${it.name}: ${it.type}") }
                 }
             }
-            vertLayoutAttribs += VertexLayout.VertexAttribute(attribLocation, attrib.byteOffset, attrib.asAttribute())
+            vertLayoutAttribs += VertexLayout.VertexAttribute(attribLocation, attrib.byteOffset, attrib.name, attrib.type)
             attribLocation++
         }
 
@@ -133,9 +132,13 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
             instanceAttribs.forEach { instanceAttrib ->
                 val instanceMember = instances.layout.getByName(instanceAttrib.name)
                 checkNotNull(instanceMember) {
-                    "Mesh does not include required instance attribute: ${instanceAttrib.name}"
+                    buildString {
+                        appendLine("Mesh ${mesh.name} does not include required vertex attribute: ${instanceAttrib.name}: ${instanceAttrib.expressionType.gpuType} (for shader: ${program.name})")
+                        appendLine("  ${verts.layout.members.size} available attributes:")
+                        instances.layout.members.forEach { appendLine("    ${it.name}: ${it.type}") }
+                    }
                 }
-                instLayoutAttribs += VertexLayout.VertexAttribute(attribLocation++, instanceMember.byteOffset, instanceMember.asAttribute())
+                instLayoutAttribs += VertexLayout.VertexAttribute(attribLocation++, instanceMember.byteOffset, instanceMember.name, instanceMember.type)
             }
         } else if (instanceAttribs.isNotEmpty()) {
             throw IllegalStateException("Shader model requires instance attributes, but mesh doesn't provide any")

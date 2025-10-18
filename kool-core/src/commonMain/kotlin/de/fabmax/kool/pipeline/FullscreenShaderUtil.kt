@@ -4,6 +4,8 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.VertexLayouts
+import de.fabmax.kool.scene.vertexAttrib
 
 object FullscreenShaderUtil {
 
@@ -28,8 +30,8 @@ object FullscreenShaderUtil {
     fun KslProgram.fullscreenQuadVertexStage(uv: KslInterStageVector<KslFloat2, KslFloat1>?) {
         vertexStage {
             main {
-                uv?.let { it.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS.name) }
-                outPosition set float4Value(vertexAttribFloat3(Attribute.POSITIONS.name), 1f)
+                uv?.let { it.input set vertexAttrib(VertexLayouts.TexCoord.texCoord) }
+                outPosition set float4Value(vertexAttrib(VertexLayouts.Position.position), 1f)
             }
         }
     }
@@ -44,7 +46,7 @@ object FullscreenShaderUtil {
     fun KslProgram.fullscreenCubeVertexStage(localPos: KslInterStageVector<KslFloat3, KslFloat1>?) {
         vertexStage {
             main {
-                val vertexPos = float3Var(vertexAttribFloat3(Attribute.POSITIONS.name))
+                val vertexPos = float3Var(vertexAttrib(VertexLayouts.Position.position))
                 localPos?.let { it.input set vertexPos }
                 outPosition set cameraData().viewProjMat * float4Value(vertexPos, 1f.const)
             }

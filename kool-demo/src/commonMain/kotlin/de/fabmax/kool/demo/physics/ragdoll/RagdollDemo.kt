@@ -20,8 +20,6 @@ import de.fabmax.kool.physics.articulations.ArticulationJointAxis
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.geometry.CylinderGeometry
 import de.fabmax.kool.physics.geometry.PlaneGeometry
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
@@ -550,9 +548,5 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
                 isActive = true
             }
         }
-    }
-
-    companion object {
-        private val ATTRIB_COLOR = Attribute("aInstColor", GpuType.Float4)
     }
 }

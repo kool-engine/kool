@@ -9,9 +9,11 @@ import de.fabmax.kool.modules.ui2.UiNode
 import de.fabmax.kool.modules.ui2.UiRenderer
 import de.fabmax.kool.modules.ui2.UiSurface
 import de.fabmax.kool.modules.ui2.UiVertexLayout
-import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.pipeline.BlendMode
+import de.fabmax.kool.pipeline.CullMethod
+import de.fabmax.kool.pipeline.DepthCompareOp
+import de.fabmax.kool.pipeline.PipelineConfig
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -98,7 +100,7 @@ class TitleBgRenderer(
                         clipBounds.input set instanceAttrib(BgInstanceLayout.clip)
                         clipCornerRadius.input set instanceAttrib(BgInstanceLayout.clipCorners)
 
-                        val pos = float3Var(vertexAttribFloat3(Attribute.POSITIONS.name))
+                        val pos = float3Var(vertexAttrib(VertexLayouts.Position.position))
                         val dimens = float4Var(instanceAttrib(BgInstanceLayout.dimens))
                         size.input set dimens.zw
                         localPos.input set pos.xy * dimens.zw
@@ -154,9 +156,6 @@ class TitleBgRenderer(
         }
 
         companion object {
-            val ATTRIB_DIMENS = Attribute("aDimens", GpuType.Float4)
-            val ATTRIB_CLIP_CORNERS = Attribute("aClipCorners", GpuType.Float2)
-
             val pipelineConfig = PipelineConfig(
                 blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA,
                 cullMethod = CullMethod.NO_CULLING,

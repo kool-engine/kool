@@ -420,12 +420,12 @@ class GpuBees(beeScene: Scene) {
                             1f.const - 2f.const * (i*i + j*j)
                         )
 
-                        val globalPos = float3Var(bee[BeeData.position])
-                        val decay = float1Var(bee[BeeData.decay])
-                        val vertexNormal = vertexAttribFloat3(Attribute.NORMALS.name)
-                        val vertexPos = float3Var(vertexAttribFloat3(Attribute.POSITIONS.name))
+                        val globalPos by bee[BeeData.position]
+                        val decay by bee[BeeData.decay]
+                        val vertexNormal by vertexAttrib(VertexLayouts.Normal.normal)
+                        val vertexPos by vertexAttrib(VertexLayouts.Position.position)
 
-                        val scale = float1Var(1f.const - clamp(decay - (BeeConfig.decayTime - 1f).const, 0f.const, 1f.const))
+                        val scale by 1f.const - clamp(decay - (BeeConfig.decayTime - 1f).const, 0f.const, 1f.const)
 
                         getFloat3Port("worldPos").input(rotMat * vertexPos * scale + globalPos)
                         getFloat3Port("worldNormal").input(rotMat * vertexNormal)
@@ -438,7 +438,7 @@ class GpuBees(beeScene: Scene) {
                         val colorPort = getFloat4Port("baseColor")
                         val color = float4Var(colorPort.input.input)
 
-                        val accentColor = float4Var(aliveColor.toLinear().const)
+                        val accentColor by aliveColor.toLinear().const
                         `if`(aliveness.output gt 0.01f.const) {
                             accentColor set deadColor.toLinear().const
                         }

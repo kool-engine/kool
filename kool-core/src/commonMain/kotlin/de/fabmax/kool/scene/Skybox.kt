@@ -7,7 +7,10 @@ import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.CullMethod
+import de.fabmax.kool.pipeline.DepthMode
+import de.fabmax.kool.pipeline.PipelineConfig
+import de.fabmax.kool.pipeline.TextureCube
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.UniqueId
@@ -77,7 +80,7 @@ object Skybox {
                     main {
                         val cam = cameraData()
                         val skyOrientation = uniformMat3("uSkyOrientation")
-                        val localPos = vertexAttribFloat3(Attribute.POSITIONS.name)
+                        val localPos = vertexAttrib(VertexLayouts.Position.position)
                         orientedPos.input set skyOrientation * localPos
 
                         val rotX = float3Var(normalize(cam.viewMat[0].xyz))

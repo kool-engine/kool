@@ -4,7 +4,8 @@ import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.BasicVertexConfig
 import de.fabmax.kool.modules.ksl.ModelMatrixComposition
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.scene.VertexLayouts
+import de.fabmax.kool.scene.vertexAttrib
 
 fun KslScopeBuilder.vertexTransformBlock(cfg: BasicVertexConfig, block: VertexTransformBlock.() -> Unit): VertexTransformBlock {
     val vertexBlock = VertexTransformBlock(cfg, parentStage.program.nextName("vertexBlock"), this)
@@ -49,8 +50,8 @@ class VertexTransformBlock(val cfg: BasicVertexConfig, name: String, parentScope
 
             if (cfg.isArmature) {
                 val armatureBlock = armatureBlock(cfg.maxNumberOfBones)
-                armatureBlock.inBoneWeights(stage.vertexAttribFloat4(Attribute.WEIGHTS.name))
-                armatureBlock.inBoneIndices(stage.vertexAttribInt4(Attribute.JOINTS.name))
+                armatureBlock.inBoneWeights(stage.vertexAttrib(VertexLayouts.Weight.weight))
+                armatureBlock.inBoneIndices(stage.vertexAttrib(VertexLayouts.Joint.joint))
                 outModelMat *= armatureBlock.outBoneTransform
             }
 
@@ -59,13 +60,13 @@ class VertexTransformBlock(val cfg: BasicVertexConfig, name: String, parentScope
                 cfg.morphAttributes.forEachIndexed { i, morphAttrib ->
                     val weight = getMorphWeightComponent(i, morphData)
                     when {
-                        morphAttrib.name.startsWith(Attribute.POSITIONS.name) -> {
+                        morphAttrib.name.startsWith(VertexLayouts.Position.name) -> {
                             localPos += stage.vertexAttribFloat3(morphAttrib.name) * weight
                         }
-                        morphAttrib.name.startsWith(Attribute.NORMALS.name) -> {
+                        morphAttrib.name.startsWith(VertexLayouts.Normal.name) -> {
                             localNormal += stage.vertexAttribFloat3(morphAttrib.name) * weight
                         }
-                        morphAttrib.name.startsWith(Attribute.TANGENTS.name) -> {
+                        morphAttrib.name.startsWith(VertexLayouts.Tangent.name) -> {
                             localTangent += stage.vertexAttribFloat3(morphAttrib.name) * weight
                         }
                     }

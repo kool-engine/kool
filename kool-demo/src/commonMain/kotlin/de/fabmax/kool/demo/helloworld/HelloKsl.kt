@@ -10,12 +10,7 @@ import de.fabmax.kool.modules.ksl.blocks.modelMatrix
 import de.fabmax.kool.modules.ksl.lang.plus
 import de.fabmax.kool.modules.ksl.lang.times
 import de.fabmax.kool.modules.ksl.lang.xyz
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.vertexAttribFloat3
-import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.VertexLayouts
-import de.fabmax.kool.scene.addMesh
-import de.fabmax.kool.scene.defaultOrbitCamera
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Time
 import kotlin.math.sin
 
@@ -39,8 +34,8 @@ class HelloKsl : DemoScene("Hello KSL Shaders") {
                     val modelMat = modelMatrix()
                     val camData = cameraData()
 
-                    val position by vertexAttribFloat3(Attribute.POSITIONS)
-                    val normal by vertexAttribFloat3(Attribute.NORMALS)
+                    val position by vertexAttrib(VertexLayouts.Position.position)
+                    val normal by vertexAttrib(VertexLayouts.Normal.normal)
 
                     position set position * uScale
                     normal set normalize(normal)

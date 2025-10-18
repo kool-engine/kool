@@ -16,7 +16,7 @@ class VertexLayout(val bindings: List<Binding>, val primitiveType: PrimitiveType
         val binding: Int,
         val inputRate: InputRate,
         val vertexAttributes: List<VertexAttribute>,
-        val strideBytes: Int = vertexAttributes.sumOf { it.attribute.type.byteSize }
+        val strideBytes: Int = vertexAttributes.sumOf { it.type.byteSize }
     ) {
         val hash: LongHash = LongHash {
             this += binding
@@ -28,12 +28,7 @@ class VertexLayout(val bindings: List<Binding>, val primitiveType: PrimitiveType
         }
     }
 
-    data class VertexAttribute(val index: Int, val bufferOffset: Int, val attribute: Attribute) {
-        val name: String
-            get() = attribute.name
-        val type: GpuType
-            get() = attribute.type
-    }
+    data class VertexAttribute(val index: Int, val bufferOffset: Int, val name: String, val type: GpuType)
 }
 
 enum class InputRate {

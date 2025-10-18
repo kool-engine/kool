@@ -94,7 +94,7 @@ fun KslNumericType.glFormat(gl: GlApi): Int = when(this) {
     else -> throw IllegalStateException("Invalid format type $this")
 }
 
-val VertexLayout.VertexAttribute.locationSize: Int get() = when(attribute.type) {
+val VertexLayout.VertexAttribute.locationSize: Int get() = when(type) {
     GpuType.Mat2 -> 2
     GpuType.Mat3 -> 3
     GpuType.Mat4 -> 4

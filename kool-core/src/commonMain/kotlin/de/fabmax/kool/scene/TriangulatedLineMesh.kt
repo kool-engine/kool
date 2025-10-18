@@ -11,10 +11,8 @@ import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
 import de.fabmax.kool.modules.ksl.blocks.fragmentColorBlock
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.asAttribute
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
@@ -44,13 +42,13 @@ class CustomTriangulatedLineMesh<Layout: Struct>(
     private val lineBuffer = mutableListOf<LineVertex>()
 
     private val lineAttr = requireNotNull(geometry.layout.getFloat2(LineVertexLayout.lineAttribs.name)) {
-        "Mesh geometry misses required vertex attribute: $ATTRIB_LINE_ATTRIBS"
+        "Mesh geometry misses required vertex attribute: ${LineVertexLayout.lineAttribs.name}"
     }
     private val prevAttr = requireNotNull(geometry.layout.getFloat3(LineVertexLayout.prevDir.name)) {
-        "Mesh geometry misses required vertex attribute: $ATTRIB_PREV_DIR"
+        "Mesh geometry misses required vertex attribute: ${LineVertexLayout.prevDir.name}"
     }
     private val nextAttr = requireNotNull(geometry.layout.getFloat3(LineVertexLayout.nextDir.name)) {
-        "Mesh geometry misses required vertex attribute: $ATTRIB_NEXT_DIR"
+        "Mesh geometry misses required vertex attribute: ${LineVertexLayout.nextDir.name}"
     }
 
     var color = Color.RED
@@ -270,7 +268,7 @@ class CustomTriangulatedLineMesh<Layout: Struct>(
                     val vPrevPos = vertexAttrib(LineVertexLayout.prevDir)
                     val vNextPos = vertexAttrib(LineVertexLayout.nextDir)
                     val vAttribs = vertexAttrib(LineVertexLayout.lineAttribs)
-                    val pos = vertexAttribFloat3(Attribute.POSITIONS.name)
+                    val pos = vertexAttrib(VertexLayouts.Position.position)
                     val shiftDir = vAttribs.x
                     val lineWidthPort = float1Port("lineWidth", vAttribs.y)
 
@@ -347,16 +345,10 @@ class CustomTriangulatedLineMesh<Layout: Struct>(
     }
 
     object LineVertexLayout : Struct("LineVertexLayout", MemoryLayout.TightlyPacked) {
-        val color = float4(Attribute.COLORS.name)
-        val lineAttribs = float2("aLineAttribs")
-        val position = float3(Attribute.POSITIONS.name)
-        val prevDir = float3("aPrevDir")
-        val nextDir = float3("aNextDir")
-    }
-
-    companion object {
-        val ATTRIB_LINE_ATTRIBS = LineVertexLayout.lineAttribs.asAttribute()
-        val ATTRIB_PREV_DIR = LineVertexLayout.prevDir.asAttribute()
-        val ATTRIB_NEXT_DIR = LineVertexLayout.nextDir.asAttribute()
+        val color = include(VertexLayouts.Color.color)
+        val lineAttribs = float2("attr_line_attribs")
+        val position = include(VertexLayouts.Position.position)
+        val prevDir = float3("attr_prev_dir")
+        val nextDir = float3("attr_next_dir")
     }
 }
