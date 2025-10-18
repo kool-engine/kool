@@ -215,7 +215,7 @@ private class PlayButtonBg(playStopAnimator: AnimatedFloatBidir) : ModeButtonBg(
                 pa.set(pPlay[i]).mul(1f - pAnim)
                 pb.set(pStop[i]).mul(pAnim)
                 pa.add(pb)
-                vi[i] = vertex { set(round(pa.x * r), round(pa.y * r), round(pa.z * r)) }
+                vi[i] = vertex { it.position.set(round(pa.x * r), round(pa.y * r), round(pa.z * r)) }
             }
             addTriIndices(vi[0], vi[1], vi[2])
             addTriIndices(vi[0], vi[2], vi[3])
@@ -255,7 +255,7 @@ private class PauseButtonBg(playStopAnimator: AnimatedFloatBidir, val playPauseA
                 pa.set(pPlay[i]).mul(pAnim)
                 pb.set(pPause[i]).mul(1f - pAnim)
                 pa.add(pb)
-                vi[i] = vertex { set(round(pa.x * r), round(pa.y * r), round(pa.z * r)) }
+                vi[i] = vertex { it.position.set(round(pa.x * r), round(pa.y * r), round(pa.z * r)) }
             }
             addTriIndices(vi[0], vi[1], vi[2])
             addTriIndices(vi[0], vi[2], vi[3])
@@ -264,7 +264,7 @@ private class PauseButtonBg(playStopAnimator: AnimatedFloatBidir, val playPauseA
                 pa.set(pPlay[i]).mul(pAnim)
                 pb.set(pPause[i]).mul(1f - pAnim)
                 pa.add(pb)
-                vi[i] = vertex { set(round(pa.x * r), round(pa.y * -r), round(pa.z * r)) }
+                vi[i] = vertex { it.position.set(round(pa.x * r), round(pa.y * -r), round(pa.z * r)) }
             }
             addTriIndices(vi[0], vi[1], vi[2])
             addTriIndices(vi[0], vi[2], vi[3])
@@ -285,9 +285,9 @@ private class ResetButtonBg(playStopAnimator: AnimatedFloatBidir)
         getUiPrimitives().localRect(x, y, w, h, fg)
         getPlainBuilder().configured(MutableColor(fg).apply { a *= Easing.quadRev(playStopAnimator.value) }) {
             translate(round(widthPx * 0.5f + r * 0.3f), round(heightPx * 0.5f), 0f)
-            val i0 = vertex { set(-r, 0f, 0f) }
-            val i1 = vertex { set(-cos(120f.toRad()) * r, sin(120f.toRad()) * r, 0f) }
-            val i2 = vertex { set(-cos(240f.toRad()) * r, sin(240f.toRad()) * r, 0f) }
+            val i0 = vertex { it.position.set(-r, 0f, 0f) }
+            val i1 = vertex { it.position.set(-cos(120f.toRad()) * r, sin(120f.toRad()) * r, 0f) }
+            val i2 = vertex { it.position.set(-cos(240f.toRad()) * r, sin(240f.toRad()) * r, 0f) }
             addTriIndices(i0, i1, i2)
         }
     }

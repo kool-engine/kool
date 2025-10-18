@@ -6,6 +6,7 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Color.Hsv
 import de.fabmax.kool.util.ColorGradient
+import de.fabmax.kool.util.set
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.math.*
@@ -180,27 +181,27 @@ open class ColorWheelNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, 
 
             // inner triangle (saturation / value chooser)
             var i1 = vertex {
-                set(rt, 0f, 0f)
-                color.set(Hsv(modifier.hue, 1f, 1f).toSrgb(a = 1f))
+                it.position.set(rt, 0f, 0f)
+                it.color.set(Hsv(modifier.hue, 1f, 1f).toSrgb(a = 1f))
             }
             var i2 = vertex {
-                set(-0.5f * rt, 0.866f * rt, 0f)
-                color.set(Color.BLACK)
+                it.position.set(-0.5f * rt, 0.866f * rt, 0f)
+                it.color.set(Color.BLACK)
             }
             var i3 = vertex {
-                set(-0.5f * rt, -0.866f * rt, 0f)
-                color.set(Color.WHITE)
+                it.position.set(-0.5f * rt, -0.866f * rt, 0f)
+                it.color.set(Color.WHITE)
             }
             addTriIndices(i1, i2, i3)
 
             color = modifier.hueIndicatorColor
-            i1 = vertex { set(ri + sizes.smallGap.px * 0.75f, 0f, 0f) }
-            i2 = vertex { set(ri - sizes.smallGap.px * 0.5f, sizes.smallGap.px * 0.8f, 0f) }
-            i3 = vertex { set(ri - sizes.smallGap.px * 0.5f, sizes.smallGap.px * -0.8f, 0f) }
+            i1 = vertex { it.position.set(ri + sizes.smallGap.px * 0.75f, 0f, 0f) }
+            i2 = vertex { it.position.set(ri - sizes.smallGap.px * 0.5f, sizes.smallGap.px * 0.8f, 0f) }
+            i3 = vertex { it.position.set(ri - sizes.smallGap.px * 0.5f, sizes.smallGap.px * -0.8f, 0f) }
             addTriIndices(i1, i2, i3)
-            i1 = vertex { set(ro - sizes.smallGap.px * 0.75f, 0f, 0f) }
-            i2 = vertex { set(ro + sizes.smallGap.px * 0.5f, sizes.smallGap.px * 0.8f, 0f) }
-            i3 = vertex { set(ro + sizes.smallGap.px * 0.5f, sizes.smallGap.px * -0.8f, 0f) }
+            i1 = vertex { it.position.set(ro - sizes.smallGap.px * 0.75f, 0f, 0f) }
+            i2 = vertex { it.position.set(ro + sizes.smallGap.px * 0.5f, sizes.smallGap.px * 0.8f, 0f) }
+            i3 = vertex { it.position.set(ro + sizes.smallGap.px * 0.5f, sizes.smallGap.px * -0.8f, 0f) }
             addTriIndices(i3, i2, i1)
 
         }
@@ -219,12 +220,10 @@ open class ColorWheelNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, 
 
                 color = hueGradient.getColor(i.toFloat() / n)
                 val vi3 = vertex {
-                    x = cos(a) * ro
-                    y = sin(a) * ro
+                    it.position.set(cos(a) * ro, sin(a) * ro, 0f)
                 }
                 val vi4 = vertex {
-                    x = cos(a) * ri
-                    y = sin(a) * ri
+                    it.position.set(cos(a) * ro, sin(a) * ro, 0f)
                 }
                 if (i > 0) {
                     addTriIndices(vi1, vi2, vi4)

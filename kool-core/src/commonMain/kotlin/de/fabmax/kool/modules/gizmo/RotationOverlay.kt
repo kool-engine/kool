@@ -5,10 +5,7 @@ import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.RenderPass
-import de.fabmax.kool.scene.ColorMesh
-import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.TriangulatedLineMesh
-import de.fabmax.kool.scene.TrsTransformD
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import kotlin.math.*
@@ -39,7 +36,7 @@ class RotationOverlay(val gizmo: GizmoNode) : Node(), GizmoListener {
         addNode(lines)
         isVisible = false
 
-        lines.shader = TriangulatedLineMesh.Shader().apply {
+        lines.shader = CustomTriangulatedLineMesh.Shader().apply {
             pipelineConfig = pipelineConfig.copy(isWriteDepth = false, depthTest = DepthCompareOp.ALWAYS)
         }
         mesh.shader = KslUnlitShader {

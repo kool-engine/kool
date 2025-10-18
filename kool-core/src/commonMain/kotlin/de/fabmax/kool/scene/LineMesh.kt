@@ -8,6 +8,8 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.LineString
+import de.fabmax.kool.util.Struct
+import de.fabmax.kool.util.set
 import kotlin.math.max
 import kotlin.math.min
 
@@ -42,12 +44,24 @@ fun Node.addNormalMesh(
     addNormals(geometry, lineColor, len)
 }
 
-open class LineMesh(
-    name: String = makeNodeName("LineMesh"),
-    geometry: IndexedVertexList<*> = IndexedVertexList(VertexLayouts.PositionColor, primitiveType = PrimitiveType.LINES),
+fun LineMesh(
+    name: String = Node.makeNodeName("LineMesh"),
     instances: MeshInstanceList<*>? = null,
-) : Mesh(geometry, instances = instances, name = name) {
+): LineMesh {
+    return LineMesh(
+        geometry = IndexedVertexList(VertexLayouts.PositionColor, primitiveType = PrimitiveType.LINES),
+        name = name,
+        instances = instances
+    )
+}
 
+typealias LineMesh = CustomLineMesh<VertexLayouts.PositionColor>
+
+open class CustomLineMesh<Layout: Struct>(
+    geometry: IndexedVertexList<Layout>,
+    name: String = makeNodeName("LineMesh"),
+    instances: MeshInstanceList<*>? = null,
+) : Mesh<Layout>(geometry, instances = instances, name = name) {
     private val lineBuffer = mutableListOf<LineVertex>()
     var color = Color.RED
 
@@ -99,7 +113,7 @@ open class LineMesh(
     fun moveTo(
         position: Vec3f,
         color: Color = this.color
-    ): LineMesh {
+    ): CustomLineMesh<Layout> {
         if (lineBuffer.isNotEmpty()) {
             stroke()
         }
@@ -112,12 +126,12 @@ open class LineMesh(
     fun lineTo(
         position: Vec3f,
         color: Color = this.color,
-    ): LineMesh {
+    ): CustomLineMesh<Layout> {
         lineBuffer.add(LineVertex(position, color))
         return this
     }
 
-    fun stroke(): LineMesh {
+    fun stroke(): CustomLineMesh<Layout> {
         for (i in 1 until lineBuffer.size) {
             addLine(lineBuffer[i-1], lineBuffer[i-1].color, lineBuffer[i], lineBuffer[i].color)
         }
@@ -136,9 +150,9 @@ open class LineMesh(
             val startI = numVertices
             for (i in 0 until triMesh.numVertices) {
                 v.index = i
-                geometry.addVertexOld {
-                    position.set(v.position)
-                    color.set(lineColor ?: v.color)
+                addVertex {
+                    positionAttr?.set(v.position)
+                    colorAttr?.set(lineColor ?: v.color)
                     geometryBounds.add(v)
                 }
             }
@@ -182,37 +196,37 @@ open class LineMesh(
     fun addBoundingBox(aabb: BoundingBoxF, color: Color = this.color) {
         geometryBounds.add(aabb)
         geometry.apply {
-            val i0 = addVertexOld {
-                this.position.set(aabb.min.x, aabb.min.y, aabb.min.z)
-                this.color.set(color)
+            val i0 = addVertex {
+                positionAttr?.set(aabb.min.x, aabb.min.y, aabb.min.z)
+                colorAttr?.set(color)
             }
-            val i1 = addVertexOld {
-                this.position.set(aabb.min.x, aabb.min.y, aabb.max.z)
-                this.color.set(color)
+            val i1 = addVertex {
+                positionAttr?.set(aabb.min.x, aabb.min.y, aabb.max.z)
+                colorAttr?.set(color)
             }
-            val i2 = addVertexOld {
-                this.position.set(aabb.min.x, aabb.max.y, aabb.max.z)
-                this.color.set(color)
+            val i2 = addVertex {
+                positionAttr?.set(aabb.min.x, aabb.max.y, aabb.max.z)
+                colorAttr?.set(color)
             }
-            val i3 = addVertexOld {
-                this.position.set(aabb.min.x, aabb.max.y, aabb.min.z)
-                this.color.set(color)
+            val i3 = addVertex {
+                positionAttr?.set(aabb.min.x, aabb.max.y, aabb.min.z)
+                colorAttr?.set(color)
             }
-            val i4 = addVertexOld {
-                this.position.set(aabb.max.x, aabb.min.y, aabb.min.z)
-                this.color.set(color)
+            val i4 = addVertex {
+                positionAttr?.set(aabb.max.x, aabb.min.y, aabb.min.z)
+                colorAttr?.set(color)
             }
-            val i5 = addVertexOld {
-                this.position.set(aabb.max.x, aabb.min.y, aabb.max.z)
-                this.color.set(color)
+            val i5 = addVertex {
+                positionAttr?.set(aabb.max.x, aabb.min.y, aabb.max.z)
+                colorAttr?.set(color)
             }
-            val i6 = addVertexOld {
-                this.position.set(aabb.max.x, aabb.max.y, aabb.max.z)
-                this.color.set(color)
+            val i6 = addVertex {
+                positionAttr?.set(aabb.max.x, aabb.max.y, aabb.max.z)
+                colorAttr?.set(color)
             }
-            val i7 = addVertexOld {
-                this.position.set(aabb.max.x, aabb.max.y, aabb.min.z)
-                this.color.set(color)
+            val i7 = addVertex {
+                positionAttr?.set(aabb.max.x, aabb.max.y, aabb.min.z)
+                colorAttr?.set(color)
             }
             addIndices(i0, i1, i1, i2, i2, i3, i3, i0,
                     i4, i5, i5, i6, i6, i7, i7, i4,

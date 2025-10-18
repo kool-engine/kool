@@ -7,7 +7,7 @@ import de.fabmax.kool.scene.animation.Skin
 class Model(name: String? = null) : Node(name) {
 
     val nodes = mutableMapOf<String, Node>()
-    val meshes = mutableMapOf<String, Mesh>()
+    val meshes = mutableMapOf<String, Mesh<*>>()
     val textures = mutableMapOf<String, Texture2d>()
 
     val animations = mutableListOf<Animation>()
@@ -51,9 +51,9 @@ class Model(name: String? = null) : Node(name) {
     }
 
     private fun Node.printHierarchy(indent: String) {
-        println("$indent$name [${children.filterIsInstance<Mesh>().count()} meshes]")
+        println("$indent$name [${children.filterIsInstance<Mesh<*>>().count()} meshes]")
         children.forEach {
-            if (it !is Mesh) {
+            if (it !is Mesh<*>) {
                 it.printHierarchy("$indent    ")
             } else {
                 println("$indent    ${it.name}")

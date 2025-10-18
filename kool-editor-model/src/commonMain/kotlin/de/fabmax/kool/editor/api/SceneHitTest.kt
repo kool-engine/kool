@@ -44,7 +44,7 @@ class SceneHitTest(val scene: EditorScene) {
                 localRayTest.clear()
                 localRay.toRayD(localRayTest.ray)
                 when (node) {
-                    is Mesh -> node.rayTestLocal(localRayTest, localRay)
+                    is Mesh<*> -> node.rayTestLocal(localRayTest, localRay)
                     else -> node.rayTest(localRayTest)
                 }
                 if (localRayTest.isHit) {

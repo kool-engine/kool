@@ -52,7 +52,7 @@ class TitleBgRenderer(
         val clipCorners = float2("clipCorners")
     }
 
-    private class TitleBgMesh : Mesh(
+    private class TitleBgMesh : Mesh<UiVertexLayout>(
         geometry = IndexedVertexList(UiVertexLayout),
         instances = MeshInstanceList(BgInstanceLayout),
         name = "Ui/TitleBgMesh"
@@ -95,11 +95,11 @@ class TitleBgRenderer(
 
                 vertexStage {
                     main {
-                        clipBounds.input set instanceAttribFloat4(BgInstanceLayout.clip)
-                        clipCornerRadius.input set instanceAttribFloat2(BgInstanceLayout.clipCorners)
+                        clipBounds.input set instanceAttrib(BgInstanceLayout.clip)
+                        clipCornerRadius.input set instanceAttrib(BgInstanceLayout.clipCorners)
 
                         val pos = float3Var(vertexAttribFloat3(Attribute.POSITIONS.name))
-                        val dimens = float4Var(instanceAttribFloat4(BgInstanceLayout.dimens))
+                        val dimens = float4Var(instanceAttrib(BgInstanceLayout.dimens))
                         size.input set dimens.zw
                         localPos.input set pos.xy * dimens.zw
 

@@ -53,7 +53,7 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
     private val angularYJointMesh = makeAngularYJointMesh(objectShader, true)
     private val angularZJointMesh = makeAngularZJointMesh(objectShader, true)
 
-    private fun makeJointMesh(instances: MeshInstanceList<*>, shader: DrawShader, isPickable: Boolean, name: String, block: MeshBuilder<*>.() -> Unit): Mesh =
+    private fun makeJointMesh(instances: MeshInstanceList<*>, shader: DrawShader, isPickable: Boolean, name: String, block: MeshBuilder<*>.() -> Unit): Mesh<*> =
         Mesh(VertexLayouts.Position, instances, name).apply {
             isCastingShadow = false
             rayTest = if (isPickable) MeshRayTest.geometryTest(this) else MeshRayTest.nopTest()
@@ -63,7 +63,7 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
             }
         }
 
-    private fun makeCenterJointMesh(shader: DrawShader, isPickable: Boolean): Mesh =
+    private fun makeCenterJointMesh(shader: DrawShader, isPickable: Boolean): Mesh<*> =
         makeJointMesh(centerInstances, shader, isPickable, "centers") {
             icoSphere {
                 steps = 2

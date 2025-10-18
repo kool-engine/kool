@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo.physics.terrain
 
+import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.KslLitShader
@@ -11,23 +12,27 @@ import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.scene.geometry.generateTangents
 import de.fabmax.kool.util.ShadowMap
+import de.fabmax.kool.util.get
+import de.fabmax.kool.util.set
+
+private typealias TileLayout = VertexLayouts.PositionNormalTexCoordTangent
 
 class TerrainTiles(val terrain: Terrain, val sky: Sky) : Node() {
-
-    private val meshes = mutableMapOf<Vec2i, Mesh>()
+    private val meshes = mutableMapOf<Vec2i, Mesh<TileLayout>>()
 
     init {
         isFrustumChecked = false
         for (y in 0 until TILE_CNT_XY) {
             for (x in 0 until TILE_CNT_XY) {
                 addMesh(
-                    layout = VertexLayouts.PositionNormalTexCoordTangent,
+                    layout = TileLayout,
                     name = "terrain-tile[$x,$y]"
                 ) {
                     meshes[Vec2i(x, y)] = this
                     generate {
-                        vertexModFun = {
-                            texCoord *= Terrain.TEXTURE_SCALE
+                        vertexCustomizer = {
+                            val uv = texCoordAttr!!.get(MutableVec2f())
+                            texCoordAttr!!.set(uv * Terrain.TEXTURE_SCALE)
                         }
                         withTransform {
                             transform.set(terrain.terrainTransform)
@@ -69,7 +74,7 @@ class TerrainTiles(val terrain: Terrain, val sky: Sky) : Node() {
         }
     }
 
-    private fun fitNormalsX(left: Mesh, right: Mesh, gridSz: Int) {
+    private fun fitNormalsX(left: Mesh<TileLayout>, right: Mesh<TileLayout>, gridSz: Int) {
         val meshSz = terrain.heightMap.columns / gridSz + 1
         for (y in 0 until meshSz) {
             val ap = left.geometry[(y + 1) * meshSz - 1]
@@ -81,7 +86,7 @@ class TerrainTiles(val terrain: Terrain, val sky: Sky) : Node() {
         }
     }
 
-    private fun fitNormalsY(left: Mesh, right: Mesh, gridSz: Int) {
+    private fun fitNormalsY(left: Mesh<TileLayout>, right: Mesh<TileLayout>, gridSz: Int) {
         val meshSz = terrain.heightMap.columns / gridSz + 1
         for (y in 0 until meshSz) {
             val ap = left.geometry[right.geometry.numVertices - meshSz + y]
@@ -93,7 +98,7 @@ class TerrainTiles(val terrain: Terrain, val sky: Sky) : Node() {
         }
     }
 
-    fun getTile(tileX: Int, tileY: Int): Mesh {
+    fun getTile(tileX: Int, tileY: Int): Mesh<TileLayout> {
         return meshes[Vec2i(tileX, TILE_CNT_XY - 1 - tileY)]!!
     }
 

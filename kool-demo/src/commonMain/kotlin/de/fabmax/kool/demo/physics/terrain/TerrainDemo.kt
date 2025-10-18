@@ -60,8 +60,8 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     private lateinit var terrainTiles: TerrainTiles
     private lateinit var physicsObjects: PhysicsObjects
 
-    private var boxMesh: Mesh? = null
-    private var bridgeMesh: Mesh? = null
+    private var boxMesh: ColorMesh? = null
+    private var bridgeMesh: ColorMesh? = null
 
     private lateinit var escKeyListener: InputStack.SimpleKeyListener
 
@@ -343,7 +343,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     private fun updateGrassShader(isVegetationPbr: Boolean) {
         camLocalGrass.grassShader = GrassShader.makeGrassShader(grassColor, shadowMap, ssao.aoMap, wind.density, true, isVegetationPbr)
         val grassQuadShader = GrassShader.makeGrassShader(grassColor, shadowMap, ssao.aoMap, wind.density, false, isVegetationPbr).shader
-        grass.grassQuads.children.filterIsInstance<Mesh>().forEach {
+        grass.grassQuads.children.filterIsInstance<Mesh<*>>().forEach {
             it.shader = grassQuadShader
         }
     }

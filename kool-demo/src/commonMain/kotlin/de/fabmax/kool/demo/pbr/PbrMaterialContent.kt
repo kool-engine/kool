@@ -13,9 +13,9 @@ import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
-import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.TextureMesh
 import de.fabmax.kool.scene.addTextureMesh
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Color
@@ -25,8 +25,8 @@ import kotlinx.coroutines.launch
 
 class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene) : PbrDemo.PbrContent("PBR material") {
     private val shaders = mutableListOf<KslPbrShader>()
-    private var vertexDisplacedContent: Mesh? = null
-    private var parallaxContent: Mesh? = null
+    private var vertexDisplacedContent: TextureMesh? = null
+    private var parallaxContent: TextureMesh? = null
 
     private val useParallaxMapping = mutableStateOf(true).onChange { _, new ->
         parallaxContent?.isVisible = new

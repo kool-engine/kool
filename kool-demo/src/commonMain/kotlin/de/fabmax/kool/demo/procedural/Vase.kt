@@ -17,7 +17,7 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-class Vase : Mesh(IndexedVertexList(VertexLayouts.PositionNormalColor)) {
+class Vase : Mesh<VertexLayouts.PositionNormalColor>(IndexedVertexList(VertexLayouts.PositionNormalColor)) {
 
     init {
         generate {

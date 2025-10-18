@@ -1,7 +1,7 @@
 package de.fabmax.kool.math.spatial
 
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.scene.LineMesh
+import de.fabmax.kool.scene.CustomLineMesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.ColorGradient
 
@@ -61,8 +61,8 @@ abstract class SpatialTree<T: Any>(val itemAdapter: ItemAdapter<T>) : Collection
 
     abstract val root: Node
 
-    open fun drawNodeBounds(lineMesh: LineMesh) {
-        fun Node.drawBounds(lineMesh: LineMesh, depth: Int) {
+    open fun drawNodeBounds(lineMesh: CustomLineMesh<*>) {
+        fun Node.drawBounds(lineMesh: CustomLineMesh<*>, depth: Int) {
             val color = ColorGradient.JET_MD.getColor((depth % 6.7f) / 6.7f)
             lineMesh.addBoundingBox(bounds.toBoundingBoxF(), color)
             for (i in children.indices) {

@@ -17,7 +17,7 @@ abstract class DrawShader(name: String) : ShaderBase<DrawPipeline>(name) {
     private var meshInstanceLayout: Struct? = null
 
     fun getOrCreatePipeline(
-        mesh: Mesh,
+        mesh: Mesh<*>,
         ctx: KoolContext,
         meshInstances: MeshInstanceList<*>? = mesh.instances
     ): DrawPipeline {
@@ -44,5 +44,5 @@ abstract class DrawShader(name: String) : ShaderBase<DrawPipeline>(name) {
         return created ?: createPipeline(mesh, meshInstances, ctx).also { pipelineCreated(it) }
     }
 
-    protected abstract fun createPipeline(mesh: Mesh, instances: MeshInstanceList<*>?, ctx: KoolContext): DrawPipeline
+    protected abstract fun createPipeline(mesh: Mesh<*>, instances: MeshInstanceList<*>?, ctx: KoolContext): DrawPipeline
 }

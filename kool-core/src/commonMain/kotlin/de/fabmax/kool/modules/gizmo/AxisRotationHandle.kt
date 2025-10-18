@@ -6,11 +6,10 @@ import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.VertexTransformBlock
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.lang.gt
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.DepthCompareOp
-import de.fabmax.kool.pipeline.vertexAttribFloat3
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.set
 import kotlin.math.abs
 import kotlin.math.cos
 
@@ -33,9 +32,9 @@ class AxisRotationHandle(
             drawNode.isVisible = !value
         }
 
-    private val hitMesh: Mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-hitMesh")
-    private val mesh: Mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-mesh")
-    private val coveredMesh: Mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-coveredMesh")
+    private val hitMesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-hitMesh")
+    private val mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-mesh")
+    private val coveredMesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-coveredMesh")
 
     private var isHovered = false
     private var alphaFactor = 1f
@@ -106,7 +105,7 @@ class AxisRotationHandle(
         isHovered = false
     }
 
-    private fun Mesh.setupGeometry(
+    private fun Mesh<VertexLayouts.PositionNormal>.setupGeometry(
         orbitRadius: Float,
         geomRadius: Float,
     ) {
@@ -116,7 +115,7 @@ class AxisRotationHandle(
             profile {
                 circleShape(geomRadius, 6)
                 val normal = MutableVec3f()
-                vertexModFun = { this.normal.set(normal) }
+                vertexCustomizer = { it.normal.set(normal) }
 
                 val n = 60
                 for (i in 0..n) {
@@ -131,7 +130,7 @@ class AxisRotationHandle(
         }
     }
 
-    private fun Mesh.setupShader(depthCompareOp: DepthCompareOp) {
+    private fun Mesh<VertexLayouts.PositionNormal>.setupShader(depthCompareOp: DepthCompareOp) {
         shader = KslUnlitShader {
             pipeline {
                 depthTest = depthCompareOp
@@ -145,7 +144,7 @@ class AxisRotationHandle(
                 vertexStage {
                     main {
                         findBlock<VertexTransformBlock>()?.apply {
-                            inLocalNormal(vertexAttribFloat3(Attribute.NORMALS))
+                            inLocalNormal(vertexAttrib(VertexLayouts.PositionNormal.normal))
                             normal.input set outWorldNormal
                         }
                     }
@@ -161,11 +160,11 @@ class AxisRotationHandle(
         }
     }
 
-    private inner class HandleHitTest(hitMesh: Mesh) : MeshRayTest {
+    private inner class HandleHitTest(hitMesh: Mesh<VertexLayouts.PositionNormal>) : MeshRayTest {
         private val triTest = MeshRayTest.geometryTest(hitMesh)
         private val proxyTest = RayTest()
 
-        override fun onMeshDataChanged(mesh: Mesh) = triTest.onMeshDataChanged(mesh)
+        override fun onMeshDataChanged(mesh: Mesh<*>) = triTest.onMeshDataChanged(mesh)
 
         override fun rayTest(test: RayTest, localRay: RayF): Boolean {
             proxyTest.clear()

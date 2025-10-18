@@ -2,10 +2,10 @@ package de.fabmax.kool.modules.mesh
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.OcTree
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.scene.LineMesh
+import de.fabmax.kool.scene.CustomLineMesh
+import de.fabmax.kool.scene.CustomTriangulatedLineMesh
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.TriangulatedLineMesh
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.geometry.*
 import de.fabmax.kool.util.*
 
@@ -14,17 +14,18 @@ import de.fabmax.kool.util.*
  *
  * @author fabmax
  */
-class HalfEdgeMesh(geometry: IndexedVertexList<*>, val edgeHandler: EdgeHandler = ListEdgeHandler()): Mesh(geometry) {
+class HalfEdgeMesh<Layout: Struct>(geometry: IndexedVertexList<Layout>, val edgeHandler: EdgeHandler<Layout> = ListEdgeHandler()): Mesh<Layout>(geometry) {
 
     private val verts: MutableList<HalfEdgeVertex>
     val vertices: List<HalfEdgeVertex>
         get() = verts
 
-    private val posMember = geometry.layout.getByName(Attribute.POSITIONS.name) as Float3Member<Struct>
+    private val posMember = requireNotNull(geometry.layout.getFloat3(VertexLayouts.Position.name))
 
     private val tmpVec1 = MutableVec3f()
     private val tmpVec2 = MutableVec3f()
     private val tmpVec3 = MutableVec3f()
+    private val tmpUv = MutableVec2f()
 
     private val vertexIt1 = geometry[0]
     private val vertexIt2 = geometry[0]
@@ -34,17 +35,17 @@ class HalfEdgeMesh(geometry: IndexedVertexList<*>, val edgeHandler: EdgeHandler 
     val faceCount: Int
         get() = edgeHandler.numEdges / 3
 
-    interface EdgeHandler : Iterable<HalfEdge> {
+    interface EdgeHandler<Layout: Struct> : Iterable<HalfEdgeMesh<Layout>.HalfEdge> {
         val numEdges: Int
 
-        operator fun plusAssign(edge: HalfEdge)
-        operator fun minusAssign(edge: HalfEdge)
+        operator fun plusAssign(edge: HalfEdgeMesh<Layout>.HalfEdge)
+        operator fun minusAssign(edge: HalfEdgeMesh<Layout>.HalfEdge)
 
-        fun checkedUpdateEdgeTo(edge: HalfEdge, newTo: HalfEdgeVertex)
-        fun checkedUpdateEdgeFrom(edge: HalfEdge, newFrom: HalfEdgeVertex)
-        fun checkedUpdateVertexPosition(vertex: HalfEdgeVertex, x: Float, y: Float, z: Float)
+        fun checkedUpdateEdgeTo(edge: HalfEdgeMesh<Layout>.HalfEdge, newTo: HalfEdgeMesh<Layout>.HalfEdgeVertex)
+        fun checkedUpdateEdgeFrom(edge: HalfEdgeMesh<Layout>.HalfEdge, newFrom: HalfEdgeMesh<Layout>.HalfEdgeVertex)
+        fun checkedUpdateVertexPosition(vertex: HalfEdgeMesh<Layout>.HalfEdgeVertex, x: Float, y: Float, z: Float)
 
-        fun distinctTriangleEdges(): List<HalfEdge> = filter { it.id < it.next.id && it.id < it.next.next.id }
+        fun distinctTriangleEdges(): List<HalfEdgeMesh<Layout>.HalfEdge> = filter { it.id < it.next.id && it.id < it.next.next.id }
 
         fun rebuild()
     }
@@ -79,7 +80,7 @@ class HalfEdgeMesh(geometry: IndexedVertexList<*>, val edgeHandler: EdgeHandler 
         }
     }
 
-    fun generateWireframe(lineMesh: LineMesh, lineColor: Color = MdColor.PINK) {
+    fun generateWireframe(lineMesh: CustomLineMesh<*>, lineColor: Color = MdColor.PINK) {
         val v0 = MutableVec3f()
         val v1 = MutableVec3f()
         edgeHandler.filter { it.opp == null || it.from.index < it.to.index }.forEach { edge ->
@@ -89,7 +90,7 @@ class HalfEdgeMesh(geometry: IndexedVertexList<*>, val edgeHandler: EdgeHandler 
         }
     }
 
-    fun generateWireframe(lineMesh: TriangulatedLineMesh, lineColor: Color = MdColor.PINK, lineWidth: Float = 2f) {
+    fun generateWireframe(lineMesh: CustomTriangulatedLineMesh<*>, lineColor: Color = MdColor.PINK, lineWidth: Float = 2f) {
         val v0 = MutableVec3f()
         val v1 = MutableVec3f()
         edgeHandler.filter { it.opp == null || it.from.index < it.to.index }.forEach { edge ->
@@ -248,14 +249,17 @@ class HalfEdgeMesh(geometry: IndexedVertexList<*>, val edgeHandler: EdgeHandler 
 
     fun splitEdge(edge: HalfEdge, fraction: Float): HalfEdgeVertex {
         // spawn new vertex
-        val idx = geometry.addVertexOld {
-            position.set(edge.to).subtract(edge.from).mul(fraction).add(edge.from)
+        val idx = geometry.addVertex {
+            tmpVec3.set(edge.to).subtract(edge.from).mul(fraction).add(edge.from)
+            posMember.set(tmpVec3)
 
             // interpolate texture coordinates and normals
             edge.from.getMeshVertex(vertexIt1)
             edge.to.getMeshVertex(vertexIt2)
-            texCoord.set(vertexIt2.texCoord).subtract(vertexIt1.texCoord).mul(fraction).add(vertexIt1.texCoord)
-            normal.set(vertexIt2.normal).subtract(vertexIt1.normal).mul(fraction).add(vertexIt1.normal)
+            tmpUv.set(vertexIt2.texCoord).subtract(vertexIt1.texCoord).mul(fraction).add(vertexIt1.texCoord)
+            geometry.texCoordAttr?.set(tmpUv)
+            tmpVec3.set(vertexIt2.normal).subtract(vertexIt1.normal).mul(fraction).add(vertexIt1.normal)
+            geometry.normalAttr!!.set(tmpVec3)
         }
         val insertV = HalfEdgeVertex(idx)
         verts += insertV
@@ -390,21 +394,18 @@ class HalfEdgeMesh(geometry: IndexedVertexList<*>, val edgeHandler: EdgeHandler 
         }
     }
 
-    fun subMeshOf(edges: List<HalfEdge>): IndexedVertexList<*> {
+    fun subMeshOf(edges: List<HalfEdge>): IndexedVertexList<Layout> {
         val subData = IndexedVertexList(geometry.layout)
         val indexMap = mutableMapOf<Int, Int>()
-
-        val v = geometry.vertexIt
+        val pos = MutableVec3f()
         edges.forEach { he ->
             if (he.from.index !in indexMap.keys) {
-                indexMap[he.from.index] = subData.addVertexOld {
-                    set(v.apply { index = he.from.index })
-                }
+                geometry.vertexData.get(he.from.index) { posMember.get(pos) }
+                indexMap[he.from.index] = subData.addVertex { posMember.set(pos) }
             }
             if (he.to.index !in indexMap.keys) {
-                indexMap[he.to.index] = subData.addVertexOld {
-                    set(v.apply { index = he.to.index })
-                }
+                geometry.vertexData.get(he.to.index) { posMember.get(pos) }
+                indexMap[he.to.index] = subData.addVertex { posMember.set(pos) }
             }
         }
 
@@ -429,20 +430,17 @@ class HalfEdgeMesh(geometry: IndexedVertexList<*>, val edgeHandler: EdgeHandler 
         var isDeleted = false
             private set
         internal var meshDataIndex = index
-        @Suppress("UNCHECKED_CAST")
-        private val vertexData: StructBuffer<Struct> get() = geometry.vertexData as StructBuffer<Struct>
         private val stride = geometry.layout.structSize
-        private val posCache = MutableVec3f()
 
         override val x: Float
-            get() = vertexData.buffer.getFloat32(index * stride + posMember.byteOffset)
+            get() = geometry.vertexData.buffer.getFloat32(index * stride + posMember.byteOffset)
         override val y: Float
-            get() = vertexData.buffer.getFloat32(index * stride + posMember.byteOffset + 4)
+            get() = geometry.vertexData.buffer.getFloat32(index * stride + posMember.byteOffset + 4)
         override val z: Float
-            get() = vertexData.buffer.getFloat32(index * stride + posMember.byteOffset + 8)
+            get() = geometry.vertexData.buffer.getFloat32(index * stride + posMember.byteOffset + 8)
 
         internal fun setPosition(x: Float, y: Float, z: Float) {
-            vertexData.set(index) { set(posMember, x, y, z) }
+            geometry.vertexData.set(index) { posMember.set(x, y, z) }
         }
 
         fun getMeshVertex(result: VertexView<*>): VertexView<*> {

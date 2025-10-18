@@ -22,7 +22,7 @@ class InstancedLodController<T: Struct>(name: String? = null) : Node(name) {
         return 0
     }
 
-    fun addLod(lodMesh: Mesh, maxDistance: Float, maxInstances: Int = Int.MAX_VALUE) {
+    fun addLod(lodMesh: Mesh<*>, maxDistance: Float, maxInstances: Int = Int.MAX_VALUE) {
         lods += Lod(lodMesh, maxDistance, maxInstances)
         lods.sortBy { it.maxDistance }
         this += lodMesh
@@ -70,7 +70,7 @@ class InstancedLodController<T: Struct>(name: String? = null) : Node(name) {
         super.update(updateEvent)
     }
 
-    private inner class Lod<T: Struct>(val mesh: Mesh, val maxDistance: Float, val maxInstances: Int) {
+    private inner class Lod<T: Struct>(val mesh: Mesh<*>, val maxDistance: Float, val maxInstances: Int) {
         val instances = mutableListOf<Instance<T>>()
 
         fun updateInstances(iLod: Int, ctx: KoolContext) {

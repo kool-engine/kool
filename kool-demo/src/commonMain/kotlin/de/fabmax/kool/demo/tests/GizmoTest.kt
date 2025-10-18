@@ -13,7 +13,10 @@ import de.fabmax.kool.modules.gizmo.GizmoMode
 import de.fabmax.kool.modules.gizmo.SimpleGizmo
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.ColorMesh
+import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.addLineMesh
+import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.launchDelayed
@@ -22,8 +25,8 @@ class GizmoTest : DemoScene("Gizmo Test") {
 
     private val gizmo = SimpleGizmo()
 
-    private val meshA: Mesh = ColorMesh(name = "Parent")
-    private val meshB: Mesh = ColorMesh(name = "Child")
+    private val meshA: ColorMesh = ColorMesh(name = "Parent")
+    private val meshB: ColorMesh = ColorMesh(name = "Child")
 
     private val transformNode = mutableStateOf(meshA).onChange { _, new -> gizmo.setTransformNode(new) }
     private val transformMode = mutableStateOf(gizmo.mode).onChange { _, new -> gizmo.mode = new }
@@ -226,7 +229,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
         }
     }
 
-    private fun UiScope.meshButton(mesh: Mesh) = MenuRow {
+    private fun UiScope.meshButton(mesh: ColorMesh) = MenuRow {
         RadioButton(transformNode.use() == mesh) {
             modifier
                 .alignY(AlignmentY.Center)

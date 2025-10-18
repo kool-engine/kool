@@ -129,7 +129,7 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
     }
 
     private class Lod(val maxInsts: Int, val maxDist: Float, val color: MutableColor) {
-        var mesh: Mesh? = null
+        var mesh: Mesh<*>? = null
     }
 
     private inner class BunnyInstance(val position: Vec3f, rotAxis: Vec3f) : InstancedLodController.Instance<InstanceLayouts.ModelMatColor>() {

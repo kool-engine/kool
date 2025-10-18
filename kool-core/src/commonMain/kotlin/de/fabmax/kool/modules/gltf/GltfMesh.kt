@@ -1,14 +1,16 @@
 package de.fabmax.kool.modules.gltf
 
+import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.MutableVec4f
+import de.fabmax.kool.math.MutableVec4i
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.generateNormals
 import de.fabmax.kool.scene.geometry.generateTangents
-import de.fabmax.kool.util.DynamicStruct
-import de.fabmax.kool.util.MemoryLayout
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
@@ -72,23 +74,24 @@ data class GltfMesh(
 
             val morphAccessors = makeMorphTargetAccessors(gltfAccessors)
             val layout = DynamicStruct("GltfLayout", MemoryLayout.TightlyPacked) {
-                float3(Attribute.POSITIONS.name)
-                float3(Attribute.NORMALS.name)
+                float3(VertexLayouts.Position.name)
+                float3(VertexLayouts.Normal.name)
 
                 if (colorAcc != null || cfg.setVertexAttribsFromMaterial) { float4(Attribute.COLORS.name) }
                 if (cfg.setVertexAttribsFromMaterial) {
-                    float3(Attribute.EMISSIVE_COLOR.name)
-                    float2(Attribute.METAL_ROUGH.name)
+                    float3(VertexLayouts.EmissiveColor.name)
+                    float1(VertexLayouts.Metallic.name)
+                    float1(VertexLayouts.Roughness.name)
                 }
-                if (texCoordAcc != null) { float2(Attribute.TEXTURE_COORDS.name) }
-                if (tangentAcc != null) {
-                    float4(Attribute.TANGENTS.name)
-                } else if(materialRef?.normalTexture != null) {
-                    float4(Attribute.TANGENTS.name)
-                    generateTangents = true
+                if (texCoordAcc != null) { float2(VertexLayouts.TexCoord.name) }
+                if (tangentAcc != null || materialRef?.normalTexture != null) {
+                    float4(VertexLayouts.Tangent.name)
+                    if (tangentAcc == null) {
+                        generateTangents = true
+                    }
                 }
-                if (jointAcc != null) { int4(Attribute.JOINTS.name) }
-                if (weightAcc != null) { float4(Attribute.WEIGHTS.name) }
+                if (jointAcc != null) { int4(VertexLayouts.Joint.name) }
+                if (weightAcc != null) { float4(VertexLayouts.Weight.name) }
 
                 morphAccessors.keys.forEach { attrib ->
                     check(attrib.type == GpuType.Float3)
@@ -104,35 +107,41 @@ data class GltfMesh(
             val cols = if (colorAcc != null) Vec4fAccessor(colorAcc) else null
             val jnts = if (jointAcc != null) Vec4iAccessor(jointAcc) else null
             val wgts = if (weightAcc != null) Vec4fAccessor(weightAcc) else null
+            val v2 = MutableVec2f()
+            val v3 = MutableVec3f()
+            val v4 = MutableVec4f()
+            val v4i = MutableVec4i()
 
             for (i in 0 until positionAcc.count) {
-                verts.addVertexOld {
-                    poss.next(position)
-                    nrms?.next(normal)
-                    tans?.next(tangent)
-                    texs?.next(texCoord)
-                    cols?.next()?.let { col -> color.set(col) }
-                    jnts?.next(joints)
-                    wgts?.next(weights)
+                verts.addVertex { struct ->
+                    verts.positionAttr?.set(poss.next(v3))
+                    nrms?.next(v3)?.let { verts.normalAttr?.set(it) }
+                    tans?.next(v4)?.let { verts.tangentAttr?.set(it) }
+                    texs?.next(v2)?.let { verts.texCoordAttr?.set(it) }
+                    cols?.next(v4)?.let { verts.colorAttr?.set(it) }
+                    jnts?.next(v4i)?.let { verts.joint?.set(it) }
+                    wgts?.next(v4)?.let { verts.weight?.set(it) }
 
                     if (cfg.setVertexAttribsFromMaterial) {
-                        metallicRoughness.set(0f, 0.5f)
+                        verts.metallicAttr?.set(0f)
+                        verts.roughnessAttr?.set(0.5f)
                         materialRef?.let { mat ->
                             val col = mat.pbrMetallicRoughness.baseColorFactor
                             if (col.size == 4) {
-                                color.set(col[0], col[1], col[2], col[3])
+                                verts.colorAttr?.set(col[0], col[1], col[2], col[3])
                             }
-                            metallicRoughness.set(mat.pbrMetallicRoughness.metallicFactor, mat.pbrMetallicRoughness.roughnessFactor)
+                            verts.metallicAttr?.set(mat.pbrMetallicRoughness.metallicFactor)
+                            verts.roughnessAttr?.set(mat.pbrMetallicRoughness.roughnessFactor)
                             mat.emissiveFactor?.let { emissiveCol ->
                                 if (emissiveCol.size >= 3) {
-                                    emissiveColor.set(emissiveCol[0], emissiveCol[1], emissiveCol[2])
+                                    verts.emissiveColorAttr?.set(emissiveCol[0], emissiveCol[1], emissiveCol[2])
                                 }
                             }
                         }
                     }
 
                     morphAccessors.forEach { (attrib, acc) ->
-                        getVec3fAttribute(attrib)?.let { acc.next(it) }
+                        struct.getFloat3(attrib.name)?.set(acc.next())
                     }
                 }
             }

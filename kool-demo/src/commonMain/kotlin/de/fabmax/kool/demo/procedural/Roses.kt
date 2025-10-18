@@ -3,7 +3,6 @@ package de.fabmax.kool.demo.procedural
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.ColorMesh
-import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addGroup
 import de.fabmax.kool.scene.geometry.IndexedVertexList
@@ -47,10 +46,10 @@ class Roses : Node() {
         val shaftGrad = ColorGradient(0f to (MdColor.BROWN toneLin 900), 0.4f to MdColor.BROWN.toLinear(), 1f to (MdColor.LIGHT_GREEN tone 600))
         val blossomLeafGrad = ColorGradient(MdColor.LIGHT_GREEN toneLin 600, MdColor.LIGHT_GREEN.mix(MdColor.YELLOW tone 200, 0.5f).toLinear())
 
-        val shaftMesh: Mesh
-        val leafMesh: Mesh
-        val shaftLeafMesh: Mesh
-        val blossomMesh: Mesh
+        val shaftMesh: ColorMesh
+        val leafMesh: ColorMesh
+        val shaftLeafMesh: ColorMesh
+        val blossomMesh: ColorMesh
 
         val rand = Random(seed)
         val shaftTopTransform = MutableMat4f()

@@ -123,10 +123,12 @@ class Track(val world: VehicleWorld) : Node() {
 
         trackMesh.generate {
             var texU = 0f
-            vertexModFun = {
-                val texScale = 25f
-                texCoord.x = texU
-                texCoord.mul(1f / texScale)
+            vertexCustomizer = {
+                val texScale = 1f / 25f
+                val uv = it.texCoord.get(MutableVec2f())
+                uv.x = texU
+                uv.mul(texScale)
+                it.texCoord.set(uv)
             }
 
             color = MdColor.ORANGE toneLin 100
@@ -186,10 +188,10 @@ class Track(val world: VehicleWorld) : Node() {
         }
 
         trackSupportMesh.generate {
-            vertexModFun = { getFloatAttribute(TrackSupportLayout.roughness.asAttribute())?.f = 0.3f }
+            roughness = 0.3f
             generateCurbs()
 
-            vertexModFun = { getFloatAttribute(TrackSupportLayout.roughness.asAttribute())?.f = 0.8f }
+            roughness = 0.8f
             color = VehicleDemo.color(400)
             columnPts.forEach { pt ->
                 val base = MutableVec3f(pt.x, 0f, pt.z)

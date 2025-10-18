@@ -312,6 +312,97 @@ abstract class Struct(val name: String, val layout: MemoryLayout) {
             lastPos = offset + size
             return NestedStructArrayMember(name, arraySize, offset, struct, this).also { addMember(it) }
         }
+
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Float1Member<*>): Float1Member<T> = float1(that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Float2Member<*>): Float2Member<T> = float2(that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Float3Member<*>): Float3Member<T> = float3(that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Float4Member<*>): Float4Member<T> = float4(that.name)
+
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Int1Member<*>): Int1Member<T> = int1(that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Int2Member<*>): Int2Member<T> = int2(that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Int3Member<*>): Int3Member<T> = int3(that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Int4Member<*>): Int4Member<T> = int4(that.name)
+
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Uint1Member<*>): Uint1Member<T> = uint1(that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Uint2Member<*>): Uint2Member<T> = uint2(that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Uint3Member<*>): Uint3Member<T> = uint3(that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Uint4Member<*>): Uint4Member<T> = uint4(that.name)
+
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Bool1Member<*>): Bool1Member<T> = bool1(that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Bool2Member<*>): Bool2Member<T> = bool2(that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Bool3Member<*>): Bool3Member<T> = bool3(that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Bool4Member<*>): Bool4Member<T> = bool4(that.name)
+
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Mat2Member<*>): Mat2Member<T> = mat2(that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Mat3Member<*>): Mat3Member<T> = mat3(that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Mat4Member<*>): Mat4Member<T> = mat4(that.name)
+
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Float1ArrayMember<*>): Float1ArrayMember<T> = float1Array(that.arraySize, that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Float2ArrayMember<*>): Float2ArrayMember<T> = float2Array(that.arraySize, that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Float3ArrayMember<*>): Float3ArrayMember<T> = float3Array(that.arraySize, that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Float4ArrayMember<*>): Float4ArrayMember<T> = float4Array(that.arraySize, that.name)
+
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Int1ArrayMember<*>): Int1ArrayMember<T> = int1Array(that.arraySize, that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Int2ArrayMember<*>): Int2ArrayMember<T> = int2Array(that.arraySize, that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Int3ArrayMember<*>): Int3ArrayMember<T> = int3Array(that.arraySize, that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Int4ArrayMember<*>): Int4ArrayMember<T> = int4Array(that.arraySize, that.name)
+
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Uint1ArrayMember<*>): Uint1ArrayMember<T> = uint1Array(that.arraySize, that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Uint2ArrayMember<*>): Uint2ArrayMember<T> = uint2Array(that.arraySize, that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Uint3ArrayMember<*>): Uint3ArrayMember<T> = uint3Array(that.arraySize, that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Uint4ArrayMember<*>): Uint4ArrayMember<T> = uint4Array(that.arraySize, that.name)
+
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Bool1ArrayMember<*>): Bool1ArrayMember<T> = bool1Array(that.arraySize, that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Bool2ArrayMember<*>): Bool2ArrayMember<T> = bool2Array(that.arraySize, that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Bool3ArrayMember<*>): Bool3ArrayMember<T> = bool3Array(that.arraySize, that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Bool4ArrayMember<*>): Bool4ArrayMember<T> = bool4Array(that.arraySize, that.name)
+
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Mat2ArrayMember<*>): Mat2ArrayMember<T> = mat2Array(that.arraySize, that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Mat3ArrayMember<*>): Mat3ArrayMember<T> = mat3Array(that.arraySize, that.name)
+        @JvmStatic
+        protected fun <T: Struct> T.include(that: Mat4ArrayMember<*>): Mat4ArrayMember<T> = mat4Array(that.arraySize, that.name)
+
+        @JvmStatic
+        protected fun <T: Struct, S: Struct> T.include(that: NestedStructMember<*, S>): NestedStructMember<T, S> = struct(that.struct, that.name)
+        @JvmStatic
+        protected fun <T: Struct, S: Struct> T.include(that: NestedStructArrayMember<*, S>): NestedStructArrayMember<T, S> = structArray(that.struct, that.arraySize, that.name)
     }
 
     fun layoutInfo(indent: String): String {

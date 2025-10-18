@@ -20,7 +20,7 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
     )
 {
 
-    internal val alphaMeshes = mutableListOf<Mesh>()
+    internal val alphaMeshes = mutableListOf<Mesh<*>>()
 
     val positionFlags: Texture2d get() = colorTextures[0]
     val normalRoughness: Texture2d get() = colorTextures[1]

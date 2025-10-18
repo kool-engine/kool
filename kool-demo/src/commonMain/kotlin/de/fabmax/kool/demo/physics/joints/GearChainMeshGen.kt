@@ -6,7 +6,6 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.asAttribute
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.InstanceLayouts
 import de.fabmax.kool.scene.Mesh
@@ -28,12 +27,8 @@ object GearChainMeshGen {
     ).apply {
         isFrustumChecked = false
         generate {
-            var roughness = 0.3f
-            var metal = 1f
-            vertexModFun = {
-                getFloatAttribute(VertexLayouts.PositionNormalColorMetalRough.roughness.asAttribute())?.f = roughness
-                getFloatAttribute(VertexLayouts.PositionNormalColorMetalRough.metallic.asAttribute())?.f = metal
-            }
+            roughness = 0.3f
+            metallic = 1f
 
             // tooth
             profile {
@@ -68,7 +63,7 @@ object GearChainMeshGen {
                 }
             }
 
-            // generate normals here, everyting after this point generates accurate normals
+            // generate normals here, everything after this point generates accurate normals
             geometry.generateNormals()
 
             // bearing
@@ -104,7 +99,7 @@ object GearChainMeshGen {
             }
 
             // dielectric mesh components
-            metal = 0f
+            metallic = 0f
             roughness = 0f
 
             // center
@@ -176,15 +171,8 @@ object GearChainMeshGen {
     ).apply {
         isFrustumChecked = false
         generate {
-            var roughness = 0.3f
-            var metal = 1f
-            vertexModFun = {
-                getFloatAttribute(VertexLayouts.PositionNormalColorMetalRough.roughness.asAttribute())?.f = roughness
-                getFloatAttribute(VertexLayouts.PositionNormalColorMetalRough.metallic.asAttribute())?.f = metal
-            }
-
             // dielectric mesh components
-            metal = 0f
+            metallic = 0f
             roughness = 0f
 
             rotate((-90f).deg, Vec3f.Z_AXIS)
@@ -239,7 +227,7 @@ object GearChainMeshGen {
             }
 
             // metallic mesh components
-            metal = 1f
+            metallic = 1f
             roughness = 0.3f
 
             color = MdColor.BLUE_GREY.toLinear()
@@ -279,16 +267,9 @@ object GearChainMeshGen {
     ).apply {
         isFrustumChecked = false
         generate {
-            var roughness = 0.3f
-            var metal = 1f
-            vertexModFun = {
-                getFloatAttribute(VertexLayouts.PositionNormalColorMetalRough.roughness.asAttribute())?.f = roughness
-                getFloatAttribute(VertexLayouts.PositionNormalColorMetalRough.metallic.asAttribute())?.f = metal
-            }
-
             color = Color.GRAY
             roughness = 0.2f
-            metal = 1f
+            metallic = 1f
             profile {
                 val firstInds = mutableListOf<Int>()
                 val lastInds = mutableListOf<Int>()
@@ -336,16 +317,9 @@ object GearChainMeshGen {
     ).apply {
         isFrustumChecked = false
         generate {
-            var roughness = 0.3f
-            var metal = 1f
-            vertexModFun = {
-                getFloatAttribute(VertexLayouts.PositionNormalColorMetalRough.roughness.asAttribute())?.f = roughness
-                getFloatAttribute(VertexLayouts.PositionNormalColorMetalRough.metallic.asAttribute())?.f = metal
-            }
-
             color = MdColor.BLUE_GREY toneLin 400
             roughness = 0.4f
-            metal = 1f
+            metallic = 1f
             profile {
                 val firstInds = mutableListOf<Int>()
                 val lastInds = mutableListOf<Int>()
@@ -391,7 +365,7 @@ object GearChainMeshGen {
 
             color = MdColor.BLUE_GREY toneLin 700
             roughness = 0.3f
-            metal = 1f
+            metallic = 1f
             for (s in -1..1 step 2) {
                 cylinder {
                     origin.set(1.5f * s, 0f, 0f)

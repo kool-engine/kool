@@ -138,7 +138,7 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
         entity.getComponent<MeshComponent>()?.let { meshComponent ->
             meshComponent.sceneNode?.let { sceneNode ->
                 val meshSelection = when (sceneNode) {
-                    is Mesh -> listOf(selectedMeshes.getOrPut(sceneNode.id) { SelectedMeshes(sceneNode.id) })
+                    is Mesh<*> -> listOf(selectedMeshes.getOrPut(sceneNode.id) { SelectedMeshes(sceneNode.id) })
                     is Model -> sceneNode.meshes.values.map { selectedMeshes.getOrPut(it.id) { SelectedMeshes(sceneNode.id) } }
                     else -> emptyList()
                 }
@@ -171,7 +171,7 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
             camera = editor.editorCam
             isUpdateDrawNode = false
             isEnabled = true
-            defaultView.drawFilter = { it !is Mesh || it.id in selectedMeshes }
+            defaultView.drawFilter = { it !is Mesh<*> || it.id in selectedMeshes }
 
             onAfterCollectDrawCommands += { viewData ->
                 expectedNodeIds.clear()
@@ -202,7 +202,7 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
             }
         }
 
-        private fun getPipeline(mesh: Mesh, ctx: KoolContext): DrawPipeline? {
+        private fun getPipeline(mesh: Mesh<*>, ctx: KoolContext): DrawPipeline? {
             val meshSelection = selectedMeshes[mesh.id]
             if (!mesh.geometry.hasAttribute(Attribute.POSITIONS) || meshSelection == null) {
                 return null
@@ -230,8 +230,8 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
                         val typeAndId = interStageInt2()
                         vertexStage {
                             main {
-                                val type = int1Var(instanceAttribFloat4(SelectionInstanceLayout.meshId).x.toInt1())
-                                val id = int1Var(instanceAttribFloat4(SelectionInstanceLayout.meshId).y.toInt1())
+                                val type = int1Var(instanceAttrib(SelectionInstanceLayout.meshId).x.toInt1())
+                                val id = int1Var(instanceAttrib(SelectionInstanceLayout.meshId).y.toInt1())
                                 typeAndId.input set int2Value(type, id)
                             }
                         }

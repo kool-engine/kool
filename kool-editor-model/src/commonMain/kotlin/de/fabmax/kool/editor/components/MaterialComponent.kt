@@ -29,7 +29,7 @@ class MaterialComponent(
 
     private val listeners by cachedProjectComponents<ListenerComponent>()
 
-    suspend fun applyMaterialTo(mesh: Mesh, sceneShaderData: SceneShaderData, modelMats: List<ModelMatrixComposition>): Boolean {
+    suspend fun applyMaterialTo(mesh: Mesh<*>, sceneShaderData: SceneShaderData, modelMats: List<ModelMatrixComposition>): Boolean {
         mesh.isCastingShadow = shaderData.genericSettings.isCastingShadow
 
         val meshKey = MeshLayoutInfo(mesh)

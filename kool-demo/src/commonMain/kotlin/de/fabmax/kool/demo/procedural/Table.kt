@@ -10,7 +10,7 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-class Table(demo: ProceduralDemo) : Mesh(IndexedVertexList(VertexLayouts.PositionNormalTexCoordTangent)) {
+class Table(demo: ProceduralDemo) : Mesh<VertexLayouts.PositionNormalTexCoordTangent>(IndexedVertexList(VertexLayouts.PositionNormalTexCoordTangent)) {
 
     init {
         isCastingShadow = false

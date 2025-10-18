@@ -7,13 +7,14 @@ import de.fabmax.kool.math.spatial.OcTree
 import de.fabmax.kool.math.spatial.SpatialTree
 import de.fabmax.kool.math.toMutableVec3d
 import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.util.Struct
 import de.fabmax.kool.util.logW
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-class OcTreeEdgeHandler(treeBounds: BoundingBoxD) : HalfEdgeMesh.EdgeHandler {
-    val edgeTree = OcTree(HalfEdgeAdapter, bounds = treeBounds)
+class OcTreeEdgeHandler<Layout: Struct>(treeBounds: BoundingBoxD) : HalfEdgeMesh.EdgeHandler<Layout> {
+    val edgeTree = OcTree(halfEdgeAdapter<Layout>(), bounds = treeBounds)
     override val numEdges: Int
         get() = edgeTree.size
 
@@ -28,16 +29,16 @@ class OcTreeEdgeHandler(treeBounds: BoundingBoxD) : HalfEdgeMesh.EdgeHandler {
         }
     })
 
-    override fun plusAssign(edge: HalfEdgeMesh.HalfEdge) = edgeTree.plusAssign(edge)
+    override fun plusAssign(edge: HalfEdgeMesh<Layout>.HalfEdge) = edgeTree.plusAssign(edge)
 
-    override fun minusAssign(edge: HalfEdgeMesh.HalfEdge) {
+    override fun minusAssign(edge: HalfEdgeMesh<Layout>.HalfEdge) {
         if (edge.isDeleted) {
             logW { "edge is already deleted, probably not in tree anymore..." }
         }
         edgeTree.minusAssign(edge)
     }
 
-    override fun checkedUpdateEdgeTo(edge: HalfEdgeMesh.HalfEdge, newTo: HalfEdgeMesh.HalfEdgeVertex) {
+    override fun checkedUpdateEdgeTo(edge: HalfEdgeMesh<Layout>.HalfEdge, newTo: HalfEdgeMesh<Layout>.HalfEdgeVertex) {
         edge.apply {
             val newX = (from.x + newTo.x) * 0.5f
             val newY = (from.y + newTo.y) * 0.5f
@@ -55,7 +56,7 @@ class OcTreeEdgeHandler(treeBounds: BoundingBoxD) : HalfEdgeMesh.EdgeHandler {
         }
     }
 
-    override fun checkedUpdateEdgeFrom(edge: HalfEdgeMesh.HalfEdge, newFrom: HalfEdgeMesh.HalfEdgeVertex) {
+    override fun checkedUpdateEdgeFrom(edge: HalfEdgeMesh<Layout>.HalfEdge, newFrom: HalfEdgeMesh<Layout>.HalfEdgeVertex) {
         edge.apply {
             val newX = (newFrom.x + to.x) * 0.5f
             val newY = (newFrom.y + to.y) * 0.5f
@@ -73,7 +74,7 @@ class OcTreeEdgeHandler(treeBounds: BoundingBoxD) : HalfEdgeMesh.EdgeHandler {
         }
     }
 
-    override fun checkedUpdateVertexPosition(vertex: HalfEdgeMesh.HalfEdgeVertex, x: Float, y: Float, z: Float) {
+    override fun checkedUpdateVertexPosition(vertex: HalfEdgeMesh<Layout>.HalfEdgeVertex, x: Float, y: Float, z: Float) {
         vertex.apply {
             for (i in edges.indices) {
                 // check from this vertex
@@ -115,28 +116,28 @@ class OcTreeEdgeHandler(treeBounds: BoundingBoxD) : HalfEdgeMesh.EdgeHandler {
 
     override fun rebuild() { }
 
-    override fun iterator(): Iterator<HalfEdgeMesh.HalfEdge> = edgeTree.iterator()
+    override fun iterator(): Iterator<HalfEdgeMesh<Layout>.HalfEdge> = edgeTree.iterator()
 
     companion object {
-        object HalfEdgeAdapter : ItemAdapter<HalfEdgeMesh.HalfEdge> {
-            override fun getMinX(item: HalfEdgeMesh.HalfEdge): Double = min(item.from.x, item.to.x).toDouble()
-            override fun getMinY(item: HalfEdgeMesh.HalfEdge): Double = min(item.from.y, item.to.y).toDouble()
-            override fun getMinZ(item: HalfEdgeMesh.HalfEdge): Double = min(item.from.z, item.to.z).toDouble()
+        fun <Layout: Struct> halfEdgeAdapter() = object : ItemAdapter<HalfEdgeMesh<Layout>.HalfEdge> {
+            override fun getMinX(item: HalfEdgeMesh<Layout>.HalfEdge): Double = min(item.from.x, item.to.x).toDouble()
+            override fun getMinY(item: HalfEdgeMesh<Layout>.HalfEdge): Double = min(item.from.y, item.to.y).toDouble()
+            override fun getMinZ(item: HalfEdgeMesh<Layout>.HalfEdge): Double = min(item.from.z, item.to.z).toDouble()
 
-            override fun getMaxX(item: HalfEdgeMesh.HalfEdge): Double = max(item.from.x, item.to.x).toDouble()
-            override fun getMaxY(item: HalfEdgeMesh.HalfEdge): Double = max(item.from.y, item.to.y).toDouble()
-            override fun getMaxZ(item: HalfEdgeMesh.HalfEdge): Double = max(item.from.z, item.to.z).toDouble()
+            override fun getMaxX(item: HalfEdgeMesh<Layout>.HalfEdge): Double = max(item.from.x, item.to.x).toDouble()
+            override fun getMaxY(item: HalfEdgeMesh<Layout>.HalfEdge): Double = max(item.from.y, item.to.y).toDouble()
+            override fun getMaxZ(item: HalfEdgeMesh<Layout>.HalfEdge): Double = max(item.from.z, item.to.z).toDouble()
 
-            override fun getSzX(item: HalfEdgeMesh.HalfEdge): Double = abs(item.from.x - item.to.x).toDouble()
-            override fun getSzY(item: HalfEdgeMesh.HalfEdge): Double = abs(item.from.y - item.to.y).toDouble()
-            override fun getSzZ(item: HalfEdgeMesh.HalfEdge): Double = abs(item.from.z - item.to.z).toDouble()
+            override fun getSzX(item: HalfEdgeMesh<Layout>.HalfEdge): Double = abs(item.from.x - item.to.x).toDouble()
+            override fun getSzY(item: HalfEdgeMesh<Layout>.HalfEdge): Double = abs(item.from.y - item.to.y).toDouble()
+            override fun getSzZ(item: HalfEdgeMesh<Layout>.HalfEdge): Double = abs(item.from.z - item.to.z).toDouble()
 
-            override fun getCenterX(item: HalfEdgeMesh.HalfEdge): Double = (item.from.x + item.to.x) * 0.5
-            override fun getCenterY(item: HalfEdgeMesh.HalfEdge): Double = (item.from.y + item.to.y) * 0.5
-            override fun getCenterZ(item: HalfEdgeMesh.HalfEdge): Double = (item.from.z + item.to.z) * 0.5
+            override fun getCenterX(item: HalfEdgeMesh<Layout>.HalfEdge): Double = (item.from.x + item.to.x) * 0.5
+            override fun getCenterY(item: HalfEdgeMesh<Layout>.HalfEdge): Double = (item.from.y + item.to.y) * 0.5
+            override fun getCenterZ(item: HalfEdgeMesh<Layout>.HalfEdge): Double = (item.from.z + item.to.z) * 0.5
 
-            override fun setNode(item: HalfEdgeMesh.HalfEdge, node: SpatialTree<HalfEdgeMesh.HalfEdge>.Node) {
-                item.treeNode = node as OcTree<HalfEdgeMesh.HalfEdge>.OcNode
+            override fun setNode(item: HalfEdgeMesh<Layout>.HalfEdge, node: SpatialTree<HalfEdgeMesh<Layout>.HalfEdge>.Node) {
+                item.treeNode = node as OcTree<HalfEdgeMesh<Layout>.HalfEdge>.OcNode
             }
         }
     }

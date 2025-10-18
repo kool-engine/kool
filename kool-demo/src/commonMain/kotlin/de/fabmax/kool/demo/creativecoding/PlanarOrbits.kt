@@ -6,7 +6,6 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.modules.ui2.remember
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.VertexLayouts
@@ -46,13 +45,13 @@ class PlanarOrbits(resources: CreativeCodingDemo.Resources) : CreativeContent("P
         }
     }
 
-    private fun createMesh(resources: CreativeCodingDemo.Resources): Mesh = addMesh(
+    private fun createMesh(resources: CreativeCodingDemo.Resources): Mesh<VertexLayouts.PositionNormalColorMetalRough> = addMesh(
         layout = VertexLayouts.PositionNormalColorMetalRough
     ) {
         shader = KslPbrShader {
             color { vertexColor() }
-            metallic { vertexProperty(Attribute.METAL_ROUGH, 0) }
-            roughness { vertexProperty(Attribute.METAL_ROUGH, 1) }
+            metallic { vertexProperty(VertexLayouts.Metallic.metallic) }
+            roughness { vertexProperty(VertexLayouts.Roughness.roughness) }
             lighting {
                 addShadowMaps(resources.shadowMaps)
                 imageBasedAmbientLight(resources.imageEnv.irradianceMap)

@@ -71,7 +71,7 @@ class SimpleShadowMap(
         isReleaseDrawNode = false
 
         defaultView.drawFilter = {
-            it !is Mesh || it.isCastingShadow(shadowMapLevel)
+            it !is Mesh<*> || it.isCastingShadow(shadowMapLevel)
         }
 
         val backend = KoolSystem.requireContext().backend

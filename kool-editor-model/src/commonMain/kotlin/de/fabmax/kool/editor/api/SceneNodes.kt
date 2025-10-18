@@ -4,10 +4,7 @@ import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.components.isDefaultMaterial
 import de.fabmax.kool.editor.data.*
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.deg
-import de.fabmax.kool.math.toMat4f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.gltf.GltfMaterialConfig
 import de.fabmax.kool.modules.ksl.KslLitShader
@@ -115,7 +112,7 @@ class SceneNodes(val scene: EditorScene) :
     }
 
     private inner class MeshNode(meshKey: MeshKey) : DrawNodeAndUsers(meshKey) {
-        override var node: Mesh? = null
+        override var node: Mesh<*>? = null
 
         override fun updateInstances() {
             node?.instances?.apply {
@@ -157,7 +154,7 @@ class SceneNodes(val scene: EditorScene) :
             }
         }
 
-        private fun Mesh.createPrimitive() {
+        private fun Mesh<*>.createPrimitive() {
             name = "PrimitiveMesh[${(meshKey.hashCode()).toHexString()}]"
             generate {
                 meshKey.shapes.forEach { generatePrimitiveShape(it) }
@@ -165,7 +162,7 @@ class SceneNodes(val scene: EditorScene) :
             geometry.generateTangents()
         }
 
-        private suspend fun Mesh.createHeightmap() {
+        private suspend fun Mesh<*>.createHeightmap() {
             val shape = meshKey.shapes.filterIsInstance<ShapeData.Heightmap>().first()
             name = "Heightmap:${shape.mapPath}[${(meshKey.hashCode()).toHexString()}]"
 
@@ -264,6 +261,8 @@ class SceneNodes(val scene: EditorScene) :
         }
 
         private fun MeshBuilder<*>.applyCommon(pose: PoseData? = null, shapeColor: ColorData? = null, uvScale: Vec2Data? = null) {
+            @Suppress("UNCHECKED_CAST")
+            this as MeshBuilder<Struct>
             pose?.toPoseF()?.toMat4f(transform)
             when (scene.upAxis) {
                 SceneUpAxis.X_AXIS -> rotate(90f.deg, Vec3f.NEG_Z_AXIS)
@@ -273,6 +272,11 @@ class SceneNodes(val scene: EditorScene) :
 
             shapeColor?.let { color = it.toColorLinear() }
             uvScale?.let { scale ->
+                vertexCustomizer = {
+                    texCoordAttr?.get(MutableVec2f())?.let { uv ->
+                        texCoordAttr?.set(uv.x * scale.x.toFloat(), uv.y * scale.y.toFloat())
+                    }
+                }
                 vertexModFun = {
                     texCoord.x *= scale.x.toFloat()
                     texCoord.y *= scale.y.toFloat()

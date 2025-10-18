@@ -14,10 +14,7 @@ import de.fabmax.kool.util.Color
 class VehicleWorld(val scene: Scene, val physics: PhysicsWorld, val deferredPipeline: DeferredPipeline) {
 
     val defaultMaterial = Material(0.5f)
-    val groundSimFilterData = FilterData(VehicleUtils.COLLISION_FLAG_GROUND, VehicleUtils.COLLISION_FLAG_GROUND_AGAINST)
-    val groundQryFilterData = FilterData { VehicleUtils.setupDrivableSurface(this) }
-    val obstacleSimFilterData =
-        FilterData(VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTACLE, VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTACLE_AGAINST)
+    val obstacleSimFilterData = FilterData(VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTACLE, VehicleUtils.COLLISION_FLAG_DRIVABLE_OBSTACLE_AGAINST)
     val obstacleQryFilterData = FilterData { VehicleUtils.setupDrivableSurface(this) }
 
     fun toPrettyMesh(actor: RigidActor, meshColor: Color, rough: Float = 0.8f, metal: Float = 0f): Node = Node().apply {

@@ -11,9 +11,9 @@ import de.fabmax.kool.util.Struct
 import de.fabmax.kool.util.getFloat3
 import de.fabmax.kool.util.getFloat4
 
-open class CachedGeometry<T: Struct>(
+open class CachedGeometry<Layout: Struct>(
     val node: UiNode,
-    private val cacheData: IndexedVertexList<T>
+    private val cacheData: IndexedVertexList<Layout>
 ) {
     val cacheBuilder = MeshBuilder(cacheData).apply { isInvertFaceOrientation = true }
     val isEmpty: Boolean get() = cacheData.isEmpty()
@@ -47,7 +47,7 @@ open class CachedGeometry<T: Struct>(
     inline fun rebuildCache(
         posX: Float = node.leftPx, posY: Float = node.topPx,
         color: Color? = null,
-        block: MeshBuilder<*>.() -> Unit
+        block: MeshBuilder<Layout>.() -> Unit
     ) {
         node.apply {
             cacheBuilder.clear()

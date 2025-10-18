@@ -8,6 +8,7 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.asAttribute
 import de.fabmax.kool.pipeline.backend.GpuGeometry
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.util.*
 import kotlin.math.abs
 
@@ -49,21 +50,26 @@ fun IndexedVertexList(
     )
 }
 
-class IndexedVertexList<T: Struct>(
-    val layout: T,
+class IndexedVertexList<Layout: Struct>(
+    val layout: Layout,
     initialSize: Int = 1024,
     val primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
     val usage: Usage = Usage.STATIC,
-    val positionAttr: Float3Member<T>? = layout.getFloat3(Attribute.POSITIONS.name),
-    val normalAttr: Float3Member<T>? = layout.getFloat3(Attribute.NORMALS.name),
-    val colorAttr: Float4Member<T>? = layout.getFloat4(Attribute.COLORS.name),
-    val texCoordAttr: Float2Member<T>? = layout.getFloat2(Attribute.TEXTURE_COORDS.name),
-    val tangentsAttr: Float4Member<T>? = layout.getFloat4(Attribute.TANGENTS.name),
+    val positionAttr: Float3Member<Layout>? = layout.getFloat3(VertexLayouts.Position.name),
+    val normalAttr: Float3Member<Layout>? = layout.getFloat3(VertexLayouts.Normal.name),
+    val tangentAttr: Float4Member<Layout>? = layout.getFloat4(VertexLayouts.Tangent.name),
+    val colorAttr: Float4Member<Layout>? = layout.getFloat4(VertexLayouts.Color.name),
+    val emissiveColorAttr: Float3Member<Layout>? = layout.getFloat3(VertexLayouts.EmissiveColor.name),
+    val metallicAttr: Float1Member<Layout>? = layout.getFloat1(VertexLayouts.Metallic.name),
+    val roughnessAttr: Float1Member<Layout>? = layout.getFloat1(VertexLayouts.Roughness.name),
+    val texCoordAttr: Float2Member<Layout>? = layout.getFloat2(VertexLayouts.TexCoord.name),
+    val joint: Int4Member<Layout>? = layout.getInt4(VertexLayouts.Joint.name),
+    val weight: Float4Member<Layout>? = layout.getFloat4(VertexLayouts.Weight.name),
 ) : BaseReleasable() {
 
     var name: String = "geometry"
 
-    var vertexData: StructBuffer<T> = StructBuffer(layout, capacity = initialSize)
+    var vertexData: StructBuffer<Layout> = StructBuffer(layout, capacity = initialSize)
         internal set
 
     var indices = Uint32Buffer(initialSize, true)
@@ -83,7 +89,7 @@ class IndexedVertexList<T: Struct>(
     val numPrimitives: Int get() = primitiveType.getNumberOfPrimitives(numIndices)
     val lastIndex get() = numVertices - 1
 
-    val vertexIt: VertexView<T> = VertexView(this, 0)
+    val vertexIt: VertexView<Layout> = VertexView(this, 0)
 
     val modCount = ModCounter()
 
@@ -139,13 +145,14 @@ class IndexedVertexList<T: Struct>(
      *
      * @see addVertexOld for the now-deprecated version using a [VertexView].
      */
-    inline fun addVertex(block: MutableStructBufferView<T>.(T) -> Unit): Int {
+    inline fun addVertex(block: MutableStructBufferView<Layout>.(Layout) -> Unit): Int {
         checkBufferSize(1)
+        incrementModCount()
         return vertexData.put(block)
     }
 
     @Deprecated("Use addVertex instead")
-    inline fun addVertexOld(block: VertexView<T>.() -> Unit): Int {
+    inline fun addVertexOld(block: VertexView<Layout>.() -> Unit): Int {
         checkBufferSize(1)
         val addIndex = numVertices++
         vertexIt.index = addIndex
@@ -169,11 +176,25 @@ class IndexedVertexList<T: Struct>(
         }
     }
 
-    fun addGeometry(geometry: IndexedVertexList<*>) = addGeometry(geometry) { }
+    fun addGeometry(geometry: IndexedVertexList<*>) {
+        if (layout == geometry.layout) {
+            val baseIdx = numVertices
+            checkBufferSize(geometry.numVertices)
+            vertexData.put(geometry.vertexData)
+            checkIndexSize(geometry.indices.position)
+            for (i in 0 until geometry.indices.position) {
+                addIndex(baseIdx + geometry.indices[i])
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            addGeometry(geometry) { }
+        }
+    }
 
-    inline fun addGeometry(geometry: IndexedVertexList<*>, vertexMod: (VertexView<T>.() -> Unit)) {
+    @Suppress("DEPRECATION")
+    @Deprecated("Use addGeometry instead")
+    inline fun addGeometry(geometry: IndexedVertexList<*>, vertexMod: (VertexView<Layout>.() -> Unit)) {
         val baseIdx = numVertices
-
         checkBufferSize(geometry.numVertices)
         for (i in 0 until geometry.numVertices) {
             addVertexOld {
@@ -182,7 +203,6 @@ class IndexedVertexList<T: Struct>(
                 vertexMod.invoke(this)
             }
         }
-
         checkIndexSize(geometry.indices.position)
         for (i in 0 until geometry.indices.position) {
             addIndex(baseIdx + geometry.indices[i])
@@ -231,7 +251,7 @@ class IndexedVertexList<T: Struct>(
         checkBufferSize(source.numVertices)
         checkIndexSize(source.indices.position)
         @Suppress("UNCHECKED_CAST")
-        vertexData.put(source.vertexData as StructBuffer<T>)
+        vertexData.put(source.vertexData as StructBuffer<Layout>)
         indices.put(source.indices)
         modCount.reset(source.modCount)
     }
@@ -257,12 +277,12 @@ class IndexedVertexList<T: Struct>(
         modCount.increment()
     }
 
-    operator fun get(i: Int): VertexView<T> {
+    operator fun get(i: Int): VertexView<Layout> {
         check(i in 0 ..< vertexData.capacity) { "Vertex index $i out of bounds: 0 ..< $numVertices" }
         return VertexView(this, i)
     }
 
-    inline fun forEach(block: (VertexView<T>) -> Unit) {
+    inline fun forEach(block: (VertexView<Layout>) -> Unit) {
         for (i in 0 until numVertices) {
             vertexIt.index = i
             block(vertexIt)

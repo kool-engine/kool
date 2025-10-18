@@ -32,9 +32,9 @@ class CenterCircleHandle(
             drawNode.isVisible = !value
         }
 
-    private val hitMesh: Mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-hitMesh")
-    private val mesh: Mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-mesh")
-    private val coveredMesh: Mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-coveredMesh")
+    private val hitMesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-hitMesh")
+    private val mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-mesh")
+    private val coveredMesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-coveredMesh")
 
     private val handleTransform = TrsTransformD()
     private var parentCam: Camera? = null
@@ -91,7 +91,7 @@ class CenterCircleHandle(
         (coveredMesh.shader as KslUnlitShader).color = coveredColor
     }
 
-    private fun Mesh.setupGeometry(radius: Float, innerRadius: Float, mode: CircleMode) {
+    private fun Mesh<VertexLayouts.PositionNormal>.setupGeometry(radius: Float, innerRadius: Float, mode: CircleMode) {
         isCastingShadow = false
         generate {
             when (mode) {
@@ -106,7 +106,7 @@ class CenterCircleHandle(
         }
     }
 
-    private fun Mesh.setupShader(depthCompareOp: DepthCompareOp) {
+    private fun Mesh<VertexLayouts.PositionNormal>.setupShader(depthCompareOp: DepthCompareOp) {
         shader = KslUnlitShader {
             pipeline {
                 depthTest = depthCompareOp
@@ -118,7 +118,7 @@ class CenterCircleHandle(
         }
     }
 
-    private fun MeshBuilder<*>.ring(inner: Float, outer: Float) {
+    private fun MeshBuilder<VertexLayouts.PositionNormal>.ring(inner: Float, outer: Float) {
         val n = 60
         for (i in 0 .. n) {
             val ang = i.toFloat() / n * 2f * PI_F
@@ -141,7 +141,7 @@ class CenterCircleHandle(
         setColors(colorIdle, coveredColorIdle)
     }
 
-    private class LowPriorityMeshTest(mesh: Mesh) : MeshRayTest {
+    private class LowPriorityMeshTest(mesh: Mesh<VertexLayouts.PositionNormal>) : MeshRayTest {
         private val geometryTest = MeshRayTest.geometryTest(mesh)
 
         override fun rayTest(test: RayTest, localRay: RayF): Boolean {

@@ -9,7 +9,7 @@ import io.ygdrasil.webgpu.GPUBuffer
 import io.ygdrasil.webgpu.GPUBufferUsage
 import io.ygdrasil.webgpu.GPUDevice
 
-class WgpuGeometry(val mesh: Mesh, val vertexData: IndexedVertexList<*>, val backend: RenderBackendWgpu4k) : BaseReleasable(), GpuGeometry {
+class WgpuGeometry(val mesh: Mesh<*>, val vertexData: IndexedVertexList<*>, val backend: RenderBackendWgpu4k) : BaseReleasable(), GpuGeometry {
     private val device: GPUDevice get() = backend.device
 
     private val createdIndexBuffer: WgpuGrowingBuffer

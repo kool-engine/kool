@@ -30,7 +30,7 @@ class InstancingTest : DemoScene("Instancing") {
     private val recordTstate = mutableStateOf(0.0)
     private val drawTstate = mutableStateOf(0.0)
 
-    private val objects = mutableListOf<Mesh>()
+    private val objects = mutableListOf<ColorMesh>()
     private val meshInstances = mutableListOf<MeshInstance>()
     private val directShader = KslUnlitShader {
         color { vertexColor() }

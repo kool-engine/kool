@@ -177,7 +177,7 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
         }
     }
 
-    fun createDefaultOutputQuad(): Mesh {
+    fun createDefaultOutputQuad(): Mesh<VertexLayouts.PositionTexCoord> {
         val outputShader = DeferredOutputShader(cfg, this)
         onSwap += DeferredPassSwapListener { prev, current ->
             outputShader.setDeferredInput(current)

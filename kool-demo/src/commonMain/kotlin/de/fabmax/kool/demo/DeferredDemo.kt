@@ -25,10 +25,10 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
     private lateinit var deferredPipeline: DeferredPipeline
 
-    private lateinit var objects: Mesh
+    private lateinit var objects: ColorMesh
     private lateinit var objectShader: DeferredKslPbrShader
 
-    private lateinit var lightPositionMesh: Mesh
+    private lateinit var lightPositionMesh: Mesh<VertexLayouts.PositionNormal>
     private lateinit var lightVolumeMesh: LineMesh
     private val lightPosInsts = MeshInstanceList(InstanceLayouts.ModelMatColor, MAX_LIGHTS)
     private val lightVolInsts = MeshInstanceList(InstanceLayouts.ModelMatColor, MAX_LIGHTS)

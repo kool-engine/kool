@@ -186,8 +186,8 @@ data class GltfFile(
     private inner class ModelGenerator(val cfg: GltfLoadConfig) {
         val modelAnimations = mutableListOf<Animation>()
         val modelNodes = mutableMapOf<GltfNode, Node>()
-        val meshesByMaterial = mutableMapOf<Int, MutableSet<Mesh>>()
-        val meshMaterials = mutableMapOf<Mesh, GltfMaterial?>()
+        val meshesByMaterial = mutableMapOf<Int, MutableSet<Mesh<*>>>()
+        val meshMaterials = mutableMapOf<Mesh<*>, GltfMaterial?>()
 
         fun makeModel(scene: GltfScene): Model {
             val model = Model(scene.name ?: "model_scene")
@@ -212,7 +212,7 @@ data class GltfFile(
         }
 
         private fun Node.removeEmpty() {
-            children.filter { it !is Mesh }.forEach {
+            children.filter { it !is Mesh<*> }.forEach {
                 it.removeEmpty()
                 if (it.children.isEmpty()) {
                     removeNode(it)
@@ -374,7 +374,7 @@ data class GltfFile(
                         val modelAnim = modelAnimations[iAnim]
                         val gltfMesh = channel.target.nodeRef?.meshRef
                         val nodeGrp = modelNodes[channel.target.nodeRef]
-                        nodeGrp?.children?.filterIsInstance<Mesh>()?.forEach {
+                        nodeGrp?.children?.filterIsInstance<Mesh<*>>()?.forEach {
                             makeWeightAnimation(gltfMesh!!, channel, MorphAnimatedMesh(it), modelAnim)
                         }
                     }
@@ -487,7 +487,7 @@ data class GltfFile(
             val childAlphas = mutableMapOf<Node, Float>()
             var avgAlpha = 0f
             for (child in children) {
-                val a = if (child is Mesh && !child.isOpaque) {
+                val a = if (child is Mesh<*> && !child.isOpaque) {
                     0f
                 } else {
                     child.sortNodesByAlpha()
@@ -510,7 +510,7 @@ data class GltfFile(
             children.filter{ it.children.isNotEmpty() }.forEach { it.mergeMeshesByMaterial() }
 
             meshesByMaterial.values.forEach { sameMatMeshes ->
-                val mergeMeshes = children.filter { it in sameMatMeshes }.map { it as Mesh }
+                val mergeMeshes = children.filter { it in sameMatMeshes }.map { it as Mesh<*> }
                 if (mergeMeshes.size > 1) {
                     val r = mergeMeshes[0]
                     for (i in 1 until mergeMeshes.size) {
@@ -534,7 +534,7 @@ data class GltfFile(
             transform.push()
             transform.mul(this.transform.matrixF)
 
-            children.filterIsInstance<Mesh>().forEach {
+            children.filterIsInstance<Mesh<*>>().forEach {
                 it.geometry.forEach { v ->
                     transform.transform(v.position, 1f)
                     transform.transform(v.normal, 0f)
@@ -622,7 +622,7 @@ data class GltfFile(
             }
         }
 
-        private fun makeKslMaterial(prim: GltfMesh.Primitive, mesh: Mesh, cfg: GltfLoadConfig, model: Model) {
+        private fun makeKslMaterial(prim: GltfMesh.Primitive, mesh: Mesh<*>, cfg: GltfLoadConfig, model: Model) {
             var isDeferred = cfg.materialConfig.isDeferredShading
             val useVertexColor = prim.attributes.containsKey(GltfMesh.Primitive.ATTRIBUTE_COLOR_0)
 

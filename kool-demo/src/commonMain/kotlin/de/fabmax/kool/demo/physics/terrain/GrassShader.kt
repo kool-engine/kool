@@ -86,7 +86,7 @@ object GrassShader {
                 }
                 if (isInstanced) {
                     val pos = float3Var(worldPos.input.input)
-                    pos.y -= instanceAttribFloat1(GrassInstanceLayout.distScale) * 1.3f.const
+                    pos.y -= instanceAttrib(GrassInstanceLayout.distScale) * 1.3f.const
                     worldPos.input(pos)
                 }
             }

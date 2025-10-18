@@ -169,7 +169,7 @@ class AnimatedTransformGroup(val target: Node) : AnimationNode {
     }
 }
 
-class MorphAnimatedMesh(val target: Mesh) : AnimationNode {
+class MorphAnimatedMesh(val target: Mesh<*>) : AnimationNode {
     override val name: String
         get() = target.name
 

@@ -12,10 +12,9 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.ClearColorFill
+import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.Light
-import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MsdfFont
@@ -31,7 +30,7 @@ class TetrisDemo : DemoScene("Tetris") {
     private val game = TetrisGame()
     private val renderer = TetrisRenderer(game)
     private val keyListener = InputStack.KeyboardListener { keyEvents, _ -> keyEvents.forEach { handleInput(it) } }
-    private lateinit var gameMesh: Mesh
+    private lateinit var gameMesh: ColorMesh
     private val overlay = Scene("tetris-overlay")
 
     init {
@@ -55,10 +54,7 @@ class TetrisDemo : DemoScene("Tetris") {
         })
 
         // Create and configure the mesh for rendering the game field
-        gameMesh = Mesh(
-            layout = VertexLayouts.PositionNormalColor,
-            name = "tetris-mesh"
-        )
+        gameMesh = ColorMesh(name = "tetris-mesh")
         gameMesh.shader = KslPbrShader {
             color { vertexColor() }
             lighting { maxNumberOfLights = 2 }
