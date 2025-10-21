@@ -108,52 +108,42 @@ object MsdfFontGenerator {
         atlasDim: Int = 512,
         type: MsdfType = MsdfType.MTSDF,
     ): Pair<MsdfMeta, BufferedImageData2d> {
-        MemoryStack.stackPush().use { stack ->
-            val ftHandle = stack.callocPointer(1)
+        memStack {
+            val ftHandle = callocPointer(1)
             msdf_ft_init(ftHandle).checked()
             val fontContext = ftHandle.get(0)
-
-            val stbFontInfo = STBTTFontinfo.calloc(stack)
-            val fontHandle = stack.callocPointer(1)
+            val stbFontInfo = STBTTFontinfo.calloc(this)
+            val fontHandle = callocPointer(1)
             ttfData.useRaw {
                 msdf_ft_load_font_data(fontContext, it, fontHandle).checked()
                 stbtt_InitFont(stbFontInfo, it).checked()
             }
             val font = fontHandle.get(0)
 
-            val bitMapSize = msdfGenSize * 2
-            val pixelsPtr = stack.callocPointer(1)
-            val byteSizePtr = stack.callocPointer(1)
-            val channelCountBuf = stack.callocInt(1)
-            val bitmap = MSDFGenBitmap.calloc(stack)
-
-            msdf_bitmap_alloc(type.nativeType, bitMapSize, bitMapSize, bitmap).checked()
-            msdf_bitmap_get_pixels(bitmap, pixelsPtr).checked()
-            msdf_bitmap_get_byte_size(bitmap, byteSizePtr).checked()
-            msdf_bitmap_get_channel_count(bitmap, channelCountBuf).checked()
-
-            val pixelsAddr = pixelsPtr.get(0)
-            val bufSize = byteSizePtr.get(0).toInt()
-            val genChannels = channelCountBuf.get(0)
-            val data = MemoryUtil.memFloatBuffer(pixelsAddr, bufSize / 4)
-
             val shapes = chars.toSet().map { char ->
                 memStack { loadCharShape(font, char.code) }
             }
 
+            val bitMapSize = msdfGenSize * 2
             val padding = ceil(pxRange).toInt() / 2
             shapes.arrangeAtlas(msdfGenSize, bitMapSize, padding, atlasDim)
             val atlasW = shapes.maxOf { it.dstRect.r }
             val atlasH = shapes.maxOf { it.dstRect.b}
             val pixelBuffer = Uint8Buffer(atlasW * atlasH * 4)
+            val imageData = BufferedImageData2d(pixelBuffer, atlasW, atlasH, TexFormat.RGBA)
 
-            val ascentOut = stack.callocInt(1)
-            val descentOut = stack.callocInt(1)
-            val lineGapOut = stack.callocInt(1)
+            val ascentOut = callocInt(1)
+            val descentOut = callocInt(1)
+            val lineGapOut = callocInt(1)
             stbtt_GetFontVMetrics(stbFontInfo, ascentOut, descentOut, lineGapOut)
             val emScale = stbtt_ScaleForMappingEmToPixels(stbFontInfo, 1f)
             val ascent = ascentOut.get(0) * emScale
             val descent = descentOut.get(0) * emScale
+
+            val glyphMeta = generateGlyphs(shapes, type, pxRange, msdfGenSize, stbFontInfo, emScale, imageData)
+
+            msdf_ft_font_destroy(font)
+            msdf_ft_deinit(fontContext)
 
             val msdfAtlasInfo = MsdfAtlasInfo(
                 type = type.stringType,
@@ -171,53 +161,6 @@ object MsdfFontGenerator {
                 underlineY = 0f,
                 underlineThickness = 0f,
             )
-            val glyphMeta = mutableListOf<MsdfGlyph>()
-
-            shapes.sortedBy { it.codePoint }.forEach { shapeData ->
-                memStack {
-                    val t = MSDFGenTransform.calloc(stack)
-                    t.distance_mapping { it.set(-0.5 * (pxRange / msdfGenSize), 0.5 * (pxRange / msdfGenSize)) }
-                    t.translation { it.set(0.5, 0.5) }
-                    t.scale { it.set(msdfGenSize.toDouble(), msdfGenSize.toDouble()) }
-
-                    when (type) {
-                        MsdfType.MTSDF -> msdf_generate_mtsdf(bitmap, shapeData.shape, t).checked()
-                        MsdfType.MSDF -> msdf_generate_msdf(bitmap, shapeData.shape, t).checked()
-                        MsdfType.PSDF -> msdf_generate_sdf(bitmap, shapeData.shape, t).checked()
-                        MsdfType.SDF -> msdf_generate_sdf(bitmap, shapeData.shape, t).checked()
-                    }
-
-                    val srcRect = shapeData.getSrcRect(msdfGenSize, bitMapSize, padding)
-                    for (y in 0 until srcRect.h) {
-                        for (x in 0 until srcRect.w) {
-                            val srcX = x + srcRect.l
-                            val srcY = (srcRect.h - 1 - y) + srcRect.t
-                            val srcOff = (srcY * bitMapSize + srcX) * genChannels
-                            val r = pixelFloatToByte(data.get(srcOff + 0))
-                            val g = if (genChannels > 1) pixelFloatToByte(data.get(srcOff + 1)) else r
-                            val b = if (genChannels > 2) pixelFloatToByte(data.get(srcOff + 2)) else r
-                            val a = if (genChannels == 4) pixelFloatToByte(data.get(srcOff + 3)) else 255u.toUByte()
-
-                            val dstX = x + shapeData.dstRect.l
-                            val dstY = y + shapeData.dstRect.t
-                            val dstOff = (dstY * atlasW + dstX) * 4
-                            pixelBuffer[dstOff + 0] = r
-                            pixelBuffer[dstOff + 1] = g
-                            pixelBuffer[dstOff + 2] = b
-                            pixelBuffer[dstOff + 3] = a
-                        }
-                    }
-                    msdf_shape_free(shapeData.shape)
-
-                    glyphMeta.add(makeGlyphData(shapeData, stbFontInfo, msdfGenSize, emScale, pxRange, atlasH))
-                }
-            }
-
-            msdf_bitmap_free(bitmap)
-            msdf_ft_font_destroy(font)
-            msdf_ft_deinit(fontContext)
-
-            val imageData = BufferedImageData2d(pixelBuffer, atlasW, atlasH, TexFormat.RGBA)
             val msdfMeta = MsdfMeta(
                 atlas = msdfAtlasInfo,
                 name = fontName,
@@ -226,6 +169,37 @@ object MsdfFontGenerator {
                 kerning = emptyList(),
             )
             return msdfMeta to imageData
+        }
+    }
+
+    private fun MemoryStack.loadCharShape(font: Long, codePoint: Int): ShapeData {
+        val shapeBuffer = callocPointer(1)
+        msdf_ft_font_load_glyph(font, codePoint, MSDF_FONT_SCALING_EM_NORMALIZED, shapeBuffer).checked()
+        val shape = shapeBuffer.get(0)
+
+        msdf_shape_normalize(shape).checked()
+        msdf_shape_edge_colors_simple(shape, 3.0).checked()
+
+        val bounds = MSDFGenBounds.calloc(this)
+        msdf_shape_get_bounds(shape, bounds).checked()
+        return if (bounds.l() > bounds.r() || bounds.b() > bounds.t()) {
+            ShapeData(
+                codePoint = codePoint,
+                shape = shape,
+                shapeL = 0.0,
+                shapeR = 0.0,
+                shapeB = 0.0,
+                shapeT = 0.0
+            )
+        } else {
+            ShapeData(
+                codePoint = codePoint,
+                shape = shape,
+                shapeL = bounds.l(),
+                shapeR = bounds.r(),
+                shapeB = bounds.b(),
+                shapeT = bounds.t()
+            )
         }
     }
 
@@ -275,35 +249,75 @@ object MsdfFontGenerator {
         }
     }
 
-    private fun MemoryStack.loadCharShape(font: Long, codePoint: Int): ShapeData {
-        val shapeBuffer = callocPointer(1)
-        msdf_ft_font_load_glyph(font, codePoint, MSDF_FONT_SCALING_EM_NORMALIZED, shapeBuffer).checked()
-        val shape = shapeBuffer.get(0)
+    private fun MemoryStack.generateGlyphs(
+        shapes: List<ShapeData>,
+        type: MsdfType,
+        pxRange: Double,
+        msdfGenSize: Int,
+        stbFontInfo: STBTTFontinfo,
+        emScale: Float,
+        imageData: BufferedImageData2d,
+    ): List<MsdfGlyph> {
+        val bitMapSize = msdfGenSize * 2
+        val pixelsPtr = callocPointer(1)
+        val byteSizePtr = callocPointer(1)
+        val channelCountBuf = callocInt(1)
+        val bitmap = MSDFGenBitmap.calloc(this)
 
-        msdf_shape_normalize(shape).checked()
-        msdf_shape_edge_colors_simple(shape, 3.0).checked()
+        msdf_bitmap_alloc(type.nativeType, bitMapSize, bitMapSize, bitmap).checked()
+        msdf_bitmap_get_pixels(bitmap, pixelsPtr).checked()
+        msdf_bitmap_get_byte_size(bitmap, byteSizePtr).checked()
+        msdf_bitmap_get_channel_count(bitmap, channelCountBuf).checked()
 
-        val bounds = MSDFGenBounds.calloc(this)
-        msdf_shape_get_bounds(shape, bounds).checked()
-        return if (bounds.l() > bounds.r() || bounds.b() > bounds.t()) {
-            ShapeData(
-                codePoint = codePoint,
-                shape = shape,
-                shapeL = 0.0,
-                shapeR = 0.0,
-                shapeB = 0.0,
-                shapeT = 0.0
-            )
-        } else {
-            ShapeData(
-                codePoint = codePoint,
-                shape = shape,
-                shapeL = bounds.l(),
-                shapeR = bounds.r(),
-                shapeB = bounds.b(),
-                shapeT = bounds.t()
-            )
+        val pixelsAddr = pixelsPtr.get(0)
+        val bufSize = byteSizePtr.get(0).toInt()
+        val genChannels = channelCountBuf.get(0)
+        val data = MemoryUtil.memFloatBuffer(pixelsAddr, bufSize / 4)
+
+        val pixelBuffer = imageData.data as Uint8BufferImpl
+        val padding = ceil(pxRange).toInt() / 2
+        val glyphMeta = mutableListOf<MsdfGlyph>()
+        shapes.sortedBy { it.codePoint }.forEach { shapeData ->
+            memStack {
+                val t = MSDFGenTransform.calloc(this)
+                t.distance_mapping { it.set(-0.5 * (pxRange / msdfGenSize), 0.5 * (pxRange / msdfGenSize)) }
+                t.translation { it.set(0.5, 0.5) }
+                t.scale { it.set(msdfGenSize.toDouble(), msdfGenSize.toDouble()) }
+
+                when (type) {
+                    MsdfType.MTSDF -> msdf_generate_mtsdf(bitmap, shapeData.shape, t).checked()
+                    MsdfType.MSDF -> msdf_generate_msdf(bitmap, shapeData.shape, t).checked()
+                    MsdfType.PSDF -> msdf_generate_psdf(bitmap, shapeData.shape, t).checked()
+                    MsdfType.SDF -> msdf_generate_sdf(bitmap, shapeData.shape, t).checked()
+                }
+
+                val srcRect = shapeData.getSrcRect(msdfGenSize, bitMapSize, padding)
+                for (y in 0 until srcRect.h) {
+                    for (x in 0 until srcRect.w) {
+                        val srcX = x + srcRect.l
+                        val srcY = (srcRect.h - 1 - y) + srcRect.t
+                        val srcOff = (srcY * bitMapSize + srcX) * genChannels
+                        val r = pixelFloatToByte(data.get(srcOff + 0))
+                        val g = if (genChannels > 1) pixelFloatToByte(data.get(srcOff + 1)) else r
+                        val b = if (genChannels > 2) pixelFloatToByte(data.get(srcOff + 2)) else r
+                        val a = if (genChannels == 4) pixelFloatToByte(data.get(srcOff + 3)) else 255u.toUByte()
+
+                        val dstX = x + shapeData.dstRect.l
+                        val dstY = y + shapeData.dstRect.t
+                        val dstOff = (dstY * imageData.width + dstX) * 4
+                        pixelBuffer[dstOff + 0] = r
+                        pixelBuffer[dstOff + 1] = g
+                        pixelBuffer[dstOff + 2] = b
+                        pixelBuffer[dstOff + 3] = a
+                    }
+                }
+                msdf_shape_free(shapeData.shape)
+
+                glyphMeta.add(makeGlyphData(shapeData, stbFontInfo, msdfGenSize, emScale, pxRange, imageData.height))
+            }
         }
+        msdf_bitmap_free(bitmap)
+        return glyphMeta.sortedBy { it.unicode }
     }
 
     private fun MemoryStack.makeGlyphData(
