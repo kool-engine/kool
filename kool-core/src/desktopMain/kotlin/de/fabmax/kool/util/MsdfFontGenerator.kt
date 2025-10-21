@@ -209,43 +209,7 @@ object MsdfFontGenerator {
                     }
                     msdf_shape_free(shapeData.shape)
 
-                    val advance = callocInt(1)
-                    val leftBearing = callocInt(1)
-                    stbtt_GetCodepointHMetrics(stbFontInfo, shapeData.codePoint, advance, leftBearing)
-
-                    val planeBounds: MsdfRect
-                    val atlasBounds: MsdfRect
-
-                    val x0 = callocInt(1)
-                    val y0 = callocInt(1)
-                    val x1 = callocInt(1)
-                    val y1 = callocInt(1)
-                    if (stbtt_GetCodepointBox(stbFontInfo, shapeData.codePoint, x0, y0, x1, y1)) {
-                        val planePad = pxRange.toFloat() * 0.5f / msdfGenSize
-                        planeBounds = MsdfRect(
-                            left = x0.get(0) * emScale - planePad,
-                            bottom = y0.get(0) * emScale - planePad,
-                            right = x1.get(0) * emScale + planePad,
-                            top = y1.get(0) * emScale + planePad,
-                        )
-                        atlasBounds = MsdfRect(
-                            left = shapeData.dstRect.l + 0.5f,
-                            bottom = atlasH - (shapeData.dstRect.b - 0.5f),
-                            right = shapeData.dstRect.r - 0.5f,
-                            top = atlasH - (shapeData.dstRect.t + 0.5f),
-                        )
-                    } else {
-                        planeBounds = MsdfRect(0f, 0f, 0f, 0f)
-                        atlasBounds = MsdfRect(0f, 0f, 0f, 0f)
-                    }
-
-                    val glyph = MsdfGlyph(
-                        unicode = shapeData.codePoint,
-                        advance = advance.get(0) * emScale,
-                        planeBounds = planeBounds,
-                        atlasBounds = atlasBounds,
-                    )
-                    glyphMeta.add(glyph)
+                    glyphMeta.add(makeGlyphData(shapeData, stbFontInfo, msdfGenSize, emScale, pxRange, atlasH))
                 }
             }
 
@@ -342,7 +306,14 @@ object MsdfFontGenerator {
         }
     }
 
-    private fun MemoryStack.makeGlyphData(shapeData: ShapeData, stbFontInfo: STBTTFontinfo, fontSize: Int, emScale: Float, pxRange: Double, atlasH: Int): MsdfGlyph {
+    private fun MemoryStack.makeGlyphData(
+        shapeData: ShapeData,
+        stbFontInfo: STBTTFontinfo,
+        msdfGenSize: Int,
+        emScale: Float,
+        pxRange: Double,
+        atlasH: Int
+    ): MsdfGlyph {
         val advance = callocInt(1)
         val leftBearing = callocInt(1)
         stbtt_GetCodepointHMetrics(stbFontInfo, shapeData.codePoint, advance, leftBearing)
@@ -353,7 +324,7 @@ object MsdfFontGenerator {
         val y1 = callocInt(1)
 
         return if (stbtt_GetCodepointBox(stbFontInfo, shapeData.codePoint, x0, y0, x1, y1)) {
-            val planePad = pxRange.toFloat() * 0.5f / fontSize
+            val planePad = pxRange.toFloat() * 0.5f / msdfGenSize
             val planeBounds = MsdfRect(
                 left = x0.get(0) * emScale - planePad,
                 bottom = y0.get(0) * emScale - planePad,
