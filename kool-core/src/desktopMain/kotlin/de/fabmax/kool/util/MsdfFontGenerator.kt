@@ -376,6 +376,23 @@ object MsdfFontGenerator {
         return (255.5f - 255f * f.clamp()).toInt().inv().toUByte()
     }
 
+    private fun BufferedImageData2d.toBufferedImage(): BufferedImage {
+        val byteData = data as Uint8BufferImpl
+        val img = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+        var i = 0
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                val r = byteData[i++].toInt().clamp(0, 255)
+                val g = byteData[i++].toInt().clamp(0, 255)
+                val b = byteData[i++].toInt().clamp(0, 255)
+                val a = byteData[i++].toInt().clamp(0, 255)
+                val rgb = (a shl 24) or (r shl 16) or (g shl 8) or b
+                img.setRGB(x, y, rgb)
+            }
+        }
+        return img
+    }
+
     private data class ShapeData(
         val codePoint: Int,
         val shape: Long,
@@ -404,24 +421,6 @@ object MsdfFontGenerator {
 
     private fun Int.checked() = check(this == MSDF_SUCCESS) { "Unexpected result code: $this" }
     private fun Boolean.checked() = check(this)
-}
-
-fun BufferedImageData2d.toBufferedImage(): BufferedImage {
-    val byteData = (data as? Uint8BufferImpl) ?: error("Supplied HDR image data needs to be in float format")
-
-    val img = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
-    var i = 0
-    for (y in 0 until height) {
-        for (x in 0 until width) {
-            val r = byteData[i++].toInt().clamp(0, 255)
-            val g = byteData[i++].toInt().clamp(0, 255)
-            val b = byteData[i++].toInt().clamp(0, 255)
-            val a = byteData[i++].toInt().clamp(0, 255)
-            val rgb = (a shl 24) or (r shl 16) or (g shl 8) or b
-            img.setRGB(x, y, rgb)
-        }
-    }
-    return img
 }
 
 enum class MsdfType(val stringType: String, val nativeType: Int) {
