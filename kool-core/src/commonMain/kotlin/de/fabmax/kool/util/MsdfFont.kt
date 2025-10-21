@@ -156,7 +156,7 @@ suspend fun MsdfFont(fontPath: String): Result<MsdfFont> = MsdfFont("${fontPath}
 suspend fun MsdfFont(metaPath: String, texturePath: String): Result<MsdfFont> {
     return Assets.loadBlob(metaPath).mapCatching {
         val json = it.decodeToString()
-        val meta = Json.Default.decodeFromString<MsdfMeta>(json)
+        val meta = Json.decodeFromString<MsdfMeta>(json)
         MsdfFont(MsdfFontInfo(meta, texturePath)).getOrThrow()
     }
 }

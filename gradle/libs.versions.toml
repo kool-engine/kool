@@ -39,6 +39,7 @@ lwjgl-shaderc = { group = "org.lwjgl", name = "lwjgl-shaderc", version.ref = "lw
 lwjgl-nfd = { group = "org.lwjgl", name = "lwjgl-nfd", version.ref = "lwjgl" }
 lwjgl-stb = { group = "org.lwjgl", name = "lwjgl-stb", version.ref = "lwjgl" }
 lwjgl-jawt = { group = "org.lwjgl", name = "lwjgl-jawt", version.ref = "lwjgl" }
+lwjgl-msdfgen = { group = "org.lwjgl", name = "lwjgl-msdfgen", version.ref = "lwjgl" }
 physxjni = { group = "de.fabmax", name = "physx-jni", version.ref = "physxjni" }
 physxjswebidl = { group = "npm", name = "physx-js-webidl", version.ref = "physxjswebidl" }
 
@@ -59,6 +60,6 @@ plugindep-android-library = { group = "com.android.library", name = "com.android
 plugindep-maven-publish = { group = "com.vanniktech", name = "gradle-maven-publish-plugin", version = "0.34.0" }
 
 [bundles]
-lwjgl = ["lwjgl-core", "lwjgl-glfw", "lwjgl-jemalloc", "lwjgl-opengl", "lwjgl-vulkan", "lwjgl-vma", "lwjgl-shaderc", "lwjgl-nfd", "lwjgl-stb", "lwjgl-jawt"]
+lwjgl = ["lwjgl-core", "lwjgl-glfw", "lwjgl-jemalloc", "lwjgl-opengl", "lwjgl-vulkan", "lwjgl-vma", "lwjgl-shaderc", "lwjgl-nfd", "lwjgl-stb", "lwjgl-jawt", "lwjgl-msdfgen"]
 wgpu4k = ["wgpu4k", "webgpu-descriptors"]
 wgpu4k-surface-utils = ["rococoa", "jna", "jna-platform"]
