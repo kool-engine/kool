@@ -42,11 +42,15 @@ internal object PlatformInputJs : PlatformInput {
                 CursorShape.CROSSHAIR -> "crosshair"
                 CursorShape.HAND -> "pointer"
                 CursorShape.NOT_ALLOWED -> "not-allowed"
-                CursorShape.RESIZE_EW -> "ew-resize"
-                CursorShape.RESIZE_NS -> "ns-resize"
-                CursorShape.RESIZE_NWSE -> "nwse-resize"
-                CursorShape.RESIZE_NESW -> "nesw-resize"
-                CursorShape.RESIZE_ALL -> "move"
+                CursorShape.RESIZE_E -> "ew-resize"
+                CursorShape.RESIZE_W -> "ew-resize"
+                CursorShape.RESIZE_N -> "ns-resize"
+                CursorShape.RESIZE_S -> "ns-resize"
+                CursorShape.RESIZE_NW -> "nwse-resize"
+                CursorShape.RESIZE_SE -> "nwse-resize"
+                CursorShape.RESIZE_NE -> "nesw-resize"
+                CursorShape.RESIZE_SW -> "nesw-resize"
+                CursorShape.MOVE -> "move"
             }
             currentCursorShape = cursorShape
         }

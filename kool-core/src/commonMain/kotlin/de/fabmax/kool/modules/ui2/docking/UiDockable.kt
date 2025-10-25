@@ -280,15 +280,15 @@ class UiDockable(
 
     private fun setResizeCursorShape(edgeMask: Int) {
         when (edgeMask) {
-            RESIZE_EDGE_LEFT -> PointerInput.cursorShape = CursorShape.RESIZE_EW
-            RESIZE_EDGE_RIGHT -> PointerInput.cursorShape = CursorShape.RESIZE_EW
-            RESIZE_EDGE_TOP -> PointerInput.cursorShape = CursorShape.RESIZE_NS
-            RESIZE_EDGE_BOTTOM -> PointerInput.cursorShape = CursorShape.RESIZE_NS
+            RESIZE_EDGE_LEFT -> PointerInput.cursorShape = CursorShape.RESIZE_W
+            RESIZE_EDGE_RIGHT -> PointerInput.cursorShape = CursorShape.RESIZE_E
+            RESIZE_EDGE_TOP -> PointerInput.cursorShape = CursorShape.RESIZE_N
+            RESIZE_EDGE_BOTTOM -> PointerInput.cursorShape = CursorShape.RESIZE_S
 
-            RESIZE_EDGE_LEFT or RESIZE_EDGE_TOP -> PointerInput.cursorShape = CursorShape.RESIZE_NWSE
-            RESIZE_EDGE_RIGHT or RESIZE_EDGE_BOTTOM -> PointerInput.cursorShape = CursorShape.RESIZE_NWSE
-            RESIZE_EDGE_RIGHT or RESIZE_EDGE_TOP -> PointerInput.cursorShape = CursorShape.RESIZE_NESW
-            RESIZE_EDGE_LEFT or RESIZE_EDGE_BOTTOM -> PointerInput.cursorShape = CursorShape.RESIZE_NESW
+            RESIZE_EDGE_LEFT or RESIZE_EDGE_TOP -> PointerInput.cursorShape = CursorShape.RESIZE_NW
+            RESIZE_EDGE_RIGHT or RESIZE_EDGE_BOTTOM -> PointerInput.cursorShape = CursorShape.RESIZE_SE
+            RESIZE_EDGE_RIGHT or RESIZE_EDGE_TOP -> PointerInput.cursorShape = CursorShape.RESIZE_NE
+            RESIZE_EDGE_LEFT or RESIZE_EDGE_BOTTOM -> PointerInput.cursorShape = CursorShape.RESIZE_SW
         }
     }
 

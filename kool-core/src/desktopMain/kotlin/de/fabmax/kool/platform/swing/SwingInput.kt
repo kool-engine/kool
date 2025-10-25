@@ -1,10 +1,14 @@
 package de.fabmax.kool.platform.swing
 
 import de.fabmax.kool.input.*
+import java.awt.Cursor
+import java.awt.Point
+import java.awt.Toolkit
 import java.awt.event.KeyAdapter
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.event.MouseMotionAdapter
+import java.awt.image.BufferedImage
 
 private typealias KoolKeyEvent = KeyEvent
 private typealias AwtKeyEvent = java.awt.event.KeyEvent
@@ -12,9 +16,8 @@ private typealias AwtKeyEvent = java.awt.event.KeyEvent
 internal class SwingInput(private val canvasWrapper: CanvasWrapper) : PlatformInput {
     private val scale: Float get() = canvasWrapper.parentScreenScale
 
-    override fun setCursorMode(cursorMode: CursorMode) { }
-
-    override fun applyCursorShape(cursorShape: CursorShape) { }
+    private val blankCursor: Cursor
+    private var isLockedCursor = false
 
     init {
         canvasWrapper.canvas.addMouseListener(object : MouseAdapter() {
@@ -67,6 +70,36 @@ internal class SwingInput(private val canvasWrapper: CanvasWrapper) : PlatformIn
                 }
             }
         })
+
+        val blankCursorImg = BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB)
+        blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(blankCursorImg, Point(0, 0), "blank cursor")
+    }
+
+    override fun setCursorMode(cursorMode: CursorMode) {
+        isLockedCursor = cursorMode == CursorMode.LOCKED
+    }
+
+    override fun applyCursorShape(cursorShape: CursorShape) {
+        if (isLockedCursor && canvasWrapper.flags.isFocused) {
+            canvasWrapper.canvas.cursor = blankCursor
+            return
+        }
+        canvasWrapper.canvas.cursor = when (cursorShape) {
+            CursorShape.DEFAULT -> Cursor.getDefaultCursor()
+            CursorShape.CROSSHAIR -> Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR)
+            CursorShape.HAND -> Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+            CursorShape.TEXT -> Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR)
+            CursorShape.NOT_ALLOWED -> Cursor.getDefaultCursor()
+            CursorShape.RESIZE_E -> Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR)
+            CursorShape.RESIZE_W -> Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR)
+            CursorShape.RESIZE_N -> Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR)
+            CursorShape.RESIZE_S -> Cursor.getPredefinedCursor(Cursor.S_RESIZE_CURSOR)
+            CursorShape.RESIZE_NW -> Cursor.getPredefinedCursor(Cursor.NW_RESIZE_CURSOR)
+            CursorShape.RESIZE_SE -> Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR)
+            CursorShape.RESIZE_NE -> Cursor.getPredefinedCursor(Cursor.NE_RESIZE_CURSOR)
+            CursorShape.RESIZE_SW -> Cursor.getPredefinedCursor(Cursor.SW_RESIZE_CURSOR)
+            CursorShape.MOVE -> Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR)
+        }
     }
 
     private fun AwtKeyEvent.toKoolKeyEvent(event: Int): KoolKeyEvent {
