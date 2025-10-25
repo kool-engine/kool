@@ -41,7 +41,7 @@ object MsdfFontGenerator {
      *
      * @param inputTtfPath path to the TrueType font.
      * @param fontName human-readable name of the font.
-     * @param chars string containing all characters that should be included in the font.
+     * @param glyphsToGenerate collection of Unicode characters that should be included in the font.
      * @param msdfGenSize size of a MSDF glyph in the generated atlas. This is more or less independent of the later
      *        used font size. The default value should be fine for most cases.
      * @param pxRange distance field range in pixels.
@@ -52,14 +52,14 @@ object MsdfFontGenerator {
     suspend fun loadMsdfFont(
         inputTtfPath: String,
         fontName: String,
-        chars: String,
+        glyphsToGenerate: GeneratorGlyphSet = GeneratorGlyphSet.ALL_BASIC,
         msdfGenSize: Int = 36,
         pxRange: Double = 8.0,
         atlasDim: Int = 512,
         type: MsdfType = MsdfType.MTSDF,
     ): MsdfFont = withContext(Dispatchers.IO) {
         val ttfData = Path(inputTtfPath).readBytes().toBuffer()
-        val (meta, pixels) = generateMsdf(ttfData, fontName, chars, msdfGenSize, pxRange, atlasDim, type)
+        val (meta, pixels) = generateMsdf(ttfData, fontName, glyphsToGenerate, msdfGenSize, pxRange, atlasDim, type)
         val map = Texture2d(pixels, MipMapping.Off, name = fontName)
         val fontData = MsdfFontData(map, meta)
         MsdfFont(fontData)
@@ -73,7 +73,7 @@ object MsdfFontGenerator {
      * @param inputTtfPath path to the TrueType font file.
      * @param outputMsdfPath path to the directory where the generated MSDF data should be saved.
      * @param fontName human-readable name of the font.
-     * @param chars string containing all characters that should be included in the font.
+     * @param glyphsToGenerate collection of Unicode characters that should be included in the font.
      * @param msdfGenSize size of a MSDF glyph in the generated atlas. This is more or less independent of the later
      *        used font size. The default value should be fine for most cases.
      * @param pxRange distance field range in pixels.
@@ -85,7 +85,7 @@ object MsdfFontGenerator {
         inputTtfPath: String,
         outputMsdfPath: String,
         fontName: String,
-        chars: String,
+        glyphsToGenerate: GeneratorGlyphSet = GeneratorGlyphSet.ALL_BASIC,
         msdfGenSize: Int = 36,
         pxRange: Double = 8.0,
         atlasDim: Int = 512,
@@ -93,7 +93,7 @@ object MsdfFontGenerator {
     ) {
         withContext(Dispatchers.IO) {
             val ttfData = Path(inputTtfPath).readBytes().toBuffer()
-            val (meta, pixels) = generateMsdf(ttfData, fontName, chars, msdfGenSize, pxRange, atlasDim, type)
+            val (meta, pixels) = generateMsdf(ttfData, fontName, glyphsToGenerate, msdfGenSize, pxRange, atlasDim, type)
             ImageIO.write(pixels.toBufferedImage(), "png", File("$outputMsdfPath.png"))
             Path("$outputMsdfPath.json").writeText(Json.encodeToString(meta))
         }
@@ -102,7 +102,7 @@ object MsdfFontGenerator {
     fun generateMsdf(
         ttfData: Uint8Buffer,
         fontName: String,
-        chars: String,
+        glyphsToGenerate: GeneratorGlyphSet = GeneratorGlyphSet.ALL_BASIC,
         msdfGenSize: Int = 36,
         pxRange: Double = 8.0,
         atlasDim: Int = 512,
@@ -119,10 +119,10 @@ object MsdfFontGenerator {
                 stbtt_InitFont(stbFontInfo, it).checked()
             }
             val font = fontHandle.get(0)
-
-            val shapes = chars.toSet().map { char ->
-                memStack { loadCharShape(font, char.code) }
-            }
+            val shapes = glyphsToGenerate
+                .getCodepoints { stbtt_FindGlyphIndex(stbFontInfo, it) > 0 }
+                .mapNotNull { codePoint -> memStack { loadCharShape(font, codePoint) } }
+            logI { "Generating ${shapes.size} glyphs for font $fontName..." }
 
             val bitMapSize = msdfGenSize * 2
             val padding = ceil(pxRange).toInt() / 2
@@ -144,6 +144,8 @@ object MsdfFontGenerator {
 
             msdf_ft_font_destroy(font)
             msdf_ft_deinit(fontContext)
+
+            logI { "Done generating font $fontName: ${shapes.size} glyphs, $atlasW x $atlasH pixels" }
 
             val msdfAtlasInfo = MsdfAtlasInfo(
                 type = type.stringType,
@@ -172,9 +174,13 @@ object MsdfFontGenerator {
         }
     }
 
-    private fun MemoryStack.loadCharShape(font: Long, codePoint: Int): ShapeData {
+    private fun MemoryStack.loadCharShape(font: Long, codePoint: Int): ShapeData? {
         val shapeBuffer = callocPointer(1)
-        msdf_ft_font_load_glyph(font, codePoint, MSDF_FONT_SCALING_EM_NORMALIZED, shapeBuffer).checked()
+        val glyphResult = msdf_ft_font_load_glyph(font, codePoint, MSDF_FONT_SCALING_EM_NORMALIZED, shapeBuffer)
+        if (glyphResult != MSDF_SUCCESS) {
+            logW { "Codepoint $codePoint / '${codePoint.toChar()}' not included in font" }
+            return null
+        }
         val shape = shapeBuffer.get(0)
 
         msdf_shape_normalize(shape).checked()
@@ -413,4 +419,27 @@ enum class MsdfType(val stringType: String, val nativeType: Int) {
     MSDF("msdf", MSDF_BITMAP_TYPE_MSDF),
     PSDF("psdf", MSDF_BITMAP_TYPE_PSDF),
     SDF("sdf", MSDF_BITMAP_TYPE_SDF)
+}
+
+sealed interface GeneratorGlyphSet {
+    fun getCodepoints(predicate: (Int) -> Boolean): Set<Int>
+
+    data class FromString(val str: String) : GeneratorGlyphSet {
+        override fun getCodepoints(predicate: (Int) -> Boolean): Set<Int> =
+            str.map { it.code }.filter(predicate).toSet()
+    }
+
+    data class FromRanges(val ranges: List<IntRange>) : GeneratorGlyphSet {
+        override fun getCodepoints(predicate: (Int) -> Boolean): Set<Int> = buildSet {
+            ranges.forEach { range ->
+                range.asSequence().filter(predicate).forEach { add(it) }
+            }
+        }
+    }
+
+    companion object {
+        val LATIN_SMALL = FromRanges(listOf(32..0xFF))
+        val ALL_BASIC = FromRanges(listOf(32..0xFFFF))
+        val ALL = FromRanges(listOf(32..0x10FFFF))
+    }
 }

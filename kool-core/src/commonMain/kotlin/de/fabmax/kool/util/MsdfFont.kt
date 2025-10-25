@@ -141,7 +141,7 @@ class MsdfFont(
         val DEFAULT_FONT_DATA: MsdfFontData by lazy {
             val fontInfo = KoolSystem.config.defaultFont
             val msdfMap = Texture2d(TexFormat.RGBA, MipMapping.Off, SamplerSettings(), "MsdfFont:${fontInfo.fontMeta.name}") {
-                Assets.loadImage2d("fonts/font-roboto-regular.png")
+                Assets.loadImage2d(fontInfo.texturePath)
                     .getOrDefault(SingleColorTexture.getColorTextureData(Color.BLACK))
             }
             KoolSystem.getContextOrNull()?.onShutdown += { msdfMap.release() }
