@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.modules.ui2.MutableStateValue
 import de.fabmax.kool.modules.ui2.Sizes
 import de.fabmax.kool.util.L10n
+import de.fabmax.kool.util.logI
 import de.fabmax.kool.util.logT
 
 /**
@@ -37,7 +38,14 @@ object Settings {
 
     fun loadSettings() {
         settings.forEach { it.load() }
-        L10n.selectedLanguageState.set(language.value)
+        if (L10n.hasLanguage(language.value)) {
+            logI { "Using language translations for \"${language.value}\"" }
+            L10n.selectedLanguageState.set(language.value)
+        } else {
+            logI { "No translations for current language \"${language.value}\", using default language \"${L10n.defaultLanguage}\"" }
+            language.set(L10n.defaultLanguage)
+            L10n.selectedLanguageState.set(L10n.defaultLanguage)
+        }
     }
 
     class MutableStateSettings<T>(val key: String, initValue: T, val parser: (String) -> T)

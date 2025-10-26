@@ -15,6 +15,13 @@ object L10n {
     val availableLanguages: List<LocalizedStrings>
         get() = localizations.values.toList()
 
+    fun hasLanguage(language: String): Boolean {
+        if (language in localizations) {
+            return true
+        }
+        return language.substringBefore('-') in localizations
+    }
+
     fun localizedString(key: String, language: String): String {
         val str = getStrings(language).strings[key]
         if (str != null) {
@@ -39,7 +46,7 @@ object L10n {
             return strings
         }
         if (warningKeys.add(language)) {
-            logE { "Missing localized strings for language: \"$language\", falling back to default language \"$defaultLanguage\"" }
+            logE { "No localization for language: \"$language\", falling back to default language \"$defaultLanguage\"" }
         }
         return checkNotNull(localizations[defaultLanguage]) {
             "No string values for default language \"$defaultLanguage\" registered"
