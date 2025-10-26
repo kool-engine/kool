@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 /**
  * Multi-channel Signed Distance Field based font. Provides good-looking text for pretty much arbitrary font sizes from a
@@ -171,7 +172,8 @@ suspend fun MsdfFont(fontInfo: MsdfFontInfo): Result<MsdfFont> {
 data class MsdfFontInfo(val fontMeta: MsdfMeta, val texturePath: String)
 
 class MsdfFontData(val map: Texture2d, val meta: MsdfMeta) {
-    val glyphMap = meta.glyphs.associateBy { it.unicode.toChar() }
+    val glyphs = meta.glyphs.ifEmpty { meta.compactGlyphs.map { it.toMsdfGlyph() } }
+    val glyphMap = glyphs.associateBy { it.unicode.toChar() }
     val kerning = meta.kerning.associate { (it.unicode1 shl 16) or it.unicode2 to it.advance }
 
     val maxWidthDigit: MsdfGlyph? = ('0' ..'9').mapNotNull { glyphMap[it] }.maxByOrNull { it.advance }
@@ -182,8 +184,9 @@ data class MsdfMeta(
     val atlas: MsdfAtlasInfo,
     val name: String,
     val metrics: MsdfMetrics,
-    val glyphs: List<MsdfGlyph>,
-    val kerning: List<MsdfKerning>
+    val glyphs: List<MsdfGlyph> = emptyList(),
+    val compactGlyphs: List<MsdfCompactGlyph> = emptyList(),
+    val kerning: List<MsdfKerning> = emptyList()
 )
 
 @Serializable
@@ -214,6 +217,38 @@ data class MsdfGlyph(
     val atlasBounds: MsdfRect = MsdfRect(0f, 0f, 0f, 0f),
 ) {
     fun isEmpty(): Boolean = planeBounds.left == planeBounds.right
+}
+
+@Serializable
+data class MsdfCompactGlyph(
+    val cd: Int,
+    val adv: Float,
+    val pB: List<Int>,
+    val aB: List<Int>,
+) {
+    fun toMsdfGlyph(): MsdfGlyph {
+        return MsdfGlyph(
+            unicode = cd,
+            advance = adv,
+            planeBounds = MsdfRect(
+                pB[0] / 10000f, pB[1] / 10000f, pB[2] / 10000f, pB[3] / 10000f
+            ),
+            atlasBounds = MsdfRect(
+                aB[0] + 0.5f, aB[1] + 0.5f, aB[2] + 0.5f, aB[3] + 0.5f
+            )
+        )
+    }
+
+    companion object {
+        fun fromMsdfGlyph(g: MsdfGlyph): MsdfCompactGlyph {
+            return MsdfCompactGlyph(
+                cd = g.unicode,
+                adv = g.advance,
+                pB = listOf((g.planeBounds.left * 10000).roundToInt(), (g.planeBounds.bottom * 10000).roundToInt(), (g.planeBounds.right * 10000).roundToInt(), (g.planeBounds.top * 10000).roundToInt()),
+                aB = listOf(g.atlasBounds.left.toInt(), g.atlasBounds.bottom.toInt(), g.atlasBounds.right.toInt(), g.atlasBounds.top.toInt())
+            )
+        }
+    }
 }
 
 @Serializable

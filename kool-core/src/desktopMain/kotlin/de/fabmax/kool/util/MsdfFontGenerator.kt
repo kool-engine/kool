@@ -94,8 +94,12 @@ object MsdfFontGenerator {
         withContext(Dispatchers.IO) {
             val ttfData = Path(inputTtfPath).readBytes().toBuffer()
             val (meta, pixels) = generateMsdf(ttfData, fontName, glyphsToGenerate, msdfGenSize, pxRange, atlasDim, type)
+            val compactMeta = meta.copy(
+                glyphs = emptyList(),
+                compactGlyphs = meta.glyphs.map { MsdfCompactGlyph.fromMsdfGlyph(it) },
+            )
             ImageIO.write(pixels.toBufferedImage(), "png", File("$outputMsdfPath.png"))
-            Path("$outputMsdfPath.json").writeText(Json.encodeToString(meta))
+            Path("$outputMsdfPath.json").writeText(Json.encodeToString(compactMeta))
         }
     }
 
