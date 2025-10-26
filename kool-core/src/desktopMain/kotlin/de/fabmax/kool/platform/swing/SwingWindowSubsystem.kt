@@ -158,6 +158,7 @@ class SwingWindowSubsystem(
                         closeSignal.complete(Unit)
                     }
                     else -> {
+                        canvasWrapper?.pollEvents()
                         canvas.render()
                         SwingUtilities.invokeLater(this)
                     }

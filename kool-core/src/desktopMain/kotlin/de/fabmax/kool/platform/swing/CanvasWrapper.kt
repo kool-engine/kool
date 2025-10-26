@@ -1,6 +1,7 @@
 package de.fabmax.kool.platform.swing
 
 import de.fabmax.kool.*
+import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ui2.UiScale
@@ -35,7 +36,7 @@ internal class CanvasWrapper(val canvas: Canvas) : KoolWindowJvm {
 
     override var isMouseOverWindow: Boolean = false; internal set
 
-    override val parentScreenScale: Float = canvasScale.x
+    override val parentScreenScale: Float get() = canvasScale.x
     override var positionInScreen: Vec2i = Vec2i.ZERO
         set(_) {}
 
@@ -72,10 +73,12 @@ internal class CanvasWrapper(val canvas: Canvas) : KoolWindowJvm {
 
     override var windowTitleHoverHandler: WindowTitleHoverHandler = WindowTitleHoverHandler()
 
+    private val prevCanvasScale = MutableVec2f(canvasScale)
+
     init {
         canvas.addComponentListener(object : ComponentAdapter() {
             override fun componentResized(e: ComponentEvent) {
-                resizeListeners.updated().forEach { it.onResize(canvasSize) }
+                handleResize()
             }
             override fun componentShown(e: ComponentEvent) { flags = flags.copy(isVisible = true) }
             override fun componentHidden(e: ComponentEvent) { flags = flags.copy(isVisible = false) }
@@ -91,7 +94,17 @@ internal class CanvasWrapper(val canvas: Canvas) : KoolWindowJvm {
         UiScale.updateUiScaleFromWindowScale(renderScale)
     }
 
-    override fun pollEvents() { }
+    private fun handleResize() {
+        UiScale.updateUiScaleFromWindowScale(renderScale)
+        resizeListeners.updated().forEach { it.onResize(canvasSize) }
+    }
+
+    override fun pollEvents() {
+        if (prevCanvasScale != canvasScale) {
+            prevCanvasScale.set(canvasScale)
+            handleResize()
+        }
+    }
 
     override fun createVulkanSurface(instance: VkInstance): Long {
         return AWTVK.create(canvas, instance)
