@@ -1,6 +1,7 @@
 package de.fabmax.kool.demo.uidemo
 
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.util.l
 import kotlin.reflect.KClass
 
 class LauncherWindow(uiDemo: UiDemo) : DemoWindow("Window Launcher", uiDemo, false) {
@@ -12,38 +13,38 @@ class LauncherWindow(uiDemo: UiDemo) : DemoWindow("Window Launcher", uiDemo, fal
     override fun UiScope.windowContent() = Column(Grow.Std) {
         var allowMultiInstances by remember(false)
 
-        Button("UI Basics") {
-            launcherButtonStyle("Example window with a few basic UI components")
+        Button("UI Basics".l) {
+            launcherButtonStyle("Example window with a few basic UI components".l)
             modifier.onClick {
                 launchOrBringToTop(allowMultiInstances, BasicUiWindow::class) { BasicUiWindow(uiDemo) }
             }
         }
-        Button("Text Style") {
-            launcherButtonStyle("Signed-distance-field font rendering showcase")
+        Button("Text Style".l) {
+            launcherButtonStyle("Signed-distance-field font rendering showcase".l)
             modifier.onClick {
                 launchOrBringToTop(allowMultiInstances, TextStyleWindow::class) { TextStyleWindow(uiDemo) }
             }
         }
-        Button("Text Area") {
-            launcherButtonStyle("Editable text area with many different text styles")
+        Button("Text Area".l) {
+            launcherButtonStyle("Editable text area with many different text styles".l)
             modifier.onClick {
                 launchOrBringToTop(allowMultiInstances, TextAreaWindow::class) { TextAreaWindow(uiDemo) }
             }
         }
-        Button("Conway's Game of Life") {
-            launcherButtonStyle("Game of Life simulation / toggle-button benchmark")
+        Button("Conway's Game of Life".l) {
+            launcherButtonStyle("Game of Life simulation / toggle-button benchmark".l)
             modifier.onClick {
                 launchOrBringToTop(allowMultiInstances, GameOfLifeWindow::class) { GameOfLifeWindow(uiDemo) }
             }
         }
-        Button("Theme Editor") {
-            launcherButtonStyle("UI color theme editor")
+        Button("Theme Editor".l) {
+            launcherButtonStyle("UI color theme editor".l)
             modifier.onClick {
                 launchOrBringToTop(false, ThemeEditorWindow::class) { ThemeEditorWindow(uiDemo) }
             }
         }
-        Button("Drag and Drop") {
-            launcherButtonStyle("Two windows with drag & droppable items")
+        Button("Drag and Drop".l) {
+            launcherButtonStyle("Two windows with drag & droppable items".l)
             modifier.onClick {
                 launchOrBringToTop(allowMultiInstances, DragAndDropWindow.A::class) { DragAndDropWindow.A(uiDemo) }
                 launchOrBringToTop(allowMultiInstances, DragAndDropWindow.B::class) { DragAndDropWindow.B(uiDemo) }
@@ -52,7 +53,7 @@ class LauncherWindow(uiDemo: UiDemo) : DemoWindow("Window Launcher", uiDemo, fal
         Row(Grow.Std) {
             modifier
                 .margin(sizes.largeGap)
-            Text("Multiple instances") {
+            Text("Multiple instances".l) {
                 modifier
                     .width(Grow.Std)
                     .alignY(AlignmentY.Center)

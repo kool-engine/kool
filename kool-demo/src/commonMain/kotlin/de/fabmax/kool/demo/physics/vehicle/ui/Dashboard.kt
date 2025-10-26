@@ -4,6 +4,7 @@ import de.fabmax.kool.demo.UiSizes
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.l
 import kotlin.math.round
 import kotlin.math.roundToInt
 
@@ -108,7 +109,7 @@ class Dashboard : Composable {
                 .width(UiSizes.baseSize * 1.5f)
                 .margin(bottom = sizes.largeGap)
                 .alignY(AlignmentY.Bottom)
-            Text("Gear") {
+            Text("Gear".l) {
                 modifier
                     .baselineMargin(0.dp)
                     .padding(start = sizes.smallGap * 2f)

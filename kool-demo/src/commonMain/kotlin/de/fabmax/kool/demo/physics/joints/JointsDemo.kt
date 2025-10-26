@@ -20,10 +20,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.toString
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ColorGradient
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.SimpleShadowMap
+import de.fabmax.kool.util.*
 import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.max
@@ -195,23 +192,23 @@ class JointsDemo : DemoScene("Physics - Joints") {
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
-        MenuSlider2("Number of links", numLinks.use() / 2f, 10f, 50f, { "${it.roundToInt() * 2}" }) {
+        MenuSlider2("Number of links".l, numLinks.use() / 2f, 10f, 50f, { "${it.roundToInt() * 2}" }) {
             val links = it.roundToInt() * 2
             if (links != numLinks.value) {
                 numLinks.set(links)
                 resetPhysics = true
             }
         }
-        MenuSlider2("Motor strength", motorStrength.use(), 0f, 100f, { "${it.toInt()}" }) {
+        MenuSlider2("Motor strength".l, motorStrength.use(), 0f, 100f, { "${it.toInt()}" }) {
             motorStrength.set(it)
             updateMotor()
         }
-        MenuSlider2("Motor speed", motorSpeed.use(), 0f, 10f, { it.toString(1) }) {
+        MenuSlider2("Motor speed".l, motorSpeed.use(), 0f, 10f, { it.toString(1) }) {
             motorSpeed.set(it)
             updateMotor()
         }
         MenuRow {
-            Text("Reverse motor") {
+            Text("Reverse motor".l) {
                 labelStyle(Grow.Std)
                 modifier.onClick {
                     motorDirection.set(-motorDirection.value)
@@ -228,7 +225,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
             }
         }
 
-        Text("Visualization") { sectionTitleStyle() }
+        Text("Visualization".l) { sectionTitleStyle() }
         MenuRow {
             RadioButton(drawNiceMeshes.use()) {
                 modifier
@@ -240,7 +237,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
                         }
                     }
             }
-            Text("Draw nice meshes") {
+            Text("Draw nice meshes".l) {
                 labelStyle(Grow.Std)
                 modifier.onClick { drawNiceMeshes() }
             }
@@ -256,28 +253,28 @@ class JointsDemo : DemoScene("Physics - Joints") {
                         }
                     }
             }
-            Text("Draw physics meshes") {
+            Text("Draw physics meshes".l) {
                 labelStyle(Grow.Std)
                 modifier.onClick { drawPhysMeshes() }
             }
         }
-        LabeledSwitch("Draw joint infos", drawJointInfos)
+        LabeledSwitch("Draw joint infos".l, drawJointInfos)
 
-        Text("Statistics") { sectionTitleStyle() }
+        Text("Statistics".l) { sectionTitleStyle() }
         MenuRow {
-            Text("Number of joints") { labelStyle(Grow.Std) }
+            Text("Number of joints".l) { labelStyle(Grow.Std) }
             Text(numJointsTxt.use()) { labelStyle() }
         }
         MenuRow {
-            Text("Number of bodies") { labelStyle(Grow.Std) }
+            Text("Number of bodies".l) { labelStyle(Grow.Std) }
             Text(numBodiesTxt.use()) { labelStyle() }
         }
         MenuRow {
-            Text("Physics step CPU time") { labelStyle(Grow.Std) }
+            Text("Physics step CPU time".l) { labelStyle(Grow.Std) }
             Text(physicsTimeTxt.use()) { labelStyle() }
         }
         MenuRow {
-            Text("Time factor") { labelStyle(Grow.Std) }
+            Text("Time factor".l) { labelStyle(Grow.Std) }
             Text(timeFactorTxt.use()) { labelStyle() }
         }
     }

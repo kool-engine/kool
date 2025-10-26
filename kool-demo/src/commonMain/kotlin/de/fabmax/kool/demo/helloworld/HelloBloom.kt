@@ -23,6 +23,7 @@ import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.l
 import kotlin.math.sqrt
 import kotlin.time.Duration.Companion.seconds
 
@@ -145,18 +146,18 @@ class HelloBloom : DemoScene("Bloom") {
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
-        MenuSlider2("Box brightness", cubeBrightness.use(), 0.1f, sqrt(50f), txtFormat = { (it*it).toString(2) }) { cubeBrightness.set(it) }
-        LabeledSwitch("Skybox", isSkyboxEnabled)
+        MenuSlider2("Box brightness".l, cubeBrightness.use(), 0.1f, sqrt(50f), txtFormat = { (it*it).toString(2) }) { cubeBrightness.set(it) }
+        LabeledSwitch("Skybox".l, isSkyboxEnabled)
 
-        Text("Bloom Settings") { sectionTitleStyle() }
+        Text("Bloom Settings".l) { sectionTitleStyle() }
 
-        LabeledSwitch("Enabled", isBloomEnabled)
-        MenuSlider2("Strength", bloomStrength.use(), 0.01f, 4f) { bloomStrength.set(it) }
-        MenuSlider2("Radius", bloomRadius.use(), 0.1f, 10f) { bloomRadius.set(it) }
-        MenuSlider2("Threshold", bloomThreshold.use(), 0f, 10f) { bloomThreshold.set(it) }
+        LabeledSwitch("Enabled".l, isBloomEnabled)
+        MenuSlider2("Strength".l, bloomStrength.use(), 0.01f, 4f) { bloomStrength.set(it) }
+        MenuSlider2("Radius".l, bloomRadius.use(), 0.1f, 10f) { bloomRadius.set(it) }
+        MenuSlider2("Threshold".l, bloomThreshold.use(), 0f, 10f) { bloomThreshold.set(it) }
         MenuRow {
             val lumi = bloomLuminance.use()
-            Text("Luminance weights:") { labelStyle(Grow.Std) }
+            Text("Luminance weights".l) { labelStyle(Grow.Std) }
             Text("${lumi.x.toString(2)}, ${lumi.y.toString(2)}, ${lumi.z.toString(2)}") { labelStyle() }
         }
         MenuRow(vGap = 4.dp) {
@@ -194,7 +195,7 @@ class HelloBloom : DemoScene("Bloom") {
         }
 
         MenuRow {
-            Text("Bloom pass:") { labelStyle(Grow.Std) }
+            Text("Bloom pass".l) { labelStyle(Grow.Std) }
             Text("${(bloomGpuTime.use().inWholeMicroseconds / 1000.0).toString(3)} ms") { labelStyle() }
         }
     }

@@ -172,10 +172,10 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
-        MenuSlider2("Number of ragdolls", numRagdolls.use().toFloat(), 1f, 100f, { "${it.roundToInt()}" }) {
+        MenuSlider2("Number of ragdolls".l, numRagdolls.use().toFloat(), 1f, 100f, { "${it.roundToInt()}" }) {
             numRagdolls.set(it.roundToInt())
         }
-        Button("Respawn") {
+        Button("Respawn".l) {
             modifier
                 .alignX(AlignmentX.Center)
                 .width(Grow.Std)
@@ -183,24 +183,24 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
                 .onClick { spawnDolls() }
         }
 
-        Text("Statistics") { sectionTitleStyle() }
+        Text("Statistics".l) { sectionTitleStyle() }
         MenuRow {
-            Text("Physics step CPU time") { labelStyle(Grow.Std) }
+            Text("Physics step CPU time".l) { labelStyle(Grow.Std) }
             Text(physicsTimeTxt.use()) { labelStyle() }
         }
         MenuRow {
-            Text("Time factor") { labelStyle(Grow.Std) }
+            Text("Time factor".l) { labelStyle(Grow.Std) }
             Text(timeFactorTxt.use()) { labelStyle() }
         }
 
-        Text("Controls") { sectionTitleStyle() }
+        Text("Controls".l) { sectionTitleStyle() }
         MenuRow {
-            Text("[Space]") { labelStyle(Grow.Std) }
-            Text("invert gravity") { labelStyle() }
+            Text("[Space]".l) { labelStyle(Grow.Std) }
+            Text("invert gravity".l) { labelStyle() }
         }
         MenuRow {
-            Text("[Middle mouse drag]") { labelStyle(Grow.Std) }
-            Text("grab ragdolls") { labelStyle() }
+            Text("[Middle mouse drag]".l) { labelStyle(Grow.Std) }
+            Text("grab ragdolls".l) { labelStyle() }
         }
     }
 

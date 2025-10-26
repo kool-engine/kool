@@ -19,6 +19,7 @@ import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.l
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -95,7 +96,7 @@ class BeeDemo : DemoScene("Fighting Bees") {
         // There are two teams -> total number of bees is beesPerTeam * 2
         val maxBees = if (isGpuSimulation.use()) BeeConfig.maxBeesPerTeamGpu else BeeConfig.maxBeesPerTeamCpu
         MenuSlider2(
-            "Number of bees",
+            "Number of bees".l,
             BeeConfig.beesPerTeam.use().toFloat(),
             10f,
             maxBees.toFloat(),
@@ -105,11 +106,11 @@ class BeeDemo : DemoScene("Fighting Bees") {
         }
 
         if (KoolSystem.features.computeShaders) {
-            LabeledSwitch("GPU simulation", isGpuSimulation)
+            LabeledSwitch("GPU simulation".l, isGpuSimulation)
         }
 
         MenuRow {
-            Text("Bee simulation time:") { labelStyle(Grow.Std) }
+            Text("Bee simulation time:".l) { labelStyle(Grow.Std) }
             val t = if (isGpuSimulation.use()) {
                 gpuBees.beeUpdateTime.use()
             } else {
@@ -118,18 +119,18 @@ class BeeDemo : DemoScene("Fighting Bees") {
             Text("${t.toString(2)} ms") { labelStyle() }
         }
 
-        Text("Bee Movement") { sectionTitleStyle() }
+        Text("Bee Movement".l) { sectionTitleStyle() }
 
-        MenuSlider2("Team attraction", BeeConfig.teamAttraction.use(), 0f, 50f, { it.toInt().toString() }) {
+        MenuSlider2("Team attraction".l, BeeConfig.teamAttraction.use(), 0f, 50f, { it.toInt().toString() }) {
             BeeConfig.teamAttraction.set(it)
         }
-        MenuSlider2("Team repulsion", BeeConfig.teamRepulsion.use(), 0f, 50f, { it.toInt().toString() }) {
+        MenuSlider2("Team repulsion".l, BeeConfig.teamRepulsion.use(), 0f, 50f, { it.toInt().toString() }) {
             BeeConfig.teamRepulsion.set(it)
         }
-        MenuSlider2("Jitter", BeeConfig.speedJitter.use(), 0f, 500f, { it.toInt().toString() }) {
+        MenuSlider2("Jitter".l, BeeConfig.speedJitter.use(), 0f, 500f, { it.toInt().toString() }) {
             BeeConfig.speedJitter.set(it)
         }
-        MenuSlider2("Chase force", BeeConfig.chaseForce.use(), 0f, 50f, { it.toInt().toString() }) {
+        MenuSlider2("Chase force".l, BeeConfig.chaseForce.use(), 0f, 50f, { it.toInt().toString() }) {
             BeeConfig.chaseForce.set(it)
         }
     }

@@ -360,24 +360,24 @@ class CollisionDemo : DemoScene("Physics - Collision") {
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
         MenuRow {
-            Text("Body shape") { labelStyle() }
+            Text("Body shape".l) { labelStyle() }
             ComboBox {
                 modifier
                     .width(Grow.Std)
                     .margin(start = sizes.largeGap)
-                    .items(shapeTypes)
+                    .items(shapeTypes.map { it.label.l })
                     .selectedIndex(selectedShapeType.use())
                     .onItemSelected { selectedShapeType.set(it) }
             }
         }
 
-        MenuSlider2("Number of Bodies", numSpawnBodies.use().toFloat(), 50f, 2000f, { "${it.roundToInt()}" }) {
+        MenuSlider2("Number of Bodies".l, numSpawnBodies.use().toFloat(), 50f, 2000f, { "${it.roundToInt()}" }) {
             numSpawnBodies.set(it.roundToInt())
         }
-        MenuSlider2("Friction", friction.use(), 0f, 2f) { friction.set(it) }
-        MenuSlider2("Restitution", restitution.use(), 0f, 1f) { restitution.set(it) }
+        MenuSlider2("Friction".l, friction.use(), 0f, 2f) { friction.set(it) }
+        MenuSlider2("Restitution".l, restitution.use(), 0f, 1f) { restitution.set(it) }
 
-        Button("Apply settings") {
+        Button("Apply settings".l) {
             modifier
                 .alignX(AlignmentX.Center)
                 .width(Grow.Std)
@@ -385,18 +385,18 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                 .onClick { resetPhysics() }
         }
 
-        Text("Statistics") { sectionTitleStyle() }
-        LabeledSwitch("Show body state", drawBodyState)
+        Text("Statistics".l) { sectionTitleStyle() }
+        LabeledSwitch("Show body state".l, drawBodyState)
         MenuRow {
-            Text("Active actors") { labelStyle(Grow.Std) }
+            Text("Active actors".l) { labelStyle(Grow.Std) }
             Text(activeActorsTxt.use()) { labelStyle() }
         }
         MenuRow {
-            Text("Physics step CPU time") { labelStyle(Grow.Std) }
+            Text("Physics step CPU time".l) { labelStyle(Grow.Std) }
             Text(physicsTimeTxt.use()) { labelStyle() }
         }
         MenuRow {
-            Text("Time factor") { labelStyle(Grow.Std) }
+            Text("Time factor".l) { labelStyle(Grow.Std) }
             Text(timeFactorTxt.use()) { labelStyle() }
         }
     }

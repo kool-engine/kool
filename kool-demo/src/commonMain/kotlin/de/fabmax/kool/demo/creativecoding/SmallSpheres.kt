@@ -12,10 +12,7 @@ import de.fabmax.kool.scene.InstanceLayouts
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.VertexLayouts
-import de.fabmax.kool.util.ColorGradient
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.MemoryLayout
-import de.fabmax.kool.util.Struct
+import de.fabmax.kool.util.*
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.roundToInt
@@ -88,23 +85,23 @@ class SmallSpheres(val resources: CreativeCodingDemo.Resources) : CreativeConten
         var waviness by remember(settings.waviness)
         var randomness by remember(settings.randomness)
 
-        MenuSlider2("Number of spheres:", numSpheres.toFloat(), 1000f, 8000f, CreativeCodingDemo.txtFormatInt) {
+        MenuSlider2("Number of spheres:".l, numSpheres.toFloat(), 1000f, 8000f, CreativeCodingDemo.txtFormatInt) {
             numSpheres = it.roundToInt()
             rebuildInstances(settings.copy(numSpheres = numSpheres))
         }
-        MenuSlider2("Inner radius:", innerRadius, 0f, 200f, CreativeCodingDemo.txtFormatInt) {
+        MenuSlider2("Inner radius:".l, innerRadius, 0f, 200f, CreativeCodingDemo.txtFormatInt) {
             innerRadius = it
             rebuildInstances(settings.copy(innerRadius = innerRadius))
         }
-        MenuSlider2("Sphere size:", sphereSize, 0.1f, 5f) {
+        MenuSlider2("Sphere size:".l, sphereSize, 0.1f, 5f) {
             sphereSize = it
             rebuildInstances(settings.copy(sphereSize = sphereSize))
         }
-        MenuSlider2("Waviness:", waviness, 0f, 20f) {
+        MenuSlider2("Waviness:".l, waviness, 0f, 20f) {
             waviness = it
             rebuildInstances(settings.copy(waviness = waviness))
         }
-        MenuSlider2("Randomness:", randomness, 0f, 1f) {
+        MenuSlider2("Randomness:".l, randomness, 0f, 1f) {
             randomness = it
             rebuildInstances(settings.copy(randomness = randomness))
         }

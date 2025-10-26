@@ -6,6 +6,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.l
 import kotlin.math.min
 
 class GameOfLifeWindow(uiDemo: UiDemo) : DemoWindow("Conway`s Game of Life", uiDemo) {
@@ -84,12 +85,12 @@ class GameOfLifeWindow(uiDemo: UiDemo) : DemoWindow("Conway`s Game of Life", uiD
         abstract fun UiScope.content()
     }
 
-    private inner class WorldPanel : CollapsablePanel("World") {
+    private inner class WorldPanel : CollapsablePanel("World".l()) {
         override fun UiScope.content() {
             Row {
                 modifier.padding(horizontal = sizes.gap, vertical = sizes.smallGap)
-                Text("Content") { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
-                Button("Clear world") {
+                Text("Content".l) { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
+                Button("Clear world".l) {
                     modifier
                         .width(sizes.largeGap * 7f)
                         .margin(horizontal = sizes.gap)
@@ -98,7 +99,7 @@ class GameOfLifeWindow(uiDemo: UiDemo) : DemoWindow("Conway`s Game of Life", uiD
                             surface.triggerUpdate()
                         }
                 }
-                Button("Load glider gun") {
+                Button("Load glider gun".l) {
                     modifier
                         .width(sizes.largeGap * 7f)
                         .margin(horizontal = sizes.gap)
@@ -107,7 +108,7 @@ class GameOfLifeWindow(uiDemo: UiDemo) : DemoWindow("Conway`s Game of Life", uiD
                             surface.triggerUpdate()
                         }
                 }
-                Button("Randomize") {
+                Button("Randomize".l) {
                     modifier
                         .width(sizes.largeGap * 7f)
                         .margin(horizontal = sizes.gap)
@@ -119,8 +120,8 @@ class GameOfLifeWindow(uiDemo: UiDemo) : DemoWindow("Conway`s Game of Life", uiD
             }
             Row {
                 modifier.padding(horizontal = sizes.gap, vertical = sizes.smallGap)
-                Text("Size") { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
-                Text("Width:") { modifier.alignY(AlignmentY.Center).margin(horizontal = sizes.gap) }
+                Text("Size".l) { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
+                Text("Width:".l) { modifier.alignY(AlignmentY.Center).margin(horizontal = sizes.gap) }
                 Slider(world.worldSizeX.use().toFloat(), 10f, 100f) {
                     modifier
                         .alignY(AlignmentY.Center)
@@ -129,7 +130,7 @@ class GameOfLifeWindow(uiDemo: UiDemo) : DemoWindow("Conway`s Game of Life", uiD
                         .onChange { world.worldSizeX.set(it.toInt()) }
                 }
                 Text("${world.worldSizeX.value}") { modifier.alignY(AlignmentY.Center).margin(end = sizes.largeGap * 2f) }
-                Text("Height:") { modifier.alignY(AlignmentY.Center) }
+                Text("Height:".l) { modifier.alignY(AlignmentY.Center) }
                 Slider(world.worldSizeY.use().toFloat(), 10f, 100f) {
                     modifier
                         .alignY(AlignmentY.Center)
@@ -141,7 +142,7 @@ class GameOfLifeWindow(uiDemo: UiDemo) : DemoWindow("Conway`s Game of Life", uiD
             }
             Row {
                 modifier.padding(horizontal = sizes.gap, vertical = sizes.smallGap)
-                Text("Connect edges") { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
+                Text("Connect edges".l) { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
                 Switch(world.connectWorldEdges.use()) {
                     modifier
                         .alignY(AlignmentY.Center)
@@ -154,37 +155,37 @@ class GameOfLifeWindow(uiDemo: UiDemo) : DemoWindow("Conway`s Game of Life", uiD
         }
     }
 
-    private inner class RenderPanel : CollapsablePanel("Visualization") {
+    private inner class RenderPanel : CollapsablePanel("Visualization".l()) {
         override fun UiScope.content() {
             Row {
                 modifier.padding(horizontal = sizes.gap, vertical = sizes.smallGap)
-                Text("Cell-renderer") { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
+                Text("Cell-renderer".l) { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
                 ComboBox {
                     modifier
                         .alignY(AlignmentY.Center)
                         .width(sizes.largeGap * 7f)
                         .margin(horizontal = sizes.gap)
-                        .items(worldRenderer.rendererChoices)
+                        .items(worldRenderer.rendererChoices.map { it.l })
                         .selectedIndex(worldRenderer.selectedRenderer.use())
                         .onItemSelected { worldRenderer.selectedRenderer.set(it) }
                 }
             }
             Row {
                 modifier.padding(horizontal = sizes.gap, vertical = sizes.smallGap)
-                Text("Colors") { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
+                Text("Colors".l) { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
                 ComboBox {
                     modifier
                         .alignY(AlignmentY.Center)
                         .width(sizes.largeGap * 7f)
                         .margin(horizontal = sizes.gap)
-                        .items(worldRenderer.colorChoices)
+                        .items(worldRenderer.colorChoices.map { it.l })
                         .selectedIndex(worldRenderer.selectedColor.use())
                         .onItemSelected { worldRenderer.selectedColor.set(it) }
                 }
             }
             Row {
                 modifier.padding(horizontal = sizes.gap, vertical = sizes.smallGap)
-                Text("Speed") { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
+                Text("Speed".l) { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
                 Slider(updateSpeed.use().toFloat(), 0f, updateSpeeds.lastIndex.toFloat()) {
                     modifier
                         .alignY(AlignmentY.Center)
@@ -198,14 +199,14 @@ class GameOfLifeWindow(uiDemo: UiDemo) : DemoWindow("Conway`s Game of Life", uiD
             }
             Row {
                 modifier.padding(horizontal = sizes.gap, vertical = sizes.smallGap)
-                Text("Pause game") { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
+                Text("Pause game".l) { modifier.alignY(AlignmentY.Center).width(sizes.largeGap * 7f) }
                 Switch(isPaused.use()) {
                     modifier
                         .alignY(AlignmentY.Center)
                         .margin(sizes.gap)
                         .onToggle { isPaused.toggle() }
                 }
-                Text("Pause on edit") { modifier.alignY(AlignmentY.Center).margin(start = sizes.largeGap * 4f, end = sizes.gap) }
+                Text("Pause on edit".l) { modifier.alignY(AlignmentY.Center).margin(start = sizes.largeGap * 4f, end = sizes.gap) }
                 Switch(isPauseOnEdit.use()) {
                     modifier
                         .alignY(AlignmentY.Center)

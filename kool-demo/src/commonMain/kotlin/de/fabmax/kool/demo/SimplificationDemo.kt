@@ -148,12 +148,12 @@ class SimplificationDemo : DemoScene("Simplification") {
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
         MenuRow {
-            Text("Model") { labelStyle() }
+            Text("Model".l) { labelStyle() }
             ComboBox {
                 modifier
                     .width(Grow.Std)
                     .margin(start = sizes.largeGap)
-                    .items(models)
+                    .items(models.map { it.name.l })
                     .selectedIndex(models.indexOf(activeModel.use()))
                     .onItemSelected {
                         activeModel.set(models[it])
@@ -162,7 +162,7 @@ class SimplificationDemo : DemoScene("Simplification") {
             }
         }
         MenuRow {
-            Text("Ratio") { labelStyle() }
+            Text("Ratio".l) { labelStyle() }
             MenuSlider(simplifcationRatio.use(), 0.01f, 1f, { "${(it * 100).toInt()} %" }) {
                 simplifcationRatio.set(it)
                 if (isAutoSimplify.value) {
@@ -170,7 +170,7 @@ class SimplificationDemo : DemoScene("Simplification") {
                 }
             }
         }
-        Button("Simplify Mesh") {
+        Button("Simplify Mesh".l) {
             modifier
                 .alignX(AlignmentX.Center)
                 .width(Grow.Std)
@@ -180,15 +180,15 @@ class SimplificationDemo : DemoScene("Simplification") {
                 }
         }
 
-        Text("Options") { sectionTitleStyle() }
-        LabeledSwitch("Auto simplify mesh", isAutoSimplify)
-        LabeledSwitch("Draw solid", isSolidVisible)
-        LabeledSwitch("Draw wireframe", isWireframeVisible)
-        LabeledSwitch("Auto rotate view", isAutoRotate)
+        Text("Settings".l) { sectionTitleStyle() }
+        LabeledSwitch("Auto simplify mesh".l, isAutoSimplify)
+        LabeledSwitch("Draw solid".l, isSolidVisible)
+        LabeledSwitch("Draw wireframe".l, isWireframeVisible)
+        LabeledSwitch("Auto rotate view".l, isAutoRotate)
 
-        Text("Statistics") { sectionTitleStyle() }
+        Text("Statistics".l) { sectionTitleStyle() }
         MenuRow {
-            Text("Faces") { labelStyle(Grow.Std) }
+            Text("Faces".l) { labelStyle(Grow.Std) }
             Text("${simplifiedNumFaces.use()}   /") {
                 labelStyle()
                 modifier.textAlignX(AlignmentX.End)
@@ -201,7 +201,7 @@ class SimplificationDemo : DemoScene("Simplification") {
             }
         }
         MenuRow {
-            Text("Vertices") { labelStyle(Grow.Std) }
+            Text("Vertices".l) { labelStyle(Grow.Std) }
             Text("${simplifiedNumVerts.use()}   /") {
                 labelStyle()
                 modifier.textAlignX(AlignmentX.End)
@@ -214,7 +214,7 @@ class SimplificationDemo : DemoScene("Simplification") {
             }
         }
         MenuRow {
-            Text("Time") { labelStyle(Grow.Std) }
+            Text("Time".l) { labelStyle(Grow.Std) }
             Text("${simplificationTime.use().toString(2)} s") { labelStyle() }
         }
 

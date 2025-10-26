@@ -158,7 +158,7 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
         MenuRow {
-            Text("Bunnies") { labelStyle() }
+            Text("Bunnies".l) { labelStyle() }
             MenuSlider(
                 nBunnies.use().toFloat(), 5f, 20f,
                 txtFormat = {
@@ -173,24 +173,24 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
                 }
             }
         }
-        LabeledSwitch("Color by LOD", isLodColors)
-        LabeledSwitch("Auto rotate view", isAutoRotate)
+        LabeledSwitch("Color by LOD".l, isLodColors)
+        LabeledSwitch("Auto rotate view".l, isAutoRotate)
 
-        Text("Statistics") { sectionTitleStyle() }
+        Text("Statistics".l) { sectionTitleStyle() }
         MenuRow {
             Box(width = Grow.Std) {  }
-            Text("# Instances") {
+            Text("# Instances".l) {
                 labelStyle(Grow.Std)
                 modifier.textAlign(AlignmentX.End)
             }
-            Text("# Faces") {
+            Text("# Faces".l) {
                 labelStyle(Grow.Std)
                 modifier.textAlign(AlignmentX.End)
             }
         }
         numInstances.use().forEachIndexed { i, numInsts ->
             MenuRow {
-                Text("LOD $i") {
+                Text("LOD $i".l) {
                     labelStyle(Grow.Std)
                     if (isLodColors.value) {
                         modifier.textColor(lods[i].color.toSrgb())

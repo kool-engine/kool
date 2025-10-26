@@ -42,7 +42,8 @@ abstract class DemoScene(val name: String, val mainScene: Scene = Scene(name)) {
     var loadingScreen: LoadingScreen? = null
         set(value) {
             field = value
-            value?.loadingText1?.set("Loading $name")
+            val loadTxt = "Loading".l()
+            value?.loadingText1?.set("$loadTxt $name")
             value?.loadingText2?.set("")
         }
 
@@ -143,7 +144,7 @@ abstract class DemoScene(val name: String, val mainScene: Scene = Scene(name)) {
             Column(Grow.Std, Grow.Std) {
                 val cornerRadius = sizes.gap
 
-                TitleBar(titleTxt, cornerRadius)
+                TitleBar(titleTxt.l, cornerRadius)
 
                 if (!isMenuMinimized.use()) {
                     ScrollArea(

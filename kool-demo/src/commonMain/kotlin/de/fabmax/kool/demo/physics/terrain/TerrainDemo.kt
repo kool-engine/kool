@@ -98,37 +98,37 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     override suspend fun loadResources(ctx: KoolContext) {
-        showLoadText("Loading height map...")
+        showLoadText("Loading height map...".l())
         val heightData = Assets.loadBlob("${DemoLoader.heightMapPath}/terrain_ocean.raw").getOrThrow()
         val heightMap = Heightmap.fromRawData(heightData, 200f, heightOffset = -50f)
         // more or less the same, but falls back to 8-bit height-resolution in javascript
         //heightMap = HeightMap.fromTextureData2d(loadTextureData2d("${Demo.heightMapPath}/terrain.png", TexFormat.R_F16), 200f)
 
-        showLoadText("Generating wind density texture...")
+        showLoadText("Generating wind density texture...".l())
         wind = Wind()
         wind.offsetStrength.w = windStrength.value
         wind.scale = windScale.value
 
-        showLoadText("Generating sky...")
+        showLoadText("Generating sky...".l())
         sky = Sky(mainScene, moonTex).apply { generateSkyMaps(this@TerrainDemo, loadingScreen!!) }
-        showLoadText("Creating terrain...")
+        showLoadText("Creating terrain...".l())
         terrain = Terrain(this@TerrainDemo, heightMap)
         terrainTiles = TerrainTiles(terrain, sky)
-        showLoadText("Creating ocean...")
+        showLoadText("Creating ocean...".l())
         ocean = Ocean(terrainTiles, mainScene.camera, wind, sky)
-        showLoadText("Creating trees...")
+        showLoadText("Creating trees...".l())
         trees = Trees(terrain, 150, wind, sky)
-        showLoadText("Creating grass (1/2, may take a bit)...")
+        showLoadText("Creating grass (1/2, may take a bit)...".l())
         grass = Grass(terrain, wind, sky)
-        showLoadText("Creating grass (2/2, may take a bit)...")
+        showLoadText("Creating grass (2/2, may take a bit)...".l())
         camLocalGrass = CamLocalGrass(mainScene.camera, terrain, wind, sky)
 
-        showLoadText("Creating physics...")
+        showLoadText("Creating physics...".l())
         physicsObjects = PhysicsObjects(mainScene, terrain, trees, ctx)
         boxMesh = if (physicsObjects.boxes.isNotEmpty()) makeBoxMesh() else null
         bridgeMesh = makeBridgeMesh()
 
-        showLoadText("Loading player model...")
+        showLoadText("Loading player model...".l())
         val playerGltf = Assets.loadGltfModel("${DemoLoader.modelPath}/player.glb").getOrThrow()
         playerModel = PlayerModel(playerGltf, physicsObjects.playerController)
 
@@ -151,7 +151,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
-        Button(if (isCursorLocked.use()) "ESC to unlock cursor" else "Lock cursor") {
+        Button(if (isCursorLocked.use()) "ESC to unlock cursor".l else "Lock cursor".l) {
             modifier
                 .alignX(AlignmentX.Center)
                 .width(Grow.Std)
@@ -162,49 +162,45 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             }
         }
         MenuRow {
-            Text("[WASD / cursor keys]") { labelStyle(Grow.Std) }
-            Text("move") { labelStyle() }
+            Text("[WASD / cursor keys]".l) { labelStyle(Grow.Std) }
+            Text("move".l) { labelStyle() }
         }
         MenuRow {
-            Text("[Shift]") { labelStyle(Grow.Std) }
-            Text("walk") { labelStyle() }
+            Text("[Shift]".l) { labelStyle(Grow.Std) }
+            Text("walk".l) { labelStyle() }
         }
         MenuRow {
-            Text("[Space]") { labelStyle(Grow.Std) }
-            Text("jump") { labelStyle() }
+            Text("[Space]".l) { labelStyle(Grow.Std) }
+            Text("jump".l) { labelStyle() }
         }
-//        toggleButton("Draw Debug Info", playerModel.isDrawShapeOutline) {
-//            playerModel.isDrawShapeOutline = isEnabled
-//            physicsObjects.debugLines.isVisible = isEnabled
-//        }
 
-        Text("Wind") { sectionTitleStyle() }
+        Text("Wind".l) { sectionTitleStyle() }
         val lblSize = UiSizes.baseSize * 1.5f
         val txtSize = UiSizes.baseSize * 1.1f
         MenuRow {
-            Text("Speed") { labelStyle(lblSize) }
+            Text("Speed".l) { labelStyle(lblSize) }
             MenuSlider(windSpeed.use(), 0.1f, 20f, txtWidth = txtSize) { windSpeed.set(it) }
         }
         MenuRow {
-            Text("Strength") { labelStyle(lblSize) }
+            Text("Strength".l) { labelStyle(lblSize) }
             MenuSlider(windStrength.use(), 0f, 2f, txtWidth = txtSize) { windStrength.set(it) }
         }
         MenuRow {
-            Text("Scale") { labelStyle(lblSize) }
+            Text("Scale".l) { labelStyle(lblSize) }
             MenuSlider(windScale.use(), 10f, 500f, txtWidth = txtSize) { windScale.set(it) }
         }
 
-        Text("Grass") { sectionTitleStyle() }
-        LabeledSwitch("Enabled", isGrassEnabled)
-        LabeledSwitch("Dense grass", isCamLocalGrassEnabled)
-        LabeledSwitch("Shadow casting", isGrassShadows)
+        Text("Grass".l) { sectionTitleStyle() }
+        LabeledSwitch("Enabled".l, isGrassEnabled)
+        LabeledSwitch("Dense grass".l, isCamLocalGrassEnabled)
+        LabeledSwitch("Shadow casting".l, isGrassShadows)
 
-        Text("Shading") { sectionTitleStyle() }
-        LabeledSwitch("Ambient occlusion", isSsao)
-        LabeledSwitch("Player PBR shading", isPlayerPbr)
-        LabeledSwitch("Ground PBR shading", isGroundPbr)
-        LabeledSwitch("Boxes PBR shading", isBoxesPbr)
-        LabeledSwitch("Vegetation PBR shading", isVegetationPbr)
+        Text("Shading".l) { sectionTitleStyle() }
+        LabeledSwitch("Ambient occlusion".l, isSsao)
+        LabeledSwitch("Player PBR shading".l, isPlayerPbr)
+        LabeledSwitch("Ground PBR shading".l, isGroundPbr)
+        LabeledSwitch("Boxes PBR shading".l, isBoxesPbr)
+        LabeledSwitch("Vegetation PBR shading".l, isVegetationPbr)
 
         // crosshair
         surface.popup().apply {

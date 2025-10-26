@@ -50,9 +50,9 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
                 map.shaderDepthOffset = if (i == 0) -0.0004f else -0.002f
             }
         }
-        showLoadText("Loading Physics")
+        showLoadText("Loading Physics".l())
 
-        showLoadText("Creating Deferred Render Pipeline")
+        showLoadText("Creating Deferred Render Pipeline".l())
         val defCfg = DeferredPipelineConfig().apply {
             maxGlobalLights = 1
             isWithAmbientOcclusion = true
@@ -79,22 +79,22 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
 
         shadows.drawNode = deferredPipeline.sceneContent
 
-        showLoadText("Creating Physics World")
+        showLoadText("Creating Physics World".l())
         val physics = PhysicsWorld(mainScene)
         vehicleWorld = VehicleWorld(mainScene, physics, deferredPipeline)
 
         vehicle = DemoVehicle(this@VehicleDemo, vehicleModel, ctx)
-        showLoadText("Loading Vehicle Audio")
+        showLoadText("Loading Vehicle Audio".l())
         vehicle.vehicleAudio.loadAudio()
 
-        showLoadText("Creating Physics World")
+        showLoadText("Creating Physics World".l())
         deferredPipeline.sceneContent.apply {
             addNode(vehicle.vehicleGroup)
 
             makeGround()
-            showLoadText("Creating Playground")
+            showLoadText("Creating Playground".l())
             Playground.makePlayground(vehicleWorld)
-            showLoadText("Creating Track")
+            showLoadText("Creating Track".l())
             makeTrack(vehicleWorld)
         }
     }

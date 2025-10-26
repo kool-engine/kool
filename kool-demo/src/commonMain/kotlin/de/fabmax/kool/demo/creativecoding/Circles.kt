@@ -8,6 +8,7 @@ import de.fabmax.kool.scene.TriangulatedLineMesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.l
 import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
@@ -91,27 +92,27 @@ class Circles : CreativeContent("Circles") {
         var numberOfTwists by remember(settings.numberOfTwists)
         var randomness by remember(settings.randomness)
 
-        MenuSlider2("Orbit radius:", orbitRadius, 50f, 200f, CreativeCodingDemo.txtFormatInt) {
+        MenuSlider2("Orbit radius:".l, orbitRadius, 50f, 200f, CreativeCodingDemo.txtFormatInt) {
             orbitRadius = it
             rebuildLines(settings.copy(orbitRadius = orbitRadius))
         }
-        MenuSlider2("Circle radius:", circleRadius, 10f, 150f, CreativeCodingDemo.txtFormatInt) {
+        MenuSlider2("Circle radius:".l, circleRadius, 10f, 150f, CreativeCodingDemo.txtFormatInt) {
             circleRadius = it
             rebuildLines(settings.copy(circleRadius = circleRadius))
         }
-        MenuSlider2("Inner circle ratio:", innerRatio, 0f, 1f) {
+        MenuSlider2("Inner circle ratio:".l, innerRatio, 0f, 1f) {
             innerRatio = it
             rebuildLines(settings.copy(innerRatio = innerRatio))
         }
-        MenuSlider2("Number of circles:", numberOfCircles.toFloat(), 20f, 500f, CreativeCodingDemo.txtFormatInt) {
+        MenuSlider2("Number of circles:".l, numberOfCircles.toFloat(), 20f, 500f, CreativeCodingDemo.txtFormatInt) {
             numberOfCircles = it.roundToInt()
             rebuildLines(settings.copy(numberOfCircles = numberOfCircles))
         }
-        MenuSlider2("Number of twists:", numberOfTwists.toFloat(), 0f, 20f, CreativeCodingDemo.txtFormatInt) {
+        MenuSlider2("Number of twists:".l, numberOfTwists.toFloat(), 0f, 20f, CreativeCodingDemo.txtFormatInt) {
             numberOfTwists = it.roundToInt()
             rebuildLines(settings.copy(numberOfTwists = numberOfTwists))
         }
-        MenuSlider2("Randomness:", randomness, 0f, 2f) {
+        MenuSlider2("Randomness:".l, randomness, 0f, 2f) {
             randomness = it
             rebuildLines(settings.copy(randomness = randomness))
         }

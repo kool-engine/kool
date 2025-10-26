@@ -293,12 +293,12 @@ class GltfDemo : DemoScene("glTF Models") {
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
         MenuRow {
-            Text("Model") { labelStyle() }
+            Text("Model".l) { labelStyle() }
             ComboBox {
                 modifier
                     .width(Grow.Std)
                     .margin(start = sizes.largeGap)
-                    .items(models)
+                    .items(models.map { it.name.l })
                     .selectedIndex(selectedModelIdx.use())
                     .onItemSelected {
                         val prevModel = currentModel
@@ -308,19 +308,19 @@ class GltfDemo : DemoScene("glTF Models") {
             }
         }
         if (currentModel.name == "Fox") {
-            MenuSlider2("Movement speed", animationSpeed.use(), 0f, 1f) { animationSpeed.set(it) }
+            MenuSlider2("Movement speed".l, animationSpeed.use(), 0f, 1f) { animationSpeed.set(it) }
         }
 
-        Text("Options") { sectionTitleStyle() }
-        LabeledSwitch("Deferred shading", isDeferredShading)
-        LabeledSwitch("Ambient occlusion", isAo)
+        Text("Settings".l) { sectionTitleStyle() }
+        LabeledSwitch("Deferred shading".l, isDeferredShading)
+        LabeledSwitch("Ambient occlusion".l, isAo)
         if (isDeferredShading.value) {
-            LabeledSwitch("Screen space reflections", isSsr)
-            MenuSlider2("SSR map size", ssrMapSize.use(), 0.1f, 1f, { it.toString(1) }) {
+            LabeledSwitch("Screen space reflections".l, isSsr)
+            MenuSlider2("SSR map size".l, ssrMapSize.use(), 0.1f, 1f, { it.toString(1) }) {
                 ssrMapSize.set((it * 10).roundToInt() / 10f)
             }
         }
-        LabeledSwitch("Auto rotate view", isAutoRotate)
+        LabeledSwitch("Auto rotate view".l, isAutoRotate)
     }
 
     private fun MeshBuilder<*>.roundCylinder(radius: Float, height: Float) {

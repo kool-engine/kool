@@ -17,6 +17,7 @@ import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.l
 import kotlin.math.roundToInt
 
 class PlanarOrbits(resources: CreativeCodingDemo.Resources) : CreativeContent("Planar orbits") {
@@ -189,40 +190,40 @@ class PlanarOrbits(resources: CreativeCodingDemo.Resources) : CreativeContent("P
         var gap by remember(settings.gap)
         var randomness by remember(settings.randomness)
 
-        LabeledSwitch("Rotate orbits:", rotateOrbits) {
+        LabeledSwitch("Rotate orbits:".l, rotateOrbits) {
             settings = settings.copy(rotateOrbits = it)
         }
-        MenuSlider2("Sun radius:", sunRadius, 0f, 100f, CreativeCodingDemo.txtFormatInt) {
+        MenuSlider2("Sun radius:".l, sunRadius, 0f, 100f, CreativeCodingDemo.txtFormatInt) {
             sunRadius = it
             settings = settings.copy(sunRadius = sunRadius)
             rebuildSun()
         }
-        MenuSlider2("Inner radius X:", innerRadiusX, 50f, 200f, CreativeCodingDemo.txtFormatInt) {
+        MenuSlider2("Inner radius X:".l, innerRadiusX, 50f, 200f, CreativeCodingDemo.txtFormatInt) {
             innerRadiusX = it
             settings = settings.copy(innerRadiusX = innerRadiusX)
             rebuildOrbitX()
         }
-        MenuSlider2("Inner radius Y:", innerRadiusY, 50f, 200f, CreativeCodingDemo.txtFormatInt) {
+        MenuSlider2("Inner radius Y:".l, innerRadiusY, 50f, 200f, CreativeCodingDemo.txtFormatInt) {
             innerRadiusY = it
             settings = settings.copy(innerRadiusY = innerRadiusY)
             rebuildOrbitY()
         }
-        MenuSlider2("Inner radius Z:", innerRadiusZ, 50f, 200f, CreativeCodingDemo.txtFormatInt) {
+        MenuSlider2("Inner radius Z:".l, innerRadiusZ, 50f, 200f, CreativeCodingDemo.txtFormatInt) {
             innerRadiusZ = it
             settings = settings.copy(innerRadiusZ = innerRadiusZ)
             rebuildOrbitZ()
         }
-        MenuSlider2("Number of rings:", numRings.toFloat(), 4f, 20f, CreativeCodingDemo.txtFormatInt) {
+        MenuSlider2("Number of rings:".l, numRings.toFloat(), 4f, 20f, CreativeCodingDemo.txtFormatInt) {
             numRings = it.roundToInt()
             settings = settings.copy(numRings = numRings)
             rebuildOrbits()
         }
-        MenuSlider2("Gap size:", gap, 0f, 1f) {
+        MenuSlider2("Gap size:".l, gap, 0f, 1f) {
             gap = it
             settings = settings.copy(gap = gap)
             rebuildOrbits()
         }
-        MenuSlider2("Randomness:", randomness, 0f, 1f) {
+        MenuSlider2("Randomness:".l, randomness, 0f, 1f) {
             randomness = it
             settings = settings.copy(randomness = randomness)
             rebuildOrbits()

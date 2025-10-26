@@ -4,6 +4,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MsdfFont
+import de.fabmax.kool.util.l
 
 class TextStyleWindow(uiDemo: UiDemo) : DemoWindow("MSDF Text Style", uiDemo) {
 
@@ -24,7 +25,7 @@ class TextStyleWindow(uiDemo: UiDemo) : DemoWindow("MSDF Text Style", uiDemo) {
 
         Row {
             modifier.height(sizes.largeGap * 1.8f)
-            Text("Display text") {
+            Text("Display text".l) {
                 modifier
                     .alignY(AlignmentY.Center)
                     .width(sizes.largeGap * 8f)
@@ -37,12 +38,12 @@ class TextStyleWindow(uiDemo: UiDemo) : DemoWindow("MSDF Text Style", uiDemo) {
             }
         }
 
-        labeledSlider("Font size", fontSize, 8f, 500f, 0)
-        labeledSlider("Weight", fontWeight, -0.2f, 0.3f, 2)
-        labeledSlider("Italic", fontItalic, -0.5f, 0.5f, 2)
-        labeledSlider("Cutoff / outline", fontCutoff, 0f, 0.5f, 2)
-        labeledSlider("Glow", glow, 0f, 1f, 2)
-        labeledSlider("Rotation", rotation, 0f, 360f, 0)
+        labeledSlider("Font size".l, fontSize, 8f, 500f, 0)
+        labeledSlider("Weight".l, fontWeight, -0.2f, 0.3f, 2)
+        labeledSlider("Italic".l, fontItalic, -0.5f, 0.5f, 2)
+        labeledSlider("Cutoff / outline".l, fontCutoff, 0f, 0.5f, 2)
+        labeledSlider("Glow".l, glow, 0f, 1f, 2)
+        labeledSlider("Rotation".l, rotation, 0f, 360f, 0)
 
         ScrollArea(
             containerModifier = {

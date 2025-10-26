@@ -157,22 +157,22 @@ class ReflectionDemo : DemoScene("Reflections") {
         val lblSize = UiSizes.baseSize * 2f
         val txtSize = UiSizes.baseSize * 0.75f
 
-        LabeledSwitch("SSR enabled", isSsrEnabled)
-        LabeledSwitch("Show map", isShowSsrMap)
+        LabeledSwitch("SSR enabled".l, isSsrEnabled)
+        LabeledSwitch("Show map".l, isShowSsrMap)
         MenuRow {
-            Text("Map size") { labelStyle(lblSize) }
+            Text("Map size".l) { labelStyle(lblSize) }
             MenuSlider(ssrMapSize.use(), 0.1f, 1f, { it.toString(1) }, txtWidth = txtSize) {
                 ssrMapSize.set((it * 10).roundToInt() / 10f)
             }
         }
 
-        Text("Material") { sectionTitleStyle() }
+        Text("Material".l) { sectionTitleStyle() }
         MenuRow {
-            Text("Color") { labelStyle(lblSize) }
+            Text("Color".l) { labelStyle(lblSize) }
             ComboBox {
                 modifier
                     .width(Grow.Std)
-                    .items(matColors)
+                    .items(matColors.map { it.name.l })
                     .selectedIndex(selectedColorIdx.use())
                     .onItemSelected {
                         selectedColorIdx.set(it)
@@ -181,23 +181,23 @@ class ReflectionDemo : DemoScene("Reflections") {
             }
         }
         MenuRow {
-            Text("Roughness") { labelStyle(lblSize) }
+            Text("Roughness".l) { labelStyle(lblSize) }
             MenuSlider(roughness.use(), 0f, 1f, txtWidth = txtSize) {
                 roughness.set(it)
                 modelShader?.roughness = it
             }
         }
         MenuRow {
-            Text("Metallic") { labelStyle(lblSize) }
+            Text("Metallic".l) { labelStyle(lblSize) }
             MenuSlider(metallic.use(), 0f, 1f, txtWidth = txtSize) {
                 metallic.set(it)
                 modelShader?.metallic = it
             }
         }
 
-        Text("Lighting") { sectionTitleStyle() }
+        Text("Lighting".l) { sectionTitleStyle() }
         MenuRow {
-            Text("Lights") { labelStyle(lblSize) }
+            Text("Lights".l) { labelStyle(lblSize) }
             ComboBox {
                 modifier
                     .width(Grow.Std)
@@ -207,15 +207,15 @@ class ReflectionDemo : DemoScene("Reflections") {
             }
         }
         MenuRow {
-            Text("Strength") { labelStyle(lblSize) }
+            Text("Strength".l) { labelStyle(lblSize) }
             MenuSlider(lightPower.use(), 0f, 1000f, { "${it.roundToInt()}" }, txtSize) { lightPower.set(it) }
         }
         MenuRow {
-            Text("Saturation") { labelStyle(lblSize) }
+            Text("Saturation".l) { labelStyle(lblSize) }
             MenuSlider(lightSaturation.use(), 0f, 1f, txtWidth = txtSize) { lightSaturation.set(it) }
         }
-        LabeledSwitch("Light indicators", isShowLightIndicators)
-        LabeledSwitch("Auto rotate view", isAutoRotate)
+        LabeledSwitch("Light indicators".l, isShowLightIndicators)
+        LabeledSwitch("Auto rotate view".l, isAutoRotate)
 
         if (isShowSsrMap.value) {
             surface.popup().apply {

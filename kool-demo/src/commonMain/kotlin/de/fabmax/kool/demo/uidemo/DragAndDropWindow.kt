@@ -5,6 +5,7 @@ import de.fabmax.kool.math.randomI
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Color.Hsv
+import de.fabmax.kool.util.l
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
@@ -27,7 +28,7 @@ sealed class DragAndDropWindow(name: String, uiDemo: UiDemo) : DemoWindow(name, 
     }
 
     override fun UiScope.windowContent() = Column(Grow.Std, Grow.Std) {
-        Text("Draggable items:") {
+        Text("Draggable items:".l) {
             modifier
                 .margin(sizes.gap)
         }
