@@ -6,6 +6,7 @@ import de.fabmax.kool.demo.UiSizes
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MsdfFont
+import de.fabmax.kool.util.l
 
 class DemoListContent(val menu: DemoMenu) : Composable {
     private val nonHiddenDemoItems = mutableListOf<DemoItem>()
@@ -50,7 +51,7 @@ class DemoListContent(val menu: DemoMenu) : Composable {
                 .filter { it.demo?.platformFilter?.applies() != false }
                 .toMutableList()
             itemsIndexed(demoItems) { i, item ->
-                Text(item.text) {
+                Text(item.text.l) {
                     modifier
                         .width(Grow.Std)
                         .height(UiSizes.baseSize)

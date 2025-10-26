@@ -28,6 +28,7 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
         get() = currentDemo?.second
 
     init {
+        DemoL10n.registerStrings()
         Settings.loadSettings()
         ctx.window.renderResolutionFactor = Settings.renderScale.value / 100f
 
