@@ -199,24 +199,24 @@ class TetrisDemo : DemoScene("Tetris") {
         Text("Controls".l) { sectionTitleStyle() }
         MenuRow {
             modifier.alignY(AlignmentY.Center)
-            Text("Move:".l) { modifier.width(120.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
+            Text("Move".l) { modifier.width(120.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
             KeyButton("←")
             KeyButton("→")
         }
         MenuRow {
-            Text("Rotate:".l) { modifier.width(120.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
+            Text("Rotate".l) { modifier.width(120.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
             KeyButton("↑")
         }
         MenuRow {
-            Text("Soft Drop:".l) { modifier.width(120.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
+            Text("Soft Drop".l) { modifier.width(120.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
             KeyButton("↓")
         }
         MenuRow {
-            Text("Hard Drop:".l) { modifier.width(120.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
+            Text("Hard Drop".l) { modifier.width(120.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
             KeyButton("Space".l, width = 100.dp)
         }
         MenuRow {
-            Text("Pause:".l) { modifier.width(120.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
+            Text("Pause".l) { modifier.width(120.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
             KeyButton("P")
         }
     }
