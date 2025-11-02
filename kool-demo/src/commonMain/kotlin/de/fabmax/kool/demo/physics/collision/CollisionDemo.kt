@@ -13,7 +13,9 @@ import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
+import kotlin.math.log10
 import kotlin.math.max
+import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -34,6 +36,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private val drawBodyState = mutableStateOf(false)
     private val friction = mutableStateOf(0.5f)
     private val restitution = mutableStateOf(0.2f)
+    private val simTimeFactor = mutableStateOf(1f).onChange { _, new -> physicsWorld.simStepper.desiredTimeFactor = new }
     private var material: Material = Material(friction.value, friction.value, restitution.value)
 
     private val physicsTimeTxt = mutableStateOf("0.00 ms")
@@ -371,6 +374,9 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         }
         MenuSlider2("Friction".l, friction.use(), 0f, 2f) { friction.set(it) }
         MenuSlider2("Restitution".l, restitution.use(), 0f, 1f) { restitution.set(it) }
+        MenuSlider2("Time factor".l, log10(simTimeFactor.use()), -1f, 1f, { 10f.pow(it).toString(2) }) {
+            simTimeFactor.set(10f.pow(it))
+        }
 
         Button("Apply settings".l) {
             modifier
@@ -391,7 +397,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             Text(physicsTimeTxt.use()) { labelStyle() }
         }
         MenuRow {
-            Text("Time factor".l) { labelStyle(Grow.Std) }
+            Text("Actual time factor".l) { labelStyle(Grow.Std) }
             Text(timeFactorTxt.use()) { labelStyle() }
         }
     }

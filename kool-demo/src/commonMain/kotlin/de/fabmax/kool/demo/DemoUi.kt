@@ -8,7 +8,7 @@ object UiSizes {
     val vGap: Dp get() = Settings.uiSize.value.sizes.gap
 
     val baseSize: Dp get() = Settings.uiSize.value.sizes.gap * 4f
-    val menuWidth: Dp get() = baseSize * 7f
+    val menuWidth: Dp get() = baseSize * 7.5f
 }
 
 fun UiScope.MenuRow(vGap: Dp = UiSizes.vGap, block: UiScope.() -> Unit) {
