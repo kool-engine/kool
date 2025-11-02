@@ -52,7 +52,7 @@ object Demos {
         entry("phys-terrain", "Island") { TerrainDemo() }
         entry("phys-vehicle", "Vehicle", NeedsComputeShaders) { VehicleDemo() }
         entry("phys-ragdoll", "Ragdolls") { RagdollDemo() }
-        entry("phys-joints", "Joints") { JointsDemo() }
+        entry("phys-joints", "Chain Drive") { JointsDemo() }
         entry("physics", "Rigid Bodies") { CollisionDemo() }
     }
 

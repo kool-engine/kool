@@ -72,12 +72,14 @@ class Timer(val vehicleUi: VehicleUi) : Composable {
                     .height(Grow.Std)
                     .font(sizes.largeText)
                     .baselineMargin(sizes.gap * 1.5f)
+                    .clipToBounds(false)
             }
             Text("Total".l) {
                 modifier
                     .height(Grow.Std)
                     .margin(start = sizes.smallGap)
                     .baselineMargin(sizes.gap * 1.5f)
+                    .clipToBounds(false)
                     .textColor(labelColor)
             }
 
