@@ -40,7 +40,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private val activeActorsTxt = mutableStateOf("0")
     private val timeFactorTxt = mutableStateOf("1.00 x")
 
-    private val physicsWorld: PhysicsWorld = PhysicsWorld(mainScene)
+    private val physicsWorld: PhysicsWorld = PhysicsWorld(mainScene, isContinuousCollisionDetection = true)
     private val bodies = mutableMapOf<ShapeType, MutableList<ColoredBody>>()
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -111,8 +111,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                     removeBodies.forEach { body ->
                         logI { "Removing out-of-range body" }
                         typeBodies.remove(body)
-                        physicsWorld.removeActor(body.rigidActor)
-                        body.rigidActor.release()
+                        physicsWorld.removeActor(body.rigidActor, true)
                     }
                     removeBodies.clear()
                 }
@@ -144,8 +143,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private fun resetPhysics() {
         bodies.values.forEach { typedBodies ->
             typedBodies.forEach {
-                physicsWorld.removeActor(it.rigidActor)
-                it.rigidActor.release()
+                physicsWorld.removeActor(it.rigidActor, true)
             }
         }
         bodies.clear()

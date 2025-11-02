@@ -8,9 +8,7 @@ import physx.physics.PxRigidStatic
 actual fun RigidStatic(pose: Mat4f): RigidStatic = RigidStaticImpl(pose)
 
 class RigidStaticImpl(pose: Mat4f) : RigidActorImpl(), RigidStatic {
-
     private val pxRigidStatic: PxRigidStatic
-
     override val holder: PxRigidActor
 
     init {

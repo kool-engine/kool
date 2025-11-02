@@ -40,6 +40,10 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         get() = mutActiveActors
 
     private val pxActors = mutableMapOf<PxActor, RigidActor>()
+    private val addActors = mutableListOf<RigidActor>()
+    private val removeActors = mutableListOf<Pair<RigidActor, Boolean>>()
+    private val addArticulations = mutableListOf<Articulation>()
+    private val removeArticulations = mutableListOf<Pair<Articulation, Boolean>>()
 
     init {
         PhysicsImpl.checkIsLoaded()
@@ -60,6 +64,7 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
     }
 
     override fun simulate(timeStep: Float) {
+        addAndRemoveActors()
         pxScene.simulate(timeStep)
         pxScene.fetchResults(true)
 
@@ -73,52 +78,28 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         }
     }
 
-    internal fun registerActorReference(actor: RigidActor) {
-        pxActors[actor.holder] = actor
-    }
-
-    internal fun deleteActorReference(actor: RigidActor) {
-        pxActors -= actor.holder
-    }
-
     fun getActor(pxActor: PxActor): RigidActor? {
         return pxActors[pxActor]
     }
 
     override fun addActor(actor: RigidActor) {
         super.addActor(actor)
-        pxScene.addActor(actor.holder)
-        registerActorReference(actor)
-
-        // set necessary ccd flags in case it is enabled for this scene
-        val pxActor = actor.holder
-        if (isContinuousCollisionDetection && pxActor is PxRigidBody) {
-            if (actor is RigidDynamic && !actor.isKinematic) {
-                pxActor.setRigidBodyFlag(PxRigidBodyFlagEnum.eENABLE_CCD, true)
-            }
-            actor.simulationFilterData = FilterData {
-                set(actor.simulationFilterData)
-                word2 = PxPairFlagEnum.eDETECT_CCD_CONTACT.value
-            }
-        }
+        synchronized(addActors) { addActors += actor }
     }
 
-    override fun removeActor(actor: RigidActor) {
-        super.removeActor(actor)
-        pxScene.removeActor(actor.holder)
-        deleteActorReference(actor)
+    override fun removeActor(actor: RigidActor, releaseActor: Boolean) {
+        super.removeActor(actor, releaseActor)
+        synchronized(removeActors) { removeActors += actor to releaseActor }
     }
 
     override fun addArticulation(articulation: Articulation) {
         super.addArticulation(articulation)
-        articulation.links.forEach { pxActors[it.holder] = it }
-        pxScene.addArticulation((articulation as ArticulationImpl).pxArticulation)
+        synchronized(addArticulations) { addArticulations += articulation }
     }
 
-    override fun removeArticulation(articulation: Articulation) {
-        super.removeArticulation(articulation)
-        articulation.links.forEach { pxActors -= it.holder }
-        pxScene.removeArticulation((articulation as ArticulationImpl).pxArticulation)
+    override fun removeArticulation(articulation: Articulation, releaseArticulation: Boolean) {
+        super.removeArticulation(articulation, releaseArticulation)
+        synchronized(removeArticulations) { removeArticulations += articulation to releaseArticulation }
     }
 
     override fun releaseWorld() {
@@ -191,6 +172,72 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
             }
         }
         return result.isHit
+    }
+
+    internal fun registerActorReference(actor: RigidActor) {
+        pxActors[actor.holder] = actor
+    }
+
+    internal fun deleteActorReference(actor: RigidActor) {
+        pxActors -= actor.holder
+    }
+
+    private fun addAndRemoveActors() {
+        synchronized(addActors) {
+            for (i in addActors.indices) {
+                val actor = addActors[i]
+                pxScene.addActor(actor.holder)
+                registerActorReference(actor)
+                if (isContinuousCollisionDetection) {
+                    actor.enableCcd()
+                }
+            }
+            addActors.clear()
+        }
+        synchronized(removeActors) {
+            for (i in removeActors.indices) {
+                val (actor, release) = removeActors[i]
+                pxScene.removeActor(actor.holder)
+                deleteActorReference(actor)
+                if (release) {
+                    actor.release()
+                }
+            }
+            removeActors.clear()
+        }
+        synchronized(addArticulations) {
+            for (i in addArticulations.indices) {
+                val articulation = addArticulations[i]
+                articulation.links.forEach { registerActorReference(it) }
+                pxScene.addArticulation((articulation as ArticulationImpl).pxArticulation)
+            }
+            addArticulations.clear()
+        }
+        synchronized(removeArticulations) {
+            for (i in removeArticulations.indices) {
+                val (articulation, release) = removeArticulations[i]
+                articulation.links.forEach { deleteActorReference(it) }
+                pxScene.removeArticulation((articulation as ArticulationImpl).pxArticulation)
+                if (release) {
+                    articulation.release()
+                }
+            }
+            removeArticulations.clear()
+        }
+    }
+
+    private fun RigidActor.enableCcd() {
+        val pxActor = holder
+        if (pxActor !is PxRigidBody) {
+            return
+        }
+        if (this is RigidDynamic && !isKinematic) {
+            pxActor.setRigidBodyFlag(PxRigidBodyFlagEnum.eENABLE_CCD, true)
+        }
+        simulationFilterData = FilterData {
+            set(simulationFilterData)
+            word2 = PxPairFlagEnum.eDETECT_CCD_CONTACT.value
+        }
     }
 
     private inner class SimEventCallback : PxSimulationEventCallbackImpl() {

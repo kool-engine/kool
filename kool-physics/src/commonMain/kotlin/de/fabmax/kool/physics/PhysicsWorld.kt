@@ -94,7 +94,7 @@ abstract class PhysicsWorld : BaseReleasable() {
         mutActors += actor
     }
 
-    open fun removeActor(actor: RigidActor) {
+    open fun removeActor(actor: RigidActor, releaseActor: Boolean) {
         mutActors -= actor
     }
 
@@ -102,7 +102,7 @@ abstract class PhysicsWorld : BaseReleasable() {
         mutArticulations += articulation
     }
 
-    open fun removeArticulation(articulation: Articulation) {
+    open fun removeArticulation(articulation: Articulation, releaseArticulation: Boolean) {
         mutArticulations -= articulation
     }
 
@@ -121,20 +121,8 @@ abstract class PhysicsWorld : BaseReleasable() {
     }
 
     fun clear(releaseActors: Boolean = true) {
-        val removeActors = mutableListOf<RigidActor>().apply { this += actors }
-        for (i in removeActors.lastIndex downTo 0) {
-            removeActor(removeActors[i])
-            if (releaseActors) {
-                removeActors[i].release()
-            }
-        }
-        val removeArticulations = mutableListOf<Articulation>().apply { this += articulations }
-        for (i in removeArticulations.lastIndex downTo 0) {
-            removeArticulation(removeArticulations[i])
-            if (releaseActors) {
-                removeArticulations[i].release()
-            }
-        }
+        actors.toList().forEach { removeActor(it, releaseActors) }
+        articulations.toList().forEach { removeArticulation(it, releaseActors) }
         triggerListeners.clear()
     }
 
