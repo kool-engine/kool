@@ -55,13 +55,17 @@ abstract class CharacterController(private val manager: CharacterControllerManag
             smoothStep(slopeLimit.rad * 0.7f, slopeLimit.rad, slopeObserver.groundSlopeRad)
         }
 
-    val onPhysicsUpdate = mutableListOf<(Float) -> Unit>()
     val onHitActorListeners = mutableListOf<OnHitActorListener>()
     var hitActorBehaviorCallback: HitActorBehaviorCallback? = HitActorBehaviorCallback { actor: RigidActor ->
         actor.characterControllerHitBehavior
     }
 
-    open fun onAdvancePhysics(timeStep: Float) {
+    fun onPhysicsUpdate(timeStep: Float) {
+        updateMovement(timeStep)
+        updatePosAndVelocity(timeStep)
+    }
+
+    private fun updateMovement(timeStep: Float) {
         val isNoMove = movement.length().isFuzzyZero()
         if (!isNoMove || jump) {
             // not sure about ground, but we are certainly moving (i.e. not standing)
@@ -98,21 +102,15 @@ abstract class CharacterController(private val manager: CharacterControllerManag
         move(displacement, timeStep)
     }
 
-    open fun onPhysicsUpdate(timeStep: Float) {
+    private fun updatePosAndVelocity(timeStep: Float) {
+        // todo: interpolate
         posBuffer.set(position)
         mutVelocity.set(
-                (posBuffer.x - prevPosition.x).toFloat(),
-                (posBuffer.y - prevPosition.y).toFloat(),
-                (posBuffer.z - prevPosition.z).toFloat()
-            ).mul(1f / timeStep)
+            (posBuffer.x - prevPosition.x).toFloat(),
+            (posBuffer.y - prevPosition.y).toFloat(),
+            (posBuffer.z - prevPosition.z).toFloat()
+        ).mul(1f / timeStep)
         prevPosition.set(posBuffer)
-
-        // the controller's actor is not registered in PhysicsWorld, call its update routine from here
-        actor.onPhysicsUpdate(timeStep)
-
-        for (i in onPhysicsUpdate.indices) {
-            onPhysicsUpdate[i](timeStep)
-        }
     }
 
     internal fun onHitActor(actor: RigidActor, hitWorldPos: Vec3f, hitWorldNormal: Vec3f) {

@@ -11,7 +11,6 @@ import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Tags
 import de.fabmax.kool.scene.TrsTransformF
-import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Releasable
 
@@ -38,11 +37,7 @@ interface RigidActor : Releasable {
     val transform: TrsTransformF
 
     var isTrigger: Boolean
-
     var isActive: Boolean
-
-    @Deprecated("to be removed")
-    val onPhysicsUpdate: BufferedList<PhysicsStepListener>
 
     val shapes: List<Shape>
 
@@ -55,13 +50,6 @@ interface RigidActor : Releasable {
     fun capture(simulationTime: Double)
 
     fun interpolateTransform(gameTime: Double)
-
-    fun onPhysicsUpdate(timeStep: Float) {
-        onPhysicsUpdate.update()
-        for (i in onPhysicsUpdate.indices) {
-            onPhysicsUpdate[i].onPhysicsStep(timeStep)
-        }
-    }
 
     fun toGlobal(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
         return transform.transform(vec, w)

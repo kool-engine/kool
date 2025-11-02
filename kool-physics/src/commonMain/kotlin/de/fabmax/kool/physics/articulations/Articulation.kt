@@ -9,8 +9,6 @@ abstract class Articulation : BaseReleasable() {
     protected val _links = mutableListOf<ArticulationLink>()
     val links: List<ArticulationLink> get() = _links
 
-    val onFixedUpdate = mutableListOf<(Float) -> Unit>()
-
     abstract var minPositionIterations: Int
     abstract var minVelocityIterations: Int
 
@@ -29,15 +27,6 @@ abstract class Articulation : BaseReleasable() {
     fun interpolateTransform(gameTime: Double) {
         for (i in links.indices) {
             links[i].interpolateTransform(gameTime)
-        }
-    }
-
-    fun onPhysicsUpdate(timeStep: Float) {
-        for (i in links.indices) {
-            links[i].onPhysicsUpdate(timeStep)
-        }
-        for (i in onFixedUpdate.indices) {
-            onFixedUpdate[i](timeStep)
         }
     }
 }
