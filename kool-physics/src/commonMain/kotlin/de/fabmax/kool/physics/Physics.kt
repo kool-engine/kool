@@ -1,10 +1,13 @@
 package de.fabmax.kool.physics
 
+import kotlinx.coroutines.CoroutineDispatcher
+
 object Physics {
 
     private val system = PhysicsSystem()
 
     val isLoaded: Boolean get() = system.isLoaded
+    internal val physicsDispatcher: CoroutineDispatcher get() = system.physicsDispatcher
 
     val defaultMaterial: Material get() = system.defaultMaterial
 
@@ -30,6 +33,8 @@ internal interface PhysicsSystem {
             throw IllegalStateException("Physics subsystem is not loaded. Call loadAndAwaitPhysics() before using any physics functions.")
         }
     }
+
+    val physicsDispatcher: CoroutineDispatcher
 
     val NOTIFY_TOUCH_FOUND: Int
     val NOTIFY_TOUCH_LOST: Int

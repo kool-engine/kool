@@ -41,6 +41,7 @@ interface RigidActor : Releasable {
 
     var isActive: Boolean
 
+    @Deprecated("to be removed")
     val onPhysicsUpdate: BufferedList<PhysicsStepListener>
 
     val shapes: List<Shape>
@@ -50,6 +51,10 @@ interface RigidActor : Releasable {
     fun attachShape(shape: Shape)
 
     fun detachShape(shape: Shape)
+
+    fun capture(simulationTime: Double)
+
+    fun interpolateTransform(gameTime: Double)
 
     fun onPhysicsUpdate(timeStep: Float) {
         onPhysicsUpdate.update()

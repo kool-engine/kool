@@ -28,12 +28,8 @@ import kotlin.math.roundToInt
 
 class JointsDemo : DemoScene("Physics - Joints") {
 
-    private val physicsStepper = ConstantPhysicsStepperSync().apply {
-        // make the chain spin faster by using double speed simulation
-        simTimeFactor = 2f
-    }
     private val physicsWorld: PhysicsWorld = PhysicsWorld(mainScene).apply {
-        simStepper = physicsStepper
+        simStepper.desiredTimeFactor = 2f
     }
 
     private val motorStrength = mutableStateOf(50f)
@@ -117,8 +113,8 @@ class JointsDemo : DemoScene("Physics - Joints") {
                 resetPhysics = false
                 makePhysicsScene()
             }
-            physicsTimeTxt.set("${physicsStepper.perfCpuTime.toString(2)} ms")
-            timeFactorTxt.set("${physicsStepper.perfTimeFactor.toString(2)} x")
+            physicsTimeTxt.set("${physicsWorld.simStepper.cpuMilliesPerStep.toString(2)} ms")
+            timeFactorTxt.set("${physicsWorld.simStepper.actualTimeFactor.toString(2)} x")
             numBodiesTxt.set("${physicsWorld.actors.size}")
             numJointsTxt.set("${joints.size}")
         }

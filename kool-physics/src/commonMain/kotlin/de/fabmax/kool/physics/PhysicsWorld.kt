@@ -1,14 +1,13 @@
 package de.fabmax.kool.physics
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.articulations.Articulation
 import de.fabmax.kool.physics.geometry.CollisionGeometry
 import de.fabmax.kool.physics.geometry.PlaneGeometry
+import de.fabmax.kool.scene.OnRenderScene
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.BufferedList
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.*
+import kotlinx.coroutines.launch
 
 expect fun PhysicsWorld(scene: Scene?, isContinuousCollisionDetection: Boolean = false) : PhysicsWorld
 
@@ -17,12 +16,8 @@ abstract class PhysicsWorld : BaseReleasable() {
         Physics.checkIsLoaded()
     }
 
-    var physicsTime = 0.0
-
-    var simStepper: PhysicsStepper = ConstantPhysicsStepperSync()
-    var isPauseSimulation = false
-    var isStepInProgress = false
-    var prevStepTime = 0f
+    val simStepper: PhysicsStepper = AsyncPhysicsStepper(this)
+    val physicsTime: Double get() = simStepper.physicsTime
 
     val onAdvancePhysics = BufferedList<PhysicsStepListener>()
     val onPhysicsUpdate = BufferedList<PhysicsStepListener>()
@@ -38,11 +33,7 @@ abstract class PhysicsWorld : BaseReleasable() {
     protected val contactListeners = mutableListOf<ContactListener>()
 
     private var registeredAtScene: Scene? = null
-    private val onRenderSceneHook: (KoolContext) -> Unit = { ctx ->
-        if (!isPauseSimulation) {
-            physicsTime += simStepper.stepSimulation(this, ctx)
-        }
-    }
+    private val onRenderSceneHook = OnRenderScene { simStepper.stepPhysics() }
 
     abstract var gravity: Vec3f
     abstract val activeActors: Int
@@ -90,12 +81,15 @@ abstract class PhysicsWorld : BaseReleasable() {
     }
 
     override fun doRelease() {
-        if (isStepInProgress) {
-            fetchAsyncStepResults()
-        }
         unregisterHandlers()
-        clear(true)
+        FrontendScope.launch {
+            simStepper.waitForSimulation()
+            clear(true)
+            releaseWorld()
+        }
     }
+
+    protected abstract fun releaseWorld()
 
     open fun addActor(actor: RigidActor) {
         mutActors += actor
@@ -145,64 +139,46 @@ abstract class PhysicsWorld : BaseReleasable() {
         triggerListeners.clear()
     }
 
-    private fun isContinueStep(physicsTime: Double, physicsTimeDesired: Double, step: Float): Boolean {
-        return physicsTimeDesired - physicsTime > step * 0.5
+    internal fun stepSimulation(timeStep: Float) {
+        onPhysicsUpdate.forEachUpdated { it.onPhysicsStep(timeStep) }
+        onAdvancePhysics.forEachUpdated { it.onPhysicsStep(timeStep) }
+        simulate(timeStep)
     }
 
-    fun singleStepSync(timeStep: Float) {
-        singleStepAsync(timeStep)
-        fetchAsyncStepResults()
-    }
+    protected abstract fun simulate(timeStep: Float)
 
-    open fun singleStepAsync(timeStep: Float) {
-        if (isStepInProgress) {
-            throw IllegalStateException("Previous simulation step not yet finished")
-        }
-        onAdvancePhysics(timeStep)
-        isStepInProgress = true
-        prevStepTime = timeStep
-    }
-
-    open fun fetchAsyncStepResults() {
-        isStepInProgress = false
-        onPhysicsUpdate(prevStepTime)
-    }
-
-    protected open fun onAdvancePhysics(timeStep: Float) {
-        onAdvancePhysics.update()
-        for (i in onAdvancePhysics.indices) {
-            onAdvancePhysics[i].onPhysicsStep(timeStep)
-        }
-    }
-
-    protected open fun onPhysicsUpdate(timeStep: Float) {
+    internal fun captureSimulation(simulationTime: Double) {
         for (i in mutActors.indices) {
-            mutActors[i].onPhysicsUpdate(timeStep)
+            mutActors[i].capture(simulationTime)
         }
         for (i in mutArticulations.indices) {
-            mutArticulations[i].onPhysicsUpdate(timeStep)
-        }
-        onPhysicsUpdate.update()
-        for (i in onPhysicsUpdate.indices) {
-            onPhysicsUpdate[i].onPhysicsStep(timeStep)
+            mutArticulations[i].capture(simulationTime)
         }
     }
 
-    /**
-     * Adds a static plane with y-axis as surface normal (i.e. xz-plane) at y = 0.
-     */
-    fun addDefaultGroundPlane(): RigidStatic {
-        val groundPlane = RigidStatic()
-        val shape = Shape(PlaneGeometry(), Material(0.5f, 0.5f, 0.2f))
-        groundPlane.attachShape(shape)
-        groundPlane.pose = PoseF(rotation = QuatF.rotation(90f.deg, Vec3f.Z_AXIS))
-        addActor(groundPlane)
-        return groundPlane
+    internal fun interpolateSimulation(gameTime: Double) {
+        for (i in mutActors.indices) {
+            mutActors[i].interpolateTransform(gameTime)
+        }
+        for (i in mutArticulations.indices) {
+            mutArticulations[i].interpolateTransform(gameTime)
+        }
     }
 
     protected class TriggerListenerContext {
         val listeners = mutableListOf<TriggerListener>()
         val actorEnterCounts = mutableMapOf<RigidActor, Int>()
     }
+}
 
+/**
+ * Adds a static plane with y-axis as surface normal (i.e., xz-plane) at y = 0.
+ */
+fun PhysicsWorld.addDefaultGroundPlane(): RigidStatic {
+    val groundPlane = RigidStatic()
+    val shape = Shape(PlaneGeometry(), Material(0.5f, 0.5f, 0.2f))
+    groundPlane.attachShape(shape)
+    groundPlane.pose = PoseF(rotation = QuatF.rotation(90f.deg, Vec3f.Z_AXIS))
+    addActor(groundPlane)
+    return groundPlane
 }

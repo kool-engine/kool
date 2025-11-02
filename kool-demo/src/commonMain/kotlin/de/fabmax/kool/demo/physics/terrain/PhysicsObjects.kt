@@ -25,9 +25,6 @@ class PhysicsObjects(mainScene: Scene, terrain: Terrain, trees: Trees, ctx: Kool
         // CCD is recommended when using height fields, to avoid objects tunneling through the ground
         world = PhysicsWorld(mainScene, isContinuousCollisionDetection = true)
 
-        // use constant time step for more stable bridge behavior
-        world.simStepper = ConstantPhysicsStepperSync()
-
         world.addActor(terrain.terrainBody)
 
         trees.trees.asSequence().flatMap { it.instances }.forEach {

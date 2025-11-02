@@ -40,10 +40,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private val activeActorsTxt = mutableStateOf("0")
     private val timeFactorTxt = mutableStateOf("1.00 x")
 
-    private val physicsStepper = ConstantPhysicsStepperSync()
-    private val physicsWorld: PhysicsWorld = PhysicsWorld(mainScene).apply {
-        simStepper = physicsStepper
-    }
+    private val physicsWorld: PhysicsWorld = PhysicsWorld(mainScene)
     private val bodies = mutableMapOf<ShapeType, MutableList<ColoredBody>>()
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -121,9 +118,9 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                 }
             }
 
-            physicsTimeTxt.set("${physicsStepper.perfCpuTime.toString(2)} ms")
+            physicsTimeTxt.set("${physicsWorld.simStepper.cpuMilliesPerStep.toString(2)} ms")
             activeActorsTxt.set("${physicsWorld.activeActors}")
-            timeFactorTxt.set("${physicsStepper.perfTimeFactor.toString(2)} x")
+            timeFactorTxt.set("${physicsWorld.simStepper.actualTimeFactor.toString(2)} x")
         }
 
         addNode(Skybox.cube(ibl.reflectionMap, 1.5f))

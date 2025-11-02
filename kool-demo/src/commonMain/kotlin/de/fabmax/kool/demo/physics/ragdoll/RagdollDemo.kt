@@ -31,7 +31,6 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
     private val rand = Random(1337)
     private lateinit var physicsWorld: PhysicsWorld
-    private val physicsStepper = ConstantPhysicsStepperSync()//.apply { simTimeFactor = 0.1f }
 
     private val ibl by hdriImage("${DemoLoader.hdriPath}/colorful_studio_1k.rgbe.png")
     private val groundAlbedo by texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
@@ -68,7 +67,6 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         mainScene += Skybox.cube(ibl.reflectionMap, 1.5f)
 
         physicsWorld = PhysicsWorld(mainScene)
-        physicsWorld.simStepper = physicsStepper
 
         val gravKeyListener = KeyboardInput.addKeyListener(UniversalKeyCode(' '), "Change Gravity",  { true }) {
             if (it.isPressed) {
@@ -166,8 +164,8 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         }
 
         onUpdate += {
-            physicsTimeTxt.set("${physicsStepper.perfCpuTime.toString(2)} ms")
-            timeFactorTxt.set("${physicsStepper.perfTimeFactor.toString(2)} x")
+            physicsTimeTxt.set("${physicsWorld.simStepper.cpuMilliesPerStep.toString(2)} ms")
+            timeFactorTxt.set("${physicsWorld.simStepper.actualTimeFactor.toString(2)} x")
         }
     }
 

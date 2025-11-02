@@ -1,8 +1,6 @@
 package de.fabmax.kool.physics
 
-import de.fabmax.kool.math.MutablePoseF
-import de.fabmax.kool.math.PoseF
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.physics.character.HitActorBehavior
 import de.fabmax.kool.scene.Tags
@@ -36,19 +34,25 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
 
     override var characterControllerHitBehavior: HitActorBehavior = HitActorBehavior.SLIDE
 
+    private val poseA = CapturedPose()
+    private val poseB = CapturedPose()
+
     private val bufBounds = BoundingBoxF()
-    private val poseBuffer = MutablePoseF()
 
     override var pose: PoseF
-        get() = poseBuffer
+        get() = poseB.pose
         set(value) {
-            poseBuffer.set(value)
+            poseA.pose.set(value)
+            poseB.pose.set(value)
             val pose = holder.globalPose
             value.position.toPxVec3(pose.p)
             value.rotation.toPxQuat(pose.q)
             holder.globalPose = pose
             transform.setCompositionOf(value.position, value.rotation, Vec3f.ONES)
         }
+
+    private val lerpPos = MutableVec3f()
+    private val lerpRot = MutableQuatF()
 
     override val worldBounds: BoundingBoxF
         get() = holder.worldBounds.toBoundingBox(bufBounds)
@@ -67,6 +71,7 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
 
     override val transform = TrsTransformF()
 
+    @Deprecated("to be removed")
     override val onPhysicsUpdate = BufferedList<PhysicsStepListener>()
 
     private val _shapes = mutableListOf<Shape>()
@@ -116,16 +121,33 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
         _shapes.clear()
     }
 
-    override fun onPhysicsUpdate(timeStep: Float) {
+    override fun capture(simulationTime: Double) {
         checkIsNotReleased()
-        updateTransform()
-        super.onPhysicsUpdate(timeStep)
+        poseA.set(poseB)
+        if (isActive) {
+            holder.globalPose.toPoseF(poseB.pose)
+        }
+        poseB.time = simulationTime
     }
 
-    private fun updateTransform() {
-        if (isActive) {
-            holder.globalPose.toPoseF(poseBuffer)
-            transform.setCompositionOf(pose.position, pose.rotation, Vec3f.ONES)
+    override fun interpolateTransform(gameTime: Double) {
+        if (!isActive) {
+            return
+        }
+        val deltaCapture = poseB.time - poseA.time
+        val weightB = ((gameTime - poseA.time) / deltaCapture).toFloat().clamp(0f, 1f)
+        poseA.pose.position.mix(poseB.pose.position, weightB, lerpPos)
+        poseA.pose.rotation.mix(poseB.pose.rotation, weightB, lerpRot)
+        transform.setCompositionOf(lerpPos, lerpRot, Vec3f.ONES)
+    }
+
+    private class CapturedPose {
+        var time: Double = 0.0
+        val pose = MutablePoseF()
+
+        fun set(other: CapturedPose) {
+            time = other.time
+            pose.set(other.pose)
         }
     }
 
