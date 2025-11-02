@@ -86,9 +86,11 @@ class TrackTimer(val vehicle: Vehicle, val track: Track, val world: VehicleWorld
     }
 
     init {
-        world.physics.onPhysicsUpdate += { deltaT ->
-            if (timerState == TimerState.STARTED) {
-                trackTime += deltaT
+        world.physics.physicsStepListeners += object : PhysicsStepListener {
+            override fun onPhysicsUpdate(timeStep: Float) {
+                if (timerState == TimerState.STARTED) {
+                    trackTime += timeStep
+                }
             }
         }
     }

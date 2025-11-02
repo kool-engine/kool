@@ -3,6 +3,7 @@ package de.fabmax.kool.demo.physics.terrain
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.input.WalkAxes
 import de.fabmax.kool.math.*
+import de.fabmax.kool.physics.PhysicsStepListener
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.character.*
@@ -16,7 +17,7 @@ class PlayerController(
     private val physicsObjects: PhysicsObjects,
     mainScene: Scene,
     ctx: KoolContext
-) : OnHitActorListener, HitActorBehaviorCallback {
+) : OnHitActorListener, HitActorBehaviorCallback, PhysicsStepListener {
 
     val controller: CharacterController
     private val charManager: CharacterControllerManager = CharacterControllerManager(physicsObjects.world)
@@ -60,7 +61,7 @@ class PlayerController(
         axes.release()
     }
 
-    fun onPhysicsUpdate(timeStep: Float) {
+    override fun onPhysicsUpdate(timeStep: Float) {
         updateMovement()
         tractorGun.onPhysicsUpdate(timeStep)
 

@@ -19,7 +19,7 @@ abstract class PhysicsWorld : BaseReleasable() {
     val simStepper: PhysicsStepper = AsyncPhysicsStepper(this)
     val physicsTime: Double get() = simStepper.physicsTime
 
-    val onPhysicsUpdate = BufferedList<OnPhysicsUpdate>()
+    val physicsStepListeners = BufferedList<PhysicsStepListener>()
 
     protected val mutActors = mutableListOf<RigidActor>()
     val actors: List<RigidActor>
@@ -100,10 +100,12 @@ abstract class PhysicsWorld : BaseReleasable() {
 
     open fun addArticulation(articulation: Articulation) {
         mutArticulations += articulation
+        articulation.links.forEach { mutActors += it }
     }
 
     open fun removeArticulation(articulation: Articulation, releaseArticulation: Boolean) {
         mutArticulations -= articulation
+        articulation.links.forEach { mutActors -= it }
     }
 
     abstract fun raycast(ray: RayF, maxDistance: Float, result: HitResult): Boolean
@@ -127,7 +129,7 @@ abstract class PhysicsWorld : BaseReleasable() {
     }
 
     internal fun stepSimulation(timeStep: Float) {
-        onPhysicsUpdate.forEachUpdated { it.onPhysicsUpdate(timeStep) }
+        physicsStepListeners.forEachUpdated { it.onPhysicsUpdate(timeStep) }
         simulate(timeStep)
     }
 
@@ -137,18 +139,14 @@ abstract class PhysicsWorld : BaseReleasable() {
         for (i in mutActors.indices) {
             mutActors[i].capture(simulationTime)
         }
-        for (i in mutArticulations.indices) {
-            mutArticulations[i].capture(simulationTime)
-        }
+        physicsStepListeners.forEachUpdated { it.onPhysicsCapture(simulationTime) }
     }
 
-    internal fun interpolateSimulation(gameTime: Double) {
+    internal fun interpolateSimulation(captureTimeA: Double, captureTimeB: Double, frameTime: Double, weightB: Float) {
         for (i in mutActors.indices) {
-            mutActors[i].interpolateTransform(gameTime)
+            mutActors[i].interpolateTransform(captureTimeA, captureTimeB, frameTime, weightB)
         }
-        for (i in mutArticulations.indices) {
-            mutArticulations[i].interpolateTransform(gameTime)
-        }
+        physicsStepListeners.forEachUpdated { it.onPhysicsInterpolate(captureTimeA, captureTimeB, frameTime, weightB) }
     }
 
     protected class TriggerListenerContext {

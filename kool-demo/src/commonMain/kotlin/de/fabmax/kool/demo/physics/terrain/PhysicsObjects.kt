@@ -49,9 +49,7 @@ class PhysicsObjects(mainScene: Scene, terrain: Terrain, trees: Trees, ctx: Kool
             controller.position = Vec3d(-146.5, 47.8, -89.0)
         }
 
-        world.onPhysicsUpdate += { timeStep ->
-            playerController.onPhysicsUpdate(timeStep)
-        }
+        world.physicsStepListeners += playerController
     }
 
     private fun spawnBoxes() {

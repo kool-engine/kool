@@ -1,5 +1,6 @@
 package de.fabmax.kool.physics
 
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Time
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -33,6 +34,7 @@ class AsyncPhysicsStepper(
 
     private var deferredStep: Deferred<Unit>? = null
     private var refTime = 0.0
+    private var prevCaptureTime = 0.0
 
     var maxSimulationDeltaT: Float = 0.1f
     var deltaTVariance: Float = 1.1f
@@ -42,13 +44,17 @@ class AsyncPhysicsStepper(
 
         val dt = if (isPaused) 0f else (Time.deltaT * desiredTimeFactor).coerceAtMost(maxSimulationDeltaT)
         refTime += dt
-        world.interpolateSimulation(refTime)
+
+        val deltaCapture = physicsTime - prevCaptureTime
+        val weightB = ((refTime - prevCaptureTime) / deltaCapture).toFloat().clamp(0f, 1f)
+        world.interpolateSimulation(prevCaptureTime, physicsTime, refTime, weightB)
         actualTimeFactor = actualTimeFactor * 0.8f + dt / Time.deltaT * 0.2f
 
         val expectedNextFrameTime = refTime + dt * deltaTVariance
         val nextDelta = expectedNextFrameTime - physicsTime
         if (nextDelta > 0f) {
             val requiredSteps = ceil(nextDelta / singleTimeStep).toInt()
+            prevCaptureTime = physicsTime
             physicsTime += requiredSteps * singleTimeStep
             if (physicsTime < refTime) {
                 physicsTime = refTime

@@ -17,16 +17,4 @@ abstract class Articulation : BaseReleasable() {
     abstract fun wakeUp()
 
     abstract fun putToSleep()
-
-    fun capture(simulationTime: Double) {
-        for (i in links.indices) {
-            links[i].capture(simulationTime)
-        }
-    }
-
-    fun interpolateTransform(gameTime: Double) {
-        for (i in links.indices) {
-            links[i].interpolateTransform(gameTime)
-        }
-    }
 }

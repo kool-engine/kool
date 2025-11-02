@@ -74,7 +74,10 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         val activeActors = SupportFunctions.PxScene_getActiveActors(pxScene)
         mutActiveActors = activeActors.size()
         for (i in 0 until mutActiveActors) {
-            pxActors[activeActors.get(i)]?.isActive = true
+            pxActors[activeActors.get(i)]?.let {
+                it.isActive = true
+                it.fetchSimulationData()
+            }
         }
     }
 
