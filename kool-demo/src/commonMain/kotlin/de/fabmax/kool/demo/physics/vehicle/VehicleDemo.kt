@@ -105,8 +105,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             setColor(Color.WHITE, 0.75f)
         }
 
-        val camRig = ActorTrackingCamRig(vehicleWorld.physics).apply {
-            trackedActor = vehicle.vehicle
+        val camRig = ActorTrackingCamRig(vehicleWorld.physics, vehicle.vehicle).apply {
             camera.setClipRange(1f, 1e9f)
             camera.setupCamera(Vec3f(0f, 2.75f, 6f), lookAt = Vec3f(0f, 1.75f, 0f))
             addNode(camera)

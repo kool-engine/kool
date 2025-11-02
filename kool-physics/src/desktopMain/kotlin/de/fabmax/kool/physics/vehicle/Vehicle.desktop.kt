@@ -27,8 +27,11 @@ actual fun Vehicle(vehicleProps: VehicleProperties, world: PhysicsWorld, pose: M
     return VehicleImpl(vehicleProps, world, pose)
 }
 
-class VehicleImpl(override val vehicleProps: VehicleProperties, val world: PhysicsWorld, pose: Mat4f) : RigidBodyImpl(), Vehicle {
-
+class VehicleImpl(
+    override val vehicleProps: VehicleProperties,
+    val world: PhysicsWorld,
+    pose: Mat4f
+) : RigidBodyImpl(), Vehicle, PhysicsStepListener {
     val vehicleSimulationContext: PxVehiclePhysXSimulationContext
     val pxVehicle: EngineDriveVehicle
 
@@ -83,8 +86,6 @@ class VehicleImpl(override val vehicleProps: VehicleProperties, val world: Physi
 
     override val holder: PxRigidBody
 
-    private val updateListener = OnPhysicsUpdate { timeStep -> onPhysicsUpdate(timeStep) }
-
     init {
         vehicleSimulationContext = PxVehiclePhysXSimulationContext().apply {
             setToDefault()
@@ -101,7 +102,7 @@ class VehicleImpl(override val vehicleProps: VehicleProperties, val world: Physi
 
         holder = pxVehicle.physXState.physxActor.rigidBody
         transform.setMatrix(pose)
-        world.onPhysicsUpdate += updateListener
+        world.physicsStepListeners += this
     }
 
     override fun setToRestState() {
@@ -121,10 +122,10 @@ class VehicleImpl(override val vehicleProps: VehicleProperties, val world: Physi
     override fun doRelease() {
         super.doRelease()
         pxVehicle.destroy()
-        world.onPhysicsUpdate -= updateListener
+        world.physicsStepListeners -= this
     }
 
-    private fun onPhysicsUpdate(timeStep: Float) {
+   override fun onPhysicsUpdate(timeStep: Float) {
         val targetGear = pxVehicle.engineDriveState.gearboxState.targetGear
         val neutralGear = pxVehicle.engineDriveParams.gearBoxParams.neutralGear
         if (isReverse && targetGear != neutralGear - 1) {

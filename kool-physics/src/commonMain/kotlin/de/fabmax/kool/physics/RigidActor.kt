@@ -47,9 +47,9 @@ interface RigidActor : Releasable {
 
     fun detachShape(shape: Shape)
 
+    fun fetchSimulationData()
     fun capture(simulationTime: Double)
-
-    fun interpolateTransform(gameTime: Double)
+    fun interpolateTransform(captureTimeA: Double, captureTimeB: Double, frameTime: Double, weightB: Float)
 
     fun toGlobal(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
         return transform.transform(vec, w)

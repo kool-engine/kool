@@ -19,7 +19,7 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
         pxManager = checkNotNull(PxTopLevelFunctions.CreateControllerManager(world.pxScene)) {
             "Failed creating PxControllerManager"
         }
-        world.onPhysicsUpdate += onUpdateListener
+        world.physicsStepListeners += onUpdateListener
     }
 
     override fun doCreateController(charProperties: CharacterControllerProperties): CharacterController {
@@ -57,7 +57,7 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
 
     override fun doRelease() {
         super.doRelease()
-        world.onPhysicsUpdate -= onUpdateListener
+        world.physicsStepListeners -= onUpdateListener
         pxManager.release()
     }
 }

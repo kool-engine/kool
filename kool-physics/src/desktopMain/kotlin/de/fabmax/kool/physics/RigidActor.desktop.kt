@@ -33,18 +33,19 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
 
     override var characterControllerHitBehavior: HitActorBehavior = HitActorBehavior.SLIDE
 
+    private val simPose = MutablePoseF()
     private val poseA = CapturedPose()
     private val poseB = CapturedPose()
     private val bufBounds = BoundingBoxF()
 
     override var pose: PoseF
-        get() = poseB.pose
+        get() = simPose
         set(value) {
+            simPose.set(value)
             poseA.pose.set(value)
             poseB.pose.set(value)
             val pose = holder.globalPose
-            value.position.toPxVec3(pose.p)
-            value.rotation.toPxQuat(pose.q)
+            simPose.toPxTransform(pose)
             holder.globalPose = pose
             transform.setCompositionOf(value.position, value.rotation, Vec3f.ONES)
         }
@@ -116,21 +117,21 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
         _shapes.clear()
     }
 
+    override fun fetchSimulationData() {
+        holder.globalPose.toPoseF(simPose)
+    }
+
     override fun capture(simulationTime: Double) {
         checkIsNotReleased()
         poseA.set(poseB)
-        if (isActive) {
-            holder.globalPose.toPoseF(poseB.pose)
-        }
+        poseB.pose.set(simPose)
         poseB.time = simulationTime
     }
 
-    override fun interpolateTransform(gameTime: Double) {
+    override fun interpolateTransform(captureTimeA: Double, captureTimeB: Double, frameTime: Double, weightB: Float) {
         if (!isActive) {
             return
         }
-        val deltaCapture = poseB.time - poseA.time
-        val weightB = ((gameTime - poseA.time) / deltaCapture).toFloat().clamp(0f, 1f)
         poseA.pose.position.mix(poseB.pose.position, weightB, lerpPos)
         poseA.pose.rotation.mix(poseB.pose.rotation, weightB, lerpRot)
         transform.setCompositionOf(lerpPos, lerpRot, Vec3f.ONES)
