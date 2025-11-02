@@ -59,12 +59,8 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         scene?.let { registerHandlers(it) }
     }
 
-    override fun singleStepAsync(timeStep: Float) {
-        super.singleStepAsync(timeStep)
+    override fun simulate(timeStep: Float) {
         pxScene.simulate(timeStep)
-    }
-
-    override fun fetchAsyncStepResults() {
         pxScene.fetchResults(true)
 
         for (i in actors.indices) {
@@ -75,8 +71,6 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         for (i in 0 until mutActiveActors) {
             pxActors[activeActors.get(i)]?.isActive = true
         }
-
-        super.fetchAsyncStepResults()
     }
 
     internal fun registerActorReference(actor: RigidActor) {
@@ -127,8 +121,7 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         pxScene.removeArticulation((articulation as ArticulationImpl).pxArticulation)
     }
 
-    override fun doRelease() {
-        super.doRelease()
+    override fun releaseWorld() {
         pxScene.release()
         bufPxGravity.destroy()
         raycastResult.destroy()
