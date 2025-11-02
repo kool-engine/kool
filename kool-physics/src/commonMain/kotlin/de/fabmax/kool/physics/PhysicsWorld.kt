@@ -19,8 +19,7 @@ abstract class PhysicsWorld : BaseReleasable() {
     val simStepper: PhysicsStepper = AsyncPhysicsStepper(this)
     val physicsTime: Double get() = simStepper.physicsTime
 
-    val onAdvancePhysics = BufferedList<PhysicsStepListener>()
-    val onPhysicsUpdate = BufferedList<PhysicsStepListener>()
+    val onPhysicsUpdate = BufferedList<OnPhysicsUpdate>()
 
     protected val mutActors = mutableListOf<RigidActor>()
     val actors: List<RigidActor>
@@ -140,8 +139,7 @@ abstract class PhysicsWorld : BaseReleasable() {
     }
 
     internal fun stepSimulation(timeStep: Float) {
-        onPhysicsUpdate.forEachUpdated { it.onPhysicsStep(timeStep) }
-        onAdvancePhysics.forEachUpdated { it.onPhysicsStep(timeStep) }
+        onPhysicsUpdate.forEachUpdated { it.onPhysicsUpdate(timeStep) }
         simulate(timeStep)
     }
 

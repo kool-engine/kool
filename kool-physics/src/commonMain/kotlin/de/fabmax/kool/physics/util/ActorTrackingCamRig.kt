@@ -4,21 +4,14 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.toDeg
+import de.fabmax.kool.physics.OnPhysicsUpdate
+import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.RigidBody
 import de.fabmax.kool.scene.Node
 import kotlin.math.atan2
 
-class ActorTrackingCamRig : Node() {
+class ActorTrackingCamRig(world: PhysicsWorld) : Node() {
     var trackedActor: RigidBody? = null
-        set(value) {
-            field?.let {
-                it.onPhysicsUpdate -= updateTracking
-            }
-            value?.let {
-                it.onPhysicsUpdate += updateTracking
-            }
-            field = value
-        }
 
     var localFrontDir = Vec3f.NEG_Z_AXIS
 
@@ -32,7 +25,7 @@ class ActorTrackingCamRig : Node() {
     private val trackDirCurrent = MutableVec3f(localFrontDir)
     private val trackDelta = MutableVec3f()
 
-    private val updateTracking: (Float) -> Unit = { timeStep ->
+    private val updateTracking = OnPhysicsUpdate { timeStep ->
         trackedActor?.let {
             trackPosDesired.set(Vec3f.ZERO)
             it.transform.transform(trackPosDesired)
@@ -49,5 +42,10 @@ class ActorTrackingCamRig : Node() {
         transform.translate(trackPosCurrent)
         val ang = atan2(trackDirCurrent.x, trackDirCurrent.z).toDeg()
         transform.rotate(ang.deg, Vec3f.Y_AXIS)
+    }
+
+    init {
+        world.onPhysicsUpdate += updateTracking
+        onRelease { world.onPhysicsUpdate -= updateTracking }
     }
 }

@@ -6,7 +6,6 @@ import de.fabmax.kool.physics.character.HitActorBehavior
 import de.fabmax.kool.scene.Tags
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.checkIsNotReleased
 import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
@@ -36,7 +35,6 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
 
     private val poseA = CapturedPose()
     private val poseB = CapturedPose()
-
     private val bufBounds = BoundingBoxF()
 
     override var pose: PoseF
@@ -70,9 +68,6 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
     override var isActive = true
 
     override val transform = TrsTransformF()
-
-    @Deprecated("to be removed")
-    override val onPhysicsUpdate = BufferedList<PhysicsStepListener>()
 
     private val _shapes = mutableListOf<Shape>()
     override val shapes: List<Shape>
