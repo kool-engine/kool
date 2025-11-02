@@ -205,8 +205,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
     private fun spawnDolls() {
         // remove existing dolls
         ragdolls.forEach {
-            physicsWorld.removeArticulation(it)
-            it.release()
+            physicsWorld.removeArticulation(it, true)
         }
         ragdolls.clear()
         bodyInstances.clear()
