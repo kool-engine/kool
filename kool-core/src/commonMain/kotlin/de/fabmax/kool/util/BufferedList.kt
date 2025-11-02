@@ -74,3 +74,10 @@ class BufferedList<T> private constructor(private val backingList: MutableList<T
     private class Insert<T>(item: T, val index: Int) : StagedMutation<T>(item)
     private class Remove<T>(item: T) : StagedMutation<T>(item)
 }
+
+inline fun <T> BufferedList<T>.forEachUpdated(block: (T) -> Unit) {
+    update()
+    for (i in indices) {
+        block(this[i])
+    }
+}

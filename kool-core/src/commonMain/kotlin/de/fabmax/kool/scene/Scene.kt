@@ -18,6 +18,10 @@ inline fun scene(name: String? = null, block: Scene.() -> Unit): Scene {
     return Scene(name).apply(block)
 }
 
+fun interface OnRenderScene {
+    suspend fun onRenderScene()
+}
+
 open class Scene(name: String? = null) : Node(name) {
     private val job = Job(ApplicationScope.job)
 
@@ -26,7 +30,13 @@ open class Scene(name: String? = null) : Node(name) {
      */
     val coroutineScope: CoroutineScope = CoroutineScope(job + KoolDispatchers.Frontend)
 
-    val onRenderScene: BufferedList<(KoolContext) -> Unit> = BufferedList()
+    /**
+     * List of callbacks to be called on every frame before rendering the scene. Callbacks can suspend to wait for
+     * async operations that have to be completed before the next frame is rendered. However, a suspending
+     * `onRenderScene` callback will delay the entire frame, so care must be taken that the callback does not suspend
+     * too long.
+     */
+    val onRenderScene: BufferedList<OnRenderScene> = BufferedList()
 
     val lighting = Lighting()
     val mainRenderPass: ScreenPass = ScreenPass()
@@ -61,11 +71,8 @@ open class Scene(name: String? = null) : Node(name) {
         extraPasses -= pass
     }
 
-    fun collectScene(frameData: FrameData, ctx: KoolContext) {
-        onRenderScene.update()
-        for (i in onRenderScene.indices) {
-            onRenderScene[i](ctx)
-        }
+    internal suspend fun collectScene(frameData: FrameData, ctx: KoolContext) {
+        onRenderScene.forEachUpdated { it.onRenderScene() }
 
         if (sortedPasses.isEmpty() || extraPasses.update()) {
             sortGpuPassesByDependencies()
