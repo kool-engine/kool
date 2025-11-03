@@ -117,7 +117,7 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
         _shapes.clear()
     }
 
-    override fun fetchSimulationData() {
+    override fun syncSimulationData() {
         holder.globalPose.toPoseF(simPose)
     }
 

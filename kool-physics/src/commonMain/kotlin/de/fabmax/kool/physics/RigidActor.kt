@@ -47,7 +47,7 @@ interface RigidActor : Releasable {
 
     fun detachShape(shape: Shape)
 
-    fun fetchSimulationData()
+    fun syncSimulationData()
     fun capture(simulationTime: Double)
     fun interpolateTransform(captureTimeA: Double, captureTimeB: Double, frameTime: Double, weightB: Float)
 

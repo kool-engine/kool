@@ -37,6 +37,7 @@ class RigidDynamicImpl(
             holder.setRigidBodyFlag(PxRigidBodyFlagEnum.eKINEMATIC, true)
         }
         transform.setMatrix(pose)
+        syncSimulationData()
     }
 
     override fun wakeUp() {

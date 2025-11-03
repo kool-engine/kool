@@ -18,5 +18,6 @@ class RigidStaticImpl(pose: Mat4f) : RigidActorImpl(), RigidStatic {
             holder = pxRigidStatic
         }
         transform.setMatrix(pose)
+        syncSimulationData()
     }
 }
