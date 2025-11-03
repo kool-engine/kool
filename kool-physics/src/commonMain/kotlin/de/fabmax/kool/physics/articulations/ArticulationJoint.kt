@@ -1,6 +1,8 @@
 package de.fabmax.kool.physics.articulations
 
 import de.fabmax.kool.math.PoseF
+import de.fabmax.kool.physics.PhysicsStepListener
+import de.fabmax.kool.physics.PhysicsWorld
 
 enum class ArticulationJointType {
     /**
@@ -55,8 +57,14 @@ enum class ArticulationDriveType {
     NONE
 }
 
+/**
+ * Represents the connection between two [ArticulationLink]s.
+ *
+ * Any parameter modification must be done before the parent articulation is added to the simulation / [PhysicsWorld]
+ * or from [PhysicsStepListener.onPhysicsUpdate] to make sure that the values don't change while the simulation
+ * is running.
+ */
 interface ArticulationJoint {
-
     var jointType: ArticulationJointType
 
     fun setParentPose(pose: PoseF)

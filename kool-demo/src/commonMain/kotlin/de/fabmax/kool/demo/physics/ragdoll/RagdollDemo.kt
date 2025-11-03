@@ -128,9 +128,11 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         }
 
         val forceHelper = ForceHelper()
+        physicsWorld.physicsStepListeners += forceHelper
         InputStack.defaultInputHandler.pointerListeners += forceHelper
         onRelease {
             InputStack.defaultInputHandler.pointerListeners -= forceHelper
+            physicsWorld.physicsStepListeners -= forceHelper
         }
 
         addColorMesh(instances = bodyInstanceData) {
@@ -223,8 +225,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
     private fun makeRagdollYUp(pose: Mat4f): Articulation {
         val ragdoll = Articulation(false)
-        //ragdoll.minPositionIterations = 8
-        //ragdoll.minVelocityIterations = 2
+        ragdoll.minVelocityIterations = 2
 
         // create links / ragdoll bones
 
@@ -496,7 +497,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         }
     }
 
-    private inner class ForceHelper : InputStack.PointerListener {
+    private inner class ForceHelper : InputStack.PointerListener, PhysicsStepListener {
         val pickRay = RayF()
         val hitResult = HitResult()
         var hitActor: RigidBody? = null
@@ -519,7 +520,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             mainScene.camera.computePickRay(pickRay, dragPtr, mainScene.mainRenderPass.viewport)
             when {
                 dragPtr.isMiddleButtonPressed -> initDrag()
-                dragPtr.isMiddleButtonDown -> applyForce()
+                dragPtr.isMiddleButtonDown -> updateForce()
                 else -> isActive = false
             }
         }
@@ -536,13 +537,18 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             }
         }
 
-        fun applyForce() {
+        private fun updateForce() {
             hitActor?.let { actor ->
                 actor.toGlobal(forceAppPosGlobal.set(forceAppPosLocal))
                 dragPlane.intersectionPoint(pickRay, forceDragPos)
                 force.set(forceDragPos).subtract(forceAppPosGlobal).mul(500f)
-                actor.addForceAtPos(force, forceAppPosGlobal)
                 isActive = true
+            }
+        }
+
+        override fun onPhysicsUpdate(timeStep: Float) {
+            if (isActive) {
+                hitActor?.addForceAtPos(force, forceAppPosGlobal)
             }
         }
     }

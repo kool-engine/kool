@@ -31,7 +31,15 @@ object PhysicsImpl : PhysicsSystem {
 
     override val isLoaded = true
 
-    override val physicsDispatcher: CoroutineDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    private var physicsThread: Thread? = null
+    override val physicsDispatcher: CoroutineDispatcher = Executors
+        .newSingleThreadExecutor { target ->
+            Thread(target, "physics-thread").also {
+                it.isDaemon = true
+                physicsThread = it
+            }
+        }
+        .asCoroutineDispatcher()
 
     val defaultCpuDispatcher: PxDefaultCpuDispatcher
 
@@ -88,6 +96,10 @@ object PhysicsImpl : PhysicsSystem {
 
     override suspend fun loadAndAwaitPhysics() {
         // on JVM, there's nothing to do here
+    }
+
+    internal fun isPhysicsThread(): Boolean {
+        return Thread.currentThread() === physicsThread
     }
 
     private fun pxVersionToString(pxVersion: Int): String {
