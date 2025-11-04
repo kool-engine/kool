@@ -285,7 +285,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     private fun Scene.setupCamera() {
-        camRig = CharacterTrackingCamRig(false).apply {
+        camRig = CharacterTrackingCamRig(physicsObjects.world, false).apply {
             camera.setClipRange(0.1f, 1e9f)
             trackedPose = physicsObjects.playerController.controller.actor.transform
             minZoom = 0.75f

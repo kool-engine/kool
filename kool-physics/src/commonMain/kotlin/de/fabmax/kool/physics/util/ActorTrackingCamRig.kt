@@ -10,7 +10,7 @@ import kotlin.math.atan2
 class ActorTrackingCamRig(
     world: PhysicsWorld,
     var trackedActor: RigidBody? = null,
-) : Node(), PhysicsStepListener {
+) : Node("ActorTrackingCamRig"), PhysicsStepListener {
     var localFrontDir = Vec3f.NEG_Z_AXIS
 
     var positionStiffness = 20f

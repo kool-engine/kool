@@ -17,6 +17,18 @@ abstract class CharacterControllerManager : BaseReleasable() {
                 controllers[i].onPhysicsUpdate(timeStep)
             }
         }
+
+        override fun onPhysicsCapture(simulationTime: Double) {
+            for (i in controllers.indices) {
+                controllers[i].onPhysicsCapture(simulationTime)
+            }
+        }
+
+        override fun onPhysicsInterpolate(captureTimeA: Double, captureTimeB: Double, frameTime: Double, weightB: Float) {
+            for (i in controllers.indices) {
+                controllers[i].onPhysicsInterpolate(captureTimeA, captureTimeB, frameTime, weightB)
+            }
+        }
     }
 
     fun createController(charProperties: CharacterControllerProperties = CharacterControllerProperties()): CharacterController {

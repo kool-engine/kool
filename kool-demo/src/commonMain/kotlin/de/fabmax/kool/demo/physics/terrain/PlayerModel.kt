@@ -19,7 +19,7 @@ class PlayerModel(val model: Model, val playerController: PlayerController) : No
         set(value) { controllerShapeOutline.isVisible = value }
 
     init {
-        transform  = playerController.playerTransform
+        transform = playerController.playerTransform
 
         // set correct player model position (relative to player controller origin)
         model.transform.translate(0f, -0.9f, 0f)
