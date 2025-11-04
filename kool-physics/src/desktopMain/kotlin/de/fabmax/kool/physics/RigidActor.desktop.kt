@@ -134,7 +134,7 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
         }
         poseA.pose.position.mix(poseB.pose.position, weightB, lerpPos)
         poseA.pose.rotation.mix(poseB.pose.rotation, weightB, lerpRot)
-        transform.setCompositionOf(lerpPos, lerpRot, Vec3f.ONES)
+        transform.setCompositionOf(lerpPos, lerpRot)
     }
 
     private class CapturedPose {
