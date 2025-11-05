@@ -44,10 +44,21 @@ internal class CanvasWrapper(val canvas: Canvas) : KoolWindowJvm {
         get() = Vec2i(canvas.width, canvas.height)
         set(_) {}
     override var renderResolutionFactor: Float = 1f
-        set(_) {}
-
+        set(value) {
+            if (value != field) {
+                field = value
+                handleResize()
+            }
+        }
     override val framebufferSize: Vec2i get() = canvasSize
-    override val size: Vec2i get() = canvasSize
+    override val size: Vec2i get() {
+        val s = canvasScale * renderResolutionFactor
+        return Vec2i(
+            x = (canvas.width * s.x).roundToInt(),
+            y = (canvas.height * s.y).roundToInt()
+        )
+    }
+
     override val renderScale: Float get() = parentScreenScale * renderResolutionFactor
 
     override var title: String
@@ -97,6 +108,7 @@ internal class CanvasWrapper(val canvas: Canvas) : KoolWindowJvm {
     private fun handleResize() {
         UiScale.updateUiScaleFromWindowScale(renderScale)
         resizeListeners.updated().forEach { it.onResize(canvasSize) }
+        scaleChangeListeners.updated().forEach { it.onScaleChanged(renderScale) }
     }
 
     override fun pollEvents() {
