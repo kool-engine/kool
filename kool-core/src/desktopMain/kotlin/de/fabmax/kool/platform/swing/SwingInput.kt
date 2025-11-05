@@ -14,7 +14,7 @@ private typealias KoolKeyEvent = KeyEvent
 private typealias AwtKeyEvent = java.awt.event.KeyEvent
 
 internal class SwingInput(private val canvasWrapper: CanvasWrapper) : PlatformInput {
-    private val scale: Float get() = canvasWrapper.parentScreenScale
+    private val scale: Float get() = canvasWrapper.renderScale
 
     private val blankCursor: Cursor
     private var isLockedCursor = false
