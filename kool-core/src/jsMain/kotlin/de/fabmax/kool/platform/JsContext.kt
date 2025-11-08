@@ -132,7 +132,7 @@ class JsWindow(val canvas: HTMLCanvasElement, val config: KoolConfigJs) : KoolWi
             document.title = value
         }
 
-    private var _flags = WindowFlags.DEFAULT
+    private var _flags = WindowFlags()
         set(value) {
             if (value != field) {
                 val oldFlags = field

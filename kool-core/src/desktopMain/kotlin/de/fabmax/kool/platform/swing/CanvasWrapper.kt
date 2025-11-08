@@ -54,7 +54,7 @@ internal class CanvasWrapper(val canvas: Canvas) : KoolWindowJvm {
         get() = "Swing Canvas"
         set(_) {}
 
-    override var flags: WindowFlags = WindowFlags.DEFAULT
+    override var flags: WindowFlags = WindowFlags()
         private set(value) {
             if (value != field) {
                 val oldFlags = field
