@@ -75,7 +75,7 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
             glfwSetWindowTitle(windowHandle, value)
         }
 
-    override var flags: WindowFlags = WindowFlags.DEFAULT
+    override var flags: WindowFlags = WindowFlags(isHiddenTitleBar = ctx.config.isNoTitleBar)
         private set(value) {
             if (value != field) {
                 val oldFlags = field
@@ -132,6 +132,10 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
             0L
         )
         check(windowHandle != MemoryUtil.NULL) { "Failed to create the GLFW window" }
+
+        if (flags.isHiddenTitleBar) {
+            platformWindowHelper.hideTitleBar(windowHandle)
+        }
 
         val iconList = KoolSystem.configJvm.windowIcon.ifEmpty { KoolWindowJvm.loadDefaultWindowIconSet() }
         if (iconList.isNotEmpty()) {

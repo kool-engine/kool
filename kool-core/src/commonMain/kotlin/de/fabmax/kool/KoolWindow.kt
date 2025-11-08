@@ -92,24 +92,13 @@ data class WindowCapabilities(
 }
 
 data class WindowFlags(
-    val isFullscreen: Boolean,
-    val isMaximized: Boolean,
-    val isMinimized: Boolean,
-    val isVisible: Boolean,
-    val isFocused: Boolean,
-    val isHiddenTitleBar: Boolean,
-) {
-    companion object {
-        val DEFAULT = WindowFlags(
-            isFullscreen = false,
-            isMaximized = false,
-            isMinimized = false,
-            isVisible = false,
-            isFocused = false,
-            isHiddenTitleBar = false,
-        )
-    }
-}
+    val isFullscreen: Boolean = false,
+    val isMaximized: Boolean = false,
+    val isMinimized: Boolean = false,
+    val isVisible: Boolean = false,
+    val isFocused: Boolean = false,
+    val isHiddenTitleBar: Boolean = false,
+)
 
 fun interface WindowResizeListener {
     fun onResize(newSize: Vec2i)
