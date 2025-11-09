@@ -38,6 +38,7 @@ interface RigidActor : Releasable {
 
     var isTrigger: Boolean
     var isActive: Boolean
+    val isAttachedToSimulation: Boolean
 
     val shapes: List<Shape>
 

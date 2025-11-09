@@ -3,6 +3,7 @@ package de.fabmax.kool.physics
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.QuatF
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.util.logE
 import org.lwjgl.system.MemoryStack
 import physx.physics.PxRigidBodyFlagEnum
 import physx.physics.PxRigidDynamic
@@ -49,6 +50,14 @@ class RigidDynamicImpl(
     }
 
     override fun setKinematicTarget(pose: Mat4f) {
+        if (!PhysicsImpl.isPhysicsThread()) {
+            logE { "setKinematicTarget must be called from PhysicsThread / PhysicsStepListener.onUpdatePhysics" }
+            return
+        }
+        if (!isAttachedToSimulation) {
+            logE { "Body needs to be attached to simulation before setKinematicTarget can be called" }
+            return
+        }
         MemoryStack.stackPush().use { mem ->
             val pxPose = pose.toPxTransform(mem.createPxTransform())
             holder.setKinematicTarget(pxPose)
@@ -56,6 +65,14 @@ class RigidDynamicImpl(
     }
 
     override fun setKinematicTarget(position: Vec3f?, rotation: QuatF?) {
+        if (!PhysicsImpl.isPhysicsThread()) {
+            logE { "setKinematicTarget must be called from PhysicsThread / PhysicsStepListener.onUpdatePhysics" }
+            return
+        }
+        if (!isAttachedToSimulation) {
+            logE { "Body needs to be attached to simulation before setKinematicTarget can be called" }
+            return
+        }
         MemoryStack.stackPush().use { mem ->
             val pxPose = mem.createPxTransform()
             pxPose.p = position?.toPxVec3(mem.createPxVec3()) ?: holder.globalPose.p
@@ -65,12 +82,20 @@ class RigidDynamicImpl(
     }
 
     override fun setLinearLockFlags(lockLinearX: Boolean, lockLinearY: Boolean, lockLinearZ: Boolean) {
+        if (!PhysicsImpl.isPhysicsThread()) {
+            logE { "setLinearLockFlags must be called from PhysicsThread / PhysicsStepListener.onUpdatePhysics" }
+            return
+        }
         holder.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_X, lockLinearX)
         holder.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_Y, lockLinearY)
         holder.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_Z, lockLinearZ)
     }
 
     override fun setAngularLockFlags(lockAngularX: Boolean, lockAngularY: Boolean, lockAngularZ: Boolean) {
+        if (!PhysicsImpl.isPhysicsThread()) {
+            logE { "setLinearLockFlags must be called from PhysicsThread / PhysicsStepListener.onUpdatePhysics" }
+            return
+        }
         holder.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_X, lockAngularX)
         holder.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_Y, lockAngularY)
         holder.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_Z, lockAngularZ)

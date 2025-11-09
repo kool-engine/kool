@@ -67,7 +67,8 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
         }
 
     override var isActive = true
-
+    override var isAttachedToSimulation: Boolean = false
+        internal set
     override val transform = TrsTransformF()
 
     private val _shapes = mutableListOf<Shape>()

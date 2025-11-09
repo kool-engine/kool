@@ -5,6 +5,8 @@ package de.fabmax.kool.physics
 import de.fabmax.kool.physics.geometry.ConvexMeshImpl
 import de.fabmax.kool.physics.geometry.CylinderGeometry
 import de.fabmax.kool.util.logI
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import physx.*
 
 // static top-level PhysX functions
@@ -30,6 +32,9 @@ object PhysicsImpl : PhysicsSystem {
     private var isLoading = false
     override val isLoaded: Boolean
         get() = PhysXJsLoader.physxDeferred.isCompleted
+
+    override val physicsDispatcher: CoroutineDispatcher
+        get() = Dispatchers.Default
 
     lateinit var defaultCpuDispatcher: PxDefaultCpuDispatcher
 
@@ -82,6 +87,10 @@ object PhysicsImpl : PhysicsSystem {
         }
 
         PhysXJsLoader.physxDeferred.await()
+    }
+
+    internal fun isPhysicsThread(): Boolean {
+        return true
     }
 
     private fun pxVersionToString(pxVersion: Int): String {
