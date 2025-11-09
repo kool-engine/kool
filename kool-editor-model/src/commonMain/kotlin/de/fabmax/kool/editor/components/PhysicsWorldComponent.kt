@@ -8,10 +8,7 @@ import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.spatial.BoundingBoxF
-import de.fabmax.kool.physics.Material
-import de.fabmax.kool.physics.Physics
-import de.fabmax.kool.physics.PhysicsWorld
-import de.fabmax.kool.physics.RigidActor
+import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.character.CharacterController
 import de.fabmax.kool.physics.character.CharacterControllerManager
 import de.fabmax.kool.physics.character.CharacterControllerProperties
@@ -77,7 +74,7 @@ class PhysicsWorldComponent(
         state?.let {
             actorStates -= it
             if (it.isAttached) {
-                physicsWorld?.removeActor(actor)
+                physicsWorld?.removeActor(actor, releaseActor = false)
             }
         }
     }
@@ -165,9 +162,11 @@ class PhysicsWorldComponent(
             world.gravity = gravity
             characterControllerManager = CharacterControllerManager(world)
 
-            world.onAdvancePhysics += {
-                if (isLimitedRange) {
-                    world.applyWorldBounds()
+            world.physicsStepListeners += object : PhysicsStepListener {
+                override fun onPhysicsUpdate(timeStep: Float) {
+                    if (isLimitedRange) {
+                        world.applyWorldBounds()
+                    }
                 }
             }
         }
@@ -179,7 +178,7 @@ class PhysicsWorldComponent(
 
             if (state.isAttached && !isInBounds(state.actor)) {
                 logT { "Actor ${state.component.gameEntity.name} left physics bounds" }
-                removeActor(state.actor)
+                removeActor(state.actor, releaseActor = false)
                 state.isAttached = false
             } else if (!state.isAttached && isInBounds(state.actor)) {
                 logT { "Actor ${state.component.gameEntity.name} entered physics bounds" }
@@ -191,7 +190,7 @@ class PhysicsWorldComponent(
 
     override fun onUpdate(ev: RenderPass.UpdateEvent) {
         physicsWorld?.let { world ->
-            world.isPauseSimulation = AppState.appMode == AppMode.PAUSE
+            world.simStepper.isPaused = AppState.appMode == AppMode.PAUSE
         }
     }
 

@@ -65,17 +65,17 @@ abstract class PhysicsActorComponent<T: ComponentData>(
 
     fun setPhysicsTransformFromDrawNode() {
         val world = physicsWorldComponent ?: return
-        val t = MutableVec3d()
-        val r = MutableQuatD()
-        val s = MutableVec3d()
-        val mat = MutableMat4d(world.gameEntity.globalToLocalD).mul(gameEntity.localToGlobalD)
+        val t = MutableVec3f()
+        val r = MutableQuatF()
+        val s = MutableVec3f()
+        val mat = MutableMat4f(world.gameEntity.globalToLocalF).mul(gameEntity.localToGlobalF)
         mat.decompose(t, r, s)
 
-        if (warnOnNonUniformScale && !s.isFuzzyEqual(Vec3d.ONES, eps = 1e-3)) {
+        if (warnOnNonUniformScale && !s.isFuzzyEqual(Vec3f.ONES, eps = 1e-3f)) {
             logW { "${gameEntity.name} / ${this::class.simpleName}: transform contains a scaling component $s, which may lead to unexpected behavior." }
         }
         applyPose(t, r)
     }
 
-    protected abstract fun applyPose(position: Vec3d, rotation: QuatD)
+    protected abstract fun applyPose(position: Vec3f, rotation: QuatF)
 }
