@@ -99,7 +99,7 @@ class CharacterControllerComponent(
     private suspend fun createCharController() {
         val physicsWorldComponent = getOrCreatePhysicsWorldComponent(gameEntity.scene)
 
-        var oldPos: Vec3d? = null
+        var oldPos: Vec3f? = null
         charController?.let { existing ->
             oldPos = existing.position
             physicsWorldComponent.removeCharController(this)
@@ -112,7 +112,7 @@ class CharacterControllerComponent(
         }
 
         if (oldPos != null) {
-            applyPose(oldPos, QuatD.IDENTITY)
+            applyPose(oldPos, QuatF.IDENTITY)
         } else {
             setPhysicsTransformFromDrawNode()
         }
@@ -133,7 +133,7 @@ class CharacterControllerComponent(
         charCtrl.nonWalkableMode = props.nonWalkableMode
     }
 
-    override fun applyPose(position: Vec3d, rotation: QuatD) {
+    override fun applyPose(position: Vec3f, rotation: QuatF) {
         charController?.position = position
     }
 
