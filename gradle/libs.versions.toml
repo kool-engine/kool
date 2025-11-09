@@ -9,7 +9,7 @@ kotlin-dokka = "2.1.0"
 lwjgl = "3.3.6"
 jsvg = "2.0.0"
 androidsvg = "1.4"
-physxjni = "2.6.1"
+physxjni = "2.6.2-SNAPSHOT"
 physxjswebidl = "2.6.2"
 
 # wgpu backend
@@ -41,6 +41,7 @@ lwjgl-stb = { group = "org.lwjgl", name = "lwjgl-stb", version.ref = "lwjgl" }
 lwjgl-jawt = { group = "org.lwjgl", name = "lwjgl-jawt", version.ref = "lwjgl" }
 lwjgl-msdfgen = { group = "org.lwjgl", name = "lwjgl-msdfgen", version.ref = "lwjgl" }
 physxjni = { group = "de.fabmax", name = "physx-jni", version.ref = "physxjni" }
+physxjniandroid = { group = "de.fabmax", name = "physx-jni-android", version.ref = "physxjni" }
 physxjswebidl = { group = "npm", name = "physx-js-webidl", version.ref = "physxjswebidl" }
 
 # wgpu backend

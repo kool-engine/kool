@@ -10,16 +10,10 @@ import de.fabmax.kool.physics.vehicle.Vehicle.Companion.FRONT_RIGHT
 import de.fabmax.kool.physics.vehicle.Vehicle.Companion.OMEGA_TO_RPM
 import de.fabmax.kool.physics.vehicle.Vehicle.Companion.REAR_LEFT
 import de.fabmax.kool.physics.vehicle.Vehicle.Companion.REAR_RIGHT
-import de.fabmax.kool.util.memStack
-import org.lwjgl.system.MemoryStack
-import physx.common.PxIDENTITYEnum
-import physx.common.PxQuat
-import physx.common.PxTransform
-import physx.common.PxVec3
-import physx.geometry.PxBoxGeometry
-import physx.physics.*
-import physx.support.PxArray_PxReal
-import physx.vehicle2.*
+import physxandroid.geometry.PxBoxGeometry
+import physxandroid.physics.*
+import physxandroid.support.PxArray_PxReal
+import physxandroid.vehicle2.*
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -214,13 +208,9 @@ class VehicleImpl(
             EngineDriveVehicleEnum.eDIFFTYPE_FOURWHEELDRIVE
         )
 
-        MemoryStack.stackPush().use { stack ->
+        memStack {
             // Apply a start pose to the physx actor and add it to the physx scene.
-            val vehiclePose = PxTransform.createAt(
-                stack, MemoryStack::nmalloc,
-                PxVec3.createAt(stack, MemoryStack::nmalloc, 0f, 1f, 0f),
-                PxQuat.createAt(stack, MemoryStack::nmalloc, PxIDENTITYEnum.PxIdentity)
-            )
+            val vehiclePose = createPxTransform(createPxVec3(0f, 1f, 0f), createPxQuat(0f, 0f, 0f, 1f))
             vehicle.physXState.physxActor.rigidBody.globalPose = vehiclePose
 
             // Set the vehicle in 1st gear.
@@ -398,21 +388,19 @@ class VehicleImpl(
     }
 
     private fun EngineDriveVehicle.setupPhysxParams(vehicleProps: VehicleProperties) {
-        MemoryStack.stackPush().use { mem ->
-            val roadFilterData = PxFilterData.createAt(mem, MemoryStack::nmalloc, 0, 0, 0, 0)
-            val roadQueryFlags = PxQueryFlags.createAt(mem, MemoryStack::nmalloc, (PxQueryFlagEnum.eSTATIC.value).toShort())
-            val roadQueryFilterData = PxQueryFilterData.createAt(mem, MemoryStack::nmalloc, roadFilterData, roadQueryFlags)
+        memStack {
+            val roadFilterData = createPxFilterData(0, 0, 0, 0)
+            val roadQueryFlags = createPxQueryFlags(PxQueryFlagEnum.eSTATIC.value.toShort())
+            val roadQueryFilterData = createPxQueryFilterData(roadFilterData, roadQueryFlags)
 
-            val actorCMassLocalPose = PxTransform.createAt(
-                mem, MemoryStack::nmalloc,
-                MutableVec3f(vehicleProps.chassisCMOffset).mul(-1f).toPxVec3(mem.createPxVec3()),
-                PxQuat.createAt(mem, MemoryStack::nmalloc, PxIDENTITYEnum.PxIdentity)
+            val actorCMassLocalPose = createPxTransform(
+                MutableVec3f(vehicleProps.chassisCMOffset).mul(-1f).toPxVec3(createPxVec3()),
+                createPxQuat(0f, 0f, 0f, 1f)
             )
-            val actorShapeLocalPose = PxTransform.createAt(
-                mem, MemoryStack::nmalloc,
+            val actorShapeLocalPose = createPxTransform(
                 // fixme: don't use hardcoded shape local pose
-                PxVec3.createAt(mem, MemoryStack::nmalloc, 0f, 0.83f, 0f),
-                PxQuat.createAt(mem, MemoryStack::nmalloc, PxIDENTITYEnum.PxIdentity)
+                createPxVec3(0f, 0.83f, 0f),
+                createPxQuat(0f, 0f, 0f, 1f)
             )
 
             // chassis filter data

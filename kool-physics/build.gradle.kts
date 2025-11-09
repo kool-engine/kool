@@ -1,4 +1,5 @@
 plugins {
+    id("kool.androidlib-conventions")
     id("kool.lib-conventions")
     id("kool.publish-conventions")
     id("de.fabmax.webidl-util") version "0.10.3"
@@ -22,6 +23,10 @@ kotlin {
             api(npm(libs.physxjswebidl.get().name, libs.versions.physxjswebidl.get()))
 //            api(npm(File("$projectDir/npm/physx-js-webidl")))
         }
+
+//        androidMain.dependencies {
+//            api(libs.physxjniandroid)
+//        }
     }
 }
 

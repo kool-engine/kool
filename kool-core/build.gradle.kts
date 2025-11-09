@@ -21,7 +21,7 @@ kotlin {
         desktopMain.dependencies {
             api(libs.bundles.lwjgl)
             implementation(libs.jsvg)
-            implementation("org.lwjglx:lwjgl3-awt:0.2.3") { exclude(group = "org.lwjgl")  }
+            implementation("org.lwjglx:lwjgl3-awt:0.2.3") { exclude(group = "org.lwjgl") }
 
             listOf("natives-linux", "natives-windows", "natives-macos", "natives-macos-arm64").forEach { platform ->
                 val nonNativeLibs = mutableListOf("lwjgl-jawt")

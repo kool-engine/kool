@@ -2,11 +2,10 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.PhysicsImpl
-import de.fabmax.kool.physics.createPxMeshScale
+import de.fabmax.kool.physics.memStack
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.memStack
-import physx.geometry.*
+import physxandroid.geometry.*
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual typealias GeometryHolder = PxGeometry

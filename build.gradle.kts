@@ -12,10 +12,10 @@ allprojects {
 }
 
 tasks.register<UnCommentTask>("disableAndroidPlatform") {
-    group = "build config"
+    group = "build setup"
 
     filesToUpdate += rootProject.file("buildSrc/src/main/kotlin/kool.androidlib-conventions.gradle.kts")
-    listOf("kool-core", "kool-editor-model").forEach { subProj ->
+    listOf("kool-core", "kool-physics", "kool-editor-model").forEach { subProj ->
         filesToUpdate += project.file("${subProj}/build.gradle.kts")
     }
 
@@ -25,10 +25,10 @@ tasks.register<UnCommentTask>("disableAndroidPlatform") {
 }
 
 tasks.register<UnCommentTask>("enableAndroidPlatform") {
-    group = "build config"
+    group = "build setup"
 
     filesToUpdate += rootProject.file("buildSrc/src/main/kotlin/kool.androidlib-conventions.gradle.kts")
-    listOf("kool-core", "kool-editor-model").forEach { subProj ->
+    listOf("kool-core", "kool-physics", "kool-editor-model").forEach { subProj ->
         filesToUpdate += project.file("${subProj}/build.gradle.kts")
     }
 

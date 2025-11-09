@@ -5,16 +5,14 @@ import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.PhysicsImpl
 import de.fabmax.kool.physics.RigidActor
-import de.fabmax.kool.physics.createPxTransform
 import de.fabmax.kool.physics.joints.RevoluteJoint.Companion.computeFrame
+import de.fabmax.kool.physics.memStack
 import de.fabmax.kool.physics.toPxTransform
-import de.fabmax.kool.util.memStack
-import org.lwjgl.system.MemoryStack
-import physx.PxTopLevelFunctions
-import physx.extensions.PxJointAngularLimitPair
-import physx.extensions.PxRevoluteJoint
-import physx.extensions.PxRevoluteJointFlagEnum
-import physx.extensions.PxSpring
+import physxandroid.PxTopLevelFunctions
+import physxandroid.extensions.PxJointAngularLimitPair
+import physxandroid.extensions.PxRevoluteJoint
+import physxandroid.extensions.PxRevoluteJointFlagEnum
+import physxandroid.extensions.PxSpring
 
 actual fun RevoluteJoint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): RevoluteJoint {
     return RevoluteJointImpl(bodyA, bodyB, frameA, frameB)
@@ -57,8 +55,8 @@ class RevoluteJointImpl(
 
     override fun enableLimit(lowerLimit: AngleF, upperLimit: AngleF, limitBehavior: LimitBehavior) {
         memStack {
-            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, limitBehavior.stiffness, limitBehavior.damping)
-            val limit = PxJointAngularLimitPair.createAt(this, MemoryStack::nmalloc, lowerLimit.rad, upperLimit.rad, spring)
+            val spring = autoDelete(PxSpring(limitBehavior.stiffness, limitBehavior.damping), PxSpring::destroy)
+            val limit = autoDelete(PxJointAngularLimitPair(lowerLimit.rad, upperLimit.rad, spring), PxJointAngularLimitPair::destroy)
             limit.restitution = limitBehavior.restitution
             limit.bounceThreshold = limitBehavior.bounceThreshold
             joint.setLimit(limit)

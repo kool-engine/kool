@@ -1,17 +1,14 @@
 package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.physics.PhysicsImpl
-import de.fabmax.kool.physics.createPxHeightFieldDesc
-import de.fabmax.kool.physics.createPxHeightFieldSample
-import de.fabmax.kool.physics.createPxMeshGeometryFlags
+import de.fabmax.kool.physics.memStack
 import de.fabmax.kool.util.Heightmap
-import de.fabmax.kool.util.memStack
-import physx.PxTopLevelFunctions
-import physx.geometry.PxHeightField
-import physx.geometry.PxHeightFieldFormatEnum
-import physx.geometry.PxHeightFieldGeometry
-import physx.geometry.PxHeightFieldSample
-import physx.support.PxArray_PxHeightFieldSample
+import physxandroid.PxTopLevelFunctions
+import physxandroid.geometry.PxHeightField
+import physxandroid.geometry.PxHeightFieldFormatEnum
+import physxandroid.geometry.PxHeightFieldGeometry
+import physxandroid.geometry.PxHeightFieldSample
+import physxandroid.support.PxArray_PxHeightFieldSample
 import kotlin.math.max
 import kotlin.math.roundToInt
 

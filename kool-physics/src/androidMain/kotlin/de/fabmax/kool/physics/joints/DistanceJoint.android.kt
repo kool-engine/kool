@@ -3,12 +3,11 @@ package de.fabmax.kool.physics.joints
 import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.PhysicsImpl
 import de.fabmax.kool.physics.RigidActor
-import de.fabmax.kool.physics.createPxTransform
+import de.fabmax.kool.physics.memStack
 import de.fabmax.kool.physics.toPxTransform
-import de.fabmax.kool.util.memStack
-import physx.PxTopLevelFunctions
-import physx.extensions.PxDistanceJoint
-import physx.extensions.PxDistanceJointFlagEnum
+import physxandroid.PxTopLevelFunctions
+import physxandroid.extensions.PxDistanceJoint
+import physxandroid.extensions.PxDistanceJointFlagEnum
 
 actual fun DistanceJoint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): DistanceJoint {
     return DistanceJointImpl(bodyA, bodyB, frameA, frameB)
