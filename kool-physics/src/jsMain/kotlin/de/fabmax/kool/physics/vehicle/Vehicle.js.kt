@@ -18,8 +18,11 @@ actual fun Vehicle(vehicleProps: VehicleProperties, world: PhysicsWorld, pose: M
     return VehicleImpl(vehicleProps, world, pose)
 }
 
-class VehicleImpl(override val vehicleProps: VehicleProperties, val world: PhysicsWorld, pose: Mat4f) : RigidBodyImpl(), Vehicle {
-
+class VehicleImpl(
+    override val vehicleProps: VehicleProperties,
+    val world: PhysicsWorld,
+    pose: Mat4f
+) : RigidBodyImpl(), Vehicle, PhysicsStepListener {
     val vehicleSimulationContext: PxVehiclePhysXSimulationContext
     val pxVehicle: EngineDriveVehicle
 
@@ -90,6 +93,7 @@ class VehicleImpl(override val vehicleProps: VehicleProperties, val world: Physi
 
         holder = RigidActorHolder(pxVehicle.physXState.physxActor.rigidBody)
         transform.setMatrix(pose)
+        world.physicsStepListeners += this
     }
 
     override fun setToRestState() {
@@ -109,12 +113,10 @@ class VehicleImpl(override val vehicleProps: VehicleProperties, val world: Physi
     override fun doRelease() {
         super.doRelease()
         pxVehicle.destroy()
+        world.physicsStepListeners -= this
     }
 
     override fun onPhysicsUpdate(timeStep: Float) {
-        // fixme: onPhysicsUpdate() is executed after physics step, vehicle update would probably be better
-        //  before physics step
-
         val targetGear = pxVehicle.engineDriveState.gearboxState.targetGear
         val neutralGear = pxVehicle.engineDriveParams.gearBoxParams.neutralGear
         if (isReverse && targetGear != neutralGear - 1) {
@@ -168,8 +170,6 @@ class VehicleImpl(override val vehicleProps: VehicleProperties, val world: Physi
 
         val nbSubsteps = if (linearSpeed.z < 5f) 3 else 1
         pxVehicle.componentSequence.setSubsteps(pxVehicle.componentSequenceSubstepGroupHandle, nbSubsteps.toByte())
-
-        super<RigidBodyImpl>.onPhysicsUpdate(timeStep)
     }
 
     private fun computeWheelCenterActorOffsets(vehicleProps: VehicleProperties): List<MutableVec3f> {

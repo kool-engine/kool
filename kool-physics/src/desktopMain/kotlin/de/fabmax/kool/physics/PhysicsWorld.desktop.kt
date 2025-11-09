@@ -40,10 +40,11 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         get() = mutActiveActors
 
     private val pxActors = mutableMapOf<PxActor, RigidActor>()
-    private val addActors = mutableListOf<RigidActor>()
-    private val removeActors = mutableListOf<Pair<RigidActor, Boolean>>()
-    private val addArticulations = mutableListOf<Articulation>()
-    private val removeArticulations = mutableListOf<Pair<Articulation, Boolean>>()
+    private val addActors = mutableSetOf<RigidActor>()
+    private val removeActors = mutableMapOf<RigidActor, Boolean>()
+    private val addArticulations = mutableSetOf<Articulation>()
+    private val removeArticulations = mutableMapOf<Articulation, Boolean>()
+    private val addRemoveLock = Any()
 
     init {
         PhysicsImpl.checkIsLoaded()
@@ -87,22 +88,36 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
 
     override fun addActor(actor: RigidActor) {
         super.addActor(actor)
-        synchronized(addActors) { addActors += actor }
+        synchronized(addRemoveLock) {
+            removeActors -= actor
+            addActors += actor
+        }
     }
 
     override fun removeActor(actor: RigidActor, releaseActor: Boolean) {
         super.removeActor(actor, releaseActor)
-        synchronized(removeActors) { removeActors += actor to releaseActor }
+        synchronized(addRemoveLock) {
+            if (!addActors.remove(actor)) {
+                removeActors += actor to releaseActor
+            }
+        }
     }
 
     override fun addArticulation(articulation: Articulation) {
         super.addArticulation(articulation)
-        synchronized(addArticulations) { addArticulations += articulation }
+        synchronized(addRemoveLock) {
+            removeArticulations -= articulation
+            addArticulations += articulation
+        }
     }
 
     override fun removeArticulation(articulation: Articulation, releaseArticulation: Boolean) {
         super.removeArticulation(articulation, releaseArticulation)
-        synchronized(removeArticulations) { removeArticulations += articulation to releaseArticulation }
+        synchronized(addRemoveLock) {
+            if (!addArticulations.remove(articulation)) {
+                removeArticulations += articulation to releaseArticulation
+            }
+        }
     }
 
     override fun releaseWorld() {
@@ -186,46 +201,46 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
     }
 
     private fun addAndRemoveActors() {
-        synchronized(addActors) {
-            for (i in addActors.indices) {
-                val actor = addActors[i]
-                pxScene.addActor(actor.holder)
-                registerActorReference(actor)
-                if (isContinuousCollisionDetection) {
-                    actor.enableCcd()
+        synchronized(addRemoveLock) {
+            if (addActors.isNotEmpty()) {
+                addActors.forEach { actor ->
+                    pxScene.addActor(actor.holder)
+                    (actor as RigidActorImpl).isAttachedToSimulation = true
+                    registerActorReference(actor)
+                    if (isContinuousCollisionDetection) {
+                        actor.enableCcd()
+                    }
                 }
+                addActors.clear()
             }
-            addActors.clear()
-        }
-        synchronized(removeActors) {
-            for (i in removeActors.indices) {
-                val (actor, release) = removeActors[i]
-                pxScene.removeActor(actor.holder)
-                deleteActorReference(actor)
-                if (release) {
-                    actor.release()
+            if (removeActors.isNotEmpty()) {
+                removeActors.forEach { (actor, release) ->
+                    pxScene.removeActor(actor.holder)
+                    (actor as RigidActorImpl).isAttachedToSimulation = false
+                    deleteActorReference(actor)
+                    if (release) {
+                        actor.release()
+                    }
                 }
+                removeActors.clear()
             }
-            removeActors.clear()
-        }
-        synchronized(addArticulations) {
-            for (i in addArticulations.indices) {
-                val articulation = addArticulations[i]
-                articulation.links.forEach { registerActorReference(it) }
-                pxScene.addArticulation((articulation as ArticulationImpl).pxArticulation)
-            }
-            addArticulations.clear()
-        }
-        synchronized(removeArticulations) {
-            for (i in removeArticulations.indices) {
-                val (articulation, release) = removeArticulations[i]
-                articulation.links.forEach { deleteActorReference(it) }
-                pxScene.removeArticulation((articulation as ArticulationImpl).pxArticulation)
-                if (release) {
-                    articulation.release()
+            if (addArticulations.isNotEmpty()) {
+                addArticulations.forEach { articulation ->
+                    articulation.links.forEach { registerActorReference(it) }
+                    pxScene.addArticulation((articulation as ArticulationImpl).pxArticulation)
                 }
+                addArticulations.clear()
             }
-            removeArticulations.clear()
+            if (removeArticulations.isNotEmpty()) {
+                removeArticulations.forEach { (articulation, release) ->
+                    articulation.links.forEach { deleteActorReference(it) }
+                    pxScene.removeArticulation((articulation as ArticulationImpl).pxArticulation)
+                    if (release) {
+                        articulation.release()
+                    }
+                }
+                removeArticulations.clear()
+            }
         }
     }
 

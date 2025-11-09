@@ -3,8 +3,6 @@ package de.fabmax.kool.physics.character
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
 import physx.*
-import kotlin.math.acos
-import kotlin.math.cos
 
 class JsCharacterController(
     private val pxController: PxCapsuleController,
@@ -14,37 +12,11 @@ class JsCharacterController(
     world: PhysicsWorldImpl
 ) : CharacterController(manager, world) {
 
-    private val bufPosition = MutableVec3d()
     private val bufPxPosition = PxExtendedVec3()
     private val bufPxVec3 = PxVec3()
     private val pxControllerFilters = PxControllerFilters()
 
-    override var position: Vec3d
-        get() = pxController.position.toVec3d(bufPosition)
-        set(value) {
-            pxController.position = value.toPxExtendedVec3(bufPxPosition)
-            prevPosition.set(value)
-        }
-
     override val actor: RigidDynamic = RigidDynamicImpl(1f, MutableMat4f(), false, pxController.actor)
-
-    override var height: Float = pxController.height
-        set(value) {
-            field = value
-            pxController.height = value
-        }
-
-    override var radius: Float = pxController.radius
-        set(value) {
-            field = value
-            pxController.radius = value
-        }
-
-    override var slopeLimit: AngleF = acos(pxController.slopeLimit).rad
-        set(value) {
-            field = value
-            pxController.slopeLimit = cos(value.rad)
-        }
 
     override var nonWalkableMode: NonWalkableMode = when (pxController.nonWalkableMode) {
             PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING -> NonWalkableMode.PREVENT_CLIMBING
@@ -59,15 +31,33 @@ class JsCharacterController(
             }
         }
 
+    private val tmpPos = MutableVec3d()
+
     init {
         hitListener.controller = this
         behaviorCallback.controller = this
         world.registerActorReference(actor)
     }
 
+    override fun onPhysicsUpdate(timeStep: Float) {
+        bufPosition.writeIfDirty {
+            pxController.position = tmpPos.set(it).toPxExtendedVec3(bufPxPosition)
+            posA.set(it)
+            posB.set(it)
+        }
+        bufHeight.writeIfDirty { pxController.height = it }
+        bufRadius.writeIfDirty { pxController.radius = it }
+        bufSlopeLimit.writeIfDirty { pxController.slopeLimit = it }
+
+        bufPosition.read { pxController.position.toVec3d(tmpPos).toMutableVec3f(it) }
+        bufHeight.read(pxController.height)
+        bufRadius.read(pxController.radius)
+        bufSlopeLimit.read(pxController.slopeLimit)
+        super.onPhysicsUpdate(timeStep)
+    }
+
     override fun move(displacement: Vec3f, timeStep: Float) {
         val flags = pxController.move(displacement.toPxVec3(bufPxVec3), 0.001f, timeStep, pxControllerFilters)
-
         isDownCollision = flags.isSet(PxControllerCollisionFlagEnum.eCOLLISION_DOWN)
         isUpCollision = flags.isSet(PxControllerCollisionFlagEnum.eCOLLISION_UP)
         isSideCollision = flags.isSet(PxControllerCollisionFlagEnum.eCOLLISION_SIDES)

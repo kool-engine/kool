@@ -16,9 +16,7 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
         PhysicsImpl.checkIsLoaded()
         world as PhysicsWorldImpl
         pxManager = PxTopLevelFunctions.CreateControllerManager(world.pxScene)
-
-        world.onAdvancePhysics += onAdvanceListener
-        world.onPhysicsUpdate += onUpdateListener
+        world.physicsStepListeners += onUpdateListener
     }
 
     override fun doCreateController(charProperties: CharacterControllerProperties): CharacterController {
@@ -56,8 +54,7 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
 
     override fun doRelease() {
         super.doRelease()
-        world.onAdvancePhysics -= onAdvanceListener
-        world.onPhysicsUpdate -= onUpdateListener
+        world.physicsStepListeners -= onUpdateListener
         pxManager.release()
     }
 }

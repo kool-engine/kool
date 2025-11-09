@@ -25,5 +25,4 @@ class ArticulationLinkImpl(
     init {
         parent?._children?.add(this)
     }
-
 }
