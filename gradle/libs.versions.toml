@@ -9,8 +9,8 @@ kotlin-dokka = "2.1.0"
 lwjgl = "3.3.6"
 jsvg = "2.0.0"
 androidsvg = "1.4"
-physxjni = "2.6.2-SNAPSHOT"
-physxjswebidl = "2.6.2"
+physxjni = "2.7.0"
+physxjswebidl = "2.7.0"
 
 # wgpu backend
 wgpu4k = "0.1.1"

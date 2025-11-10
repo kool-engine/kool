@@ -2444,6 +2444,8 @@ external interface PxOverlapResult : PxOverlapCallback {
      */
     fun getTouch(index: Int): PxOverlapHit
 
+    fun clear()
+
 }
 
 fun PxOverlapResult(_module: dynamic = PhysXJsLoader.physXJs): PxOverlapResult = js("new _module.PxOverlapResult()")
@@ -2733,6 +2735,8 @@ external interface PxRaycastResult : PxRaycastCallback {
      * @return WebIDL type: [PxRaycastHit] (Const, Ref)
      */
     fun getTouch(index: Int): PxRaycastHit
+
+    fun clear()
 
 }
 
@@ -3095,6 +3099,8 @@ external interface PxSweepResult : PxSweepCallback {
      * @return WebIDL type: [PxSweepHit] (Const, Ref)
      */
     fun getTouch(index: Int): PxSweepHit
+
+    fun clear()
 
 }
 
