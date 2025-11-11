@@ -9,7 +9,6 @@ import physx.PxControllerShapeHitFromPointer
 import physx.PxUserControllerHitReportImpl
 
 class ControllerHitListener(val world: PhysicsWorldImpl) {
-
     private val hitPosD = MutableVec3d()
     private val hitPos = MutableVec3f()
     private val hitNormal = MutableVec3f()

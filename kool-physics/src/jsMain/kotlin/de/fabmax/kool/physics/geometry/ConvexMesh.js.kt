@@ -65,7 +65,7 @@ class ConvexMeshImpl(override val points: List<Vec3f>, override var releaseWithG
         internal fun makePxConvexMesh(points: List<Vec3f>): PxConvexMesh = MemoryStack.stackPush().use { mem ->
             val vec3Vector = points.toPxArray_PxVec3()
             val desc = mem.createPxConvexMeshDesc()
-            desc.flags = mem.createPxConvexFlags(PxConvexFlagEnum.eCOMPUTE_CONVEX)
+            desc.flags = mem.createPxConvexFlags(PxConvexFlagEnum.eCOMPUTE_CONVEX.value)
             desc.points.count = points.size
             desc.points.stride = 12
             desc.points.data = vec3Vector.begin()

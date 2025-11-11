@@ -1,9 +1,6 @@
 package de.fabmax.kool.physics.vehicle
 
-import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.toRad
+import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.vehicle.Vehicle.Companion.FRONT_LEFT
 import de.fabmax.kool.physics.vehicle.Vehicle.Companion.FRONT_RIGHT
@@ -12,12 +9,11 @@ import de.fabmax.kool.physics.vehicle.Vehicle.Companion.REAR_LEFT
 import de.fabmax.kool.physics.vehicle.Vehicle.Companion.REAR_RIGHT
 import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
-import physx.common.PxIDENTITYEnum
-import physx.common.PxQuat
-import physx.common.PxTransform
 import physx.common.PxVec3
 import physx.geometry.PxBoxGeometry
-import physx.physics.*
+import physx.physics.PxPairFlagEnum
+import physx.physics.PxQueryFlagEnum
+import physx.physics.PxShapeFlagEnum
 import physx.support.PxArray_PxReal
 import physx.vehicle2.*
 import kotlin.math.abs
@@ -55,6 +51,7 @@ class VehicleImpl(
     private val peakTorque = vehicleProps.peakEngineTorque
 
     private val tmpVec = MutableVec3f()
+    private val tmpVecPx = PxVec3()
     private val linearSpeed = MutableVec3f()
     private val prevLinearSpeed = MutableVec3f()
     private val linearAccel = MutableVec3f()
@@ -84,7 +81,7 @@ class VehicleImpl(
 
     override var isReverse = false
 
-    override val holder: PxRigidBody
+    override val holder: RigidActorHolder
 
     init {
         vehicleSimulationContext = PxVehiclePhysXSimulationContext().apply {
@@ -100,7 +97,7 @@ class VehicleImpl(
         }
         pxVehicle = createVehicle(vehicleProps)
 
-        holder = pxVehicle.physXState.physxActor.rigidBody
+        holder = RigidActorHolder(pxVehicle.physXState.physxActor.rigidBody)
         transform.setMatrix(pose)
         world.physicsStepListeners += this
     }
@@ -113,7 +110,7 @@ class VehicleImpl(
 
         memStack {
             val pxVecZero = createPxVec3(0f, 0f, 0f)
-            val actor = PxRigidDynamic.wrapPointer(pxVehicle.physXState.physxActor.rigidBody.address)
+            val actor = PxRigidDynamicFromPointer(pxVehicle.physXState.physxActor.rigidBody.address)
             actor.linearVelocity = pxVecZero
             actor.angularVelocity = pxVecZero
         }
@@ -122,10 +119,11 @@ class VehicleImpl(
     override fun doRelease() {
         super.doRelease()
         pxVehicle.destroy()
+        tmpVecPx.destroy()
         world.physicsStepListeners -= this
     }
 
-   override fun onPhysicsUpdate(timeStep: Float) {
+    override fun onPhysicsUpdate(timeStep: Float) {
         val targetGear = pxVehicle.engineDriveState.gearboxState.targetGear
         val neutralGear = pxVehicle.engineDriveParams.gearBoxParams.neutralGear
         if (isReverse && targetGear != neutralGear - 1) {
@@ -171,6 +169,16 @@ class VehicleImpl(
         val forwardDir = vehicleActor.globalPose.q.basisVector2
         val sideDir = vehicleActor.globalPose.q.basisVector0
 
+        linearVelocity.toVec3f(tmpVec)
+        val cW = 0.22f
+        val p = 1f
+        val a = 1.25f
+        val v = tmpVec.length()
+        val fw = tmpVec.norm().mul(-cW * p * a * v * v)
+        if (fw.length() > 10f) {
+            vehicleActor.addForce(fw.toPxVec3(tmpVecPx))
+        }
+
         prevLinearSpeed.set(linearSpeed)
         linearSpeed.z = linearVelocity.dot(forwardDir)
         linearSpeed.x = linearVelocity.dot(sideDir)
@@ -214,13 +222,9 @@ class VehicleImpl(
             EngineDriveVehicleEnum.eDIFFTYPE_FOURWHEELDRIVE
         )
 
-        MemoryStack.stackPush().use { stack ->
+        memStack {
             // Apply a start pose to the physx actor and add it to the physx scene.
-            val vehiclePose = PxTransform.createAt(
-                stack, MemoryStack::nmalloc,
-                PxVec3.createAt(stack, MemoryStack::nmalloc, 0f, 1f, 0f),
-                PxQuat.createAt(stack, MemoryStack::nmalloc, PxIDENTITYEnum.PxIdentity)
-            )
+            val vehiclePose = createPxTransform(Vec3f(0f, 1f, 0f), QuatF.IDENTITY)
             vehicle.physXState.physxActor.rigidBody.globalPose = vehiclePose
 
             // Set the vehicle in 1st gear.
@@ -398,22 +402,12 @@ class VehicleImpl(
     }
 
     private fun EngineDriveVehicle.setupPhysxParams(vehicleProps: VehicleProperties) {
-        MemoryStack.stackPush().use { mem ->
-            val roadFilterData = PxFilterData.createAt(mem, MemoryStack::nmalloc, 0, 0, 0, 0)
-            val roadQueryFlags = PxQueryFlags.createAt(mem, MemoryStack::nmalloc, (PxQueryFlagEnum.eSTATIC.value).toShort())
-            val roadQueryFilterData = PxQueryFilterData.createAt(mem, MemoryStack::nmalloc, roadFilterData, roadQueryFlags)
-
-            val actorCMassLocalPose = PxTransform.createAt(
-                mem, MemoryStack::nmalloc,
-                MutableVec3f(vehicleProps.chassisCMOffset).mul(-1f).toPxVec3(mem.createPxVec3()),
-                PxQuat.createAt(mem, MemoryStack::nmalloc, PxIDENTITYEnum.PxIdentity)
-            )
-            val actorShapeLocalPose = PxTransform.createAt(
-                mem, MemoryStack::nmalloc,
-                // fixme: don't use hardcoded shape local pose
-                PxVec3.createAt(mem, MemoryStack::nmalloc, 0f, 0.83f, 0f),
-                PxQuat.createAt(mem, MemoryStack::nmalloc, PxIDENTITYEnum.PxIdentity)
-            )
+        memStack {
+            val roadFilterData = createPxFilterData(0, 0, 0, 0)
+            val roadQueryFlags = createPxQueryFlags(PxQueryFlagEnum.eSTATIC)
+            val roadQueryFilterData = createPxQueryFilterData(roadFilterData, roadQueryFlags)
+            val actorCMassLocalPose = createPxTransform(vehicleProps.chassisCMOffset * -1f, QuatF.IDENTITY)
+            val actorShapeLocalPose = createPxTransform(Vec3f(0f, 0.83f, 0f), QuatF.IDENTITY)
 
             // chassis filter data
             physXParams.physxActorShapeFlags.raise(PxShapeFlagEnum.eSCENE_QUERY_SHAPE)
@@ -435,7 +429,7 @@ class VehicleImpl(
             FilterData { VehicleUtils.setupNonDrivableSurface(this) }
                 .toPxFilterData(physXParams.physxActorWheelQueryFilterData)
 
-            val geometry = vehicleProps.chassisGeometry?.holder
+            val geometry = vehicleProps.chassisGeometry?.holder?.px
                 ?: PxBoxGeometry(
                     vehicleProps.chassisDims.x * 0.5f,
                     vehicleProps.chassisDims.y * 0.5f,
@@ -463,13 +457,13 @@ class VehicleImpl(
     private fun EngineDriveVehicle.setupEngineParams(vehicleProps: VehicleProperties) {
         engineDriveParams.autoboxParams.apply {
             // set engine speed ratios to trigger shift up / shift down
-            for (i in 0..6) {
-                setUpRatios(i, 0.65f)
+            for (i in 0..7) {
+                setUpRatios(i, 0.9f)
                 setDownRatios(i, 0.5f)
             }
             // set lower ratio for gear 1 (neutral gear)
             setUpRatios(1, 0.15f)
-            latency = 2f
+            latency = 0.7f
         }
 
         engineDriveParams.clutchCommandResponseParams.maxResponse = vehicleProps.clutchStrength
@@ -480,8 +474,10 @@ class VehicleImpl(
 
         engineDriveParams.engineParams.apply {
             torqueCurve.addPair(0f, 0.3f)
-            torqueCurve.addPair(0.33f, 1f)
-            torqueCurve.addPair(1f, 0.7f)
+            torqueCurve.addPair(0.33f, 0.85f)
+            torqueCurve.addPair(0.8f, 1f)
+            torqueCurve.addPair(0.9f, 0.8f)
+            torqueCurve.addPair(1f, 0.5f)
             moi = 1f
             peakTorque = vehicleProps.peakEngineTorque
             idleOmega = 0f //750f / OMEGA_TO_RPM
@@ -499,8 +495,9 @@ class VehicleImpl(
             setRatios(3, 2f)
             setRatios(4, 1.5f)
             setRatios(5, 1.1f)
-            setRatios(6, 1f)
-            nbRatios = 7
+            setRatios(6, 0.95f)
+            setRatios(7, 0.85f)
+            nbRatios = 8
             finalRatio = vehicleProps.gearFinalRatio
             switchTime = 0.35f
         }

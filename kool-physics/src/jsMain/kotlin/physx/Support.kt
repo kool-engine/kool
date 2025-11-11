@@ -1,7 +1,7 @@
 /*
  * Generated from WebIDL by webidl-util
  */
-@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused")
+@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused", "INLINE_CLASS_IN_EXTERNAL_DECLARATION_WARNING", "NOTHING_TO_INLINE")
 
 package physx
 
@@ -1689,17 +1689,17 @@ external interface PxPvdInstrumentationFlags {
      * @param flag WebIDL type: [PxPvdInstrumentationFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxPvdInstrumentationFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxPvdInstrumentationFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxPvdInstrumentationFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxPvdInstrumentationFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxPvdInstrumentationFlagEnum)
 
 }
 
@@ -1724,7 +1724,7 @@ external interface PxPvdSceneClient {
      * @param flag  WebIDL type: [PxPvdSceneFlagEnum] (enum)
      * @param value WebIDL type: boolean
      */
-    fun setScenePvdFlag(flag: Int, value: Boolean)
+    fun setScenePvdFlag(flag: PxPvdSceneFlagEnum, value: Boolean)
 
     /**
      * @param flags WebIDL type: [PxPvdSceneFlags] (Ref)
@@ -1762,17 +1762,17 @@ external interface PxPvdSceneFlags {
      * @param flag WebIDL type: [PxPvdSceneFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxPvdSceneFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxPvdSceneFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxPvdSceneFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxPvdSceneFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxPvdSceneFlagEnum)
 
 }
 
@@ -1808,46 +1808,52 @@ fun PxOmniPvd.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-object PxVisualizationParameterEnum {
-    val eSCALE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eSCALE()
-    val eWORLD_AXES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eWORLD_AXES()
-    val eBODY_AXES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eBODY_AXES()
-    val eBODY_MASS_AXES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eBODY_MASS_AXES()
-    val eBODY_LIN_VELOCITY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eBODY_LIN_VELOCITY()
-    val eBODY_ANG_VELOCITY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eBODY_ANG_VELOCITY()
-    val eCONTACT_POINT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCONTACT_POINT()
-    val eCONTACT_NORMAL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCONTACT_NORMAL()
-    val eCONTACT_ERROR: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCONTACT_ERROR()
-    val eCONTACT_FORCE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCONTACT_FORCE()
-    val eACTOR_AXES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eACTOR_AXES()
-    val eCOLLISION_AABBS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCOLLISION_AABBS()
-    val eCOLLISION_SHAPES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCOLLISION_SHAPES()
-    val eCOLLISION_AXES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCOLLISION_AXES()
-    val eCOLLISION_COMPOUNDS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCOLLISION_COMPOUNDS()
-    val eCOLLISION_FNORMALS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCOLLISION_FNORMALS()
-    val eCOLLISION_EDGES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCOLLISION_EDGES()
-    val eCOLLISION_STATIC: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCOLLISION_STATIC()
-    val eCOLLISION_DYNAMIC: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCOLLISION_DYNAMIC()
-    val eJOINT_LOCAL_FRAMES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eJOINT_LOCAL_FRAMES()
-    val eJOINT_LIMITS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eJOINT_LIMITS()
-    val eCULL_BOX: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCULL_BOX()
-    val eMBP_REGIONS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eMBP_REGIONS()
-    val eSIMULATION_MESH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eSIMULATION_MESH()
-    val eSDF: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eSDF()
-    val eNUM_VALUES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eNUM_VALUES()
-    val eFORCE_DWORD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eFORCE_DWORD()
+value class PxVisualizationParameterEnum private constructor(val value: Int) {
+    companion object {
+        val eSCALE: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eSCALE())
+        val eWORLD_AXES: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eWORLD_AXES())
+        val eBODY_AXES: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eBODY_AXES())
+        val eBODY_MASS_AXES: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eBODY_MASS_AXES())
+        val eBODY_LIN_VELOCITY: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eBODY_LIN_VELOCITY())
+        val eBODY_ANG_VELOCITY: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eBODY_ANG_VELOCITY())
+        val eCONTACT_POINT: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCONTACT_POINT())
+        val eCONTACT_NORMAL: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCONTACT_NORMAL())
+        val eCONTACT_ERROR: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCONTACT_ERROR())
+        val eCONTACT_FORCE: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCONTACT_FORCE())
+        val eACTOR_AXES: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eACTOR_AXES())
+        val eCOLLISION_AABBS: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCOLLISION_AABBS())
+        val eCOLLISION_SHAPES: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCOLLISION_SHAPES())
+        val eCOLLISION_AXES: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCOLLISION_AXES())
+        val eCOLLISION_COMPOUNDS: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCOLLISION_COMPOUNDS())
+        val eCOLLISION_FNORMALS: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCOLLISION_FNORMALS())
+        val eCOLLISION_EDGES: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCOLLISION_EDGES())
+        val eCOLLISION_STATIC: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCOLLISION_STATIC())
+        val eCOLLISION_DYNAMIC: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCOLLISION_DYNAMIC())
+        val eJOINT_LOCAL_FRAMES: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eJOINT_LOCAL_FRAMES())
+        val eJOINT_LIMITS: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eJOINT_LIMITS())
+        val eCULL_BOX: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eCULL_BOX())
+        val eMBP_REGIONS: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eMBP_REGIONS())
+        val eSIMULATION_MESH: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eSIMULATION_MESH())
+        val eSDF: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eSDF())
+        val eNUM_VALUES: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eNUM_VALUES())
+        val eFORCE_DWORD: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVisualizationParameterEnum_eFORCE_DWORD())
+    }
 }
 
-object PxPvdInstrumentationFlagEnum {
-    val eDEBUG: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdInstrumentationFlagEnum_eDEBUG()
-    val ePROFILE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdInstrumentationFlagEnum_ePROFILE()
-    val eMEMORY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdInstrumentationFlagEnum_eMEMORY()
-    val eALL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdInstrumentationFlagEnum_eALL()
+value class PxPvdInstrumentationFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eDEBUG: PxPvdInstrumentationFlagEnum = PxPvdInstrumentationFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPvdInstrumentationFlagEnum_eDEBUG())
+        val ePROFILE: PxPvdInstrumentationFlagEnum = PxPvdInstrumentationFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPvdInstrumentationFlagEnum_ePROFILE())
+        val eMEMORY: PxPvdInstrumentationFlagEnum = PxPvdInstrumentationFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPvdInstrumentationFlagEnum_eMEMORY())
+        val eALL: PxPvdInstrumentationFlagEnum = PxPvdInstrumentationFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPvdInstrumentationFlagEnum_eALL())
+    }
 }
 
-object PxPvdSceneFlagEnum {
-    val eTRANSMIT_CONTACTS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdSceneFlagEnum_eTRANSMIT_CONTACTS()
-    val eTRANSMIT_SCENEQUERIES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdSceneFlagEnum_eTRANSMIT_SCENEQUERIES()
-    val eTRANSMIT_CONSTRAINTS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdSceneFlagEnum_eTRANSMIT_CONSTRAINTS()
+value class PxPvdSceneFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eTRANSMIT_CONTACTS: PxPvdSceneFlagEnum = PxPvdSceneFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPvdSceneFlagEnum_eTRANSMIT_CONTACTS())
+        val eTRANSMIT_SCENEQUERIES: PxPvdSceneFlagEnum = PxPvdSceneFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPvdSceneFlagEnum_eTRANSMIT_SCENEQUERIES())
+        val eTRANSMIT_CONSTRAINTS: PxPvdSceneFlagEnum = PxPvdSceneFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPvdSceneFlagEnum_eTRANSMIT_CONSTRAINTS())
+    }
 }
 

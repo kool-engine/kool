@@ -6,7 +6,6 @@ import physx.PxControllerBehaviorCallbackImpl
 import physx.PxControllerBehaviorFlagEnum
 
 class ControllerBahaviorCallback(private val world: PhysicsWorldImpl) {
-
     lateinit var controller: JsCharacterController
 
     val callback = PxControllerBehaviorCallbackImpl().apply {
@@ -15,8 +14,8 @@ class ControllerBahaviorCallback(private val world: PhysicsWorldImpl) {
                 world.getActor(PxActorFromPointer(actor))?.let { rigidActor ->
                     when (cb.hitActorBehavior(rigidActor)) {
                         HitActorBehavior.DEFAULT -> 0
-                        HitActorBehavior.SLIDE -> PxControllerBehaviorFlagEnum.eCCT_SLIDE
-                        HitActorBehavior.RIDE -> PxControllerBehaviorFlagEnum.eCCT_CAN_RIDE_ON_OBJECT
+                        HitActorBehavior.SLIDE -> PxControllerBehaviorFlagEnum.eCCT_SLIDE.value
+                        HitActorBehavior.RIDE -> PxControllerBehaviorFlagEnum.eCCT_CAN_RIDE_ON_OBJECT.value
                     }
                 }
             } ?: 0

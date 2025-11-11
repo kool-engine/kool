@@ -9,7 +9,6 @@ import physx.physics.PxActor
 import physx.physics.PxShape
 
 class ControllerBahaviorCallback(private val world: PhysicsWorldImpl) : PxControllerBehaviorCallbackImpl() {
-
     lateinit var controller: JvmCharacterController
 
     override fun getShapeBehaviorFlags(shape: PxShape, actor: PxActor): Int {

@@ -1,7 +1,7 @@
 /*
  * Generated from WebIDL by webidl-util
  */
-@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused")
+@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused", "INLINE_CLASS_IN_EXTERNAL_DECLARATION_WARNING", "NOTHING_TO_INLINE")
 
 package physx
 
@@ -32,7 +32,7 @@ external interface PxVehicleTopLevelFunctions {
      * @param sprungMasses          WebIDL type: [PxArray_PxReal] (Ref)
      * @return WebIDL type: boolean
      */
-    fun VehicleComputeSprungMasses(nbSprungMasses: Int, sprungMassCoordinates: PxArray_PxVec3, totalMass: Float, gravityDirection: Int, sprungMasses: PxArray_PxReal): Boolean
+    fun VehicleComputeSprungMasses(nbSprungMasses: Int, sprungMassCoordinates: PxArray_PxVec3, totalMass: Float, gravityDirection: PxVehicleAxesEnum, sprungMasses: PxArray_PxReal): Boolean
 
     /**
      * @param vehicleFrame WebIDL type: [PxVehicleFrame] (Const, Ref)
@@ -99,6 +99,9 @@ fun PxVehicleAckermannParamsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoad
 fun PxVehicleAckermannParams.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+inline fun PxVehicleAckermannParams.getWheelIds(index: Int) = get_wheelIds(index)
+inline fun PxVehicleAckermannParams.setWheelIds(index: Int, value: Int) = set_wheelIds(index, value)
 
 external interface PxVehicleAntiRollForceParams {
     /**
@@ -213,6 +216,11 @@ fun PxVehicleAutoboxParams.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+inline fun PxVehicleAutoboxParams.getUpRatios(index: Int) = get_upRatios(index)
+inline fun PxVehicleAutoboxParams.setUpRatios(index: Int, value: Float) = set_upRatios(index, value)
+inline fun PxVehicleAutoboxParams.getDownRatios(index: Int) = get_downRatios(index)
+inline fun PxVehicleAutoboxParams.setDownRatios(index: Int, value: Float) = set_downRatios(index, value)
+
 external interface PxVehicleAutoboxState {
     /**
      * Native object address.
@@ -305,6 +313,13 @@ fun PxVehicleAxleDescriptionFromPointer(ptr: Int, _module: dynamic = PhysXJsLoad
 fun PxVehicleAxleDescription.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+inline fun PxVehicleAxleDescription.getNbWheelsPerAxle(index: Int) = get_nbWheelsPerAxle(index)
+inline fun PxVehicleAxleDescription.setNbWheelsPerAxle(index: Int, value: Int) = set_nbWheelsPerAxle(index, value)
+inline fun PxVehicleAxleDescription.getAxleToWheelIds(index: Int) = get_axleToWheelIds(index)
+inline fun PxVehicleAxleDescription.setAxleToWheelIds(index: Int, value: Int) = set_axleToWheelIds(index, value)
+inline fun PxVehicleAxleDescription.getWheelIdsInAxleOrder(index: Int) = get_wheelIdsInAxleOrder(index)
+inline fun PxVehicleAxleDescription.setWheelIdsInAxleOrder(index: Int, value: Int) = set_wheelIdsInAxleOrder(index, value)
 
 external interface PxVehicleBrakeCommandResponseParams : PxVehicleCommandResponseParams {
     /**
@@ -403,7 +418,7 @@ external interface PxVehicleClutchParams {
     /**
      * WebIDL type: [PxVehicleClutchAccuracyModeEnum] (enum)
      */
-    var accuracyMode: Int
+    var accuracyMode: PxVehicleClutchAccuracyModeEnum
     /**
      * WebIDL type: unsigned long
      */
@@ -509,6 +524,15 @@ fun PxVehicleCommandNonLinearResponseParams.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+inline fun PxVehicleCommandNonLinearResponseParams.getSpeedResponses(index: Int) = get_speedResponses(index)
+inline fun PxVehicleCommandNonLinearResponseParams.setSpeedResponses(index: Int, value: Float) = set_speedResponses(index, value)
+inline fun PxVehicleCommandNonLinearResponseParams.getSpeedResponsesPerCommandValue(index: Int) = get_speedResponsesPerCommandValue(index)
+inline fun PxVehicleCommandNonLinearResponseParams.setSpeedResponsesPerCommandValue(index: Int, value: Short) = set_speedResponsesPerCommandValue(index, value)
+inline fun PxVehicleCommandNonLinearResponseParams.getNbSpeedResponsesPerCommandValue(index: Int) = get_nbSpeedResponsesPerCommandValue(index)
+inline fun PxVehicleCommandNonLinearResponseParams.setNbSpeedResponsesPerCommandValue(index: Int, value: Short) = set_nbSpeedResponsesPerCommandValue(index, value)
+inline fun PxVehicleCommandNonLinearResponseParams.getCommandValues(index: Int) = get_commandValues(index)
+inline fun PxVehicleCommandNonLinearResponseParams.setCommandValues(index: Int, value: Float) = set_commandValues(index, value)
+
 external interface PxVehicleCommandResponseParams {
     /**
      * Native object address.
@@ -537,6 +561,9 @@ fun PxVehicleCommandResponseParamsFromPointer(ptr: Int, _module: dynamic = PhysX
 fun PxVehicleCommandResponseParams.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+inline fun PxVehicleCommandResponseParams.getWheelResponseMultipliers(index: Int) = get_wheelResponseMultipliers(index)
+inline fun PxVehicleCommandResponseParams.setWheelResponseMultipliers(index: Int, value: Float) = set_wheelResponseMultipliers(index, value)
 
 external interface PxVehicleCommandState {
     /**
@@ -573,6 +600,9 @@ fun PxVehicleCommandStateFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.
 fun PxVehicleCommandState.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+inline fun PxVehicleCommandState.getBrakes(index: Int) = get_brakes(index)
+inline fun PxVehicleCommandState.setBrakes(index: Int, value: Float) = set_brakes(index, value)
 
 external interface PxVehicleCommandValueResponseTable {
     /**
@@ -713,6 +743,13 @@ fun PxVehicleDifferentialState.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+inline fun PxVehicleDifferentialState.getConnectedWheels(index: Int) = get_connectedWheels(index)
+inline fun PxVehicleDifferentialState.setConnectedWheels(index: Int, value: Int) = set_connectedWheels(index, value)
+inline fun PxVehicleDifferentialState.getTorqueRatiosAllWheels(index: Int) = get_torqueRatiosAllWheels(index)
+inline fun PxVehicleDifferentialState.setTorqueRatiosAllWheels(index: Int, value: Float) = set_torqueRatiosAllWheels(index, value)
+inline fun PxVehicleDifferentialState.getAveWheelSpeedContributionAllWheels(index: Int) = get_aveWheelSpeedContributionAllWheels(index)
+inline fun PxVehicleDifferentialState.setAveWheelSpeedContributionAllWheels(index: Int, value: Float) = set_aveWheelSpeedContributionAllWheels(index, value)
+
 external interface PxVehicleDirectDriveThrottleCommandResponseParams : PxVehicleCommandResponseParams {
     /**
      * @param srcFrame WebIDL type: [PxVehicleFrame] (Const, Ref)
@@ -748,7 +785,7 @@ external interface PxVehicleDirectDriveTransmissionCommandState {
     /**
      * WebIDL type: [PxVehicleDirectDriveTransmissionCommandStateEnum] (enum)
      */
-    var gear: Int
+    var gear: PxVehicleDirectDriveTransmissionCommandStateEnum
 
     fun setToDefault()
 
@@ -1031,6 +1068,11 @@ fun PxVehicleFourWheelDriveDifferentialParams.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+inline fun PxVehicleFourWheelDriveDifferentialParams.getFrontWheelIds(index: Int) = get_frontWheelIds(index)
+inline fun PxVehicleFourWheelDriveDifferentialParams.setFrontWheelIds(index: Int, value: Int) = set_frontWheelIds(index, value)
+inline fun PxVehicleFourWheelDriveDifferentialParams.getRearWheelIds(index: Int) = get_rearWheelIds(index)
+inline fun PxVehicleFourWheelDriveDifferentialParams.setRearWheelIds(index: Int, value: Int) = set_rearWheelIds(index, value)
+
 external interface PxVehicleFrame {
     /**
      * Native object address.
@@ -1040,15 +1082,15 @@ external interface PxVehicleFrame {
     /**
      * WebIDL type: [PxVehicleAxesEnum] (enum)
      */
-    var lngAxis: Int
+    var lngAxis: PxVehicleAxesEnum
     /**
      * WebIDL type: [PxVehicleAxesEnum] (enum)
      */
-    var latAxis: Int
+    var latAxis: PxVehicleAxesEnum
     /**
      * WebIDL type: [PxVehicleAxesEnum] (enum)
      */
-    var vrtAxis: Int
+    var vrtAxis: PxVehicleAxesEnum
 
     fun setToDefault()
 
@@ -1127,6 +1169,9 @@ fun PxVehicleGearboxParams.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+inline fun PxVehicleGearboxParams.getRatios(index: Int) = get_ratios(index)
+inline fun PxVehicleGearboxParams.setRatios(index: Int, value: Float) = set_ratios(index, value)
+
 external interface PxVehicleGearboxState {
     /**
      * Native object address.
@@ -1202,6 +1247,11 @@ fun PxVehicleMultiWheelDriveDifferentialParams.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+inline fun PxVehicleMultiWheelDriveDifferentialParams.getTorqueRatios(index: Int) = get_torqueRatios(index)
+inline fun PxVehicleMultiWheelDriveDifferentialParams.setTorqueRatios(index: Int, value: Float) = set_torqueRatios(index, value)
+inline fun PxVehicleMultiWheelDriveDifferentialParams.getAveWheelSpeedRatios(index: Int) = get_aveWheelSpeedRatios(index)
+inline fun PxVehicleMultiWheelDriveDifferentialParams.setAveWheelSpeedRatios(index: Int, value: Float) = set_aveWheelSpeedRatios(index, value)
+
 external interface PxVehiclePhysXActor {
     /**
      * Native object address.
@@ -1227,6 +1277,9 @@ fun PxVehiclePhysXActorFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.ph
 fun PxVehiclePhysXActor.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+inline fun PxVehiclePhysXActor.getWheelShapes(index: Int) = get_wheelShapes(index)
+inline fun PxVehiclePhysXActor.setWheelShapes(index: Int, value: PxShape) = set_wheelShapes(index, value)
 
 external interface PxVehiclePhysXConstraints {
     /**
@@ -1259,6 +1312,13 @@ fun PxVehiclePhysXConstraintsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoa
 fun PxVehiclePhysXConstraints.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+inline fun PxVehiclePhysXConstraints.getConstraintStates(index: Int) = get_constraintStates(index)
+inline fun PxVehiclePhysXConstraints.setConstraintStates(index: Int, value: PxVehiclePhysXConstraintState) = set_constraintStates(index, value)
+inline fun PxVehiclePhysXConstraints.getConstraints(index: Int) = get_constraints(index)
+inline fun PxVehiclePhysXConstraints.setConstraints(index: Int, value: PxConstraint) = set_constraints(index, value)
+inline fun PxVehiclePhysXConstraints.getConstraintConnectors(index: Int) = get_constraintConnectors(index)
+inline fun PxVehiclePhysXConstraints.setConstraintConnectors(index: Int, value: PxVehicleConstraintConnector) = set_constraintConnectors(index, value)
 
 external interface PxVehiclePhysXConstraintState {
     /**
@@ -1318,6 +1378,15 @@ fun PxVehiclePhysXConstraintStateFromPointer(ptr: Int, _module: dynamic = PhysXJ
 fun PxVehiclePhysXConstraintState.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+inline fun PxVehiclePhysXConstraintState.getTireActiveStatus(index: Int) = get_tireActiveStatus(index)
+inline fun PxVehiclePhysXConstraintState.setTireActiveStatus(index: Int, value: Boolean) = set_tireActiveStatus(index, value)
+inline fun PxVehiclePhysXConstraintState.getTireLinears(index: Int) = get_tireLinears(index)
+inline fun PxVehiclePhysXConstraintState.setTireLinears(index: Int, value: PxVec3) = set_tireLinears(index, value)
+inline fun PxVehiclePhysXConstraintState.getTireAngulars(index: Int) = get_tireAngulars(index)
+inline fun PxVehiclePhysXConstraintState.setTireAngulars(index: Int, value: PxVec3) = set_tireAngulars(index, value)
+inline fun PxVehiclePhysXConstraintState.getTireDamping(index: Int) = get_tireDamping(index)
+inline fun PxVehiclePhysXConstraintState.setTireDamping(index: Int, value: Float) = set_tireDamping(index, value)
 
 external interface PxVehiclePhysXMaterialFriction {
     /**
@@ -1390,7 +1459,7 @@ external interface PxVehiclePhysXRoadGeometryQueryParams {
     /**
      * WebIDL type: [PxVehiclePhysXRoadGeometryQueryTypeEnum] (enum)
      */
-    var roadGeometryQueryType: Int
+    var roadGeometryQueryType: PxVehiclePhysXRoadGeometryQueryTypeEnum
     /**
      * WebIDL type: [PxQueryFilterData] (Value)
      */
@@ -1438,7 +1507,7 @@ external interface PxVehiclePhysXSimulationContext : PxVehicleSimulationContext 
     /**
      * WebIDL type: [PxVehiclePhysXActorUpdateModeEnum] (enum)
      */
-    var physxActorUpdateMode: Int
+    var physxActorUpdateMode: PxVehiclePhysXActorUpdateModeEnum
     /**
      * WebIDL type: float
      */
@@ -1497,7 +1566,7 @@ external interface PxVehiclePhysXSuspensionLimitConstraintParams {
     /**
      * WebIDL type: [PxVehiclePhysXSuspensionLimitConstraintParamsDirectionSpecifierEnum] (enum)
      */
-    var directionForSuspensionLimitConstraint: Int
+    var directionForSuspensionLimitConstraint: PxVehiclePhysXSuspensionLimitConstraintParamsDirectionSpecifierEnum
 
     /**
      * @param srcFrame WebIDL type: [PxVehicleFrame] (Const, Ref)
@@ -1730,7 +1799,7 @@ external interface PxVehicleSimulationContext {
     /**
      * @return WebIDL type: [PxVehicleSimulationContextTypeEnum] (enum)
      */
-    fun getType(): Int
+    fun getType(): PxVehicleSimulationContextTypeEnum
 
     fun setToDefault()
 
@@ -2029,7 +2098,7 @@ external interface PxVehicleSuspensionStateCalculationParams {
     /**
      * WebIDL type: [PxVehicleSuspensionJounceCalculationTypeEnum] (enum)
      */
-    var suspensionJounceCalculationType: Int
+    var suspensionJounceCalculationType: PxVehicleSuspensionJounceCalculationTypeEnum
     /**
      * WebIDL type: boolean
      */
@@ -2131,6 +2200,15 @@ fun PxVehicleTankDriveDifferentialParams.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+inline fun PxVehicleTankDriveDifferentialParams.getThrustIdPerTrack(index: Int) = get_thrustIdPerTrack(index)
+inline fun PxVehicleTankDriveDifferentialParams.setThrustIdPerTrack(index: Int, value: Int) = set_thrustIdPerTrack(index, value)
+inline fun PxVehicleTankDriveDifferentialParams.getNbWheelsPerTrack(index: Int) = get_nbWheelsPerTrack(index)
+inline fun PxVehicleTankDriveDifferentialParams.setNbWheelsPerTrack(index: Int, value: Int) = set_nbWheelsPerTrack(index, value)
+inline fun PxVehicleTankDriveDifferentialParams.getTrackToWheelIds(index: Int) = get_trackToWheelIds(index)
+inline fun PxVehicleTankDriveDifferentialParams.setTrackToWheelIds(index: Int, value: Int) = set_trackToWheelIds(index, value)
+inline fun PxVehicleTankDriveDifferentialParams.getWheelIdsInTrackOrder(index: Int) = get_wheelIdsInTrackOrder(index)
+inline fun PxVehicleTankDriveDifferentialParams.setWheelIdsInTrackOrder(index: Int, value: Int) = set_wheelIdsInTrackOrder(index, value)
+
 external interface PxVehicleTankDriveTransmissionCommandState : PxVehicleEngineDriveTransmissionCommandState {
     /**
      * WebIDL type: float
@@ -2149,6 +2227,9 @@ fun PxVehicleTankDriveTransmissionCommandStateFromPointer(ptr: Int, _module: dyn
 fun PxVehicleTankDriveTransmissionCommandState.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+inline fun PxVehicleTankDriveTransmissionCommandState.getThrusts(index: Int) = get_thrusts(index)
+inline fun PxVehicleTankDriveTransmissionCommandState.setThrusts(index: Int, value: Float) = set_thrusts(index, value)
 
 external interface PxVehicleTireAxisStickyParams {
     /**
@@ -2240,6 +2321,9 @@ fun PxVehicleTireDirectionState.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+inline fun PxVehicleTireDirectionState.getDirections(index: Int) = get_directions(index)
+inline fun PxVehicleTireDirectionState.setDirections(index: Int, value: PxVec3) = set_directions(index, value)
+
 external interface PxVehicleTireForce {
     /**
      * Native object address.
@@ -2276,6 +2360,11 @@ fun PxVehicleTireForceFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.phy
 fun PxVehicleTireForce.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+inline fun PxVehicleTireForce.getForces(index: Int) = get_forces(index)
+inline fun PxVehicleTireForce.setForces(index: Int, value: PxVec3) = set_forces(index, value)
+inline fun PxVehicleTireForce.getTorques(index: Int) = get_torques(index)
+inline fun PxVehicleTireForce.setTorques(index: Int, value: PxVec3) = set_torques(index, value)
 
 external interface PxVehicleTireForceParams {
     /**
@@ -2448,6 +2537,9 @@ fun PxVehicleTireSlipState.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+inline fun PxVehicleTireSlipState.getSlips(index: Int) = get_slips(index)
+inline fun PxVehicleTireSlipState.setSlips(index: Int, value: Float) = set_slips(index, value)
+
 external interface PxVehicleTireSpeedState {
     /**
      * Native object address.
@@ -2471,6 +2563,9 @@ fun PxVehicleTireSpeedStateFromPointer(ptr: Int, _module: dynamic = PhysXJsLoade
 fun PxVehicleTireSpeedState.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+inline fun PxVehicleTireSpeedState.getSpeedStates(index: Int) = get_speedStates(index)
+inline fun PxVehicleTireSpeedState.setSpeedStates(index: Int, value: Float) = set_speedStates(index, value)
 
 external interface PxVehicleTireStickyParams {
     /**
@@ -2510,6 +2605,9 @@ fun PxVehicleTireStickyParams.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+inline fun PxVehicleTireStickyParams.getStickyParams(index: Int) = get_stickyParams(index)
+inline fun PxVehicleTireStickyParams.setStickyParams(index: Int, value: PxVehicleTireAxisStickyParams) = set_stickyParams(index, value)
+
 external interface PxVehicleTireStickyState {
     /**
      * Native object address.
@@ -2538,6 +2636,11 @@ fun PxVehicleTireStickyStateFromPointer(ptr: Int, _module: dynamic = PhysXJsLoad
 fun PxVehicleTireStickyState.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+inline fun PxVehicleTireStickyState.getLowSpeedTime(index: Int) = get_lowSpeedTime(index)
+inline fun PxVehicleTireStickyState.setLowSpeedTime(index: Int, value: Float) = set_lowSpeedTime(index, value)
+inline fun PxVehicleTireStickyState.getActiveStatus(index: Int) = get_activeStatus(index)
+inline fun PxVehicleTireStickyState.setActiveStatus(index: Int, value: Boolean) = set_activeStatus(index, value)
 
 external interface PxVehicleTorqueCurveLookupTable {
     /**
@@ -2676,6 +2779,15 @@ fun PxVehicleWheelConstraintGroupState.destroy() {
 
 val PxVehicleWheelConstraintGroupState.nbConstraintGroups
     get() = getNbConstraintGroups()
+
+inline fun PxVehicleWheelConstraintGroupState.getNbWheelsPerGroup(index: Int) = get_nbWheelsPerGroup(index)
+inline fun PxVehicleWheelConstraintGroupState.setNbWheelsPerGroup(index: Int, value: Int) = set_nbWheelsPerGroup(index, value)
+inline fun PxVehicleWheelConstraintGroupState.getGroupToWheelIds(index: Int) = get_groupToWheelIds(index)
+inline fun PxVehicleWheelConstraintGroupState.setGroupToWheelIds(index: Int, value: Int) = set_groupToWheelIds(index, value)
+inline fun PxVehicleWheelConstraintGroupState.getWheelIdsInGroupOrder(index: Int) = get_wheelIdsInGroupOrder(index)
+inline fun PxVehicleWheelConstraintGroupState.setWheelIdsInGroupOrder(index: Int, value: Int) = set_wheelIdsInGroupOrder(index, value)
+inline fun PxVehicleWheelConstraintGroupState.getWheelMultipliersInGroupOrder(index: Int) = get_wheelMultipliersInGroupOrder(index)
+inline fun PxVehicleWheelConstraintGroupState.setWheelMultipliersInGroupOrder(index: Int, value: Float) = set_wheelMultipliersInGroupOrder(index, value)
 
 external interface PxVehicleWheelLocalPose {
     /**
@@ -2881,6 +2993,23 @@ fun BaseVehicleParams.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+inline fun BaseVehicleParams.getBrakeResponseParams(index: Int) = get_brakeResponseParams(index)
+inline fun BaseVehicleParams.setBrakeResponseParams(index: Int, value: PxVehicleBrakeCommandResponseParams) = set_brakeResponseParams(index, value)
+inline fun BaseVehicleParams.getAckermannParams(index: Int) = get_ackermannParams(index)
+inline fun BaseVehicleParams.setAckermannParams(index: Int, value: PxVehicleAckermannParams) = set_ackermannParams(index, value)
+inline fun BaseVehicleParams.getSuspensionParams(index: Int) = get_suspensionParams(index)
+inline fun BaseVehicleParams.setSuspensionParams(index: Int, value: PxVehicleSuspensionParams) = set_suspensionParams(index, value)
+inline fun BaseVehicleParams.getSuspensionComplianceParams(index: Int) = get_suspensionComplianceParams(index)
+inline fun BaseVehicleParams.setSuspensionComplianceParams(index: Int, value: PxVehicleSuspensionComplianceParams) = set_suspensionComplianceParams(index, value)
+inline fun BaseVehicleParams.getSuspensionForceParams(index: Int) = get_suspensionForceParams(index)
+inline fun BaseVehicleParams.setSuspensionForceParams(index: Int, value: PxVehicleSuspensionForceParams) = set_suspensionForceParams(index, value)
+inline fun BaseVehicleParams.getAntiRollForceParams(index: Int) = get_antiRollForceParams(index)
+inline fun BaseVehicleParams.setAntiRollForceParams(index: Int, value: PxVehicleAntiRollForceParams) = set_antiRollForceParams(index, value)
+inline fun BaseVehicleParams.getTireForceParams(index: Int) = get_tireForceParams(index)
+inline fun BaseVehicleParams.setTireForceParams(index: Int, value: PxVehicleTireForceParams) = set_tireForceParams(index, value)
+inline fun BaseVehicleParams.getWheelParams(index: Int) = get_wheelParams(index)
+inline fun BaseVehicleParams.setWheelParams(index: Int, value: PxVehicleWheelParams) = set_wheelParams(index, value)
+
 external interface BaseVehicleState {
     /**
      * Native object address.
@@ -2988,6 +3117,39 @@ fun BaseVehicleState.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+inline fun BaseVehicleState.getBrakeCommandResponseStates(index: Int) = get_brakeCommandResponseStates(index)
+inline fun BaseVehicleState.setBrakeCommandResponseStates(index: Int, value: Float) = set_brakeCommandResponseStates(index, value)
+inline fun BaseVehicleState.getSteerCommandResponseStates(index: Int) = get_steerCommandResponseStates(index)
+inline fun BaseVehicleState.setSteerCommandResponseStates(index: Int, value: Float) = set_steerCommandResponseStates(index, value)
+inline fun BaseVehicleState.getActuationStates(index: Int) = get_actuationStates(index)
+inline fun BaseVehicleState.setActuationStates(index: Int, value: PxVehicleWheelActuationState) = set_actuationStates(index, value)
+inline fun BaseVehicleState.getRoadGeomStates(index: Int) = get_roadGeomStates(index)
+inline fun BaseVehicleState.setRoadGeomStates(index: Int, value: PxVehicleRoadGeometryState) = set_roadGeomStates(index, value)
+inline fun BaseVehicleState.getSuspensionStates(index: Int) = get_suspensionStates(index)
+inline fun BaseVehicleState.setSuspensionStates(index: Int, value: PxVehicleSuspensionState) = set_suspensionStates(index, value)
+inline fun BaseVehicleState.getSuspensionComplianceStates(index: Int) = get_suspensionComplianceStates(index)
+inline fun BaseVehicleState.setSuspensionComplianceStates(index: Int, value: PxVehicleSuspensionComplianceState) = set_suspensionComplianceStates(index, value)
+inline fun BaseVehicleState.getSuspensionForces(index: Int) = get_suspensionForces(index)
+inline fun BaseVehicleState.setSuspensionForces(index: Int, value: PxVehicleSuspensionForce) = set_suspensionForces(index, value)
+inline fun BaseVehicleState.getTireGripStates(index: Int) = get_tireGripStates(index)
+inline fun BaseVehicleState.setTireGripStates(index: Int, value: PxVehicleTireGripState) = set_tireGripStates(index, value)
+inline fun BaseVehicleState.getTireDirectionStates(index: Int) = get_tireDirectionStates(index)
+inline fun BaseVehicleState.setTireDirectionStates(index: Int, value: PxVehicleTireDirectionState) = set_tireDirectionStates(index, value)
+inline fun BaseVehicleState.getTireSpeedStates(index: Int) = get_tireSpeedStates(index)
+inline fun BaseVehicleState.setTireSpeedStates(index: Int, value: PxVehicleTireSpeedState) = set_tireSpeedStates(index, value)
+inline fun BaseVehicleState.getTireSlipStates(index: Int) = get_tireSlipStates(index)
+inline fun BaseVehicleState.setTireSlipStates(index: Int, value: PxVehicleTireSlipState) = set_tireSlipStates(index, value)
+inline fun BaseVehicleState.getTireCamberAngleStates(index: Int) = get_tireCamberAngleStates(index)
+inline fun BaseVehicleState.setTireCamberAngleStates(index: Int, value: PxVehicleTireCamberAngleState) = set_tireCamberAngleStates(index, value)
+inline fun BaseVehicleState.getTireStickyStates(index: Int) = get_tireStickyStates(index)
+inline fun BaseVehicleState.setTireStickyStates(index: Int, value: PxVehicleTireStickyState) = set_tireStickyStates(index, value)
+inline fun BaseVehicleState.getTireForces(index: Int) = get_tireForces(index)
+inline fun BaseVehicleState.setTireForces(index: Int, value: PxVehicleTireForce) = set_tireForces(index, value)
+inline fun BaseVehicleState.getWheelRigidBody1dStates(index: Int) = get_wheelRigidBody1dStates(index)
+inline fun BaseVehicleState.setWheelRigidBody1dStates(index: Int, value: PxVehicleWheelRigidBody1dState) = set_wheelRigidBody1dStates(index, value)
+inline fun BaseVehicleState.getWheelLocalPoses(index: Int) = get_wheelLocalPoses(index)
+inline fun BaseVehicleState.setWheelLocalPoses(index: Int, value: PxVehicleWheelLocalPose) = set_wheelLocalPoses(index, value)
+
 external interface PhysXIntegrationParams {
     /**
      * Native object address.
@@ -3077,7 +3239,7 @@ external interface PhysXIntegrationParams {
      * @param physxActorBoxShapeLocalPose WebIDL type: [PxTransform] (Const, Ref)
      * @param roadGeometryQueryType       WebIDL type: [PxVehiclePhysXRoadGeometryQueryTypeEnum] (enum)
      */
-    fun create(axleDesc: PxVehicleAxleDescription, roadQueryFilterData: PxQueryFilterData, roadQueryFilterCallback: PxQueryFilterCallback?, materialFrictions: PxVehiclePhysXMaterialFriction, nbMaterialFrictions: Int, defaultFriction: Float, physxActorCMassLocalPose: PxTransform, actorGeometry: PxGeometry, physxActorBoxShapeLocalPose: PxTransform, roadGeometryQueryType: Int)
+    fun create(axleDesc: PxVehicleAxleDescription, roadQueryFilterData: PxQueryFilterData, roadQueryFilterCallback: PxQueryFilterCallback?, materialFrictions: PxVehiclePhysXMaterialFriction, nbMaterialFrictions: Int, defaultFriction: Float, physxActorCMassLocalPose: PxTransform, actorGeometry: PxGeometry, physxActorBoxShapeLocalPose: PxTransform, roadGeometryQueryType: PxVehiclePhysXRoadGeometryQueryTypeEnum)
 
 }
 
@@ -3088,6 +3250,13 @@ fun PhysXIntegrationParamsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader
 fun PhysXIntegrationParams.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+inline fun PhysXIntegrationParams.getPhysxMaterialFrictionParams(index: Int) = get_physxMaterialFrictionParams(index)
+inline fun PhysXIntegrationParams.setPhysxMaterialFrictionParams(index: Int, value: PxVehiclePhysXMaterialFrictionParams) = set_physxMaterialFrictionParams(index, value)
+inline fun PhysXIntegrationParams.getPhysxSuspensionLimitConstraintParams(index: Int) = get_physxSuspensionLimitConstraintParams(index)
+inline fun PhysXIntegrationParams.setPhysxSuspensionLimitConstraintParams(index: Int, value: PxVehiclePhysXSuspensionLimitConstraintParams) = set_physxSuspensionLimitConstraintParams(index, value)
+inline fun PhysXIntegrationParams.getPhysxWheelShapeLocalPoses(index: Int) = get_physxWheelShapeLocalPoses(index)
+inline fun PhysXIntegrationParams.setPhysxWheelShapeLocalPoses(index: Int, value: PxTransform) = set_physxWheelShapeLocalPoses(index, value)
 
 external interface PhysXIntegrationState {
     /**
@@ -3190,6 +3359,9 @@ fun DirectDrivetrainStateFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.
 fun DirectDrivetrainState.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+inline fun DirectDrivetrainState.getDirectDriveThrottleResponseStates(index: Int) = get_directDriveThrottleResponseStates(index)
+inline fun DirectDrivetrainState.setDirectDriveThrottleResponseStates(index: Int, value: Float) = set_directDriveThrottleResponseStates(index, value)
 
 external interface EngineDrivetrainParams {
     /**
@@ -3451,7 +3623,7 @@ external interface EngineDriveVehicle : PhysXActorVehicle {
     /**
      * WebIDL type: [EngineDriveVehicleEnum] (enum)
      */
-    var differentialType: Int
+    var differentialType: EngineDriveVehicleEnum
 
     /**
      * @param physics          WebIDL type: [PxPhysics] (Ref)
@@ -3460,7 +3632,7 @@ external interface EngineDriveVehicle : PhysXActorVehicle {
      * @param differentialType WebIDL type: [EngineDriveVehicleEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun initialize(physics: PxPhysics, params: PxCookingParams, defaultMaterial: PxMaterial, differentialType: Int): Boolean
+    fun initialize(physics: PxPhysics, params: PxCookingParams, defaultMaterial: PxMaterial, differentialType: EngineDriveVehicleEnum): Boolean
 
     /**
      * @param physics                    WebIDL type: [PxPhysics] (Ref)
@@ -3470,7 +3642,7 @@ external interface EngineDriveVehicle : PhysXActorVehicle {
      * @param addPhysXBeginEndComponents WebIDL type: boolean
      * @return WebIDL type: boolean
      */
-    fun initialize(physics: PxPhysics, params: PxCookingParams, defaultMaterial: PxMaterial, differentialType: Int, addPhysXBeginEndComponents: Boolean): Boolean
+    fun initialize(physics: PxPhysics, params: PxCookingParams, defaultMaterial: PxMaterial, differentialType: EngineDriveVehicleEnum, addPhysXBeginEndComponents: Boolean): Boolean
 
     /**
      * @param addPhysXBeginEndComponents WebIDL type: boolean
@@ -3487,89 +3659,121 @@ fun EngineDriveVehicle.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-object PxVehicleAxesEnum {
-    val ePosX: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleAxesEnum_ePosX()
-    val eNegX: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleAxesEnum_eNegX()
-    val ePosY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleAxesEnum_ePosY()
-    val eNegY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleAxesEnum_eNegY()
-    val ePosZ: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleAxesEnum_ePosZ()
-    val eNegZ: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleAxesEnum_eNegZ()
+value class PxVehicleAxesEnum private constructor(val value: Int) {
+    companion object {
+        val ePosX: PxVehicleAxesEnum = PxVehicleAxesEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleAxesEnum_ePosX())
+        val eNegX: PxVehicleAxesEnum = PxVehicleAxesEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleAxesEnum_eNegX())
+        val ePosY: PxVehicleAxesEnum = PxVehicleAxesEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleAxesEnum_ePosY())
+        val eNegY: PxVehicleAxesEnum = PxVehicleAxesEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleAxesEnum_eNegY())
+        val ePosZ: PxVehicleAxesEnum = PxVehicleAxesEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleAxesEnum_ePosZ())
+        val eNegZ: PxVehicleAxesEnum = PxVehicleAxesEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleAxesEnum_eNegZ())
+    }
 }
 
-object PxVehicleClutchAccuracyModeEnum {
-    val eESTIMATE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleClutchAccuracyModeEnum_eESTIMATE()
-    val eBEST_POSSIBLE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleClutchAccuracyModeEnum_eBEST_POSSIBLE()
+value class PxVehicleClutchAccuracyModeEnum private constructor(val value: Int) {
+    companion object {
+        val eESTIMATE: PxVehicleClutchAccuracyModeEnum = PxVehicleClutchAccuracyModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleClutchAccuracyModeEnum_eESTIMATE())
+        val eBEST_POSSIBLE: PxVehicleClutchAccuracyModeEnum = PxVehicleClutchAccuracyModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleClutchAccuracyModeEnum_eBEST_POSSIBLE())
+    }
 }
 
-object PxVehicleCommandNonLinearResponseParamsEnum {
-    val eMAX_NB_COMMAND_VALUES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleCommandNonLinearResponseParamsEnum_eMAX_NB_COMMAND_VALUES()
+value class PxVehicleCommandNonLinearResponseParamsEnum private constructor(val value: Int) {
+    companion object {
+        val eMAX_NB_COMMAND_VALUES: PxVehicleCommandNonLinearResponseParamsEnum = PxVehicleCommandNonLinearResponseParamsEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleCommandNonLinearResponseParamsEnum_eMAX_NB_COMMAND_VALUES())
+    }
 }
 
-object PxVehicleCommandValueResponseTableEnum {
-    val eMAX_NB_SPEED_RESPONSES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleCommandValueResponseTableEnum_eMAX_NB_SPEED_RESPONSES()
+value class PxVehicleCommandValueResponseTableEnum private constructor(val value: Int) {
+    companion object {
+        val eMAX_NB_SPEED_RESPONSES: PxVehicleCommandValueResponseTableEnum = PxVehicleCommandValueResponseTableEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleCommandValueResponseTableEnum_eMAX_NB_SPEED_RESPONSES())
+    }
 }
 
-object PxVehicleDirectDriveTransmissionCommandStateEnum {
-    val eREVERSE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDirectDriveTransmissionCommandStateEnum_eREVERSE()
-    val eNEUTRAL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDirectDriveTransmissionCommandStateEnum_eNEUTRAL()
-    val eFORWARD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDirectDriveTransmissionCommandStateEnum_eFORWARD()
+value class PxVehicleDirectDriveTransmissionCommandStateEnum private constructor(val value: Int) {
+    companion object {
+        val eREVERSE: PxVehicleDirectDriveTransmissionCommandStateEnum = PxVehicleDirectDriveTransmissionCommandStateEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDirectDriveTransmissionCommandStateEnum_eREVERSE())
+        val eNEUTRAL: PxVehicleDirectDriveTransmissionCommandStateEnum = PxVehicleDirectDriveTransmissionCommandStateEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDirectDriveTransmissionCommandStateEnum_eNEUTRAL())
+        val eFORWARD: PxVehicleDirectDriveTransmissionCommandStateEnum = PxVehicleDirectDriveTransmissionCommandStateEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleDirectDriveTransmissionCommandStateEnum_eFORWARD())
+    }
 }
 
-object PxVehicleEngineDriveTransmissionCommandStateEnum {
-    val eAUTOMATIC_GEAR: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleEngineDriveTransmissionCommandStateEnum_eAUTOMATIC_GEAR()
+value class PxVehicleEngineDriveTransmissionCommandStateEnum private constructor(val value: Int) {
+    companion object {
+        val eAUTOMATIC_GEAR: PxVehicleEngineDriveTransmissionCommandStateEnum = PxVehicleEngineDriveTransmissionCommandStateEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleEngineDriveTransmissionCommandStateEnum_eAUTOMATIC_GEAR())
+    }
 }
 
-object PxVehicleGearboxParamsEnum {
-    val eMAX_NB_GEARS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearboxParamsEnum_eMAX_NB_GEARS()
+value class PxVehicleGearboxParamsEnum private constructor(val value: Int) {
+    companion object {
+        val eMAX_NB_GEARS: PxVehicleGearboxParamsEnum = PxVehicleGearboxParamsEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleGearboxParamsEnum_eMAX_NB_GEARS())
+    }
 }
 
-object PxVehicleLimitsEnum {
-    val eMAX_NB_WHEELS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleLimitsEnum_eMAX_NB_WHEELS()
-    val eMAX_NB_AXLES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleLimitsEnum_eMAX_NB_AXLES()
+value class PxVehicleLimitsEnum private constructor(val value: Int) {
+    companion object {
+        val eMAX_NB_WHEELS: PxVehicleLimitsEnum = PxVehicleLimitsEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleLimitsEnum_eMAX_NB_WHEELS())
+        val eMAX_NB_AXLES: PxVehicleLimitsEnum = PxVehicleLimitsEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleLimitsEnum_eMAX_NB_AXLES())
+    }
 }
 
-object PxVehiclePhysXActorUpdateModeEnum {
-    val eAPPLY_VELOCITY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXActorUpdateModeEnum_eAPPLY_VELOCITY()
-    val eAPPLY_ACCELERATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXActorUpdateModeEnum_eAPPLY_ACCELERATION()
+value class PxVehiclePhysXActorUpdateModeEnum private constructor(val value: Int) {
+    companion object {
+        val eAPPLY_VELOCITY: PxVehiclePhysXActorUpdateModeEnum = PxVehiclePhysXActorUpdateModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXActorUpdateModeEnum_eAPPLY_VELOCITY())
+        val eAPPLY_ACCELERATION: PxVehiclePhysXActorUpdateModeEnum = PxVehiclePhysXActorUpdateModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXActorUpdateModeEnum_eAPPLY_ACCELERATION())
+    }
 }
 
-object PxVehiclePhysXConstraintLimitsEnum {
-    val eNB_DOFS_PER_PXCONSTRAINT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXConstraintLimitsEnum_eNB_DOFS_PER_PXCONSTRAINT()
-    val eNB_DOFS_PER_WHEEL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXConstraintLimitsEnum_eNB_DOFS_PER_WHEEL()
-    val eNB_WHEELS_PER_PXCONSTRAINT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXConstraintLimitsEnum_eNB_WHEELS_PER_PXCONSTRAINT()
-    val eNB_CONSTRAINTS_PER_VEHICLE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXConstraintLimitsEnum_eNB_CONSTRAINTS_PER_VEHICLE()
+value class PxVehiclePhysXConstraintLimitsEnum private constructor(val value: Int) {
+    companion object {
+        val eNB_DOFS_PER_PXCONSTRAINT: PxVehiclePhysXConstraintLimitsEnum = PxVehiclePhysXConstraintLimitsEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXConstraintLimitsEnum_eNB_DOFS_PER_PXCONSTRAINT())
+        val eNB_DOFS_PER_WHEEL: PxVehiclePhysXConstraintLimitsEnum = PxVehiclePhysXConstraintLimitsEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXConstraintLimitsEnum_eNB_DOFS_PER_WHEEL())
+        val eNB_WHEELS_PER_PXCONSTRAINT: PxVehiclePhysXConstraintLimitsEnum = PxVehiclePhysXConstraintLimitsEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXConstraintLimitsEnum_eNB_WHEELS_PER_PXCONSTRAINT())
+        val eNB_CONSTRAINTS_PER_VEHICLE: PxVehiclePhysXConstraintLimitsEnum = PxVehiclePhysXConstraintLimitsEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXConstraintLimitsEnum_eNB_CONSTRAINTS_PER_VEHICLE())
+    }
 }
 
-object PxVehiclePhysXRoadGeometryQueryTypeEnum {
-    val eNONE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXRoadGeometryQueryTypeEnum_eNONE()
-    val eRAYCAST: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXRoadGeometryQueryTypeEnum_eRAYCAST()
-    val eSWEEP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXRoadGeometryQueryTypeEnum_eSWEEP()
+value class PxVehiclePhysXRoadGeometryQueryTypeEnum private constructor(val value: Int) {
+    companion object {
+        val eNONE: PxVehiclePhysXRoadGeometryQueryTypeEnum = PxVehiclePhysXRoadGeometryQueryTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXRoadGeometryQueryTypeEnum_eNONE())
+        val eRAYCAST: PxVehiclePhysXRoadGeometryQueryTypeEnum = PxVehiclePhysXRoadGeometryQueryTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXRoadGeometryQueryTypeEnum_eRAYCAST())
+        val eSWEEP: PxVehiclePhysXRoadGeometryQueryTypeEnum = PxVehiclePhysXRoadGeometryQueryTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXRoadGeometryQueryTypeEnum_eSWEEP())
+    }
 }
 
-object PxVehiclePhysXSuspensionLimitConstraintParamsDirectionSpecifierEnum {
-    val eSUSPENSION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXSuspensionLimitConstraintParamsDirectionSpecifierEnum_eSUSPENSION()
-    val eROAD_GEOMETRY_NORMAL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXSuspensionLimitConstraintParamsDirectionSpecifierEnum_eROAD_GEOMETRY_NORMAL()
-    val eNONE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXSuspensionLimitConstraintParamsDirectionSpecifierEnum_eNONE()
+value class PxVehiclePhysXSuspensionLimitConstraintParamsDirectionSpecifierEnum private constructor(val value: Int) {
+    companion object {
+        val eSUSPENSION: PxVehiclePhysXSuspensionLimitConstraintParamsDirectionSpecifierEnum = PxVehiclePhysXSuspensionLimitConstraintParamsDirectionSpecifierEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXSuspensionLimitConstraintParamsDirectionSpecifierEnum_eSUSPENSION())
+        val eROAD_GEOMETRY_NORMAL: PxVehiclePhysXSuspensionLimitConstraintParamsDirectionSpecifierEnum = PxVehiclePhysXSuspensionLimitConstraintParamsDirectionSpecifierEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXSuspensionLimitConstraintParamsDirectionSpecifierEnum_eROAD_GEOMETRY_NORMAL())
+        val eNONE: PxVehiclePhysXSuspensionLimitConstraintParamsDirectionSpecifierEnum = PxVehiclePhysXSuspensionLimitConstraintParamsDirectionSpecifierEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehiclePhysXSuspensionLimitConstraintParamsDirectionSpecifierEnum_eNONE())
+    }
 }
 
-object PxVehicleSimulationContextTypeEnum {
-    val eDEFAULT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleSimulationContextTypeEnum_eDEFAULT()
-    val ePHYSX: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleSimulationContextTypeEnum_ePHYSX()
+value class PxVehicleSimulationContextTypeEnum private constructor(val value: Int) {
+    companion object {
+        val eDEFAULT: PxVehicleSimulationContextTypeEnum = PxVehicleSimulationContextTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleSimulationContextTypeEnum_eDEFAULT())
+        val ePHYSX: PxVehicleSimulationContextTypeEnum = PxVehicleSimulationContextTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleSimulationContextTypeEnum_ePHYSX())
+    }
 }
 
-object PxVehicleSuspensionJounceCalculationTypeEnum {
-    val eRAYCAST: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleSuspensionJounceCalculationTypeEnum_eRAYCAST()
-    val eSWEEP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleSuspensionJounceCalculationTypeEnum_eSWEEP()
+value class PxVehicleSuspensionJounceCalculationTypeEnum private constructor(val value: Int) {
+    companion object {
+        val eRAYCAST: PxVehicleSuspensionJounceCalculationTypeEnum = PxVehicleSuspensionJounceCalculationTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleSuspensionJounceCalculationTypeEnum_eRAYCAST())
+        val eSWEEP: PxVehicleSuspensionJounceCalculationTypeEnum = PxVehicleSuspensionJounceCalculationTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleSuspensionJounceCalculationTypeEnum_eSWEEP())
+    }
 }
 
-object PxVehicleTireDirectionModesEnum {
-    val eLONGITUDINAL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleTireDirectionModesEnum_eLONGITUDINAL()
-    val eLATERAL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleTireDirectionModesEnum_eLATERAL()
+value class PxVehicleTireDirectionModesEnum private constructor(val value: Int) {
+    companion object {
+        val eLONGITUDINAL: PxVehicleTireDirectionModesEnum = PxVehicleTireDirectionModesEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleTireDirectionModesEnum_eLONGITUDINAL())
+        val eLATERAL: PxVehicleTireDirectionModesEnum = PxVehicleTireDirectionModesEnum(PhysXJsLoader.physXJs._emscripten_enum_PxVehicleTireDirectionModesEnum_eLATERAL())
+    }
 }
 
-object EngineDriveVehicleEnum {
-    val eDIFFTYPE_FOURWHEELDRIVE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_EngineDriveVehicleEnum_eDIFFTYPE_FOURWHEELDRIVE()
-    val eDIFFTYPE_MULTIWHEELDRIVE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_EngineDriveVehicleEnum_eDIFFTYPE_MULTIWHEELDRIVE()
-    val eDIFFTYPE_TANKDRIVE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_EngineDriveVehicleEnum_eDIFFTYPE_TANKDRIVE()
+value class EngineDriveVehicleEnum private constructor(val value: Int) {
+    companion object {
+        val eDIFFTYPE_FOURWHEELDRIVE: EngineDriveVehicleEnum = EngineDriveVehicleEnum(PhysXJsLoader.physXJs._emscripten_enum_EngineDriveVehicleEnum_eDIFFTYPE_FOURWHEELDRIVE())
+        val eDIFFTYPE_MULTIWHEELDRIVE: EngineDriveVehicleEnum = EngineDriveVehicleEnum(PhysXJsLoader.physXJs._emscripten_enum_EngineDriveVehicleEnum_eDIFFTYPE_MULTIWHEELDRIVE())
+        val eDIFFTYPE_TANKDRIVE: EngineDriveVehicleEnum = EngineDriveVehicleEnum(PhysXJsLoader.physXJs._emscripten_enum_EngineDriveVehicleEnum_eDIFFTYPE_TANKDRIVE())
+    }
 }
 

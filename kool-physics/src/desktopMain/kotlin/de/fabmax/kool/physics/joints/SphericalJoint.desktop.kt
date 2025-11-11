@@ -24,13 +24,14 @@ class SphericalJointImpl(
     frameB: PoseF
 ) : JointImpl(frameA, frameB), SphericalJoint {
 
-    override val joint: PxSphericalJoint
+    override val pxJoint: PxSphericalJoint
 
     init {
+        PhysicsImpl.checkIsLoaded()
         MemoryStack.stackPush().use { mem ->
             val frmA = frameA.toPxTransform(mem.createPxTransform())
             val frmB = frameB.toPxTransform(mem.createPxTransform())
-            joint = PxTopLevelFunctions.SphericalJointCreate(PhysicsImpl.physics, bodyA?.holder, frmA, bodyB.holder, frmB)
+            pxJoint = PxTopLevelFunctions.SphericalJointCreate(PhysicsImpl.physics, bodyA?.holder?.px, frmA, bodyB.holder.px, frmB)
         }
     }
 
@@ -41,12 +42,12 @@ class SphericalJointImpl(
             limit.damping = limitBehavior.damping
             limit.restitution = limitBehavior.restitution
             limit.bounceThreshold = limitBehavior.bounceThreshold
-            joint.setLimitCone(limit)
-            joint.setSphericalJointFlag(PxSphericalJointFlagEnum.eLIMIT_ENABLED, true)
+            pxJoint.setLimitCone(limit)
+            pxJoint.setSphericalJointFlag(PxSphericalJointFlagEnum.eLIMIT_ENABLED, true)
         }
     }
 
     override fun disableLimit() {
-        joint.setSphericalJointFlag(PxSphericalJointFlagEnum.eLIMIT_ENABLED, false)
+        pxJoint.setSphericalJointFlag(PxSphericalJointFlagEnum.eLIMIT_ENABLED, false)
     }
 }

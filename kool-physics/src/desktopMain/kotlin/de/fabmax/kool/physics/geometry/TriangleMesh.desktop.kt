@@ -69,7 +69,7 @@ class TriangleMeshImpl(override val geometry: IndexedVertexList<*>) : TriangleMe
 class TriangleMeshGeometryImpl(override val triangleMesh: TriangleMesh, override val scale: Vec3f) : CollisionGeometryImpl(), TriangleMeshGeometry {
     constructor(geometry: IndexedVertexList<*>, scale: Vec3f) : this(TriangleMesh(geometry), scale)
 
-    override val holder: PxTriangleMeshGeometry
+    override val pxGeometry: PxTriangleMeshGeometry
 
     init {
         PhysicsImpl.checkIsLoaded()
@@ -77,7 +77,7 @@ class TriangleMeshGeometryImpl(override val triangleMesh: TriangleMesh, override
             val s = scale.toPxVec3(mem.createPxVec3())
             val r = mem.createPxQuat(0f, 0f, 0f, 1f)
             val meshScale = mem.createPxMeshScale(s, r)
-            holder = PxTriangleMeshGeometry(triangleMesh.pxTriangleMesh, meshScale)
+            pxGeometry = PxTriangleMeshGeometry(triangleMesh.pxTriangleMesh, meshScale)
         }
 
         if (triangleMesh.releaseWithGeometry) {

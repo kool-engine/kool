@@ -1,13 +1,12 @@
 package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.MemoryStack
 import de.fabmax.kool.physics.PhysicsImpl
+import de.fabmax.kool.physics.memStack
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.BaseReleasable
 import physx.*
 
-@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual class GeometryHolder(val px: PxGeometry)
 
 actual fun BoxGeometry(size: Vec3f) : BoxGeometry = BoxGeometryImpl(size)
@@ -42,8 +41,8 @@ class CapsuleGeometryImpl(override val height: Float, override val radius: Float
 }
 
 class CylinderGeometryImpl(override val length: Float, override val radius: Float) : CollisionGeometryImpl(), CylinderGeometry {
-    override val pxGeometry: PxConvexMeshGeometry = MemoryStack.stackPush().use { mem ->
-        PxConvexMeshGeometry(PhysicsImpl.unitCylinder, mem.createPxMeshScale(Vec3f(length, radius, radius)))
+    override val pxGeometry: PxConvexMeshGeometry = memStack {
+        PxConvexMeshGeometry(PhysicsImpl.unitCylinder, createPxMeshScale(Vec3f(length, radius, radius)))
     }
 }
 

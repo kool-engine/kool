@@ -14,7 +14,7 @@ import physx.physics.PxRigidDynamic
 
 abstract class RigidBodyImpl : RigidActorImpl(), RigidBody {
     private val pxRigidBody: PxRigidBody
-        get() = holder as PxRigidBody
+        get() = holder.px as PxRigidBody
 
     private val bufInertia = SyncedVec3(Vec3f.ONES)
     private val bufMass = SyncedFloat(1f)

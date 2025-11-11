@@ -1,11 +1,10 @@
-@file:Suppress("UnsafeCastFromDynamic", "FunctionName")
-
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.scene.TrsTransformF
 import physx.*
+import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 fun PxBounds3.toBoundingBox(result: BoundingBoxF): BoundingBoxF {
@@ -83,7 +82,6 @@ fun PxExtendedVec3.toVec3d(result: MutableVec3d = MutableVec3d()) = result.set(x
 fun PxExtendedVec3.set(v: Vec3d): PxExtendedVec3 { x = v.x; y = v.y; z = v.z; return this }
 fun Vec3d.toPxExtendedVec3(result: PxExtendedVec3) = result.set(this)
 
-@Suppress("FunctionName")
 fun List<Vec3f>.toPxArray_PxVec3(): PxArray_PxVec3 {
     val vector = PxArray_PxVec3(size)
     forEachIndexed { i, v -> v.toPxVec3(vector.get(i)) }
@@ -102,6 +100,20 @@ fun FilterData.toPxFilterData(target: PxFilterData): PxFilterData {
     return target
 }
 
+var PxRigidDynamic.linearVelocity: PxVec3
+    get() = getLinearVelocity()
+    set(value) { setLinearVelocity(value) }
+var PxRigidDynamic.angularVelocity: PxVec3
+    get() = getAngularVelocity()
+    set(value) { setAngularVelocity(value) }
+
+inline fun <R> memStack(block: MemoryStack.() -> R): R {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    return MemoryStack.stackPush().use(block)
+}
+
 class MemoryStack private constructor() {
     val autoDeletables = mutableListOf<Any>()
 
@@ -112,7 +124,7 @@ class MemoryStack private constructor() {
 
     inline fun <R> use(block: (MemoryStack) -> R): R {
         contract {
-            callsInPlace(block, kotlin.contracts.InvocationKind.EXACTLY_ONCE)
+            callsInPlace(block, InvocationKind.EXACTLY_ONCE)
         }
         try {
             return block(this)
@@ -133,7 +145,7 @@ class MemoryStack private constructor() {
     fun createPxFilterData() = autoDelete(PxFilterData())
     fun createPxFilterData(w0: Int, w1: Int, w2: Int, w3: Int) = autoDelete(PxFilterData(w0, w1, w2, w3))
     fun createPxQueryFilterData(fd: PxFilterData, f: PxQueryFlags) = autoDelete(PxQueryFilterData(fd, f))
-    fun createPxQueryFlags(flags: Short) = autoDelete(PxQueryFlags(flags))
+    fun createPxQueryFlags(flags: PxQueryFlagEnum) = autoDelete(PxQueryFlags(flags.value.toShort()))
     fun createPxHeightFieldSample() = autoDelete(PxHeightFieldSample())
     fun createPxHullPolygon() = autoDelete(PxHullPolygon())
     fun createPxMeshScale(s: PxVec3, r: PxQuat) = autoDelete(PxMeshScale(s, r))
@@ -146,6 +158,8 @@ class MemoryStack private constructor() {
 
     fun createPxTransform() = autoDelete(PxTransform(PxIDENTITYEnum.PxIdentity))
     fun createPxTransform(p: PxVec3, q: PxQuat) = autoDelete(PxTransform(p, q))
+    fun createPxTransform(p: Vec3f, q: QuatF) =
+        autoDelete(PxTransform(p.toPxVec3(createPxVec3()), q.toPxQuat(createPxQuat())))
 
     fun createPxSceneDesc(scale: PxTolerancesScale) = autoDelete(PxSceneDesc(scale))
     fun createPxConvexMeshDesc() = autoDelete(PxConvexMeshDesc())

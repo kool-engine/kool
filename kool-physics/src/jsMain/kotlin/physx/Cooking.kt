@@ -1,7 +1,7 @@
 /*
  * Generated from WebIDL by webidl-util
  */
-@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused")
+@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused", "INLINE_CLASS_IN_EXTERNAL_DECLARATION_WARNING", "NOTHING_TO_INLINE")
 
 package physx
 
@@ -18,7 +18,7 @@ external interface PxBVH33MidphaseDesc {
     /**
      * WebIDL type: [PxMeshCookingHintEnum] (enum)
      */
-    var meshCookingHint: Int
+    var meshCookingHint: PxMeshCookingHintEnum
 
     fun setToDefault()
 
@@ -71,17 +71,17 @@ external interface PxConvexFlags {
      * @param flag WebIDL type: [PxConvexFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxConvexFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxConvexFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxConvexFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxConvexFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxConvexFlagEnum)
 
 }
 
@@ -137,7 +137,7 @@ external interface PxCookingParams {
     /**
      * WebIDL type: [PxConvexMeshCookingTypeEnum] (enum)
      */
-    var convexMeshCookingType: Int
+    var convexMeshCookingType: PxConvexMeshCookingTypeEnum
     /**
      * WebIDL type: boolean
      */
@@ -193,17 +193,17 @@ external interface PxMeshPreprocessingFlags {
      * @param flag WebIDL type: [PxMeshPreprocessingFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxMeshPreprocessingFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxMeshPreprocessingFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxMeshPreprocessingFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxMeshPreprocessingFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxMeshPreprocessingFlagEnum)
 
 }
 
@@ -236,12 +236,12 @@ external interface PxMidphaseDesc {
     /**
      * @return WebIDL type: [PxMeshMidPhaseEnum] (enum)
      */
-    fun getType(): Int
+    fun getType(): PxMeshMidPhaseEnum
 
     /**
      * @param type WebIDL type: [PxMeshMidPhaseEnum] (enum)
      */
-    fun setToDefault(type: Int)
+    fun setToDefault(type: PxMeshMidPhaseEnum)
 
     /**
      * @return WebIDL type: boolean
@@ -276,35 +276,45 @@ fun PxTriangleMeshDesc.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-object PxConvexFlagEnum {
-    val e16_BIT_INDICES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_e16_BIT_INDICES()
-    val eCOMPUTE_CONVEX: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_eCOMPUTE_CONVEX()
-    val eCHECK_ZERO_AREA_TRIANGLES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_eCHECK_ZERO_AREA_TRIANGLES()
-    val eQUANTIZE_INPUT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_eQUANTIZE_INPUT()
-    val eDISABLE_MESH_VALIDATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_eDISABLE_MESH_VALIDATION()
-    val ePLANE_SHIFTING: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_ePLANE_SHIFTING()
-    val eFAST_INERTIA_COMPUTATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_eFAST_INERTIA_COMPUTATION()
-    val eSHIFT_VERTICES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_eSHIFT_VERTICES()
+value class PxConvexFlagEnum private constructor(val value: Int) {
+    companion object {
+        val e16_BIT_INDICES: PxConvexFlagEnum = PxConvexFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_e16_BIT_INDICES())
+        val eCOMPUTE_CONVEX: PxConvexFlagEnum = PxConvexFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_eCOMPUTE_CONVEX())
+        val eCHECK_ZERO_AREA_TRIANGLES: PxConvexFlagEnum = PxConvexFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_eCHECK_ZERO_AREA_TRIANGLES())
+        val eQUANTIZE_INPUT: PxConvexFlagEnum = PxConvexFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_eQUANTIZE_INPUT())
+        val eDISABLE_MESH_VALIDATION: PxConvexFlagEnum = PxConvexFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_eDISABLE_MESH_VALIDATION())
+        val ePLANE_SHIFTING: PxConvexFlagEnum = PxConvexFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_ePLANE_SHIFTING())
+        val eFAST_INERTIA_COMPUTATION: PxConvexFlagEnum = PxConvexFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_eFAST_INERTIA_COMPUTATION())
+        val eSHIFT_VERTICES: PxConvexFlagEnum = PxConvexFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_eSHIFT_VERTICES())
+    }
 }
 
-object PxConvexMeshCookingTypeEnum {
-    val eQUICKHULL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConvexMeshCookingTypeEnum_eQUICKHULL()
+value class PxConvexMeshCookingTypeEnum private constructor(val value: Int) {
+    companion object {
+        val eQUICKHULL: PxConvexMeshCookingTypeEnum = PxConvexMeshCookingTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxConvexMeshCookingTypeEnum_eQUICKHULL())
+    }
 }
 
-object PxMeshCookingHintEnum {
-    val eSIM_PERFORMANCE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMeshCookingHintEnum_eSIM_PERFORMANCE()
-    val eCOOKING_PERFORMANCE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMeshCookingHintEnum_eCOOKING_PERFORMANCE()
+value class PxMeshCookingHintEnum private constructor(val value: Int) {
+    companion object {
+        val eSIM_PERFORMANCE: PxMeshCookingHintEnum = PxMeshCookingHintEnum(PhysXJsLoader.physXJs._emscripten_enum_PxMeshCookingHintEnum_eSIM_PERFORMANCE())
+        val eCOOKING_PERFORMANCE: PxMeshCookingHintEnum = PxMeshCookingHintEnum(PhysXJsLoader.physXJs._emscripten_enum_PxMeshCookingHintEnum_eCOOKING_PERFORMANCE())
+    }
 }
 
-object PxMeshPreprocessingFlagEnum {
-    val eWELD_VERTICES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMeshPreprocessingFlagEnum_eWELD_VERTICES()
-    val eDISABLE_CLEAN_MESH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMeshPreprocessingFlagEnum_eDISABLE_CLEAN_MESH()
-    val eDISABLE_ACTIVE_EDGES_PRECOMPUTE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMeshPreprocessingFlagEnum_eDISABLE_ACTIVE_EDGES_PRECOMPUTE()
-    val eFORCE_32BIT_INDICES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMeshPreprocessingFlagEnum_eFORCE_32BIT_INDICES()
+value class PxMeshPreprocessingFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eWELD_VERTICES: PxMeshPreprocessingFlagEnum = PxMeshPreprocessingFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxMeshPreprocessingFlagEnum_eWELD_VERTICES())
+        val eDISABLE_CLEAN_MESH: PxMeshPreprocessingFlagEnum = PxMeshPreprocessingFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxMeshPreprocessingFlagEnum_eDISABLE_CLEAN_MESH())
+        val eDISABLE_ACTIVE_EDGES_PRECOMPUTE: PxMeshPreprocessingFlagEnum = PxMeshPreprocessingFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxMeshPreprocessingFlagEnum_eDISABLE_ACTIVE_EDGES_PRECOMPUTE())
+        val eFORCE_32BIT_INDICES: PxMeshPreprocessingFlagEnum = PxMeshPreprocessingFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxMeshPreprocessingFlagEnum_eFORCE_32BIT_INDICES())
+    }
 }
 
-object PxMeshMidPhaseEnum {
-    val eBVH33: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMeshMidPhaseEnum_eBVH33()
-    val eBVH34: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMeshMidPhaseEnum_eBVH34()
+value class PxMeshMidPhaseEnum private constructor(val value: Int) {
+    companion object {
+        val eBVH33: PxMeshMidPhaseEnum = PxMeshMidPhaseEnum(PhysXJsLoader.physXJs._emscripten_enum_PxMeshMidPhaseEnum_eBVH33())
+        val eBVH34: PxMeshMidPhaseEnum = PxMeshMidPhaseEnum(PhysXJsLoader.physXJs._emscripten_enum_PxMeshMidPhaseEnum_eBVH34())
+    }
 }
 

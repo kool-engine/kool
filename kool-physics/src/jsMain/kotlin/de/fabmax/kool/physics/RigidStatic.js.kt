@@ -6,9 +6,7 @@ import physx.PxRigidStatic
 actual fun RigidStatic(pose: Mat4f): RigidStatic = RigidStaticImpl(pose)
 
 class RigidStaticImpl(pose: Mat4f) : RigidActorImpl(), RigidStatic {
-
     private val pxRigidStatic: PxRigidStatic
-
     override val holder: RigidActorHolder
 
     init {
@@ -18,5 +16,6 @@ class RigidStaticImpl(pose: Mat4f) : RigidActorImpl(), RigidStatic {
             holder = RigidActorHolder(pxRigidStatic)
         }
         transform.setMatrix(pose)
+        syncSimulationData()
     }
 }

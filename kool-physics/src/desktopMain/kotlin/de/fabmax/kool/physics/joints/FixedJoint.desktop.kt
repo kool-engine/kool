@@ -20,13 +20,13 @@ class FixedJointImpl(
     frameB: PoseF
 ) : JointImpl(frameA, frameB), FixedJoint {
 
-    override val joint: PxFixedJoint
+    override val pxJoint: PxFixedJoint
 
     init {
         memStack {
             val frmA = frameA.toPxTransform(createPxTransform())
             val frmB = frameB.toPxTransform(createPxTransform())
-            joint = PxTopLevelFunctions.FixedJointCreate(PhysicsImpl.physics, bodyA?.holder, frmA, bodyB.holder, frmB)
+            pxJoint = PxTopLevelFunctions.FixedJointCreate(PhysicsImpl.physics, bodyA?.holder?.px, frmA, bodyB.holder.px, frmB)
         }
     }
 }

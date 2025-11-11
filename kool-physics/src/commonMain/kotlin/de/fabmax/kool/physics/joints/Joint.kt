@@ -4,7 +4,6 @@ import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.util.Releasable
 
-@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 expect class JointHolder
 
 interface Joint : Releasable {

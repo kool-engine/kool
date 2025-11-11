@@ -23,11 +23,11 @@ internal actual fun PhysicsSystem(): PhysicsSystem = PhysicsImpl
 object PhysicsImpl : PhysicsSystem {
 
     override val NOTIFY_TOUCH_FOUND: Int
-        get() = PxPairFlagEnum.eNOTIFY_TOUCH_FOUND
+        get() = PxPairFlagEnum.eNOTIFY_TOUCH_FOUND.value
     override val NOTIFY_TOUCH_LOST: Int
-        get() = PxPairFlagEnum.eNOTIFY_TOUCH_LOST
+        get() = PxPairFlagEnum.eNOTIFY_TOUCH_LOST.value
     override val NOTIFY_CONTACT_POINTS: Int
-        get() = PxPairFlagEnum.eNOTIFY_CONTACT_POINTS
+        get() = PxPairFlagEnum.eNOTIFY_CONTACT_POINTS.value
 
     private var isLoading = false
     override val isLoaded: Boolean

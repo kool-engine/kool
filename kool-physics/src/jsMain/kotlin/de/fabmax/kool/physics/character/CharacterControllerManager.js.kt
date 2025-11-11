@@ -9,7 +9,6 @@ actual fun CharacterControllerManager(world: PhysicsWorld): CharacterControllerM
 }
 
 class CharacterControllerManagerImpl(private val world: PhysicsWorld) : CharacterControllerManager() {
-
     private val pxManager: PxControllerManager
 
     init {

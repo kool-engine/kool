@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
+
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.MutableVec3f
@@ -8,7 +10,6 @@ import de.fabmax.kool.util.logE
 import physx.*
 
 abstract class RigidBodyImpl : RigidActorImpl(), RigidBody {
-    @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
     private val pxRigidBody: PxRigidBody
         get() = holder.px as PxRigidBody
 

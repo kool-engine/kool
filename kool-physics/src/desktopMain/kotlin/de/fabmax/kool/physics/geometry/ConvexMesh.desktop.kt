@@ -85,14 +85,14 @@ class ConvexMeshImpl(override val points: List<Vec3f>, override var releaseWithG
 class ConvexMeshGeometryImpl(override val convexMesh: ConvexMesh, override val scale: Vec3f) : CollisionGeometryImpl(), ConvexMeshGeometry {
     constructor(points: List<Vec3f>, scale: Vec3f) : this(ConvexMesh(points), scale)
 
-    override val holder: PxConvexMeshGeometry
+    override val pxGeometry: PxConvexMeshGeometry
 
     init {
         MemoryStack.stackPush().use { mem ->
             val s = scale.toPxVec3(mem.createPxVec3())
             val r = mem.createPxQuat(0f, 0f, 0f, 1f)
             val meshScale = mem.createPxMeshScale(s, r)
-            holder = PxConvexMeshGeometry(convexMesh.pxConvexMesh, meshScale)
+            pxGeometry = PxConvexMeshGeometry(convexMesh.pxConvexMesh, meshScale)
         }
 
         if (convexMesh.releaseWithGeometry) {

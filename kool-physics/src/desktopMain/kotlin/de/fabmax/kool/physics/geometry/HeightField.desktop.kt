@@ -76,13 +76,13 @@ class HeightFieldImpl(
 }
 
 class HeightFieldGeometryImpl(override val heightField: HeightField) : CollisionGeometryImpl(), HeightFieldGeometry {
-    override val holder: PxHeightFieldGeometry
+    override val pxGeometry: PxHeightFieldGeometry
 
     init {
         PhysicsImpl.checkIsLoaded()
         memStack {
             val flags = createPxMeshGeometryFlags(0)
-            holder = PxHeightFieldGeometry(heightField.pxHeightField, flags, heightField.heightScale, heightField.rowScale, heightField.columnScale)
+            pxGeometry = PxHeightFieldGeometry(heightField.pxHeightField, flags, heightField.heightScale, heightField.rowScale, heightField.columnScale)
         }
 
         if (heightField.releaseWithGeometry) {

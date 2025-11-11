@@ -2,7 +2,7 @@ package de.fabmax.kool.physics.articulations
 
 import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.math.toRad
-import de.fabmax.kool.physics.MemoryStack
+import de.fabmax.kool.physics.memStack
 import de.fabmax.kool.physics.toPxTransform
 import physx.*
 
@@ -17,14 +17,14 @@ class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) :
     }
 
     override fun setParentPose(pose: PoseF) {
-        MemoryStack.stackPush().use { mem ->
-            pxJoint.parentPose = pose.toPxTransform(mem.createPxTransform())
+        memStack {
+            pxJoint.parentPose = pose.toPxTransform(createPxTransform())
         }
     }
 
     override fun setChildPose(pose: PoseF) {
-        MemoryStack.stackPush().use { mem ->
-            pxJoint.childPose = pose.toPxTransform(mem.createPxTransform())
+        memStack {
+            pxJoint.childPose = pose.toPxTransform(createPxTransform())
         }
     }
 
@@ -33,8 +33,8 @@ class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) :
     }
 
     override fun setAxisLimits(axis: ArticulationJointAxis, low: Float, high: Float) {
-        MemoryStack.stackPush().use { mem ->
-            val limit = mem.createPxArticulationLimit(low, high)
+        memStack {
+            val limit = createPxArticulationLimit(low, high)
             pxJoint.setLimitParams(axis.pxVal, limit)
         }
     }
@@ -91,8 +91,8 @@ class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) :
         damping: Float,
         stiffness: Float
     ) {
-        MemoryStack.stackPush().use { mem ->
-            val drive = mem.createPxArticulationDrive()
+        memStack {
+            val drive = createPxArticulationDrive()
             drive.driveType = driveType.pxVal
             drive.stiffness = stiffness
             drive.damping = damping
@@ -109,22 +109,23 @@ class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) :
     }
 
     companion object {
-        private fun Int.toArticulationJointType(): ArticulationJointType = when (this) {
+        private fun PxArticulationJointTypeEnum.toArticulationJointType(): ArticulationJointType = when (this) {
             PxArticulationJointTypeEnum.eFIX -> ArticulationJointType.FIX
             PxArticulationJointTypeEnum.ePRISMATIC -> ArticulationJointType.PRISMATIC
             PxArticulationJointTypeEnum.eREVOLUTE -> ArticulationJointType.REVOLUTE
             PxArticulationJointTypeEnum.eSPHERICAL -> ArticulationJointType.SPHERICAL
+            PxArticulationJointTypeEnum.eUNDEFINED -> throw IllegalStateException("Invalid joint type: $this")
             else -> throw IllegalStateException("Invalid joint type: $this")
         }
 
-        private val ArticulationJointType.pxVal: Int get() = when (this) {
+        private val ArticulationJointType.pxVal: PxArticulationJointTypeEnum get() = when (this) {
             ArticulationJointType.FIX -> PxArticulationJointTypeEnum.eFIX
             ArticulationJointType.PRISMATIC -> PxArticulationJointTypeEnum.ePRISMATIC
             ArticulationJointType.REVOLUTE -> PxArticulationJointTypeEnum.eREVOLUTE
             ArticulationJointType.SPHERICAL -> PxArticulationJointTypeEnum.eSPHERICAL
         }
 
-        private val ArticulationJointAxis.pxVal: Int get() = when (this) {
+        private val ArticulationJointAxis.pxVal: PxArticulationAxisEnum get() = when (this) {
             ArticulationJointAxis.ROT_TWIST -> PxArticulationAxisEnum.eTWIST
             ArticulationJointAxis.ROT_SWING1 -> PxArticulationAxisEnum.eSWING1
             ArticulationJointAxis.ROT_SWING2 -> PxArticulationAxisEnum.eSWING2
@@ -133,13 +134,13 @@ class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) :
             ArticulationJointAxis.LINEAR_Z -> PxArticulationAxisEnum.eZ
         }
 
-        private val ArticulationMotionMode.pxVal: Int get() = when (this) {
+        private val ArticulationMotionMode.pxVal: PxArticulationMotionEnum get() = when (this) {
             ArticulationMotionMode.FREE -> PxArticulationMotionEnum.eFREE
             ArticulationMotionMode.LIMITED -> PxArticulationMotionEnum.eLIMITED
             ArticulationMotionMode.LOCKED -> PxArticulationMotionEnum.eLOCKED
         }
 
-        private val ArticulationDriveType.pxVal: Int get() = when (this) {
+        private val ArticulationDriveType.pxVal: PxArticulationDriveTypeEnum get() = when (this) {
             ArticulationDriveType.ACCELERATION -> PxArticulationDriveTypeEnum.eACCELERATION
             ArticulationDriveType.FORCE -> PxArticulationDriveTypeEnum.eFORCE
             ArticulationDriveType.NONE -> PxArticulationDriveTypeEnum.eNONE

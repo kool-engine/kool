@@ -118,6 +118,7 @@ class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) :
             PxArticulationJointTypeEnum.eREVOLUTE -> ArticulationJointType.REVOLUTE
             PxArticulationJointTypeEnum.eSPHERICAL -> ArticulationJointType.SPHERICAL
             PxArticulationJointTypeEnum.eUNDEFINED -> throw IllegalStateException("Invalid joint type: $this")
+            //@js: else -> throw IllegalStateException("Invalid joint type: $this")
         }
 
         private val ArticulationJointType.pxVal: PxArticulationJointTypeEnum get() = when (this) {

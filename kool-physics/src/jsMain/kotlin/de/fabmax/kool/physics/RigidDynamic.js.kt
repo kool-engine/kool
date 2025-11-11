@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
+
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.Mat4f
@@ -24,7 +26,6 @@ class RigidDynamicImpl(
 
     override val holder: RigidActorHolder
 
-    @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
     private val pxRigidDynamic: PxRigidDynamic
         get() = holder.px as PxRigidDynamic
 

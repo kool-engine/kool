@@ -22,31 +22,33 @@ class RigidDynamicImpl(
 
     constructor(mass: Float, pose: Mat4f, isKinematic: Boolean) : this(mass, pose, isKinematic, null)
 
-    override val holder: PxRigidDynamic
+    override val holder: RigidActorHolder
+    private val pxRigidDynamic: PxRigidDynamic
+        get() = holder.px as PxRigidDynamic
 
     init {
         if (pxActor == null) {
             MemoryStack.stackPush().use { mem ->
                 val pxPose = pose.toPxTransform(mem.createPxTransform())
-                holder = PhysicsImpl.physics.createRigidDynamic(pxPose)
+                holder = RigidActorHolder(PhysicsImpl.physics.createRigidDynamic(pxPose))
                 this.mass = mass
             }
         } else {
-            holder = pxActor
+            holder = RigidActorHolder(pxActor)
         }
         if (isKinematic) {
-            holder.setRigidBodyFlag(PxRigidBodyFlagEnum.eKINEMATIC, true)
+            pxRigidDynamic.setRigidBodyFlag(PxRigidBodyFlagEnum.eKINEMATIC, true)
         }
         transform.setMatrix(pose)
         syncSimulationData()
     }
 
     override fun wakeUp() {
-        holder.wakeUp()
+        pxRigidDynamic.wakeUp()
     }
 
     override fun putToSleep() {
-        holder.putToSleep()
+        pxRigidDynamic.putToSleep()
     }
 
     override fun setKinematicTarget(pose: Mat4f) {
@@ -60,7 +62,7 @@ class RigidDynamicImpl(
         }
         MemoryStack.stackPush().use { mem ->
             val pxPose = pose.toPxTransform(mem.createPxTransform())
-            holder.setKinematicTarget(pxPose)
+            pxRigidDynamic.setKinematicTarget(pxPose)
         }
     }
 
@@ -75,9 +77,9 @@ class RigidDynamicImpl(
         }
         MemoryStack.stackPush().use { mem ->
             val pxPose = mem.createPxTransform()
-            pxPose.p = position?.toPxVec3(mem.createPxVec3()) ?: holder.globalPose.p
-            pxPose.q = rotation?.toPxQuat(mem.createPxQuat()) ?: holder.globalPose.q
-            holder.setKinematicTarget(pxPose)
+            pxPose.p = position?.toPxVec3(mem.createPxVec3()) ?: pxRigidDynamic.globalPose.p
+            pxPose.q = rotation?.toPxQuat(mem.createPxQuat()) ?: pxRigidDynamic.globalPose.q
+            pxRigidDynamic.setKinematicTarget(pxPose)
         }
     }
 
@@ -86,9 +88,9 @@ class RigidDynamicImpl(
             logE { "setLinearLockFlags must be called from PhysicsThread / PhysicsStepListener.onUpdatePhysics" }
             return
         }
-        holder.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_X, lockLinearX)
-        holder.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_Y, lockLinearY)
-        holder.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_Z, lockLinearZ)
+        pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_X, lockLinearX)
+        pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_Y, lockLinearY)
+        pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_Z, lockLinearZ)
     }
 
     override fun setAngularLockFlags(lockAngularX: Boolean, lockAngularY: Boolean, lockAngularZ: Boolean) {
@@ -96,8 +98,8 @@ class RigidDynamicImpl(
             logE { "setLinearLockFlags must be called from PhysicsThread / PhysicsStepListener.onUpdatePhysics" }
             return
         }
-        holder.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_X, lockAngularX)
-        holder.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_Y, lockAngularY)
-        holder.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_Z, lockAngularZ)
+        pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_X, lockAngularX)
+        pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_Y, lockAngularY)
+        pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_Z, lockAngularZ)
     }
 }

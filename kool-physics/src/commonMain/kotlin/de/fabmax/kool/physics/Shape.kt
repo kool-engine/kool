@@ -3,7 +3,6 @@ package de.fabmax.kool.physics
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.physics.geometry.CollisionGeometry
 
-@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 expect class ShapeHolder
 
 class Shape(

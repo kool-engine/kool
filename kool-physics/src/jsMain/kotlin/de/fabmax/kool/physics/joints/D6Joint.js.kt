@@ -275,7 +275,7 @@ class D6JointImpl(
         setDrive(PxD6DriveEnum.eSWING, D6JointDrive(0f, 0f, 0f, 0f))
     }
 
-    private fun setDrive(index: Int, drive: D6JointDrive) {
+    private fun setDrive(index: PxD6DriveEnum, drive: D6JointDrive) {
         MemoryStack.stackPush().use { mem ->
             val pxDrive = PxD6JointDrive(drive.stiffness, drive.damping, drive.forceLimit, drive.isAcceleration)
             pxJoint.setDrive(index, pxDrive)
@@ -299,14 +299,14 @@ class D6JointImpl(
     }
 
     companion object {
-        private fun Int.toD6JointMotion(): D6JointMotion = when (this) {
+        private fun PxD6MotionEnum.toD6JointMotion(): D6JointMotion = when (this) {
             PxD6MotionEnum.eFREE -> D6JointMotion.Free
             PxD6MotionEnum.eLIMITED -> D6JointMotion.Limited
             PxD6MotionEnum.eLOCKED -> D6JointMotion.Locked
             else -> error("Invalid value $this")
         }
 
-        private fun D6JointMotion.toPxD6MotionEnum(): Int = when (this) {
+        private fun D6JointMotion.toPxD6MotionEnum(): PxD6MotionEnum = when (this) {
             D6JointMotion.Free -> PxD6MotionEnum.eFREE
             D6JointMotion.Limited -> PxD6MotionEnum.eLIMITED
             D6JointMotion.Locked -> PxD6MotionEnum.eLOCKED

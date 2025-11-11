@@ -14,7 +14,6 @@ import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Releasable
 
-@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 expect class RigidActorHolder
 
 fun RigidActor.setPosition(pos: Vec3f) {

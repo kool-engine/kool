@@ -90,17 +90,17 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
 
     override fun attachShape(shape: Shape) {
         _shapes += shape
-        MemoryStack.stackPush().use { mem ->
+        memStack {
             val flags = if (isTrigger) TRIGGER_SHAPE_FLAGS else SIM_SHAPE_FLAGS
-            val shapeFlags = mem.createPxShapeFlags(flags)
+            val shapeFlags = createPxShapeFlags(flags)
 
             val pxShape = PxRigidActorExt.createExclusiveShape(holder, shape.geometry.holder, shape.material.pxMaterial, shapeFlags)
-            pxShape.localPose = shape.localPose.toPxTransform(mem.createPxTransform())
+            pxShape.localPose = shape.localPose.toPxTransform(createPxTransform())
 
             val simFd = shape.simFilterData ?: simulationFilterData
-            pxShape.simulationFilterData = simFd.toPxFilterData(mem.createPxFilterData())
+            pxShape.simulationFilterData = simFd.toPxFilterData(createPxFilterData())
             val qryFd = shape.queryFilterData ?: queryFilterData
-            pxShape.queryFilterData = qryFd.toPxFilterData(mem.createPxFilterData())
+            pxShape.queryFilterData = qryFd.toPxFilterData(createPxFilterData())
             shape.holder = pxShape
         }
     }

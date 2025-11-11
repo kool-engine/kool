@@ -11,7 +11,6 @@ import physx.character.PxControllersHit
 import physx.character.PxUserControllerHitReportImpl
 
 class ControllerHitListener(private val world: PhysicsWorldImpl) : PxUserControllerHitReportImpl() {
-
     private val hitPosD = MutableVec3d()
     private val hitPos = MutableVec3f()
     private val hitNormal = MutableVec3f()
