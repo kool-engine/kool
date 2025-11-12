@@ -5,6 +5,9 @@ import physxandroid.PxTopLevelFunctions
 import physxandroid.character.*
 import kotlin.math.cos
 
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 actual fun CharacterControllerManager(world: PhysicsWorld): CharacterControllerManager {
     return CharacterControllerManagerImpl(world)
 }
@@ -25,7 +28,7 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
         // create controller with default configuration
         world as PhysicsWorldImpl
         val hitCallback = ControllerHitListener(world)
-        val behaviorCallback = ControllerBahaviorCallback(world)
+        val behaviorCallback = ControllerBehaviorCallback(world)
         val desc = PxCapsuleControllerDesc()
         desc.height = charProperties.height
         desc.radius = charProperties.radius
@@ -33,14 +36,14 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
         desc.slopeLimit = cos(charProperties.slopeLimit.rad)
         desc.material = Physics.defaultMaterial.pxMaterial
         desc.contactOffset = charProperties.contactOffset
-        desc.reportCallback = hitCallback
-        desc.behaviorCallback = behaviorCallback
+        desc.reportCallback = hitCallback.callback
+        desc.behaviorCallback = behaviorCallback.callback
         desc.nonWalkableMode = when (charProperties.nonWalkableMode) {
             NonWalkableMode.PREVENT_CLIMBING -> PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING
             NonWalkableMode.PREVENT_CLIMBING_AND_FORCE_SLIDING -> PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING_AND_FORCE_SLIDING
         }
 
-        val pxCharacter = PxCapsuleController.wrapPointer(pxManager.createController(desc).address)
+        val pxCharacter = WrapPointer.PxCapsuleController(pxManager.createController(desc).ptr)
         desc.destroy()
 
         memStack {
@@ -51,7 +54,7 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
             shape.queryFilterData = charProperties.queryFilterData.toPxFilterData(createPxFilterData())
         }
 
-        return JvmCharacterController(pxCharacter, hitCallback, behaviorCallback, this, world)
+        return CharacterControllerImpl(pxCharacter, hitCallback, behaviorCallback, this, world)
     }
 
     override fun doRelease() {

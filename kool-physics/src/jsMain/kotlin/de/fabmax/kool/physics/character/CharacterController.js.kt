@@ -2,13 +2,15 @@ package de.fabmax.kool.physics.character
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
-import physxandroid.character.*
-import physxandroid.common.PxVec3
+import physx.*
 
-class JvmCharacterController(
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
+class CharacterControllerImpl(
     private val pxController: PxCapsuleController,
     private val hitListener: ControllerHitListener,
-    private val behaviorCallback: ControllerBahaviorCallback,
+    private val behaviorCallback: ControllerBehaviorCallback,
     manager: CharacterControllerManager,
     world: PhysicsWorldImpl
 ) : CharacterController(manager, world) {
@@ -20,9 +22,10 @@ class JvmCharacterController(
     override val actor: RigidDynamic = RigidDynamicImpl(1f, Mat4f.IDENTITY, false, pxController.actor)
 
     override var nonWalkableMode: NonWalkableMode =
-        when (pxController.nonWalkableMode!!) {
+        when (pxController.nonWalkableMode) {
             PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING -> NonWalkableMode.PREVENT_CLIMBING
             PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING_AND_FORCE_SLIDING -> NonWalkableMode.PREVENT_CLIMBING_AND_FORCE_SLIDING
+            else -> error("Invalid nonWalkable mode ${pxController.nonWalkableMode}")
         }
         set(value) {
             field = value
@@ -75,7 +78,7 @@ class JvmCharacterController(
         bufPxPosition.destroy()
         bufPxVec3.destroy()
         pxControllerFilters.destroy()
-        hitListener.destroy()
-        behaviorCallback.destroy()
+        hitListener.callback.destroy()
+        behaviorCallback.callback.destroy()
     }
 }

@@ -7,6 +7,9 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.BaseReleasable
 import physx.*
 
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 actual class GeometryHolder(val px: PxGeometry)
 
 actual fun BoxGeometry(size: Vec3f) : BoxGeometry = BoxGeometryImpl(size)

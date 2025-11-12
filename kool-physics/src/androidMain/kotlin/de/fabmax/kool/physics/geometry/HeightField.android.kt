@@ -1,6 +1,7 @@
 package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.physics.PhysicsImpl
+import de.fabmax.kool.physics.SIZEOF
 import de.fabmax.kool.physics.memStack
 import de.fabmax.kool.util.Heightmap
 import physxandroid.PxTopLevelFunctions
@@ -11,6 +12,9 @@ import physxandroid.geometry.PxHeightFieldSample
 import physxandroid.support.PxArray_PxHeightFieldSample
 import kotlin.math.max
 import kotlin.math.roundToInt
+
+// GENERATED CODE BELOW:
+// Transformed from desktop source
 
 actual fun HeightField(heightMap: Heightmap, rowScale: Float, columnScale: Float): HeightField {
     return HeightFieldImpl(heightMap, rowScale, columnScale)
@@ -58,7 +62,7 @@ class HeightFieldImpl(
             desc.nbRows = rows
             desc.nbColumns = cols
             desc.samples.data = samples.begin()
-            desc.samples.stride = PxHeightFieldSample.SIZEOF
+            desc.samples.stride = SIZEOF.PxHeightFieldSample
 
             pxHeightField = PxTopLevelFunctions.CreateHeightField(desc)
         }
@@ -73,13 +77,13 @@ class HeightFieldImpl(
 }
 
 class HeightFieldGeometryImpl(override val heightField: HeightField) : CollisionGeometryImpl(), HeightFieldGeometry {
-    override val holder: PxHeightFieldGeometry
+    override val pxGeometry: PxHeightFieldGeometry
 
     init {
         PhysicsImpl.checkIsLoaded()
         memStack {
             val flags = createPxMeshGeometryFlags(0)
-            holder = PxHeightFieldGeometry(heightField.pxHeightField, flags, heightField.heightScale, heightField.rowScale, heightField.columnScale)
+            pxGeometry = PxHeightFieldGeometry(heightField.pxHeightField, flags, heightField.heightScale, heightField.rowScale, heightField.columnScale)
         }
 
         if (heightField.releaseWithGeometry) {

@@ -9,6 +9,9 @@ import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.checkIsNotReleased
 import physx.*
 
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 actual class RigidActorHolder(val px: PxRigidActor)
 
 abstract class RigidActorImpl : BaseReleasable(), RigidActor {

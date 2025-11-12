@@ -110,7 +110,7 @@ class VehicleImpl(
 
         memStack {
             val pxVecZero = createPxVec3(0f, 0f, 0f)
-            val actor = PxRigidDynamicFromPointer(pxVehicle.physXState.physxActor.rigidBody.address)
+            val actor = WrapPointer.PxRigidDynamic(pxVehicle.physXState.physxActor.rigidBody.ptr)
             actor.linearVelocity = pxVecZero
             actor.angularVelocity = pxVecZero
         }

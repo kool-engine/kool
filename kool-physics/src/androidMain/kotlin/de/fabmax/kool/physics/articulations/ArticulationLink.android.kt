@@ -2,8 +2,10 @@ package de.fabmax.kool.physics.articulations
 
 import de.fabmax.kool.physics.RigidActorHolder
 import de.fabmax.kool.physics.RigidBodyImpl
-import physx.PxArticulationLink
-import physx.inboundJoint
+import physxandroid.physics.PxArticulationLink
+
+// GENERATED CODE BELOW:
+// Transformed from desktop source
 
 class ArticulationLinkImpl(
     link: PxArticulationLink,

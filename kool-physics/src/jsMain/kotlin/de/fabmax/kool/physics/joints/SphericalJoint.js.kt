@@ -3,10 +3,11 @@ package de.fabmax.kool.physics.joints
 import de.fabmax.kool.math.AngleF
 import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.*
-import physx.PxJointLimitCone
 import physx.PxSphericalJoint
 import physx.PxSphericalJointFlagEnum
-import physx.PxSpring
+
+// GENERATED CODE BELOW:
+// Transformed from desktop source
 
 actual fun SphericalJoint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): SphericalJoint {
     return SphericalJointImpl(bodyA, bodyB, frameA, frameB)
@@ -23,17 +24,18 @@ class SphericalJointImpl(
 
     init {
         PhysicsImpl.checkIsLoaded()
-        MemoryStack.stackPush().use { mem ->
-            val frmA = frameA.toPxTransform(mem.createPxTransform())
-            val frmB = frameB.toPxTransform(mem.createPxTransform())
+        memStack {
+            val frmA = frameA.toPxTransform(createPxTransform())
+            val frmB = frameB.toPxTransform(createPxTransform())
             pxJoint = PxTopLevelFunctions.SphericalJointCreate(PhysicsImpl.physics, bodyA?.holder?.px, frmA, bodyB.holder.px, frmB)
         }
     }
 
     override fun enableLimit(yLimitAngle: AngleF, zLimitAngle: AngleF, limitBehavior: LimitBehavior) {
         memStack {
-            val spring = autoDelete(PxSpring(limitBehavior.stiffness, limitBehavior.damping))
-            val limit = autoDelete(PxJointLimitCone(yLimitAngle.rad, zLimitAngle.rad, spring))
+            val limit = createPxJointLimitCone(yLimitAngle, zLimitAngle)
+            limit.stiffness = limitBehavior.stiffness
+            limit.damping = limitBehavior.damping
             limit.restitution = limitBehavior.restitution
             limit.bounceThreshold = limitBehavior.bounceThreshold
             pxJoint.setLimitCone(limit)

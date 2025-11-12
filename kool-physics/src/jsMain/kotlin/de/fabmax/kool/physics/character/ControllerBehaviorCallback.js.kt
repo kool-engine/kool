@@ -5,8 +5,8 @@ import physx.PxActorFromPointer
 import physx.PxControllerBehaviorCallbackImpl
 import physx.PxControllerBehaviorFlagEnum
 
-class ControllerBahaviorCallback(private val world: PhysicsWorldImpl) {
-    lateinit var controller: JsCharacterController
+class ControllerBehaviorCallback(private val world: PhysicsWorldImpl) {
+    lateinit var controller: CharacterControllerImpl
 
     val callback = PxControllerBehaviorCallbackImpl().apply {
         getShapeBehaviorFlags = { _, actor: Int ->
@@ -21,7 +21,6 @@ class ControllerBahaviorCallback(private val world: PhysicsWorldImpl) {
             } ?: 0
         }
 
-        // not used
         getControllerBehaviorFlags = { _ -> 0 }
         getObstacleBehaviorFlags = { _ -> 0 }
     }

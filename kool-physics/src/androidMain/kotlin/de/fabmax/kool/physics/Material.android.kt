@@ -3,6 +3,9 @@ package de.fabmax.kool.physics
 import de.fabmax.kool.util.BaseReleasable
 import physxandroid.physics.PxMaterial
 
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 actual fun Material(staticFriction: Float, dynamicFriction: Float, restitution: Float): Material {
     return MaterialImpl(staticFriction, dynamicFriction, restitution)
 }

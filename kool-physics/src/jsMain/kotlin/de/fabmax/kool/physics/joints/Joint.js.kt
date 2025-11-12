@@ -6,6 +6,9 @@ import physx.PxConstraintFlagEnum
 import physx.PxJoint
 import physx.constraintFlags
 
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 actual class JointHolder(val px: PxJoint)
 
 abstract class JointImpl(frameA: PoseF, frameB: PoseF) : BaseReleasable(), Joint {

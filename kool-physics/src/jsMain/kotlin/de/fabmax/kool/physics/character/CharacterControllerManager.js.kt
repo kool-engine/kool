@@ -4,6 +4,9 @@ import de.fabmax.kool.physics.*
 import physx.*
 import kotlin.math.cos
 
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 actual fun CharacterControllerManager(world: PhysicsWorld): CharacterControllerManager {
     return CharacterControllerManagerImpl(world)
 }
@@ -14,7 +17,9 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
     init {
         PhysicsImpl.checkIsLoaded()
         world as PhysicsWorldImpl
-        pxManager = PxTopLevelFunctions.CreateControllerManager(world.pxScene)
+        pxManager = checkNotNull(PxTopLevelFunctions.CreateControllerManager(world.pxScene)) {
+            "Failed creating PxControllerManager"
+        }
         world.physicsStepListeners += onUpdateListener
     }
 
@@ -22,7 +27,7 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
         // create controller with default configuration
         world as PhysicsWorldImpl
         val hitCallback = ControllerHitListener(world)
-        val behaviorCallback = ControllerBahaviorCallback(world)
+        val behaviorCallback = ControllerBehaviorCallback(world)
         val desc = PxCapsuleControllerDesc()
         desc.height = charProperties.height
         desc.radius = charProperties.radius
@@ -37,18 +42,18 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
             NonWalkableMode.PREVENT_CLIMBING_AND_FORCE_SLIDING -> PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING_AND_FORCE_SLIDING
         }
 
-        val pxCharacter = PxCapsuleControllerFromPointer(pxManager.createController(desc).ptr)
+        val pxCharacter = WrapPointer.PxCapsuleController(pxManager.createController(desc).ptr)
         desc.destroy()
 
-        MemoryStack.stackPush().use { mem ->
-            val shapes = mem.createPxArray_PxShapePtr(1)
+        memStack {
+            val shapes = createPxArray_PxShapePtr(1)
             pxCharacter.actor.getShapes(shapes.begin(), 1, 0)
             val shape = shapes.get(0)
-            shape.simulationFilterData = charProperties.simulationFilterData.toPxFilterData(mem.createPxFilterData())
-            shape.queryFilterData = charProperties.queryFilterData.toPxFilterData(mem.createPxFilterData())
+            shape.simulationFilterData = charProperties.simulationFilterData.toPxFilterData(createPxFilterData())
+            shape.queryFilterData = charProperties.queryFilterData.toPxFilterData(createPxFilterData())
         }
 
-        return JsCharacterController(pxCharacter, hitCallback, behaviorCallback, this, world)
+        return CharacterControllerImpl(pxCharacter, hitCallback, behaviorCallback, this, world)
     }
 
     override fun doRelease() {

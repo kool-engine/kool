@@ -13,6 +13,9 @@ import physxandroid.geometry.PxConvexMesh
 import physxandroid.geometry.PxConvexMeshGeometry
 import physxandroid.support.NativeArrayHelpers
 
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 actual fun ConvexMesh(points: List<Vec3f>): ConvexMesh = ConvexMeshImpl(points)
 
 val ConvexMesh.pxConvexMesh: PxConvexMesh get() = (this as ConvexMeshImpl).pxConvexMesh
@@ -43,7 +46,7 @@ class ConvexMeshImpl(override val points: List<Vec3f>, override var releaseWithG
                 convexMesh.getPolygonData(i, poly)
                 for (j in 0 until poly.mNbVerts) {
                     val vi = NativeArrayHelpers.getU8At(convexMesh.indexBuffer, poly.mIndexBase + j).toInt() and 0xff
-                    val pt = PxVec3.arrayGet(convexMesh.vertices.address, vi)
+                    val pt = NativeArrayHelpers.getVec3At(convexMesh.vertices, vi)
                     polyIndices += geometry.addVertex(pt.toVec3f(v))
                 }
 
@@ -72,7 +75,7 @@ class ConvexMeshImpl(override val points: List<Vec3f>, override var releaseWithG
             val desc = mem.createPxConvexMeshDesc()
             desc.flags = mem.createPxConvexFlags(PxConvexFlagEnum.eCOMPUTE_CONVEX.value)
             desc.points.count = points.size
-            desc.points.stride = PxVec3.SIZEOF
+            desc.points.stride = SIZEOF.PxVec3
             desc.points.data = vec3Vector.begin()
             val pxConvexMesh = PxTopLevelFunctions.CreateConvexMesh(PhysicsImpl.cookingParams, desc)
             vec3Vector.destroy()
@@ -84,14 +87,14 @@ class ConvexMeshImpl(override val points: List<Vec3f>, override var releaseWithG
 class ConvexMeshGeometryImpl(override val convexMesh: ConvexMesh, override val scale: Vec3f) : CollisionGeometryImpl(), ConvexMeshGeometry {
     constructor(points: List<Vec3f>, scale: Vec3f) : this(ConvexMesh(points), scale)
 
-    override val holder: PxConvexMeshGeometry
+    override val pxGeometry: PxConvexMeshGeometry
 
     init {
         MemoryStack.stackPush().use { mem ->
             val s = scale.toPxVec3(mem.createPxVec3())
             val r = mem.createPxQuat(0f, 0f, 0f, 1f)
             val meshScale = mem.createPxMeshScale(s, r)
-            holder = PxConvexMeshGeometry(convexMesh.pxConvexMesh, meshScale)
+            pxGeometry = PxConvexMeshGeometry(convexMesh.pxConvexMesh, meshScale)
         }
 
         if (convexMesh.releaseWithGeometry) {

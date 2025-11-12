@@ -14,6 +14,9 @@ import physxandroid.extensions.PxRevoluteJoint
 import physxandroid.extensions.PxRevoluteJointFlagEnum
 import physxandroid.extensions.PxSpring
 
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 actual fun RevoluteJoint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): RevoluteJoint {
     return RevoluteJointImpl(bodyA, bodyB, frameA, frameB)
 }
@@ -31,40 +34,40 @@ class RevoluteJointImpl(
     frameB: PoseF
 ) : JointImpl(frameA, frameB), RevoluteJoint {
 
-    override val joint: PxRevoluteJoint
+    override val pxJoint: PxRevoluteJoint
 
     init {
         memStack {
             val frmA = frameA.toPxTransform(createPxTransform())
             val frmB = frameB.toPxTransform(createPxTransform())
-            joint = PxTopLevelFunctions.RevoluteJointCreate(PhysicsImpl.physics, bodyA?.holder, frmA, bodyB.holder, frmB)
+            pxJoint = PxTopLevelFunctions.RevoluteJointCreate(PhysicsImpl.physics, bodyA?.holder?.px, frmA, bodyB.holder.px, frmB)
         }
     }
 
     override fun disableAngularMotor() {
-        joint.driveVelocity = 0f
-        joint.driveForceLimit = 0f
-        joint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eDRIVE_ENABLED, false)
+        pxJoint.driveVelocity = 0f
+        pxJoint.driveForceLimit = 0f
+        pxJoint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eDRIVE_ENABLED, false)
     }
 
     override fun enableAngularMotor(angularVelocity: Float, forceLimit: Float) {
-        joint.driveVelocity = angularVelocity
-        joint.driveForceLimit = forceLimit
-        joint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eDRIVE_ENABLED, true)
+        pxJoint.driveVelocity = angularVelocity
+        pxJoint.driveForceLimit = forceLimit
+        pxJoint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eDRIVE_ENABLED, true)
     }
 
     override fun enableLimit(lowerLimit: AngleF, upperLimit: AngleF, limitBehavior: LimitBehavior) {
         memStack {
-            val spring = autoDelete(PxSpring(limitBehavior.stiffness, limitBehavior.damping), PxSpring::destroy)
-            val limit = autoDelete(PxJointAngularLimitPair(lowerLimit.rad, upperLimit.rad, spring), PxJointAngularLimitPair::destroy)
+            val spring = createPxSpring(limitBehavior.stiffness, limitBehavior.damping)
+            val limit = createPxJointAngularLimitPair(lowerLimit, upperLimit, spring)
             limit.restitution = limitBehavior.restitution
             limit.bounceThreshold = limitBehavior.bounceThreshold
-            joint.setLimit(limit)
-            joint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eLIMIT_ENABLED, true)
+            pxJoint.setLimit(limit)
+            pxJoint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eLIMIT_ENABLED, true)
         }
     }
 
     override fun disableLimit() {
-        joint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eLIMIT_ENABLED, false)
+        pxJoint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eLIMIT_ENABLED, false)
     }
 }

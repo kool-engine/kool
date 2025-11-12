@@ -5,13 +5,16 @@ import de.fabmax.kool.physics.PhysicsImpl
 import de.fabmax.kool.physics.memStack
 import de.fabmax.kool.physics.toPxTransform
 import physxandroid.physics.PxArticulationFlagEnum
+import physxandroid.physics.PxArticulationLink
 import physxandroid.physics.PxArticulationReducedCoordinate
 import physxandroid.support.SupportFunctions
+
+// GENERATED CODE BELOW:
+// Transformed from desktop source
 
 actual fun Articulation(isFixedBase: Boolean): Articulation = ArticulationImpl(isFixedBase)
 
 class ArticulationImpl(val isFixedBase: Boolean) : Articulation() {
-
     internal val pxArticulation: PxArticulationReducedCoordinate
 
     override var minPositionIterations: Int
@@ -38,8 +41,9 @@ class ArticulationImpl(val isFixedBase: Boolean) : Articulation() {
     override fun createLink(parent: ArticulationLink?, pose: PoseF): ArticulationLink {
         parent as ArticulationLinkImpl?
         return memStack {
+            val parentLink = parent?.holder?.px as PxArticulationLink?
             val pxPose = pose.toPxTransform(createPxTransform())
-            val pxLink = pxArticulation.createLink(parent?.holder, pxPose)
+            val pxLink = pxArticulation.createLink(parentLink, pxPose)
             val link = ArticulationLinkImpl(pxLink, parent)
             _links += link
             link

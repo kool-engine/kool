@@ -11,9 +11,12 @@ import physxandroid.physics.PxForceModeEnum
 import physxandroid.physics.PxRigidBody
 import physxandroid.physics.PxRigidDynamic
 
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 abstract class RigidBodyImpl : RigidActorImpl(), RigidBody {
     private val pxRigidBody: PxRigidBody
-        get() = holder as PxRigidBody
+        get() = holder.px as PxRigidBody
 
     private val bufInertia = SyncedVec3(Vec3f.ONES)
     private val bufMass = SyncedFloat(1f)
@@ -47,8 +50,12 @@ abstract class RigidBodyImpl : RigidActorImpl(), RigidBody {
         super.syncSimulationData()
         bufInertia.writeIfDirty { pxRigidBody.massSpaceInertiaTensor = it.toPxVec3(pxTmpVec) }
         bufMass.writeIfDirty { pxRigidBody.mass = it }
-        bufLinVelocity.writeIfDirty { (pxRigidBody as? PxRigidDynamic)?.linearVelocity = it.toPxVec3(pxTmpVec) }
-        bufAngVelocity.writeIfDirty { (pxRigidBody as? PxRigidDynamic)?.angularVelocity = it.toPxVec3(pxTmpVec) }
+        bufLinVelocity.writeIfDirty {
+            if (this is RigidDynamic) WrapPointer.PxRigidDynamic(pxRigidBody.ptr).setLinearVelocity(it.toPxVec3(pxTmpVec))
+        }
+        bufAngVelocity.writeIfDirty {
+            if (this is RigidDynamic) WrapPointer.PxRigidDynamic(pxRigidBody.ptr).setAngularVelocity(it.toPxVec3(pxTmpVec))
+        }
         bufMaxLinVelocity.writeIfDirty { pxRigidBody.maxLinearVelocity = it }
         bufMaxAngVelocity.writeIfDirty { pxRigidBody.maxAngularVelocity = it }
         bufLinDamping.writeIfDirty { pxRigidBody.linearDamping = it }

@@ -3,6 +3,9 @@ package de.fabmax.kool.physics
 import de.fabmax.kool.math.Mat4f
 import physx.PxRigidStatic
 
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 actual fun RigidStatic(pose: Mat4f): RigidStatic = RigidStaticImpl(pose)
 
 class RigidStaticImpl(pose: Mat4f) : RigidActorImpl(), RigidStatic {

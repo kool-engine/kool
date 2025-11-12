@@ -6,18 +6,38 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.scene.TrsTransformF
 import physxandroid.NativeObject
+import physxandroid.character.PxCapsuleController
 import physxandroid.character.PxExtendedVec3
 import physxandroid.common.*
 import physxandroid.cooking.PxConvexFlags
 import physxandroid.cooking.PxConvexMeshDesc
 import physxandroid.cooking.PxTriangleMeshDesc
+import physxandroid.extensions.PxJointAngularLimitPair
+import physxandroid.extensions.PxJointLimitCone
+import physxandroid.extensions.PxJointLimitPyramid
+import physxandroid.extensions.PxJointLinearLimit
+import physxandroid.extensions.PxJointLinearLimitPair
 import physxandroid.extensions.PxRevoluteJointFlags
+import physxandroid.extensions.PxSpring
 import physxandroid.geometry.*
 import physxandroid.physics.*
 import physxandroid.support.PxArray_PxShapePtr
 import physxandroid.support.PxArray_PxVec3
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+
+val NativeObject.ptr: Long get() = address
+
+@Suppress("RemoveRedundantQualifierName")
+object SIZEOF {
+    val PxVec3 = physxandroid.common.PxVec3.SIZEOF
+    val PxHeightFieldSample = physxandroid.geometry.PxHeightFieldSample.SIZEOF
+}
+
+object WrapPointer {
+    fun PxCapsuleController(ptr: Long) = PxCapsuleController.wrapPointer(ptr)
+    fun PxRigidDynamic(ptr: Long) = PxRigidDynamic.wrapPointer(ptr)
+}
 
 fun PxBounds3.toBoundingBox(result: BoundingBoxF): BoundingBoxF {
     val min = minimum
@@ -155,7 +175,7 @@ class MemoryStack private constructor() {
     fun createPxFilterData() = autoDelete(PxFilterData(), PxFilterData::destroy)
     fun createPxFilterData(w0: Int, w1: Int, w2: Int, w3: Int) = autoDelete(PxFilterData(w0, w1, w2, w3), PxFilterData::destroy)
     fun createPxQueryFilterData(fd: PxFilterData, f: PxQueryFlags) = autoDelete(PxQueryFilterData(fd, f), PxQueryFilterData::destroy)
-    fun createPxQueryFlags(flags: Short) = autoDelete(PxQueryFlags(flags), PxQueryFlags::destroy)
+    fun createPxQueryFlags(flags: PxQueryFlagEnum) = autoDelete(PxQueryFlags(flags.value.toShort()), PxQueryFlags::destroy)
     fun createPxHeightFieldSample() = autoDelete(PxHeightFieldSample(), PxHeightFieldSample::destroy)
     fun createPxHullPolygon() = autoDelete(PxHullPolygon(), PxHullPolygon::destroy)
     fun createPxMeshScale(s: PxVec3, r: PxQuat) = autoDelete(PxMeshScale(s, r), PxMeshScale::destroy)
@@ -168,6 +188,7 @@ class MemoryStack private constructor() {
 
     fun createPxTransform() = autoDelete(PxTransform(PxIDENTITYEnum.PxIdentity), PxTransform::destroy)
     fun createPxTransform(p: PxVec3, q: PxQuat) = autoDelete(PxTransform(p, q), PxTransform::destroy)
+    fun createPxTransform(p: Vec3f, q: QuatF) = autoDelete(PxTransform(p.toPxVec3(createPxVec3()), q.toPxQuat(createPxQuat())), PxTransform::destroy)
 
     fun createPxSceneDesc(scale: PxTolerancesScale) = autoDelete(PxSceneDesc(scale), PxSceneDesc::destroy)
     fun createPxConvexMeshDesc() = autoDelete(PxConvexMeshDesc(), PxConvexMeshDesc::destroy)
@@ -185,4 +206,15 @@ class MemoryStack private constructor() {
     fun createPxRigidDynamicLockFlags(flags: Int) = autoDelete(PxRigidDynamicLockFlags(flags.toByte()), PxRigidDynamicLockFlags::destroy)
     fun createPxSceneFlags(flags: Int) = autoDelete(PxSceneFlags(flags), PxSceneFlags::destroy)
     fun createPxShapeFlags(flags: Int) = autoDelete(PxShapeFlags(flags.toByte()), PxShapeFlags::destroy)
+
+    fun createPxSpring(stiffness: Float, damping: Float) = autoDelete(PxSpring(stiffness, damping), PxSpring::destroy)
+    fun createPxJointLinearLimitPair(lowerLimit: Float, upperLimit: Float, spring: PxSpring) =
+        autoDelete(PxJointLinearLimitPair(lowerLimit, upperLimit, spring), PxJointLinearLimitPair::destroy)
+    fun createPxJointLinearLimit(extent: Float, spring: PxSpring) = autoDelete(PxJointLinearLimit(extent, spring), PxJointLinearLimit::destroy)
+    fun createPxJointAngularLimitPair(lowerLimit: AngleF, upperLimit: AngleF, spring: PxSpring) =
+        autoDelete(PxJointAngularLimitPair(lowerLimit.rad, upperLimit.rad, spring), PxJointAngularLimitPair::destroy)
+    fun createPxJointLimitPyramid(yLimitAngleMin: Float, yLimitAngleMax: Float, zLimitAngleMin: Float, zLimitAngleMax: Float, spring: PxSpring) =
+        autoDelete(PxJointLimitPyramid(yLimitAngleMin, yLimitAngleMax, zLimitAngleMin, zLimitAngleMax, spring), PxJointLimitPyramid::destroy)
+    fun createPxJointLimitCone(yLimitAngle: AngleF, zLimitAngle: AngleF) =
+        autoDelete(PxJointLimitCone(yLimitAngle.rad, zLimitAngle.rad), PxJointLimitCone::destroy)
 }

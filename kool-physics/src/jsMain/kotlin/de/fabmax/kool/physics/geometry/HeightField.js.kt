@@ -1,8 +1,9 @@
 package de.fabmax.kool.physics.geometry
 
-import de.fabmax.kool.physics.MemoryStack
 import de.fabmax.kool.physics.PhysicsImpl
 import de.fabmax.kool.physics.PxTopLevelFunctions
+import de.fabmax.kool.physics.SIZEOF
+import de.fabmax.kool.physics.memStack
 import de.fabmax.kool.util.Heightmap
 import physx.PxArray_PxHeightFieldSample
 import physx.PxHeightField
@@ -10,6 +11,9 @@ import physx.PxHeightFieldFormatEnum
 import physx.PxHeightFieldGeometry
 import kotlin.math.max
 import kotlin.math.roundToInt
+
+// GENERATED CODE BELOW:
+// Transformed from desktop source
 
 actual fun HeightField(heightMap: Heightmap, rowScale: Float, columnScale: Float): HeightField {
     return HeightFieldImpl(heightMap, rowScale, columnScale)
@@ -35,10 +39,10 @@ class HeightFieldImpl(
         val revHeightToI16 = if (heightScale > 0) 1f / heightScale else 0f
 
         PhysicsImpl.checkIsLoaded()
-        MemoryStack.stackPush().use { mem ->
+        memStack {
             val rows = heightMap.columns
             val cols = heightMap.rows
-            val sample = mem.createPxHeightFieldSample()
+            val sample = createPxHeightFieldSample()
             val samples = PxArray_PxHeightFieldSample()
             for (row in 0..rows) {
                 for (col in (cols-1) downTo 0) {
@@ -52,12 +56,12 @@ class HeightFieldImpl(
                 }
             }
 
-            val desc = mem.createPxHeightFieldDesc()
+            val desc = createPxHeightFieldDesc()
             desc.format = PxHeightFieldFormatEnum.eS16_TM
             desc.nbRows = rows
             desc.nbColumns = cols
             desc.samples.data = samples.begin()
-            desc.samples.stride = 4 //PxHeightFieldSample.SIZEOF
+            desc.samples.stride = SIZEOF.PxHeightFieldSample
 
             pxHeightField = PxTopLevelFunctions.CreateHeightField(desc)
         }
@@ -76,8 +80,8 @@ class HeightFieldGeometryImpl(override val heightField: HeightField) : Collision
 
     init {
         PhysicsImpl.checkIsLoaded()
-        MemoryStack.stackPush().use { mem ->
-            val flags = mem.createPxMeshGeometryFlags(0)
+        memStack {
+            val flags = createPxMeshGeometryFlags(0)
             pxGeometry = PxHeightFieldGeometry(heightField.pxHeightField, flags, heightField.heightScale, heightField.rowScale, heightField.columnScale)
         }
 

@@ -11,8 +11,10 @@ import physxandroid.extensions.PxRigidActorExt
 import physxandroid.physics.PxRigidActor
 import physxandroid.physics.PxShapeFlagEnum
 
-@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-actual typealias RigidActorHolder = PxRigidActor
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
+actual class RigidActorHolder(val px: PxRigidActor)
 
 abstract class RigidActorImpl : BaseReleasable(), RigidActor {
     init { PhysicsImpl.checkIsLoaded() }
@@ -42,9 +44,9 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
             simPose.set(value)
             poseA.pose.set(value)
             poseB.pose.set(value)
-            val pose = holder.globalPose
+            val pose = holder.px.globalPose
             simPose.toPxTransform(pose)
-            holder.globalPose = pose
+            holder.px.globalPose = pose
             transform.setCompositionOf(value.position, value.rotation, Vec3f.ONES)
         }
 
@@ -52,7 +54,7 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
     private val lerpRot = MutableQuatF()
 
     override val worldBounds: BoundingBoxF
-        get() = holder.worldBounds.toBoundingBox(bufBounds)
+        get() = holder.px.worldBounds.toBoundingBox(bufBounds)
 
     override var isTrigger: Boolean = false
         set(value) {
@@ -60,7 +62,7 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
             MemoryStack.stackPush().use { mem ->
                 val flags = if (isTrigger) TRIGGER_SHAPE_FLAGS else SIM_SHAPE_FLAGS
                 val shapeFlags = mem.createPxShapeFlags(flags)
-                shapes.forEach { it.holder?.flags = shapeFlags }
+                shapes.forEach { it.holder?.px?.flags = shapeFlags }
             }
         }
 
@@ -80,7 +82,7 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
             val sfd = simulationFilterData.toPxFilterData(createPxFilterData())
             val qfd = queryFilterData.toPxFilterData(createPxFilterData())
             shapes.forEach { shape ->
-                shape.holder?.let {
+                shape.holder?.px?.let {
                     it.simulationFilterData = sfd
                     it.queryFilterData = qfd
                 }
@@ -94,30 +96,30 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
             val flags = if (isTrigger) TRIGGER_SHAPE_FLAGS else SIM_SHAPE_FLAGS
             val shapeFlags = createPxShapeFlags(flags)
 
-            val pxShape = PxRigidActorExt.createExclusiveShape(holder, shape.geometry.holder, shape.material.pxMaterial, shapeFlags)
+            val pxShape = PxRigidActorExt.createExclusiveShape(holder.px, shape.geometry.holder.px, shape.material.pxMaterial, shapeFlags)
             pxShape.localPose = shape.localPose.toPxTransform(createPxTransform())
 
             val simFd = shape.simFilterData ?: simulationFilterData
             pxShape.simulationFilterData = simFd.toPxFilterData(createPxFilterData())
             val qryFd = shape.queryFilterData ?: queryFilterData
             pxShape.queryFilterData = qryFd.toPxFilterData(createPxFilterData())
-            shape.holder = pxShape
+            shape.holder = ShapeHolder(pxShape)
         }
     }
 
     override fun detachShape(shape: Shape) {
         _shapes -= shape
-        shape.holder?.release()
+        shape.holder?.px?.release()
         shape.holder = null
     }
 
     override fun doRelease() {
-        holder.release()
+        holder.px.release()
         _shapes.clear()
     }
 
     override fun syncSimulationData() {
-        holder.globalPose.toPoseF(simPose)
+        holder.px.globalPose.toPoseF(simPose)
     }
 
     override fun capture(simulationTime: Double) {

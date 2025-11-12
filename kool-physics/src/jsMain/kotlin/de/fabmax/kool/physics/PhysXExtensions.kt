@@ -7,6 +7,16 @@ import physx.*
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
+object SIZEOF {
+    val PxVec3 = 12
+    val PxHeightFieldSample = 4
+}
+
+object WrapPointer {
+    fun PxCapsuleController(ptr: Int) = PxCapsuleControllerFromPointer(ptr)
+    fun PxRigidDynamic(ptr: Int) = PxRigidDynamicFromPointer(ptr)
+}
+
 fun PxBounds3.toBoundingBox(result: BoundingBoxF): BoundingBoxF {
     val min = minimum
     val max = maximum
@@ -177,4 +187,17 @@ class MemoryStack private constructor() {
     fun createPxRigidDynamicLockFlags(flags: Int) = autoDelete(PxRigidDynamicLockFlags(flags.toByte()))
     fun createPxSceneFlags(flags: Int) = autoDelete(PxSceneFlags(flags))
     fun createPxShapeFlags(flags: Int) = autoDelete(PxShapeFlags(flags.toByte()))
+
+    fun createPxSpring(stiffness: Float, damping: Float) = autoDelete(PxSpring(stiffness, damping))
+    fun createPxJointLinearLimitPair(lowerLimit: Float, upperLimit: Float, spring: PxSpring) =
+        autoDelete(PxJointLinearLimitPair(lowerLimit, upperLimit, spring))
+    fun createPxJointLinearLimit(extent: Float, spring: PxSpring) = autoDelete(PxJointLinearLimit(extent, spring))
+    fun createPxJointAngularLimitPair(lowerLimit: AngleF, upperLimit: AngleF, spring: PxSpring) =
+        autoDelete(PxJointAngularLimitPair(lowerLimit.rad, upperLimit.rad, spring))
+    fun createPxJointLimitPyramid(yLimitAngleMin: Float, yLimitAngleMax: Float, zLimitAngleMin: Float, zLimitAngleMax: Float, spring: PxSpring) =
+        autoDelete(PxJointLimitPyramid(yLimitAngleMin, yLimitAngleMax, zLimitAngleMin, zLimitAngleMax, spring))
+    fun createPxJointLimitCone(yLimitAngle: AngleF, zLimitAngle: AngleF) =
+        autoDelete(PxJointLimitCone(yLimitAngle.rad, zLimitAngle.rad))
 }
+
+fun PxUserControllerHitReportImpl.destroy() { }

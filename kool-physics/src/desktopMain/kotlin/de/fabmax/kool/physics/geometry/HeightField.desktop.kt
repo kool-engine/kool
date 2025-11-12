@@ -1,16 +1,12 @@
 package de.fabmax.kool.physics.geometry
 
-import de.fabmax.kool.physics.PhysicsImpl
-import de.fabmax.kool.physics.createPxHeightFieldDesc
-import de.fabmax.kool.physics.createPxHeightFieldSample
-import de.fabmax.kool.physics.createPxMeshGeometryFlags
+import de.fabmax.kool.physics.*
 import de.fabmax.kool.util.Heightmap
 import de.fabmax.kool.util.memStack
 import physx.PxTopLevelFunctions
 import physx.geometry.PxHeightField
 import physx.geometry.PxHeightFieldFormatEnum
 import physx.geometry.PxHeightFieldGeometry
-import physx.geometry.PxHeightFieldSample
 import physx.support.PxArray_PxHeightFieldSample
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -61,7 +57,7 @@ class HeightFieldImpl(
             desc.nbRows = rows
             desc.nbColumns = cols
             desc.samples.data = samples.begin()
-            desc.samples.stride = PxHeightFieldSample.SIZEOF
+            desc.samples.stride = SIZEOF.PxHeightFieldSample
 
             pxHeightField = PxTopLevelFunctions.CreateHeightField(desc)
         }

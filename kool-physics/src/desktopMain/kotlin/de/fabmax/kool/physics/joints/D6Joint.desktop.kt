@@ -65,8 +65,8 @@ class D6JointImpl(
 
     override fun enableDistanceLimit(extend: Float, limitBehavior: LimitBehavior) {
         memStack {
-            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, limitBehavior.stiffness, limitBehavior.damping)
-            val limit = PxJointLinearLimit.createAt(this, MemoryStack::nmalloc, extend, spring)
+            val spring = createPxSpring(limitBehavior.stiffness, limitBehavior.damping)
+            val limit = createPxJointLinearLimit(extend, spring)
             limit.restitution = limitBehavior.restitution
             limit.bounceThreshold = limitBehavior.bounceThreshold
             pxJoint.setDistanceLimit(limit)
@@ -75,8 +75,8 @@ class D6JointImpl(
 
     override fun enableLinearLimitX(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior) {
         memStack {
-            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, limitBehavior.stiffness, limitBehavior.damping)
-            val limit = PxJointLinearLimitPair.createAt(this, MemoryStack::nmalloc, lowerLimit, upperLimit, spring)
+            val spring = createPxSpring(limitBehavior.stiffness, limitBehavior.damping)
+            val limit = createPxJointLinearLimitPair(lowerLimit, upperLimit, spring)
             limit.restitution = limitBehavior.restitution
             limit.bounceThreshold = limitBehavior.bounceThreshold
             pxJoint.setLinearLimit(PxD6AxisEnum.eX, limit)
@@ -86,8 +86,8 @@ class D6JointImpl(
 
     override fun enableLinearLimitY(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior) {
         memStack {
-            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, limitBehavior.stiffness, limitBehavior.damping)
-            val limit = PxJointLinearLimitPair.createAt(this, MemoryStack::nmalloc, lowerLimit, upperLimit, spring)
+            val spring = createPxSpring(limitBehavior.stiffness, limitBehavior.damping)
+            val limit = createPxJointLinearLimitPair(lowerLimit, upperLimit, spring)
             limit.restitution = limitBehavior.restitution
             limit.bounceThreshold = limitBehavior.bounceThreshold
             pxJoint.setLinearLimit(PxD6AxisEnum.eY, limit)
@@ -97,8 +97,8 @@ class D6JointImpl(
 
     override fun enableLinearLimitZ(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior) {
         memStack {
-            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, limitBehavior.stiffness, limitBehavior.damping)
-            val limit = PxJointLinearLimitPair.createAt(this, MemoryStack::nmalloc, lowerLimit, upperLimit, spring)
+            val spring = createPxSpring(limitBehavior.stiffness, limitBehavior.damping)
+            val limit = createPxJointLinearLimitPair(lowerLimit, upperLimit, spring)
             limit.restitution = limitBehavior.restitution
             limit.bounceThreshold = limitBehavior.bounceThreshold
             pxJoint.setLinearLimit(PxD6AxisEnum.eZ, limit)
@@ -108,8 +108,8 @@ class D6JointImpl(
 
     override fun enableAngularLimitX(lowerLimit: AngleF, upperLimit: AngleF, limitBehavior: LimitBehavior) {
         memStack {
-            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, limitBehavior.stiffness, limitBehavior.damping)
-            val limit = PxJointAngularLimitPair.createAt(this, MemoryStack::nmalloc, lowerLimit.rad, upperLimit.rad, spring)
+            val spring = createPxSpring(limitBehavior.stiffness, limitBehavior.damping)
+            val limit = createPxJointAngularLimitPair(lowerLimit, upperLimit, spring)
             limit.restitution = limitBehavior.restitution
             limit.bounceThreshold = limitBehavior.bounceThreshold
             pxJoint.setTwistLimit(limit)
@@ -141,16 +141,16 @@ class D6JointImpl(
 
     override fun disableDistanceLimit() {
         memStack {
-            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, 0f, 0f)
-            val limit = PxJointLinearLimit.createAt(this, MemoryStack::nmalloc, Float.MAX_VALUE, spring)
+            val spring = createPxSpring(0f, 0f)
+            val limit = createPxJointLinearLimit(Float.MAX_VALUE, spring)
             pxJoint.setDistanceLimit(limit)
         }
     }
 
     override fun disableLinearLimitX() {
         memStack {
-            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, 0f, 0f)
-            val limit = PxJointLinearLimitPair.createAt(this, MemoryStack::nmalloc, 0f, Float.MAX_VALUE, spring)
+            val spring = createPxSpring(0f, 0f)
+            val limit = createPxJointLinearLimitPair(0f, Float.MAX_VALUE, spring)
             pxJoint.setLinearLimit(PxD6AxisEnum.eX, limit)
             linearMotionX = D6JointMotion.Free
         }
@@ -158,8 +158,8 @@ class D6JointImpl(
 
     override fun disableLinearLimitY() {
         memStack {
-            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, 0f, 0f)
-            val limit = PxJointLinearLimitPair.createAt(this, MemoryStack::nmalloc, 0f, Float.MAX_VALUE, spring)
+            val spring = createPxSpring(0f, 0f)
+            val limit = createPxJointLinearLimitPair(0f, Float.MAX_VALUE, spring)
             pxJoint.setLinearLimit(PxD6AxisEnum.eY, limit)
             linearMotionY = D6JointMotion.Free
         }
@@ -168,8 +168,8 @@ class D6JointImpl(
 
     override fun disableLinearLimitZ() {
         memStack {
-            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, 0f, 0f)
-            val limit = PxJointLinearLimitPair.createAt(this, MemoryStack::nmalloc, 0f, Float.MAX_VALUE, spring)
+            val spring = createPxSpring(0f, 0f)
+            val limit = createPxJointLinearLimitPair(0f, Float.MAX_VALUE, spring)
             pxJoint.setLinearLimit(PxD6AxisEnum.eZ, limit)
             linearMotionZ = D6JointMotion.Free
         }
@@ -177,8 +177,8 @@ class D6JointImpl(
 
     override fun disableAngularLimitX() {
         memStack {
-            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, 0f, 0f)
-            val limit = PxJointAngularLimitPair.createAt(this, MemoryStack::nmalloc, PI_F * -2f, PI_F * 2f, spring)
+            val spring = createPxSpring(0f, 0f)
+            val limit = createPxJointAngularLimitPair(PI_F.rad * -2f, PI_F.rad * 2f, spring)
             pxJoint.setTwistLimit(limit)
             angularMotionX = D6JointMotion.Free
         }
@@ -200,10 +200,8 @@ class D6JointImpl(
 
     private fun updateAngularLimitYZ(limitBehavior: LimitBehavior) {
         memStack {
-            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, limitBehavior.stiffness, limitBehavior.damping)
-            val limit = PxJointLimitPyramid.createAt(this, MemoryStack::nmalloc,
-                yAngularLimitMin.rad, yAngularLimitMax.rad, zAngularLimitMin.rad, zAngularLimitMax.rad, spring
-            )
+            val spring = createPxSpring(limitBehavior.stiffness, limitBehavior.damping)
+            val limit = createPxJointLimitPyramid(yAngularLimitMin.rad, yAngularLimitMax.rad, zAngularLimitMin.rad, zAngularLimitMax.rad, spring)
             limit.restitution = limitBehavior.restitution
             limit.bounceThreshold = limitBehavior.bounceThreshold
             pxJoint.setPyramidSwingLimit(limit)
@@ -305,6 +303,7 @@ class D6JointImpl(
             PxD6MotionEnum.eFREE -> D6JointMotion.Free
             PxD6MotionEnum.eLIMITED -> D6JointMotion.Limited
             PxD6MotionEnum.eLOCKED -> D6JointMotion.Locked
+            //@js: else -> error("Invalid value $this")
         }
 
         private fun D6JointMotion.toPxD6MotionEnum(): PxD6MotionEnum = when (this) {

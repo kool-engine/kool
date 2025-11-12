@@ -13,7 +13,7 @@ class ControllerHitListener(val world: PhysicsWorldImpl) {
     private val hitPos = MutableVec3f()
     private val hitNormal = MutableVec3f()
 
-    lateinit var controller: JsCharacterController
+    lateinit var controller: CharacterControllerImpl
 
     val callback = PxUserControllerHitReportImpl().apply {
         onShapeHit = { h: Int ->
@@ -24,7 +24,6 @@ class ControllerHitListener(val world: PhysicsWorldImpl) {
             world.getActor(hit.actor)?.let { controller.onHitActor(it, hitPos, hitNormal) }
         }
 
-        // not used
         onControllerHit = { _ -> }
         onObstacleHit = { _ -> }
     }

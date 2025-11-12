@@ -2,14 +2,9 @@ package de.fabmax.kool.physics.joints
 
 import de.fabmax.kool.math.AngleF
 import de.fabmax.kool.math.PoseF
-import de.fabmax.kool.physics.PhysicsImpl
-import de.fabmax.kool.physics.RigidActor
-import de.fabmax.kool.physics.createPxTransform
-import de.fabmax.kool.physics.toPxTransform
+import de.fabmax.kool.physics.*
 import de.fabmax.kool.util.memStack
-import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
-import physx.extensions.PxJointLimitCone
 import physx.extensions.PxSphericalJoint
 import physx.extensions.PxSphericalJointFlagEnum
 
@@ -28,16 +23,16 @@ class SphericalJointImpl(
 
     init {
         PhysicsImpl.checkIsLoaded()
-        MemoryStack.stackPush().use { mem ->
-            val frmA = frameA.toPxTransform(mem.createPxTransform())
-            val frmB = frameB.toPxTransform(mem.createPxTransform())
+        memStack {
+            val frmA = frameA.toPxTransform(createPxTransform())
+            val frmB = frameB.toPxTransform(createPxTransform())
             pxJoint = PxTopLevelFunctions.SphericalJointCreate(PhysicsImpl.physics, bodyA?.holder?.px, frmA, bodyB.holder.px, frmB)
         }
     }
 
     override fun enableLimit(yLimitAngle: AngleF, zLimitAngle: AngleF, limitBehavior: LimitBehavior) {
         memStack {
-            val limit = PxJointLimitCone.createAt(this, MemoryStack::nmalloc, yLimitAngle.rad, zLimitAngle.rad)
+            val limit = createPxJointLimitCone(yLimitAngle, zLimitAngle)
             limit.stiffness = limitBehavior.stiffness
             limit.damping = limitBehavior.damping
             limit.restitution = limitBehavior.restitution

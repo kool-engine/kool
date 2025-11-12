@@ -9,6 +9,9 @@ import physxandroid.PxTopLevelFunctions
 import physxandroid.extensions.PxDistanceJoint
 import physxandroid.extensions.PxDistanceJointFlagEnum
 
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 actual fun DistanceJoint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): DistanceJoint {
     return DistanceJointImpl(bodyA, bodyB, frameA, frameB)
 }
@@ -20,30 +23,30 @@ class DistanceJointImpl(
     frameB: PoseF
 ) : JointImpl(frameA, frameB), DistanceJoint {
 
-    override val joint: PxDistanceJoint
+    override val pxJoint: PxDistanceJoint
 
     init {
         memStack {
             val frmA = frameA.toPxTransform(createPxTransform())
             val frmB = frameB.toPxTransform(createPxTransform())
-            joint = PxTopLevelFunctions.DistanceJointCreate(PhysicsImpl.physics, bodyA?.holder, frmA, bodyB.holder, frmB)
+            pxJoint = PxTopLevelFunctions.DistanceJointCreate(PhysicsImpl.physics, bodyA?.holder?.px, frmA, bodyB.holder.px, frmB)
         }
     }
 
     override fun setMaxDistance(maxDistance: Float) {
-        joint.maxDistance = maxDistance
-        joint.setDistanceJointFlag(PxDistanceJointFlagEnum.eMAX_DISTANCE_ENABLED, true)
+        pxJoint.maxDistance = maxDistance
+        pxJoint.setDistanceJointFlag(PxDistanceJointFlagEnum.eMAX_DISTANCE_ENABLED, true)
     }
     override fun setMinDistance(minDistance: Float) {
-        joint.minDistance = minDistance
-        joint.setDistanceJointFlag(PxDistanceJointFlagEnum.eMIN_DISTANCE_ENABLED, true)
+        pxJoint.minDistance = minDistance
+        pxJoint.setDistanceJointFlag(PxDistanceJointFlagEnum.eMIN_DISTANCE_ENABLED, true)
     }
 
     override fun clearMaxDistance() {
-        joint.setDistanceJointFlag(PxDistanceJointFlagEnum.eMAX_DISTANCE_ENABLED, false)
+        pxJoint.setDistanceJointFlag(PxDistanceJointFlagEnum.eMAX_DISTANCE_ENABLED, false)
     }
 
     override fun clearMinDistance() {
-        joint.setDistanceJointFlag(PxDistanceJointFlagEnum.eMIN_DISTANCE_ENABLED, false)
+        pxJoint.setDistanceJointFlag(PxDistanceJointFlagEnum.eMIN_DISTANCE_ENABLED, false)
     }
 }

@@ -11,6 +11,9 @@ import physxandroid.extensions.PxPrismaticJoint
 import physxandroid.extensions.PxPrismaticJointFlagEnum
 import physxandroid.extensions.PxSpring
 
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 actual fun PrismaticJoint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): PrismaticJoint {
     return PrismaticJointImpl(bodyA, bodyB, frameA, frameB)
 }
@@ -22,28 +25,28 @@ class PrismaticJointImpl(
     frameB: PoseF
 ) : JointImpl(frameA, frameB), PrismaticJoint {
 
-    override val joint: PxPrismaticJoint
+    override val pxJoint: PxPrismaticJoint
 
     init {
         memStack {
             val frmA = frameA.toPxTransform(createPxTransform())
             val frmB = frameB.toPxTransform(createPxTransform())
-            joint = PxTopLevelFunctions.PrismaticJointCreate(PhysicsImpl.physics, bodyA?.holder, frmA, bodyB.holder, frmB)
+            pxJoint = PxTopLevelFunctions.PrismaticJointCreate(PhysicsImpl.physics, bodyA?.holder?.px, frmA, bodyB.holder.px, frmB)
         }
     }
 
     override fun enableLimit(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior) {
         memStack {
-            val spring = autoDelete(PxSpring(limitBehavior.stiffness, limitBehavior.damping), PxSpring::destroy)
-            val limit = autoDelete(PxJointLinearLimitPair(lowerLimit, upperLimit, spring), PxJointLinearLimitPair::destroy)
+            val spring = createPxSpring(limitBehavior.stiffness, limitBehavior.damping)
+            val limit = createPxJointLinearLimitPair(lowerLimit, upperLimit, spring)
             limit.restitution = limitBehavior.restitution
             limit.bounceThreshold = limitBehavior.bounceThreshold
-            joint.setLimit(limit)
-            joint.setPrismaticJointFlag(PxPrismaticJointFlagEnum.eLIMIT_ENABLED, true)
+            pxJoint.setLimit(limit)
+            pxJoint.setPrismaticJointFlag(PxPrismaticJointFlagEnum.eLIMIT_ENABLED, true)
         }
     }
 
     override fun disableLimit() {
-        joint.setPrismaticJointFlag(PxPrismaticJointFlagEnum.eLIMIT_ENABLED, false)
+        pxJoint.setPrismaticJointFlag(PxPrismaticJointFlagEnum.eLIMIT_ENABLED, false)
     }
 }

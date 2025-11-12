@@ -4,7 +4,10 @@ import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.physics.memStack
 import de.fabmax.kool.physics.toPxTransform
-import physx.*
+import physxandroid.physics.*
+
+// GENERATED CODE BELOW:
+// Transformed from desktop source
 
 class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) : ArticulationJoint {
 
@@ -115,7 +118,7 @@ class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) :
             PxArticulationJointTypeEnum.eREVOLUTE -> ArticulationJointType.REVOLUTE
             PxArticulationJointTypeEnum.eSPHERICAL -> ArticulationJointType.SPHERICAL
             PxArticulationJointTypeEnum.eUNDEFINED -> throw IllegalStateException("Invalid joint type: $this")
-            else -> throw IllegalStateException("Invalid joint type: $this")
+            //@js: else -> throw IllegalStateException("Invalid joint type: $this")
         }
 
         private val ArticulationJointType.pxVal: PxArticulationJointTypeEnum get() = when (this) {

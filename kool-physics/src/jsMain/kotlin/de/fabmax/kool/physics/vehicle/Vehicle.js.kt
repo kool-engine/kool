@@ -11,6 +11,9 @@ import physx.*
 import kotlin.math.abs
 import kotlin.math.max
 
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 actual fun Vehicle(vehicleProps: VehicleProperties, world: PhysicsWorld, pose: Mat4f): Vehicle {
     return VehicleImpl(vehicleProps, world, pose)
 }
@@ -102,7 +105,7 @@ class VehicleImpl(
 
         memStack {
             val pxVecZero = createPxVec3(0f, 0f, 0f)
-            val actor = PxRigidDynamicFromPointer(pxVehicle.physXState.physxActor.rigidBody.ptr)
+            val actor = WrapPointer.PxRigidDynamic(pxVehicle.physXState.physxActor.rigidBody.ptr)
             actor.linearVelocity = pxVecZero
             actor.angularVelocity = pxVecZero
         }

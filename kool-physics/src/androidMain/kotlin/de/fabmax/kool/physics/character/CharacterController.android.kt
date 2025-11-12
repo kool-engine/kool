@@ -2,12 +2,16 @@ package de.fabmax.kool.physics.character
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
-import physx.*
+import physxandroid.character.*
+import physxandroid.common.PxVec3
 
-class JsCharacterController(
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
+class CharacterControllerImpl(
     private val pxController: PxCapsuleController,
-    hitListener: ControllerHitListener,
-    private val behaviorCallback: ControllerBahaviorCallback,
+    private val hitListener: ControllerHitListener,
+    private val behaviorCallback: ControllerBehaviorCallback,
     manager: CharacterControllerManager,
     world: PhysicsWorldImpl
 ) : CharacterController(manager, world) {
@@ -16,12 +20,13 @@ class JsCharacterController(
     private val bufPxVec3 = PxVec3()
     private val pxControllerFilters = PxControllerFilters()
 
-    override val actor: RigidDynamic = RigidDynamicImpl(1f, MutableMat4f(), false, pxController.actor)
+    override val actor: RigidDynamic = RigidDynamicImpl(1f, Mat4f.IDENTITY, false, pxController.actor)
 
-    override var nonWalkableMode: NonWalkableMode = when (pxController.nonWalkableMode) {
+    override var nonWalkableMode: NonWalkableMode =
+        when (pxController.nonWalkableMode) {
             PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING -> NonWalkableMode.PREVENT_CLIMBING
             PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING_AND_FORCE_SLIDING -> NonWalkableMode.PREVENT_CLIMBING_AND_FORCE_SLIDING
-            else -> error("Invalid nonWalkable mode")
+            //@js: else -> error("Invalid nonWalkable mode ${pxController.nonWalkableMode}")
         }
         set(value) {
             field = value
@@ -74,6 +79,7 @@ class JsCharacterController(
         bufPxPosition.destroy()
         bufPxVec3.destroy()
         pxControllerFilters.destroy()
+        hitListener.callback.destroy()
         behaviorCallback.callback.destroy()
     }
 }

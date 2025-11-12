@@ -11,6 +11,9 @@ import physx.PxRigidDynamic
 import physx.PxRigidDynamicLockFlagEnum
 import physx.globalPose
 
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 actual fun RigidDynamic(mass: Float, pose: Mat4f, isKinematic: Boolean): RigidDynamic {
     return RigidDynamicImpl(mass, pose, isKinematic)
 }
@@ -25,7 +28,6 @@ class RigidDynamicImpl(
     constructor(mass: Float, pose: Mat4f, isKinematic: Boolean) : this(mass, pose, isKinematic, null)
 
     override val holder: RigidActorHolder
-
     private val pxRigidDynamic: PxRigidDynamic
         get() = holder.px as PxRigidDynamic
 
@@ -42,7 +44,6 @@ class RigidDynamicImpl(
         if (isKinematic) {
             pxRigidDynamic.setRigidBodyFlag(PxRigidBodyFlagEnum.eKINEMATIC, true)
         }
-
         transform.setMatrix(pose)
         syncSimulationData()
     }

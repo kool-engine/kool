@@ -5,7 +5,6 @@ import de.fabmax.kool.physics.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
-import physx.common.PxVec3
 import physx.geometry.PxTriangleMesh
 import physx.geometry.PxTriangleMeshGeometry
 import physx.support.PxArray_PxU32
@@ -38,7 +37,7 @@ class TriangleMeshImpl(override val geometry: IndexedVertexList<*>) : TriangleMe
             // create mesh descriptor
             val points = mem.createPxBoundedData()
             points.count = pointVector.size()
-            points.stride = PxVec3.SIZEOF
+            points.stride = SIZEOF.PxVec3
             points.data = pointVector.begin()
 
             val triangles = mem.createPxBoundedData()

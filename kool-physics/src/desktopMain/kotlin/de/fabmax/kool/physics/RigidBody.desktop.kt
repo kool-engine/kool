@@ -10,7 +10,6 @@ import physx.common.PxVec3
 import physx.extensions.PxRigidBodyExt
 import physx.physics.PxForceModeEnum
 import physx.physics.PxRigidBody
-import physx.physics.PxRigidDynamic
 
 abstract class RigidBodyImpl : RigidActorImpl(), RigidBody {
     private val pxRigidBody: PxRigidBody
@@ -48,8 +47,12 @@ abstract class RigidBodyImpl : RigidActorImpl(), RigidBody {
         super.syncSimulationData()
         bufInertia.writeIfDirty { pxRigidBody.massSpaceInertiaTensor = it.toPxVec3(pxTmpVec) }
         bufMass.writeIfDirty { pxRigidBody.mass = it }
-        bufLinVelocity.writeIfDirty { (pxRigidBody as? PxRigidDynamic)?.linearVelocity = it.toPxVec3(pxTmpVec) }
-        bufAngVelocity.writeIfDirty { (pxRigidBody as? PxRigidDynamic)?.angularVelocity = it.toPxVec3(pxTmpVec) }
+        bufLinVelocity.writeIfDirty {
+            if (this is RigidDynamic) WrapPointer.PxRigidDynamic(pxRigidBody.ptr).setLinearVelocity(it.toPxVec3(pxTmpVec))
+        }
+        bufAngVelocity.writeIfDirty {
+            if (this is RigidDynamic) WrapPointer.PxRigidDynamic(pxRigidBody.ptr).setAngularVelocity(it.toPxVec3(pxTmpVec))
+        }
         bufMaxLinVelocity.writeIfDirty { pxRigidBody.maxLinearVelocity = it }
         bufMaxAngVelocity.writeIfDirty { pxRigidBody.maxAngularVelocity = it }
         bufLinDamping.writeIfDirty { pxRigidBody.linearDamping = it }

@@ -8,7 +8,6 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.generateNormals
 import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
-import physx.common.PxVec3
 import physx.cooking.PxConvexFlagEnum
 import physx.geometry.PxConvexMesh
 import physx.geometry.PxConvexMeshGeometry
@@ -44,7 +43,7 @@ class ConvexMeshImpl(override val points: List<Vec3f>, override var releaseWithG
                 convexMesh.getPolygonData(i, poly)
                 for (j in 0 until poly.mNbVerts) {
                     val vi = NativeArrayHelpers.getU8At(convexMesh.indexBuffer, poly.mIndexBase + j).toInt() and 0xff
-                    val pt = PxVec3.arrayGet(convexMesh.vertices.address, vi)
+                    val pt = NativeArrayHelpers.getVec3At(convexMesh.vertices, vi)
                     polyIndices += geometry.addVertex(pt.toVec3f(v))
                 }
 
@@ -73,7 +72,7 @@ class ConvexMeshImpl(override val points: List<Vec3f>, override var releaseWithG
             val desc = mem.createPxConvexMeshDesc()
             desc.flags = mem.createPxConvexFlags(PxConvexFlagEnum.eCOMPUTE_CONVEX.value)
             desc.points.count = points.size
-            desc.points.stride = PxVec3.SIZEOF
+            desc.points.stride = SIZEOF.PxVec3
             desc.points.data = vec3Vector.begin()
             val pxConvexMesh = PxTopLevelFunctions.CreateConvexMesh(PhysicsImpl.cookingParams, desc)
             vec3Vector.destroy()

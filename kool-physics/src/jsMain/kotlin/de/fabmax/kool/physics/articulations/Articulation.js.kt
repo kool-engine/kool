@@ -11,6 +11,9 @@ import physx.PxArticulationFlagEnum
 import physx.PxArticulationLink
 import physx.PxArticulationReducedCoordinate
 
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 actual fun Articulation(isFixedBase: Boolean): Articulation = ArticulationImpl(isFixedBase)
 
 class ArticulationImpl(val isFixedBase: Boolean) : Articulation() {

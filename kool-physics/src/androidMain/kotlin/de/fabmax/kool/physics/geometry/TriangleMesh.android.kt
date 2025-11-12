@@ -10,6 +10,9 @@ import physxandroid.geometry.PxTriangleMeshGeometry
 import physxandroid.support.PxArray_PxU32
 import physxandroid.support.PxArray_PxVec3
 
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 actual fun TriangleMesh(geometry: IndexedVertexList<*>): TriangleMesh = TriangleMeshImpl(geometry)
 
 val TriangleMesh.pxTriangleMesh: PxTriangleMesh get() = (this as TriangleMeshImpl).pxTriangleMesh
@@ -37,7 +40,7 @@ class TriangleMeshImpl(override val geometry: IndexedVertexList<*>) : TriangleMe
             // create mesh descriptor
             val points = mem.createPxBoundedData()
             points.count = pointVector.size()
-            points.stride = PxVec3.SIZEOF
+            points.stride = SIZEOF.PxVec3
             points.data = pointVector.begin()
 
             val triangles = mem.createPxBoundedData()
@@ -68,7 +71,7 @@ class TriangleMeshImpl(override val geometry: IndexedVertexList<*>) : TriangleMe
 class TriangleMeshGeometryImpl(override val triangleMesh: TriangleMesh, override val scale: Vec3f) : CollisionGeometryImpl(), TriangleMeshGeometry {
     constructor(geometry: IndexedVertexList<*>, scale: Vec3f) : this(TriangleMesh(geometry), scale)
 
-    override val holder: PxTriangleMeshGeometry
+    override val pxGeometry: PxTriangleMeshGeometry
 
     init {
         PhysicsImpl.checkIsLoaded()
@@ -76,7 +79,7 @@ class TriangleMeshGeometryImpl(override val triangleMesh: TriangleMesh, override
             val s = scale.toPxVec3(mem.createPxVec3())
             val r = mem.createPxQuat(0f, 0f, 0f, 1f)
             val meshScale = mem.createPxMeshScale(s, r)
-            holder = PxTriangleMeshGeometry(triangleMesh.pxTriangleMesh, meshScale)
+            pxGeometry = PxTriangleMeshGeometry(triangleMesh.pxTriangleMesh, meshScale)
         }
 
         if (triangleMesh.releaseWithGeometry) {

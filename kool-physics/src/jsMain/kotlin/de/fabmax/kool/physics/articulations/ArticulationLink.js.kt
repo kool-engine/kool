@@ -1,10 +1,15 @@
 package de.fabmax.kool.physics.articulations
 
+import de.fabmax.kool.physics.RigidActorHolder
 import de.fabmax.kool.physics.RigidBodyImpl
-import physxandroid.physics.PxArticulationLink
+import physx.PxArticulationLink
+import physx.inboundJoint
+
+// GENERATED CODE BELOW:
+// Transformed from desktop source
 
 class ArticulationLinkImpl(
-    override val holder: PxArticulationLink,
+    link: PxArticulationLink,
     parent: ArticulationLinkImpl?
 ) : RigidBodyImpl(), ArticulationLink {
 
@@ -13,10 +18,12 @@ class ArticulationLinkImpl(
         get() = _children
 
     override val inboundJoint: ArticulationJoint? = if (parent != null) {
-        holder.inboundJoint?.let { ArticulationJointImpl(it) }
+        link.inboundJoint?.let { ArticulationJointImpl(it) }
     } else {
         null
     }
+
+    override val holder = RigidActorHolder(link)
 
     init {
         parent?._children?.add(this)

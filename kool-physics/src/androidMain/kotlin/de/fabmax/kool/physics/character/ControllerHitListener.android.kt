@@ -1,0 +1,31 @@
+package de.fabmax.kool.physics.character
+
+import de.fabmax.kool.math.MutableVec3d
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.physics.PhysicsWorldImpl
+import de.fabmax.kool.physics.toVec3d
+import de.fabmax.kool.physics.toVec3f
+import physxandroid.character.PxControllerObstacleHit
+import physxandroid.character.PxControllerShapeHit
+import physxandroid.character.PxControllersHit
+import physxandroid.character.PxUserControllerHitReportImpl
+
+class ControllerHitListener(private val world: PhysicsWorldImpl) {
+    private val hitPosD = MutableVec3d()
+    private val hitPos = MutableVec3f()
+    private val hitNormal = MutableVec3f()
+
+    lateinit var controller: CharacterControllerImpl
+
+    val callback = object : PxUserControllerHitReportImpl() {
+        override fun onShapeHit(hit: PxControllerShapeHit) {
+            hit.worldNormal.toVec3f(hitNormal)
+            hit.worldPos.toVec3d(hitPosD)
+            hitPos.set(hitPosD.x.toFloat(), hitPosD.y.toFloat(), hitPosD.z.toFloat())
+            world.getActor(hit.actor)?.let { controller.onHitActor(it, hitPos, hitNormal) }
+        }
+
+        override fun onControllerHit(hit: PxControllersHit) { }
+        override fun onObstacleHit(hit: PxControllerObstacleHit) { }
+    }
+}
