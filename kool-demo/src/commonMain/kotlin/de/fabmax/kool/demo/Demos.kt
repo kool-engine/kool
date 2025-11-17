@@ -93,6 +93,7 @@ object Demos {
         entry("instancing-test", "Instancing Test") { InstancingTest() }
         entry("tex-array-test", "Array Textures Test") { ArrayTexturesTest() }
         entry("struct-test", "Hello Structs") { HelloStructs() }
+        entry("launched-effect-test", "Launched Effect Test") { LaunchedEffectTest() }
     }
 
     val categories = mutableListOf(physicsDemos, graphicsDemos, techDemos, hiddenDemos)
