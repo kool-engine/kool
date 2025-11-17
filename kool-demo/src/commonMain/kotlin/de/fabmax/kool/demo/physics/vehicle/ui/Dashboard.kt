@@ -4,6 +4,7 @@ import de.fabmax.kool.demo.UiSizes
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.l
 import kotlin.math.round
 import kotlin.math.roundToInt
 
@@ -69,6 +70,7 @@ class Dashboard : Composable {
                 .alignY(AlignmentY.Bottom)
                 .font(VehicleUi.getUiFonts(sizes.normalText.sizePts).speedFont)
                 .baselineMargin(sizes.largeGap)
+                .clipToBounds(false)
                 .textAlignX(AlignmentX.End)
         }
         Text("km/h") {
@@ -77,6 +79,7 @@ class Dashboard : Composable {
                 .height(UiSizes.baseSize)
                 .margin(start = sizes.smallGap)
                 .baselineMargin(sizes.largeGap)
+                .clipToBounds(false)
                 .textColor(labelColor)
         }
 
@@ -88,17 +91,20 @@ class Dashboard : Composable {
             Text(gearName(gear.use())) {
                 modifier
                     .baselineMargin(0.dp)
+                    .clipToBounds(false)
                     .alignX(AlignmentX.End)
             }
             Text("${torqueNm.use().toInt()}") {
                 modifier
                     .baselineMargin(0.dp)
+                    .clipToBounds(false)
                     .padding(end = sizes.smallGap * 1f)
                     .alignX(AlignmentX.End)
             }
             Text("${powerKW.use().toInt()}") {
                 modifier
                     .baselineMargin(0.dp)
+                    .clipToBounds(false)
                     .padding(end = sizes.smallGap * 2f)
                     .alignX(AlignmentX.End)
             }
@@ -108,21 +114,24 @@ class Dashboard : Composable {
                 .width(UiSizes.baseSize * 1.5f)
                 .margin(bottom = sizes.largeGap)
                 .alignY(AlignmentY.Bottom)
-            Text("Gear") {
+            Text("Gear".l) {
                 modifier
                     .baselineMargin(0.dp)
+                    .clipToBounds(false)
                     .padding(start = sizes.smallGap * 2f)
                     .textColor(labelColor)
             }
             Text("Nm") {
                 modifier
                     .baselineMargin(0.dp)
+                    .clipToBounds(false)
                     .padding(start = sizes.smallGap * 1f)
                     .textColor(labelColor)
             }
             Text("kW") {
                 modifier
                     .baselineMargin(0.dp)
+                    .clipToBounds(false)
                     .textColor(labelColor)
             }
         }

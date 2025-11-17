@@ -6,6 +6,9 @@ import physx.dynamicFriction
 import physx.restitution
 import physx.staticFriction
 
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 actual fun Material(staticFriction: Float, dynamicFriction: Float, restitution: Float): Material {
     return MaterialImpl(staticFriction, dynamicFriction, restitution)
 }

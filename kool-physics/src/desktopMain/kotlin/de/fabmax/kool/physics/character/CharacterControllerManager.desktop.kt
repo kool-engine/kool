@@ -3,7 +3,10 @@ package de.fabmax.kool.physics.character
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.util.memStack
 import physx.PxTopLevelFunctions
-import physx.character.*
+import physx.character.PxCapsuleClimbingModeEnum
+import physx.character.PxCapsuleControllerDesc
+import physx.character.PxControllerManager
+import physx.character.PxControllerNonWalkableModeEnum
 import kotlin.math.cos
 
 actual fun CharacterControllerManager(world: PhysicsWorld): CharacterControllerManager {
@@ -11,7 +14,6 @@ actual fun CharacterControllerManager(world: PhysicsWorld): CharacterControllerM
 }
 
 class CharacterControllerManagerImpl(private val world: PhysicsWorld) : CharacterControllerManager() {
-
     private val pxManager: PxControllerManager
 
     init {
@@ -20,16 +22,14 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
         pxManager = checkNotNull(PxTopLevelFunctions.CreateControllerManager(world.pxScene)) {
             "Failed creating PxControllerManager"
         }
-
-        world.onAdvancePhysics += onAdvanceListener
-        world.onPhysicsUpdate += onUpdateListener
+        world.physicsStepListeners += onUpdateListener
     }
 
     override fun doCreateController(charProperties: CharacterControllerProperties): CharacterController {
         // create controller with default configuration
         world as PhysicsWorldImpl
         val hitCallback = ControllerHitListener(world)
-        val behaviorCallback = ControllerBahaviorCallback(world)
+        val behaviorCallback = ControllerBehaviorCallback(world)
         val desc = PxCapsuleControllerDesc()
         desc.height = charProperties.height
         desc.radius = charProperties.radius
@@ -37,14 +37,14 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
         desc.slopeLimit = cos(charProperties.slopeLimit.rad)
         desc.material = Physics.defaultMaterial.pxMaterial
         desc.contactOffset = charProperties.contactOffset
-        desc.reportCallback = hitCallback
-        desc.behaviorCallback = behaviorCallback
+        desc.reportCallback = hitCallback.callback
+        desc.behaviorCallback = behaviorCallback.callback
         desc.nonWalkableMode = when (charProperties.nonWalkableMode) {
             NonWalkableMode.PREVENT_CLIMBING -> PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING
             NonWalkableMode.PREVENT_CLIMBING_AND_FORCE_SLIDING -> PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING_AND_FORCE_SLIDING
         }
 
-        val pxCharacter = PxCapsuleController.wrapPointer(pxManager.createController(desc).address)
+        val pxCharacter = WrapPointer.PxCapsuleController(pxManager.createController(desc).ptr)
         desc.destroy()
 
         memStack {
@@ -55,13 +55,12 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
             shape.queryFilterData = charProperties.queryFilterData.toPxFilterData(createPxFilterData())
         }
 
-        return JvmCharacterController(pxCharacter, hitCallback, behaviorCallback, this, world)
+        return CharacterControllerImpl(pxCharacter, hitCallback, behaviorCallback, this, world)
     }
 
     override fun doRelease() {
         super.doRelease()
-        world.onAdvancePhysics -= onAdvanceListener
-        world.onPhysicsUpdate -= onUpdateListener
+        world.physicsStepListeners -= onUpdateListener
         pxManager.release()
     }
 }

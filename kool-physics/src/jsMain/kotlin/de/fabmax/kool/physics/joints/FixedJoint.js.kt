@@ -4,6 +4,9 @@ import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.*
 import physx.PxFixedJoint
 
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 actual fun FixedJoint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): FixedJoint {
     return FixedJointImpl(bodyA, bodyB, frameA, frameB)
 }
@@ -18,10 +21,9 @@ class FixedJointImpl(
     override val pxJoint: PxFixedJoint
 
     init {
-        PhysicsImpl.checkIsLoaded()
-        MemoryStack.stackPush().use { mem ->
-            val frmA = frameA.toPxTransform(mem.createPxTransform())
-            val frmB = frameB.toPxTransform(mem.createPxTransform())
+        memStack {
+            val frmA = frameA.toPxTransform(createPxTransform())
+            val frmB = frameB.toPxTransform(createPxTransform())
             pxJoint = PxTopLevelFunctions.FixedJointCreate(PhysicsImpl.physics, bodyA?.holder?.px, frmA, bodyB.holder.px, frmB)
         }
     }

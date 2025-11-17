@@ -205,8 +205,8 @@ class RigidActorComponent(
         return HeightFieldGeometry(heightField)
     }
 
-    override fun applyPose(position: Vec3d, rotation: QuatD) {
-        rigidActor?.pose = PoseF(position.toVec3f(), rotation.toQuatF())
+    override fun applyPose(position: Vec3f, rotation: QuatF) {
+        rigidActor?.pose = PoseF(position, rotation)
     }
 
     override suspend fun onMeshGeometryChanged(component: MeshComponent, newData: MeshComponentData) {

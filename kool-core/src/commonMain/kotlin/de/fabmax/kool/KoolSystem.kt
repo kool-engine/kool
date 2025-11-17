@@ -11,6 +11,8 @@ object KoolSystem {
 
     val platform: Platform
         get() = properties.platform
+    val systemLanguage: String
+        get() = properties.systemLanguage
 
     var isInitialized = false
         private set
@@ -50,7 +52,7 @@ object KoolSystem {
         return defaultContext
     }
 
-    data class PlatformProperties(val platform: Platform)
+    data class PlatformProperties(val platform: Platform, val systemLanguage: String)
 }
 
 expect val currentThreadName: String

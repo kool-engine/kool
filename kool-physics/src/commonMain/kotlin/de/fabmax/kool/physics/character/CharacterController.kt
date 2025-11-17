@@ -2,29 +2,38 @@ package de.fabmax.kool.physics.character
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
+import de.fabmax.kool.physics.util.SyncedFloat
+import de.fabmax.kool.physics.util.SyncedVec3
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Time
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.min
 
-abstract class CharacterController(private val manager: CharacterControllerManager, val world: PhysicsWorld) : BaseReleasable() {
-
+abstract class CharacterController(private val manager: CharacterControllerManager, val world: PhysicsWorld) : BaseReleasable(), PhysicsStepListener {
     abstract val actor: RigidDynamic
-    abstract var position: Vec3d
 
-    abstract var height: Float
-    abstract var radius: Float
-    abstract var slopeLimit: AngleF
+    internal val bufPosition = SyncedVec3(Vec3f.ZERO)
+    internal val bufHeight = SyncedFloat(1f)
+    internal val bufRadius = SyncedFloat(1f)
+    internal val bufSlopeLimit = SyncedFloat(1f)
+
+    val _interpolatedPosition = MutableVec3f()
+    val interpolatedPosition: Vec3f get() = _interpolatedPosition
+
+    var position: Vec3f by bufPosition
+    var height: Float by bufHeight
+    var radius: Float by bufRadius
+    var slopeLimit: AngleF
+        get() = bufSlopeLimit.readBuffer.rad
+        set(value) { bufSlopeLimit.set(value.rad) }
     abstract var nonWalkableMode: NonWalkableMode
 
-    protected val prevPosition = MutableVec3d()
-
-    private val posBuffer = MutableVec3d()
+    internal val posA = MutableVec3f()
+    internal val posB = MutableVec3f()
     private val tmpVec = MutableVec3f()
 
     private val gravityVelocity = MutableVec3f()
-    private val jumpVelocity = MutableVec3f()
     private val displacement = MutableVec3f()
     private val mutVelocity = MutableVec3f()
 
@@ -55,13 +64,31 @@ abstract class CharacterController(private val manager: CharacterControllerManag
             smoothStep(slopeLimit.rad * 0.7f, slopeLimit.rad, slopeObserver.groundSlopeRad)
         }
 
-    val onPhysicsUpdate = mutableListOf<(Float) -> Unit>()
     val onHitActorListeners = mutableListOf<OnHitActorListener>()
     var hitActorBehaviorCallback: HitActorBehaviorCallback? = HitActorBehaviorCallback { actor: RigidActor ->
         actor.characterControllerHitBehavior
     }
 
-    open fun onAdvancePhysics(timeStep: Float) {
+    override fun onPhysicsUpdate(timeStep: Float) {
+        updateMovement(timeStep)
+        actor.syncSimulationData()
+    }
+
+    override fun onPhysicsCapture(simulationTime: Double) {
+        actor.capture(simulationTime)
+        posA.set(posB)
+        posB.set(position)
+    }
+
+    override fun onPhysicsInterpolate(captureTimeA: Double, captureTimeB: Double, frameTime: Double, weightB: Float) {
+        actor.interpolateTransform(captureTimeA, captureTimeB, frameTime, weightB)
+        posA.mix(posB, weightB, _interpolatedPosition)
+        if (captureTimeB > captureTimeA) {
+            mutVelocity.set(posB).subtract(posA).mul(1f / (captureTimeB - captureTimeA).toFloat())
+        }
+    }
+
+    private fun updateMovement(timeStep: Float) {
         val isNoMove = movement.length().isFuzzyZero()
         if (!isNoMove || jump) {
             // not sure about ground, but we are certainly moving (i.e. not standing)
@@ -96,23 +123,6 @@ abstract class CharacterController(private val manager: CharacterControllerManag
 
         displacement.set(movement).mul(timeStep).add(tmpVec.set(gravityVelocity).mul(timeStep))
         move(displacement, timeStep)
-    }
-
-    open fun onPhysicsUpdate(timeStep: Float) {
-        posBuffer.set(position)
-        mutVelocity.set(
-                (posBuffer.x - prevPosition.x).toFloat(),
-                (posBuffer.y - prevPosition.y).toFloat(),
-                (posBuffer.z - prevPosition.z).toFloat()
-            ).mul(1f / timeStep)
-        prevPosition.set(posBuffer)
-
-        // the controller's actor is not registered in PhysicsWorld, call its update routine from here
-        actor.onPhysicsUpdate(timeStep)
-
-        for (i in onPhysicsUpdate.indices) {
-            onPhysicsUpdate[i](timeStep)
-        }
     }
 
     internal fun onHitActor(actor: RigidActor, hitWorldPos: Vec3f, hitWorldNormal: Vec3f) {

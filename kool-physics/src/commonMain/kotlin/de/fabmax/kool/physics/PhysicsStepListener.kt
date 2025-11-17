@@ -1,5 +1,7 @@
 package de.fabmax.kool.physics
 
-fun interface PhysicsStepListener {
-    fun onPhysicsStep(timeStep: Float)
+interface PhysicsStepListener {
+    fun onPhysicsUpdate(timeStep: Float) { }
+    fun onPhysicsCapture(simulationTime: Double) { }
+    fun onPhysicsInterpolate(captureTimeA: Double, captureTimeB: Double, frameTime: Double, weightB: Float) { }
 }

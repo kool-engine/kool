@@ -17,6 +17,7 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.l
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -302,29 +303,29 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         val lblSize = UiSizes.baseSize * 2f
         val txtSize = UiSizes.baseSize * 0.75f
 
-        MenuSlider2("Number of lights", lightCount.use().toFloat(), 1f, MAX_LIGHTS.toFloat(), { "${it.roundToInt()}" }) {
+        MenuSlider2("Number of lights".l, lightCount.use().toFloat(), 1f, MAX_LIGHTS.toFloat(), { "${it.roundToInt()}" }) {
             lightCount.set(it.roundToInt())
             updateLights()
         }
-        MenuSlider2("Light power", lightPower.use(), 0f, 10f) {
+        MenuSlider2("Light power".l, lightPower.use(), 0f, 10f) {
             lightPower.set(it)
             updateLights()
         }
-        MenuSlider2("Light radius", lightRadius.use(), 0f, 4f) {
+        MenuSlider2("Light radius".l, lightRadius.use(), 0f, 4f) {
             lightRadius.set(it)
             updateLights()
         }
-        LabeledSwitch("Show maps", isShowMaps)
-        LabeledSwitch("Light bodies", isLightBodies)
-        LabeledSwitch("Light volumes", isLightVolumes)
-        LabeledSwitch("Auto rotate view", isAutoRotate)
+        LabeledSwitch("Show maps".l, isShowMaps)
+        LabeledSwitch("Light bodies".l, isLightBodies)
+        LabeledSwitch("Light volumes".l, isLightVolumes)
+        LabeledSwitch("Auto rotate view".l, isAutoRotate)
         MenuRow {
-            Text("Color theme") { labelStyle() }
+            Text("Color theme".l) { labelStyle() }
             ComboBox {
                 modifier
                     .width(Grow.Std)
                     .margin(start = sizes.largeGap)
-                    .items(colorMap)
+                    .items(colorMap.map { it.name.l })
                     .selectedIndex(colorMapIdx.use())
                     .onItemSelected {
                         colorMapIdx.set(it)
@@ -333,25 +334,25 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             }
         }
 
-        Text("Bloom") { sectionTitleStyle() }
+        Text("Bloom".l) { sectionTitleStyle() }
         MenuRow {
-            Text("Strength") { labelStyle(lblSize) }
+            Text("Strength".l) { labelStyle(lblSize) }
             MenuSlider(bloomStrength.use(), 0f, 5f, txtWidth = txtSize) { bloomStrength.set(it) }
         }
         MenuRow {
-            Text("Radius") { labelStyle(lblSize) }
+            Text("Radius".l) { labelStyle(lblSize) }
             MenuSlider(bloomRadius.use(), 0f, 2.5f, txtWidth = txtSize) { bloomRadius.set(it) }
         }
         MenuRow {
-            Text("Threshold") { labelStyle(lblSize) }
+            Text("Threshold".l) { labelStyle(lblSize) }
             MenuSlider(bloomThreshold.use(), 0f, 2f, txtWidth = txtSize) { bloomThreshold.set(it) }
         }
 
 
-        Text("Objects") { sectionTitleStyle() }
-        LabeledSwitch("Show objects", isObjects)
+        Text("Objects".l) { sectionTitleStyle() }
+        LabeledSwitch("Show objects".l, isObjects)
         MenuRow {
-            Text("Roughness") { labelStyle(lblSize) }
+            Text("Roughness".l) { labelStyle(lblSize) }
             MenuSlider(roughness.use(), 0f, 1f, txtWidth = txtSize) { roughness.set(it) }
         }
 
@@ -376,7 +377,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                             .imageProvider(FlatImageProvider(albedoMetal, true).mirrorY())
                             .margin(horizontal = sizes.gap)
                             .customShader(albedoMapShader.apply { colorMap = albedoMetal })
-                        Text("Albedo") { imageLabelStyle() }
+                        Text("Albedo".l) { imageLabelStyle() }
                     }
                     Image {
                         modifier
@@ -384,7 +385,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                             .imageProvider(FlatImageProvider(normalRough, true).mirrorY())
                             .margin(horizontal = sizes.gap)
                             .customShader(normalMapShader.apply { colorMap = normalRough })
-                        Text("Normals") { imageLabelStyle() }
+                        Text("Normals".l) { imageLabelStyle() }
                     }
                 }
                 Row {
@@ -395,7 +396,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                             .imageProvider(FlatImageProvider(positionFlags, true).mirrorY())
                             .margin(horizontal = sizes.gap)
                             .customShader(positionMapShader.apply { colorMap = positionFlags })
-                        Text("Position") { imageLabelStyle() }
+                        Text("Position".l) { imageLabelStyle() }
                     }
                     Image(ao) {
                         modifier
@@ -403,7 +404,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                             .imageProvider(FlatImageProvider(ao, true).mirrorY())
                             .margin(horizontal = sizes.gap)
                             .customShader(AoDemo.aoMapShader.apply { colorMap = ao })
-                        Text("Ambient occlusion") { imageLabelStyle() }
+                        Text("Ambient occlusion".l) { imageLabelStyle() }
                     }
                 }
                 Row {
@@ -418,7 +419,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                                 rough = normalRough
                                 flags = deferredPipeline.activePass.materialPass.positionFlags
                             })
-                        Text("Metal (r), roughness (g), flags (b)") { imageLabelStyle() }
+                        Text("Metal (r), roughness (g), flags (b)".l) { imageLabelStyle() }
                     }
                     Image(bloom) {
                         modifier
@@ -426,7 +427,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                             .imageProvider(FlatImageProvider(bloom, true).mirrorY())
                             .margin(horizontal = sizes.gap)
                             .customShader(bloomMapShader.apply { colorMap = bloom })
-                        Text("Bloom") { imageLabelStyle() }
+                        Text("Bloom".l) { imageLabelStyle() }
                     }
                 }
             }

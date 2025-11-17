@@ -8,6 +8,9 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.generateNormals
 import physx.*
 
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 actual fun ConvexMesh(points: List<Vec3f>): ConvexMesh = ConvexMeshImpl(points)
 
 val ConvexMesh.pxConvexMesh: PxConvexMesh get() = (this as ConvexMeshImpl).pxConvexMesh
@@ -65,9 +68,9 @@ class ConvexMeshImpl(override val points: List<Vec3f>, override var releaseWithG
         internal fun makePxConvexMesh(points: List<Vec3f>): PxConvexMesh = MemoryStack.stackPush().use { mem ->
             val vec3Vector = points.toPxArray_PxVec3()
             val desc = mem.createPxConvexMeshDesc()
-            desc.flags = mem.createPxConvexFlags(PxConvexFlagEnum.eCOMPUTE_CONVEX)
+            desc.flags = mem.createPxConvexFlags(PxConvexFlagEnum.eCOMPUTE_CONVEX.value)
             desc.points.count = points.size
-            desc.points.stride = 12
+            desc.points.stride = SIZEOF.PxVec3
             desc.points.data = vec3Vector.begin()
             val pxConvexMesh = PxTopLevelFunctions.CreateConvexMesh(PhysicsImpl.cookingParams, desc)
             vec3Vector.destroy()
@@ -82,7 +85,6 @@ class ConvexMeshGeometryImpl(override val convexMesh: ConvexMesh, override val s
     override val pxGeometry: PxConvexMeshGeometry
 
     init {
-        PhysicsImpl.checkIsLoaded()
         MemoryStack.stackPush().use { mem ->
             val s = scale.toPxVec3(mem.createPxVec3())
             val r = mem.createPxQuat(0f, 0f, 0f, 1f)

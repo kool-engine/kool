@@ -1,16 +1,12 @@
 package de.fabmax.kool.physics.geometry
 
-import de.fabmax.kool.physics.PhysicsImpl
-import de.fabmax.kool.physics.createPxHeightFieldDesc
-import de.fabmax.kool.physics.createPxHeightFieldSample
-import de.fabmax.kool.physics.createPxMeshGeometryFlags
+import de.fabmax.kool.physics.*
 import de.fabmax.kool.util.Heightmap
-import org.lwjgl.system.MemoryStack
+import de.fabmax.kool.util.memStack
 import physx.PxTopLevelFunctions
 import physx.geometry.PxHeightField
 import physx.geometry.PxHeightFieldFormatEnum
 import physx.geometry.PxHeightFieldGeometry
-import physx.geometry.PxHeightFieldSample
 import physx.support.PxArray_PxHeightFieldSample
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -39,10 +35,10 @@ class HeightFieldImpl(
         val revHeightToI16 = if (heightScale > 0) 1f / heightScale else 0f
 
         PhysicsImpl.checkIsLoaded()
-        MemoryStack.stackPush().use { mem ->
+        memStack {
             val rows = heightMap.columns
             val cols = heightMap.rows
-            val sample = mem.createPxHeightFieldSample()
+            val sample = createPxHeightFieldSample()
             val samples = PxArray_PxHeightFieldSample()
             for (row in 0..rows) {
                 for (col in (cols-1) downTo 0) {
@@ -56,12 +52,12 @@ class HeightFieldImpl(
                 }
             }
 
-            val desc = mem.createPxHeightFieldDesc()
+            val desc = createPxHeightFieldDesc()
             desc.format = PxHeightFieldFormatEnum.eS16_TM
             desc.nbRows = rows
             desc.nbColumns = cols
             desc.samples.data = samples.begin()
-            desc.samples.stride = PxHeightFieldSample.SIZEOF
+            desc.samples.stride = SIZEOF.PxHeightFieldSample
 
             pxHeightField = PxTopLevelFunctions.CreateHeightField(desc)
         }
@@ -76,13 +72,13 @@ class HeightFieldImpl(
 }
 
 class HeightFieldGeometryImpl(override val heightField: HeightField) : CollisionGeometryImpl(), HeightFieldGeometry {
-    override val holder: PxHeightFieldGeometry
+    override val pxGeometry: PxHeightFieldGeometry
 
     init {
         PhysicsImpl.checkIsLoaded()
-        MemoryStack.stackPush().use { mem ->
-            val flags = mem.createPxMeshGeometryFlags(0)
-            holder = PxHeightFieldGeometry(heightField.pxHeightField, flags, heightField.heightScale, heightField.rowScale, heightField.columnScale)
+        memStack {
+            val flags = createPxMeshGeometryFlags(0)
+            pxGeometry = PxHeightFieldGeometry(heightField.pxHeightField, flags, heightField.heightScale, heightField.rowScale, heightField.columnScale)
         }
 
         if (heightField.releaseWithGeometry) {

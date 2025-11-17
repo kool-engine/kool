@@ -84,14 +84,14 @@ More editor related documentation is available in [the editor docs](https://kool
 
 ## Platform Support
 
-| Platform    | Backend     | Implementation Status                                   |
-|-------------|-------------|---------------------------------------------------------|
-| Desktop JVM | OpenGL      | :white_check_mark: Fully working                        |
-| Desktop JVM | Vulkan      | :white_check_mark: Fully working                        |
-| Desktop JVM | WebGPU      | :sparkles: Mostly working (using the `wgpu4k` backend)  |
-| Browser     | WebGL 2     | :white_check_mark: Fully working                        |
-| Browser     | WebGPU      | :white_check_mark: Fully working                        |
-| Android     | OpenGL ES 3 | :sparkles: kool-core fully working (but no physics yet) |
+| Platform    | Backend     | Implementation Status                                  |
+|-------------|-------------|--------------------------------------------------------|
+| Desktop JVM | OpenGL      | :white_check_mark: Fully working                       |
+| Desktop JVM | Vulkan      | :white_check_mark: Fully working                       |
+| Desktop JVM | WebGPU      | :sparkles: Mostly working (using the `wgpu4k` backend) |
+| Browser     | WebGL 2     | :white_check_mark: Fully working                       |
+| Browser     | WebGPU      | :white_check_mark: Fully working                       |
+| Android     | OpenGL ES 3 | :white_check_mark: Fully working                       |
 
 **Supported desktop platforms are:**
 - Windows (x64): Vulkan, WebGPU and OpenGL
@@ -109,9 +109,8 @@ became stable in Java 22). In case Java 22 is a problem for you, you can exclude
 The Android target is disabled by default (to avoid having the Android SDK as a build requirement). You can
 enable the Android target by running the gradle task `./gradlew enableAndroidPlatform`.
 
-Moreover, Android support is only available for `kool-core` for now. Therefore, the demos don't work on Android yet
-(because they also require `kool-physics`). However, there's a basic [kool-android-template](https://github.com/kool-engine/kool-templates)
-project with a minimal kool Android app.
+Moreover, the demos are currently not build for Android. However, there's a basic
+[kool-android-template](https://github.com/kool-engine/kool-templates) project with a minimal kool Android app.
 
 ## Usage
 
@@ -153,7 +152,7 @@ the libs are resolved and added to the IntelliJ module classpath.
 - [Compute shader](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo/helloworld/HelloComputeParticles.kt) support
 - [Reversed-depth](https://developer.nvidia.com/content/depth-precision-visualized) rendering for vastly improved
   depth precision and range (more or less infinite)
-- Physics simulation (based on Nvidia PhysX 5.5, using [physx-jni](https://github.com/fabmax/physx-jni) on Java and [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) on javascript)
+- Physics simulation (based on Nvidia PhysX 5.6, using [physx-jni](https://github.com/fabmax/physx-jni) on Java and [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) on javascript)
 - Kotlin DSL based shader language (translates into GLSL and WGSL)
 - Neat little integrated GUI framework. The API is heavily inspired by [Jetpack Compose](https://github.com/JetBrains/compose-jb) but the implementation is different, as it needs to run within the OpenGL context.
 - [MSDF](https://github.com/Chlumsky/msdf-atlas-gen) Font support for text rendering in arbitrary font sizes

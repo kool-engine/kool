@@ -1,6 +1,6 @@
 [versions]
 agp = "8.12.3"
-kotlin = "2.2.20"
+kotlin = "2.2.21"
 kotlin-coroutines = "1.10.2"
 kotlin-serialization = "1.9.0"
 kotlin-datetime = "0.7.1-0.6.x-compat"
@@ -9,8 +9,8 @@ kotlin-dokka = "2.1.0"
 lwjgl = "3.3.6"
 jsvg = "2.0.0"
 androidsvg = "1.4"
-physxjni = "2.6.1"
-physxjswebidl = "2.6.2"
+physxjni = "2.7.0"
+physxjswebidl = "2.7.0"
 
 # wgpu backend
 wgpu4k = "0.1.1"
@@ -41,6 +41,7 @@ lwjgl-stb = { group = "org.lwjgl", name = "lwjgl-stb", version.ref = "lwjgl" }
 lwjgl-jawt = { group = "org.lwjgl", name = "lwjgl-jawt", version.ref = "lwjgl" }
 lwjgl-msdfgen = { group = "org.lwjgl", name = "lwjgl-msdfgen", version.ref = "lwjgl" }
 physxjni = { group = "de.fabmax", name = "physx-jni", version.ref = "physxjni" }
+physxjniandroid = { group = "de.fabmax", name = "physx-jni-android", version.ref = "physxjni" }
 physxjswebidl = { group = "npm", name = "physx-js-webidl", version.ref = "physxjswebidl" }
 
 # wgpu backend
@@ -57,7 +58,7 @@ plugindep-kotlin-serialization = { group = "org.jetbrains.kotlin", name = "kotli
 plugindep-kotlin-atomicfu = { group = "org.jetbrains.kotlin", name = "atomicfu", version.ref = "kotlin" }
 plugindep-dokka = { group = "org.jetbrains.dokka", name = "dokka-gradle-plugin", version.ref = "kotlin-dokka" }
 plugindep-android-library = { group = "com.android.library", name = "com.android.library.gradle.plugin", version.ref = "agp" }
-plugindep-maven-publish = { group = "com.vanniktech", name = "gradle-maven-publish-plugin", version = "0.34.0" }
+plugindep-maven-publish = { group = "com.vanniktech", name = "gradle-maven-publish-plugin", version = "0.35.0" }
 
 [bundles]
 lwjgl = ["lwjgl-core", "lwjgl-glfw", "lwjgl-jemalloc", "lwjgl-opengl", "lwjgl-vulkan", "lwjgl-vma", "lwjgl-shaderc", "lwjgl-nfd", "lwjgl-stb", "lwjgl-jawt", "lwjgl-msdfgen"]

@@ -5,23 +5,25 @@ import de.fabmax.kool.util.BaseReleasable
 import physx.extensions.PxJoint
 import physx.physics.PxConstraintFlagEnum
 
-@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-actual typealias JointHolder = PxJoint
+actual class JointHolder(val px: PxJoint)
 
 abstract class JointImpl(frameA: PoseF, frameB: PoseF) : BaseReleasable(), Joint {
     override val frameA = PoseF(frameA)
     override val frameB = PoseF(frameB)
 
+    abstract val pxJoint: PxJoint
+    override val joint: JointHolder by lazy { JointHolder(pxJoint) }
+
     override val isBroken: Boolean
-        get() = joint.constraintFlags.isSet(PxConstraintFlagEnum.eBROKEN)
+        get() = pxJoint.constraintFlags.isSet(PxConstraintFlagEnum.eBROKEN)
 
     override var isChildCollisionEnabled: Boolean = false
         set(value) {
             field = value
             if (value) {
-                joint.setConstraintFlag(PxConstraintFlagEnum.eCOLLISION_ENABLED, true)
+                pxJoint.setConstraintFlag(PxConstraintFlagEnum.eCOLLISION_ENABLED, true)
             } else {
-                joint.setConstraintFlag(PxConstraintFlagEnum.eCOLLISION_ENABLED, false)
+                pxJoint.setConstraintFlag(PxConstraintFlagEnum.eCOLLISION_ENABLED, false)
             }
         }
 
@@ -29,15 +31,15 @@ abstract class JointImpl(frameA: PoseF, frameB: PoseF) : BaseReleasable(), Joint
         set(value) {
             field = value
             if (value) {
-                joint.setConstraintFlag(PxConstraintFlagEnum.eVISUALIZATION, true)
+                pxJoint.setConstraintFlag(PxConstraintFlagEnum.eVISUALIZATION, true)
             } else {
-                joint.setConstraintFlag(PxConstraintFlagEnum.eVISUALIZATION, false)
+                pxJoint.setConstraintFlag(PxConstraintFlagEnum.eVISUALIZATION, false)
             }
         }
 
-    override fun enableBreakage(breakForce: Float, breakTorque: Float) = joint.setBreakForce(breakForce, breakTorque)
+    override fun enableBreakage(breakForce: Float, breakTorque: Float) = pxJoint.setBreakForce(breakForce, breakTorque)
 
     override fun doRelease() {
-        joint.release()
+        pxJoint.release()
     }
 }

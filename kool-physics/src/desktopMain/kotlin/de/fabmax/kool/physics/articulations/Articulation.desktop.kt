@@ -4,15 +4,15 @@ import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.PhysicsImpl
 import de.fabmax.kool.physics.createPxTransform
 import de.fabmax.kool.physics.toPxTransform
-import org.lwjgl.system.MemoryStack
+import de.fabmax.kool.util.memStack
 import physx.physics.PxArticulationFlagEnum
+import physx.physics.PxArticulationLink
 import physx.physics.PxArticulationReducedCoordinate
 import physx.support.SupportFunctions
 
 actual fun Articulation(isFixedBase: Boolean): Articulation = ArticulationImpl(isFixedBase)
 
 class ArticulationImpl(val isFixedBase: Boolean) : Articulation() {
-
     internal val pxArticulation: PxArticulationReducedCoordinate
 
     override var minPositionIterations: Int
@@ -38,9 +38,10 @@ class ArticulationImpl(val isFixedBase: Boolean) : Articulation() {
 
     override fun createLink(parent: ArticulationLink?, pose: PoseF): ArticulationLink {
         parent as ArticulationLinkImpl?
-        return MemoryStack.stackPush().use { mem ->
-            val pxPose = pose.toPxTransform(mem.createPxTransform())
-            val pxLink = pxArticulation.createLink(parent?.holder, pxPose)
+        return memStack {
+            val parentLink = parent?.holder?.px as PxArticulationLink?
+            val pxPose = pose.toPxTransform(createPxTransform())
+            val pxLink = pxArticulation.createLink(parentLink, pxPose)
             val link = ArticulationLinkImpl(pxLink, parent)
             _links += link
             link

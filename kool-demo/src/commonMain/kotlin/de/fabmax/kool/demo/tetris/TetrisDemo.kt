@@ -1,8 +1,7 @@
 package de.fabmax.kool.demo.tetris
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.DemoScene
-import de.fabmax.kool.demo.labelStyle
+import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.KeyEvent
@@ -15,10 +14,7 @@ import de.fabmax.kool.pipeline.ClearColorFill
 import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.MsdfFont
-import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.*
 import kotlin.math.roundToInt
 
 /*
@@ -77,48 +73,40 @@ class TetrisDemo : DemoScene("Tetris") {
         super.lateInit(ctx)
         overlay.setupUiScene()
         overlay.addPanelSurface {
-            modifier.size(Grow.Std, Grow.Std).background(null)
+            modifier
+                .size(Grow.Std, Grow.Std)
+                .background(null)
+                .layout(CellLayout)
             if (game.isGameOver.use()) {
                 // Game Over overlay
-                Box(Grow.Std, Grow.Std) {
-                    modifier.background(RoundRectBackground(colors.backgroundAlpha(0.7f), 0.dp))
-                    Column(FitContent, FitContent) {
-                        modifier.align(AlignmentX.Center, AlignmentY.Center)
-                        Text("Game Over") {
-                            modifier
-                                .textColor(Color.WHITE)
-                                .font(MsdfFont(sizePts = 36f))
-                                .alignX(AlignmentX.Center)
-                        }
-                        Text("Press the button to continue") {
-                            modifier
-                                .textColor(Color.WHITE)
-                                .font(MsdfFont(sizePts = 18f))
-                                .alignX(AlignmentX.Center)
-                                .margin(top = sizes.largeGap)
-                        }
-                        Button("Restart") {
-                            modifier
-                                .textColor(Color.WHITE)
-                                .font(MsdfFont(sizePts = 18f))
-                                .alignX(AlignmentX.Center)
-                                .margin(top = sizes.largeGap)
-                                .onClick {
-                                    game.isGameOver.value = false
-                                }
-                        }
+                modifier.backgroundColor(Color.BLACK.withAlpha(0.5f))
+                Column(FitContent, FitContent) {
+                    modifier.align(AlignmentX.Center, AlignmentY.Center)
+                    Text("Game Over".l) {
+                        modifier
+                            .textColor(Color.WHITE)
+                            .font(MsdfFont(sizePts = 36f))
+                            .alignX(AlignmentX.Center)
+                    }
+                    Button("Restart".l) {
+                        modifier
+                            .textColor(Color.WHITE)
+                            .font(MsdfFont(sizePts = 18f))
+                            .alignX(AlignmentX.Center)
+                            .margin(top = sizes.largeGap)
+                            .onClick {
+                                game.isGameOver.value = false
+                            }
                     }
                 }
             } else if (game.isPaused.use()) {
                 // Pause overlay
-                Box(Grow.Std, Grow.Std) {
-                    modifier.background(RoundRectBackground(colors.backgroundAlpha(0.7f), 0.dp))
-                    Text("Paused") {
-                        modifier
-                            .textColor(Color.WHITE)
-                            .font(MsdfFont(sizePts = 36f))
-                            .align(AlignmentX.Center, AlignmentY.Center)
-                    }
+                modifier.backgroundColor(Color.BLACK.withAlpha(0.5f))
+                Text("Paused".l) {
+                    modifier
+                        .textColor(Color.WHITE)
+                        .font(MsdfFont(sizePts = 36f))
+                        .align(AlignmentX.Center, AlignmentY.Center)
                 }
             }
         }
@@ -177,94 +165,59 @@ class TetrisDemo : DemoScene("Tetris") {
         }
     }
 
-    override fun createMenu(menu: DemoMenu, ctx: KoolContext): UiSurface {
-        return menuSurface {
-            Column(Grow.Std) {
-                modifier.padding(horizontal = sizes.gap)
-                Text("Score: ${game.score.use()}") { labelStyle() }
-                Text("Lines: ${game.lines.use()}") { labelStyle() }
-                Text("Level: ${game.level.use()}") { labelStyle() }
-
-                Text("Block Style:") {
-                    labelStyle()
-                    modifier.margin(top = sizes.gap)
-                }
-                ComboBox {
-                    val options = BlockStyle.entries
-                    modifier
-                        .width(Grow.Std)
-                        .margin(vertical = sizes.smallGap)
-                        .items(options.map { it.displayName })
-                        .selectedIndex(options.indexOf(renderer.blockStyle.use()))
-                        .onItemSelected {
-                            renderer.blockStyle.set(options[it])
-                        }
-                }
-
-                Text("Preview Pieces:") {
-                    labelStyle()
-                    modifier.margin(top = sizes.gap)
-                }
-                Row(Grow.Std, FitContent) {
-                    modifier.margin(bottom = sizes.gap)
-                    Slider(game.numPreviews.use().toFloat(), 0f, 5f) {
-                        modifier
-                            .width(Grow.Std)
-                            .alignY(AlignmentY.Center)
-                            .onChange {
-                                game.numPreviews.set(it.roundToInt())
-                            }
+    override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
+        MenuRow {
+            Text("Score".l) { labelStyle(Grow.Std) }
+            Text("${game.score.use()}") { labelStyle() }
+        }
+        MenuRow {
+            Text("Lines".l) { labelStyle(Grow.Std) }
+            Text("${game.lines.use()}") { labelStyle() }
+        }
+        MenuRow {
+            Text("Level".l) { labelStyle(Grow.Std) }
+            Text("${game.level.use()}") { labelStyle() }
+        }
+        MenuRow {
+            Text("Block Style".l) { labelStyle() }
+            ComboBox {
+                val options = BlockStyle.entries
+                modifier
+                    .width(Grow.Std)
+                    .margin(start = sizes.largeGap)
+                    .items(options.map { it.displayName.l })
+                    .selectedIndex(options.indexOf(renderer.blockStyle.use()))
+                    .onItemSelected {
+                        renderer.blockStyle.set(options[it])
                     }
-                    Text("${game.numPreviews.use()}") {
-                        modifier
-                            .width(32.dp)
-                            .textAlignX(AlignmentX.End)
-                            .alignY(AlignmentY.Center)
-                    }
-                }
-
-                Box(height = Grow.Std) { }
-
-                // Section with control instructions
-                Column(FitContent) {
-                    modifier
-                        .alignX(AlignmentX.Center)
-                        .margin(bottom = sizes.largeGap)
-
-                    Text("Controls") {
-                        labelStyle()
-                        modifier
-                            .alignX(AlignmentX.Center)
-                            .margin(bottom = sizes.gap)
-                    }
-                    Row {
-                        modifier.alignY(AlignmentY.Center)
-                        Text("Move:") { modifier.width(75.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
-                        KeyButton { Arrow(ArrowScope.ROTATION_LEFT) { modifier.align(AlignmentX.Center, AlignmentY.Center).size(12.dp, 12.dp).colors(arrowColor = colors.onBackground) } }
-                        KeyButton { Arrow(ArrowScope.ROTATION_RIGHT) { modifier.align(AlignmentX.Center, AlignmentY.Center).size(12.dp, 12.dp).colors(arrowColor = colors.onBackground) } }
-                    }
-                    Row {
-                        modifier.margin(top = sizes.smallGap).alignY(AlignmentY.Center)
-                        Text("Rotate:") { modifier.width(75.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
-                        KeyButton { Arrow(ArrowScope.ROTATION_UP) { modifier.align(AlignmentX.Center, AlignmentY.Center).size(12.dp, 12.dp).colors(arrowColor = colors.onBackground) } }
-                    }
-                    Row {
-                        modifier.margin(top = sizes.smallGap).alignY(AlignmentY.Center)
-                        Text("Soft Drop:") { modifier.width(75.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
-                        KeyButton { Arrow(ArrowScope.ROTATION_DOWN) { modifier.align(AlignmentX.Center, AlignmentY.Center).size(12.dp, 12.dp).colors(arrowColor = colors.onBackground) } }
-                    }
-                    Row {
-                        modifier.margin(top = sizes.smallGap).alignY(AlignmentY.Center)
-                        Text("Hard Drop:") { modifier.width(75.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
-                        KeyButton("Space", width = 100.dp)
-                    }
-                    Row {
-                        modifier.margin(top = sizes.smallGap).alignY(AlignmentY.Center)
-                        Text("Pause:") { modifier.width(75.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
-                        KeyButton("P")
-                    }
-                }
             }
+        }
+        MenuSlider2("Preview Pieces".l, game.numPreviews.use().toFloat(), 0f, 5f, txtFormat = { "${it.toInt()}" }) {
+            game.numPreviews.set(it.roundToInt())
+        }
+
+        Text("Controls".l) { sectionTitleStyle() }
+        MenuRow {
+            modifier.alignY(AlignmentY.Center)
+            Text("Move".l) { modifier.width(120.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
+            KeyButton("←")
+            KeyButton("→")
+        }
+        MenuRow {
+            Text("Rotate".l) { modifier.width(120.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
+            KeyButton("↑")
+        }
+        MenuRow {
+            Text("Soft Drop".l) { modifier.width(120.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
+            KeyButton("↓")
+        }
+        MenuRow {
+            Text("Hard Drop".l) { modifier.width(120.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
+            KeyButton("Space".l, width = 100.dp)
+        }
+        MenuRow {
+            Text("Pause".l) { modifier.width(120.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
+            KeyButton("P")
         }
     }
 }

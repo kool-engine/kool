@@ -35,10 +35,10 @@ data class KoolConfigAndroid(
     companion object {
         val DEFAULT_MSDF_FONT_INFO: MsdfFontInfo by lazy {
             checkNotNull(KoolConfigAndroid::class.java.classLoader)
-                .getResourceAsStream("fonts/font-roboto-regular.json").use {
-                    checkNotNull(it) { "Failed to load \"fonts/font-roboto-regular.json\" from resources" }
-                    val meta = Json.Default.decodeFromString<MsdfMeta>(it.readBytes().decodeToString())
-                    MsdfFontInfo(meta, "fonts/font-roboto-regular.png")
+                .getResourceAsStream("fonts/fira-sans-regular.json").use {
+                    checkNotNull(it) { "Failed to load \"fonts/fira-sans-regular.json\" from resources" }
+                    val meta = Json.decodeFromString<MsdfMeta>(it.readBytes().decodeToString())
+                    MsdfFontInfo(meta, "fonts/fira-sans-regular.png")
                 }
         }
     }

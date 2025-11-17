@@ -2,6 +2,7 @@ package de.fabmax.kool.demo.uidemo
 
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.l
 
 class BasicUiWindow(uiDemo: UiDemo) : DemoWindow("Demo Window", uiDemo) {
 
@@ -16,7 +17,7 @@ class BasicUiWindow(uiDemo: UiDemo) : DemoWindow("Demo Window", uiDemo) {
         Row {
             modifier.margin(bottom = sizes.smallGap)
             var clickCnt by remember(0)
-            Button("A regular button: clicked $clickCnt times") {
+            Button("A regular button: clicked {x} times".l.replace("{x}", "$clickCnt")) {
                 modifier
                     .onClick { clickCnt++ }
             }
@@ -47,19 +48,19 @@ class BasicUiWindow(uiDemo: UiDemo) : DemoWindow("Demo Window", uiDemo) {
 
         Row {
             modifier.margin(bottom = sizes.smallGap)
-            Text("Text fields") { modifier.alignY(AlignmentY.Center).margin(end = sizes.gap) }
+            Text("Text fields".l) { modifier.alignY(AlignmentY.Center).margin(end = sizes.gap) }
             var text1 by remember("")
             var text2 by remember("")
             TextField(text1) {
                 modifier
                     .width(150.dp)
-                    .hint("Ctrl+C to copy")
+                    .hint("Ctrl+C to copy".l)
                     .onChange { text1 = it }
             }
             TextField(text2) {
                 modifier
                     .width(150.dp)
-                    .hint("Ctrl+V to paste")
+                    .hint("Ctrl+V to paste".l)
                     .margin(start = sizes.largeGap)
                     .onChange { text2 = it }
             }
@@ -95,7 +96,7 @@ class BasicUiWindow(uiDemo: UiDemo) : DemoWindow("Demo Window", uiDemo) {
         }
 
         divider(colors.secondaryVariantAlpha(0.5f), marginTop = sizes.largeGap, marginBottom = sizes.gap)
-        Text("A scroll area:") {
+        Text("A scroll area:".l) {
             modifier.margin(bottom = sizes.gap)
         }
         ScrollArea(
@@ -113,7 +114,7 @@ class BasicUiWindow(uiDemo: UiDemo) : DemoWindow("Demo Window", uiDemo) {
             }
         ) {
             Column {
-                Text("Text with two lines in a slightly larger font:\nThe second line is a tiny bit longer than the first one.") {
+                Text("Text with two lines in a slightly larger font:\nThe second line is a tiny bit longer than the first one.".l) {
                     modifier
                         .margin(sizes.smallGap)
                         .font(sizes.largeText)
@@ -171,7 +172,7 @@ class BasicUiWindow(uiDemo: UiDemo) : DemoWindow("Demo Window", uiDemo) {
                 }
                 Row {
                     for (r in 0..270 step 90) {
-                        Text("Another text with rotation: $r") {
+                        Text("Another text with rotation:".l + " $r") {
                             modifier
                                 .margin(sizes.smallGap)
                                 .padding(sizes.largeGap)
@@ -184,13 +185,13 @@ class BasicUiWindow(uiDemo: UiDemo) : DemoWindow("Demo Window", uiDemo) {
         }
 
         divider(colors.secondaryVariantAlpha(0.5f), marginTop = sizes.largeGap, marginBottom = sizes.gap)
-        Text("A longer list, click items to delete them:") {
+        Text("A longer list, click items to delete them:".l) {
             modifier.margin(bottom = sizes.gap)
         }
         val listItems by remember {
             mutableStateListOf<String>().apply {
                 for (i in 1..500) {
-                    add("Item $i")
+                    add("Item".l + " $i")
                 }
             }
         }
@@ -214,7 +215,7 @@ class BasicUiWindow(uiDemo: UiDemo) : DemoWindow("Demo Window", uiDemo) {
                 }
                 val textColor = if (isHovered) colors.onPrimary else colors.onBackground
                 val isLarge = (i / 10) % 2 != 0
-                val txt = if (isLarge) "$item [large]" else item
+                val txt = if (isLarge) "$item " + "[large]".l else item
 
                 Text(txt) {
                     modifier

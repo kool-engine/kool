@@ -1,12 +1,12 @@
 package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.MemoryStack
-import de.fabmax.kool.physics.PhysicsImpl
-import de.fabmax.kool.physics.PxTopLevelFunctions
-import de.fabmax.kool.physics.toPxVec3
+import de.fabmax.kool.physics.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import physx.*
+
+// GENERATED CODE BELOW:
+// Transformed from desktop source
 
 actual fun TriangleMesh(geometry: IndexedVertexList<*>): TriangleMesh = TriangleMeshImpl(geometry)
 
@@ -35,7 +35,7 @@ class TriangleMeshImpl(override val geometry: IndexedVertexList<*>) : TriangleMe
             // create mesh descriptor
             val points = mem.createPxBoundedData()
             points.count = pointVector.size()
-            points.stride = 12
+            points.stride = SIZEOF.PxVec3
             points.data = pointVector.begin()
 
             val triangles = mem.createPxBoundedData()

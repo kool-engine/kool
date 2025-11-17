@@ -158,6 +158,7 @@ class SwingWindowSubsystem(
                         closeSignal.complete(Unit)
                     }
                     else -> {
+                        canvasWrapper?.pollEvents()
                         canvas.render()
                         SwingUtilities.invokeLater(this)
                     }
@@ -175,7 +176,7 @@ class SwingWindowSubsystem(
             val window = canvasWrapper!!
             while (!isCloseRequested) {
                 window.pollEvents()
-                if (!window.flags.isMinimized) {
+                if (!window.flags.isMinimized && window.flags.isVisible && window.size.x > 0 && window.size.y > 0) {
                     ctx.renderFrame()
                 } else {
                     Thread.sleep(10)

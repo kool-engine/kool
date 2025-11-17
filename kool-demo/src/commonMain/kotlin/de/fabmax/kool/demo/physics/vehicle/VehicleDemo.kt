@@ -50,9 +50,9 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
                 map.shaderDepthOffset = if (i == 0) -0.0004f else -0.002f
             }
         }
-        showLoadText("Loading Physics")
+        showLoadText("Loading Physics".l())
 
-        showLoadText("Creating Deferred Render Pipeline")
+        showLoadText("Creating Deferred Render Pipeline".l())
         val defCfg = DeferredPipelineConfig().apply {
             maxGlobalLights = 1
             isWithAmbientOcclusion = true
@@ -79,22 +79,22 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
 
         shadows.drawNode = deferredPipeline.sceneContent
 
-        showLoadText("Creating Physics World")
+        showLoadText("Creating Physics World".l())
         val physics = PhysicsWorld(mainScene)
         vehicleWorld = VehicleWorld(mainScene, physics, deferredPipeline)
 
         vehicle = DemoVehicle(this@VehicleDemo, vehicleModel, ctx)
-        showLoadText("Loading Vehicle Audio")
+        showLoadText("Loading Vehicle Audio".l())
         vehicle.vehicleAudio.loadAudio()
 
-        showLoadText("Creating Physics World")
+        showLoadText("Creating Physics World".l())
         deferredPipeline.sceneContent.apply {
             addNode(vehicle.vehicleGroup)
 
             makeGround()
-            showLoadText("Creating Playground")
+            showLoadText("Creating Playground".l())
             Playground.makePlayground(vehicleWorld)
-            showLoadText("Creating Track")
+            showLoadText("Creating Track".l())
             makeTrack(vehicleWorld)
         }
     }
@@ -105,8 +105,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             setColor(Color.WHITE, 0.75f)
         }
 
-        val camRig = ActorTrackingCamRig().apply {
-            trackedActor = vehicle.vehicle
+        val camRig = ActorTrackingCamRig(vehicleWorld.physics, vehicle.vehicle).apply {
             camera.setClipRange(1f, 1e9f)
             camera.setupCamera(Vec3f(0f, 2.75f, 6f), lookAt = Vec3f(0f, 1.75f, 0f))
             addNode(camera)

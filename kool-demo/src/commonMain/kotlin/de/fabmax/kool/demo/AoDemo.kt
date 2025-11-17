@@ -230,51 +230,51 @@ class AoDemo : DemoScene("Ambient Occlusion") {
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
         surface.inputMode = UiSurface.InputCaptureMode.CaptureOverBackground
 
-        LabeledSwitch("AO enabled", isAoEnabled)
+        LabeledSwitch("AO enabled".l, isAoEnabled)
         MenuRow {
-            Text("Show AO map") { labelStyle() }
+            Text("Show AO map".l) { labelStyle() }
             ComboBox {
                 modifier
                     .width(Grow.Std)
                     .margin(start = sizes.largeGap)
-                    .items(showAoMapValues)
+                    .items(showAoMapValues.map { it.l })
                     .selectedIndex(showAoMapIndex.use())
                     .onItemSelected { showAoMapIndex.set(it) }
             }
         }
-        LabeledSwitch("Spot light", isSpotLight)
-        LabeledSwitch("Auto rotate view", isAutoRotate)
+        LabeledSwitch("Spot light".l, isSpotLight)
+        LabeledSwitch("Auto rotate view".l, isAutoRotate)
 
-        val lblW = UiSizes.baseSize * 1.6f
+        val lblW = UiSizes.baseSize * 1.75f
         val txtW = UiSizes.baseSize * 0.8f
 
-        Text("AO Settings") { sectionTitleStyle() }
+        Text("AO Settings".l) { sectionTitleStyle() }
         MenuRow {
-            Text("Radius") { labelStyle(lblW) }
+            Text("Radius".l) { labelStyle(lblW) }
             MenuSlider(aoRadius.use(), 0.1f, 3f, txtWidth = txtW) {
                 aoRadius.set(it)
             }
         }
         MenuRow {
-            Text("Power") { labelStyle(lblW) }
+            Text("Power".l) { labelStyle(lblW) }
             MenuSlider(log(aoPower.use(), 10f), log(0.2f, 10f), log(5f, 10f), txtWidth = txtW) {
                 aoPower.set(10f.pow(it))
             }
         }
         MenuRow {
-            Text("Strength") { labelStyle(lblW) }
+            Text("Strength".l) { labelStyle(lblW) }
             MenuSlider(aoStrength.use(), 0f, 5f, txtWidth = txtW) {
                 aoStrength.set(it)
             }
         }
         MenuRow {
-            Text("Samples") { labelStyle(lblW) }
+            Text("Samples".l) { labelStyle(lblW) }
             MenuSlider(aoSamples.use().toFloat(), 4f, 64f, { "${it.roundToInt()}" }, txtW) {
                 aoSamples.set(it.roundToInt())
             }
         }
         MenuRow {
-            Text("Map Size") { labelStyle(lblW) }
+            Text("Map Size".l) { labelStyle(lblW) }
             MenuSlider(aoMapSize.use(), 0.1f, 1f, { it.toString(1) }, txtW) {
                 aoMapSize.set((it * 10).roundToInt() / 10f)
             }

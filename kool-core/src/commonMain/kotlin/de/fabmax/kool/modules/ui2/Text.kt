@@ -26,6 +26,7 @@ open class TextModifier(surface: UiSurface) : UiModifier(surface) {
     var textRotation: Float by property(0f)
     var baselineBottomMargin: Dp? by property(null)
     var baselineTopMargin: Dp? by property(null)
+    var clipToBounds: Boolean by property(true)
     var isWrapText: Boolean by property(false)
 }
 
@@ -35,6 +36,7 @@ fun <T: TextModifier> T.textColor(color: Color): T { textColor = color; return t
 fun <T: TextModifier> T.textAlignX(alignment: AlignmentX): T { textAlignX = alignment; return this }
 fun <T: TextModifier> T.textAlignY(alignment: AlignmentY): T { textAlignY = alignment; return this }
 fun <T: TextModifier> T.isWrapText(enabled: Boolean): T { this.isWrapText = enabled; return this }
+fun <T: TextModifier> T.clipToBounds(enabled: Boolean): T { this.clipToBounds = enabled; return this }
 
 /**
  * Sets the margin between text baseline and bottom / top border of the text box. If a baseline margin is set,
@@ -154,9 +156,10 @@ open class TextNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surfac
 
         val builder = getTextBuilder(modifier.font)
         if (!isOddRotation) {
-            textCache.addTextGeometry(builder.geometry, textProps, modifier.textColor, modifier.textRotation)
+            val clip = if (modifier.clipToBounds) clipBoundsPx else NO_CLIP
+            textCache.addTextGeometry(builder.geometry, textProps, modifier.textColor, modifier.textRotation, clip)
         } else {
-            builder.configured(modifier.textColor) {
+            builder.configured(modifier.textColor, clipped = false) {
                 translate(widthPx * 0.5f, heightPx * 0.5f, 0f)
                 rotate(modifier.textRotation.deg, Vec3f.Z_AXIS)
                 translate(-textMetrics.width * 0.5f, textMetrics.yBaseline - textMetrics.height * 0.5f, 0f)

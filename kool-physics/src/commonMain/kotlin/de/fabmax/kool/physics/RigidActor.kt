@@ -11,11 +11,9 @@ import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Tags
 import de.fabmax.kool.scene.TrsTransformF
-import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Releasable
 
-@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 expect class RigidActorHolder
 
 fun RigidActor.setPosition(pos: Vec3f) {
@@ -38,10 +36,8 @@ interface RigidActor : Releasable {
     val transform: TrsTransformF
 
     var isTrigger: Boolean
-
     var isActive: Boolean
-
-    val onPhysicsUpdate: BufferedList<PhysicsStepListener>
+    val isAttachedToSimulation: Boolean
 
     val shapes: List<Shape>
 
@@ -51,12 +47,9 @@ interface RigidActor : Releasable {
 
     fun detachShape(shape: Shape)
 
-    fun onPhysicsUpdate(timeStep: Float) {
-        onPhysicsUpdate.update()
-        for (i in onPhysicsUpdate.indices) {
-            onPhysicsUpdate[i].onPhysicsStep(timeStep)
-        }
-    }
+    fun syncSimulationData()
+    fun capture(simulationTime: Double)
+    fun interpolateTransform(captureTimeA: Double, captureTimeB: Double, frameTime: Double, weightB: Float)
 
     fun toGlobal(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
         return transform.transform(vec, w)

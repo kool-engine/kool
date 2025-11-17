@@ -6,17 +6,32 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.scene.TrsTransformF
 import org.lwjgl.system.MemoryStack
+import physx.NativeObject
+import physx.character.PxCapsuleController
 import physx.character.PxExtendedVec3
 import physx.common.*
 import physx.cooking.PxConvexFlags
 import physx.cooking.PxConvexMeshDesc
 import physx.cooking.PxTriangleMeshDesc
-import physx.extensions.PxRevoluteJointFlags
+import physx.extensions.*
 import physx.geometry.*
 import physx.physics.*
 import physx.support.PxArray_PxShapePtr
 import physx.support.PxArray_PxU32
 import physx.support.PxArray_PxVec3
+
+val NativeObject.ptr: Long get() = address
+
+@Suppress("RemoveRedundantQualifierName")
+object SIZEOF {
+    val PxVec3 = physx.common.PxVec3.SIZEOF
+    val PxHeightFieldSample = physx.geometry.PxHeightFieldSample.SIZEOF
+}
+
+object WrapPointer {
+    fun PxCapsuleController(ptr: Long) = PxCapsuleController.wrapPointer(ptr)
+    fun PxRigidDynamic(ptr: Long) = PxRigidDynamic.wrapPointer(ptr)
+}
 
 fun PxBounds3.toBoundingBox(result: BoundingBoxF): BoundingBoxF {
     val min = minimum
@@ -112,6 +127,8 @@ fun FilterData.toPxFilterData(target: PxFilterData): PxFilterData {
     return target
 }
 
+fun PxRigidDynamicFromPointer(address: Long): PxRigidDynamic = PxRigidDynamic.wrapPointer(address)
+
 fun MemoryStack.createPxArray_PxU32() = PxArray_PxU32.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.createPxArray_PxU32(size: Int) = PxArray_PxU32.createAt(this, MemoryStack::nmalloc, size)
 fun MemoryStack.createPxArray_PxVec3() = PxArray_PxVec3.createAt(this, MemoryStack::nmalloc)
@@ -123,6 +140,10 @@ fun MemoryStack.createPxBoundedData() = PxBoundedData.createAt(this, MemoryStack
 fun MemoryStack.createPxFilterData() = PxFilterData.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.createPxFilterData(w0: Int, w1: Int, w2: Int, w3: Int) =
     PxFilterData.createAt(this, MemoryStack::nmalloc, w0, w1, w2, w3)
+fun MemoryStack.createPxQueryFilterData(fd: PxFilterData, f: PxQueryFlags) =
+    PxQueryFilterData.createAt(this, MemoryStack::nmalloc, fd, f)
+fun MemoryStack.createPxQueryFlags(queryFlags: PxQueryFlagEnum) =
+    PxQueryFlags.createAt(this, MemoryStack::nmalloc, (queryFlags.value).toShort())
 fun MemoryStack.createPxHeightFieldSample() = PxHeightFieldSample.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.createPxHullPolygon() = PxHullPolygon.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.createPxMeshScale(s: PxVec3, r: PxQuat) = PxMeshScale.createAt(this, MemoryStack::nmalloc, s, r)
@@ -135,8 +156,12 @@ fun MemoryStack.createPxQuat(x: Float, y: Float, z: Float, w: Float) =
     PxQuat.createAt(this, MemoryStack::nmalloc, x, y, z, w)
 
 fun MemoryStack.createPxTransform() = PxTransform.createAt(this, MemoryStack::nmalloc, PxIDENTITYEnum.PxIdentity)
+fun MemoryStack.createPxTransform(p: Vec3f, q: QuatF) =
+    PxTransform.createAt(this, MemoryStack::nmalloc, p.toPxVec3(createPxVec3()), q.toPxQuat(createPxQuat()))
 fun MemoryStack.createPxTransform(p: PxVec3, q: PxQuat) =
     PxTransform.createAt(this, MemoryStack::nmalloc, p, q)
+
+fun MemoryStack.createPxSceneDesc(scale: PxTolerancesScale) = PxSceneDesc.createAt(this, MemoryStack::nmalloc, scale)
 
 fun MemoryStack.createPxConvexMeshDesc() = PxConvexMeshDesc.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.createPxHeightFieldDesc() = PxHeightFieldDesc.createAt(this, MemoryStack::nmalloc)
@@ -153,3 +178,15 @@ fun MemoryStack.createPxRigidBodyFlags(flags: Int) = PxRigidBodyFlags.createAt(t
 fun MemoryStack.createPxRigidDynamicLockFlags(flags: Int) = PxRigidDynamicLockFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
 fun MemoryStack.createPxSceneFlags(flags: Int) = PxSceneFlags.createAt(this, MemoryStack::nmalloc, flags)
 fun MemoryStack.createPxShapeFlags(flags: Int) = PxShapeFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
+
+fun MemoryStack.createPxSpring(stiffness: Float, damping: Float) = PxSpring.createAt(this, MemoryStack::nmalloc, stiffness, damping)
+fun MemoryStack.createPxJointLinearLimitPair(lowerLimit: Float, upperLimit: Float, spring: PxSpring) =
+    PxJointLinearLimitPair.createAt(this, MemoryStack::nmalloc, lowerLimit, upperLimit, spring)
+fun MemoryStack.createPxJointLinearLimit(extent: Float, spring: PxSpring) =
+    PxJointLinearLimit.createAt(this, MemoryStack::nmalloc, extent, spring)
+fun MemoryStack.createPxJointAngularLimitPair(lowerLimit: AngleF, upperLimit: AngleF, spring: PxSpring) =
+    PxJointAngularLimitPair.createAt(this, MemoryStack::nmalloc, lowerLimit.rad, upperLimit.rad, spring)
+fun MemoryStack.createPxJointLimitPyramid(yLimitAngleMin: Float, yLimitAngleMax: Float, zLimitAngleMin: Float, zLimitAngleMax: Float, spring: PxSpring) =
+    PxJointLimitPyramid.createAt(this, MemoryStack::nmalloc, yLimitAngleMin, yLimitAngleMax, zLimitAngleMin, zLimitAngleMax, spring)
+fun MemoryStack.createPxJointLimitCone(yLimitAngle: AngleF, zLimitAngle: AngleF) =
+    PxJointLimitCone.createAt(this, MemoryStack::nmalloc, yLimitAngle.rad, zLimitAngle.rad)

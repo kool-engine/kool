@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.*
 import kotlin.math.abs
@@ -74,6 +75,23 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         @Suppress("UNCHECKED_CAST")
         this as MutableStructBufferView<Struct>
         it.getFloat4(UiVertexLayout.clip.name)?.set(clipLeftPx, clipTopPx, clipRightPx, clipBottomPx)
+    }
+
+    @PublishedApi
+    internal val setBoundsUiVertexNoClip: MutableStructBufferView<UiVertexLayout>.(UiVertexLayout) -> Unit = {
+        it.clip.set(NO_CLIP)
+    }
+
+    @PublishedApi
+    internal val setBoundsTextVertexNoClip: MutableStructBufferView<UiTextVertexLayout>.(UiTextVertexLayout) -> Unit = {
+        it.clip.set(NO_CLIP)
+    }
+
+    @PublishedApi
+    internal val setBoundsCustomNoClip: MutableStructBufferView<*>.(Struct) -> Unit = {
+        @Suppress("UNCHECKED_CAST")
+        this as MutableStructBufferView<Struct>
+        it.getFloat4(UiVertexLayout.clip.name)?.set(NO_CLIP)
     }
 
     fun toLocal(screenX: Double, screenY: Double, result: MutableVec2f = MutableVec2f()): MutableVec2f =
@@ -243,19 +261,19 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         return child
     }
 
-    inline fun <Layout: Struct> MeshBuilder<Layout>.configured(color: Color? = null, block: MeshBuilder<Layout>.() -> Unit) {
+    inline fun <Layout: Struct> MeshBuilder<Layout>.configured(color: Color? = null, clipped: Boolean = true, block: MeshBuilder<Layout>.() -> Unit) {
         val prevMod = vertexCustomizer
         @Suppress("UNCHECKED_CAST")
         when {
             geometry.layout === UiVertexLayout -> {
                 this as MeshBuilder<UiVertexLayout>
-                vertexCustomizer = setBoundsUiVertex
+                vertexCustomizer = if (clipped) setBoundsUiVertex else setBoundsUiVertexNoClip
             }
             geometry.layout === UiTextVertexLayout -> {
                 this as MeshBuilder<UiTextVertexLayout>
-                vertexCustomizer = setBoundsTextVertex
+                vertexCustomizer = if (clipped) setBoundsTextVertex else setBoundsTextVertexNoClip
             }
-            else -> vertexCustomizer = setBoundsCustom
+            else -> vertexCustomizer = if (clipped) setBoundsCustom else setBoundsCustomNoClip
         }
         val prevColor = this.color
         color?.let { this.color = it }
@@ -389,5 +407,9 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
             leftPx + x, topPx + y, xRadius, yRadius, borderWidth, clipBoundsPx,
             colorA, colorB, leftPx + gradientCx, topPx + gradientCy, gradientRx, gradientRy
         )
+    }
+
+    companion object {
+        val NO_CLIP = Vec4f(-1e9f, -1e9f, 1e9f, 1e9f)
     }
 }

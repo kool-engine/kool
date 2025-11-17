@@ -3,10 +3,12 @@ package de.fabmax.kool.demo.physics.terrain
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.input.WalkAxes
 import de.fabmax.kool.math.*
+import de.fabmax.kool.physics.PhysicsStepListener
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.character.*
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.TransformF
 import de.fabmax.kool.scene.TrsTransformF
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -16,13 +18,12 @@ class PlayerController(
     private val physicsObjects: PhysicsObjects,
     mainScene: Scene,
     ctx: KoolContext
-) : OnHitActorListener, HitActorBehaviorCallback {
+) : OnHitActorListener, HitActorBehaviorCallback, PhysicsStepListener {
 
     val controller: CharacterController
     private val charManager: CharacterControllerManager = CharacterControllerManager(physicsObjects.world)
 
-    val position: Vec3d
-        get() = controller.position
+    val position: Vec3f get() = (controller.actor.transform as TransformF).getTranslationF()
     var frontHeading = 0f
     var moveHeading = 0f
         private set
@@ -54,13 +55,11 @@ class PlayerController(
     }
 
     fun release() {
-        // apparently character controller is released automatically when the scene is destroyed
-        //controller.release()
-        //charManager.release()
+        // character controller is released automatically when the scene is destroyed
         axes.release()
     }
 
-    fun onPhysicsUpdate(timeStep: Float) {
+    override fun onPhysicsUpdate(timeStep: Float) {
         updateMovement()
         tractorGun.onPhysicsUpdate(timeStep)
 
@@ -71,6 +70,13 @@ class PlayerController(
                 bridgeSegment = null
             }
         }
+    }
+
+    override fun onPhysicsInterpolate(captureTimeA: Double, captureTimeB: Double, frameTime: Double, weightB: Float) {
+        playerTransform
+            .setIdentity()
+            .translate(position)
+            .rotate(moveHeading.toDouble().deg, Vec3d.Y_AXIS)
     }
 
     private fun updateMovement() {
@@ -97,11 +103,6 @@ class PlayerController(
         controller.movement.set(0f, 0f, -moveSpeed)
         controller.movement.rotate(moveHeading.deg, Vec3f.Y_AXIS)
         controller.jump = axes.isJump
-
-        playerTransform
-            .setIdentity()
-            .translate(position)
-            .rotate(moveHeading.toDouble().deg, Vec3d.Y_AXIS)
     }
 
     override fun hitActorBehavior(actor: RigidActor): HitActorBehavior {

@@ -6,6 +6,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Color.Hsv
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.l
 import kotlin.math.roundToInt
 
 class ThemeEditorWindow(uiDemo: UiDemo) : DemoWindow("Theme Editor", uiDemo) {
@@ -75,7 +76,7 @@ class ThemeEditorWindow(uiDemo: UiDemo) : DemoWindow("Theme Editor", uiDemo) {
         val entry = colorEntries[selectedColor.use()]
 
         Column(Grow.Std, Grow.Std) {
-            Text("${entry.name} color") {
+            Text(entry.name.l + " color".l) {
                 modifier
                     .margin(sizes.gap)
                     .font(sizes.largeText)
@@ -84,13 +85,13 @@ class ThemeEditorWindow(uiDemo: UiDemo) : DemoWindow("Theme Editor", uiDemo) {
 
             Row {
                 modifier.margin(start = sizes.gap, end = sizes.gap, top = sizes.largeGap, bottom = sizes.gap)
-                Text("Preset:") { modifier.width(sizes.largeGap * 3f).alignY(AlignmentY.Center) }
+                Text("Preset:".l) { modifier.width(sizes.largeGap * 3f).alignY(AlignmentY.Center) }
                 ComboBox {
                     modifier
                         .width(150.dp)
                         .alignY(AlignmentY.Center)
                         .margin(horizontal = sizes.largeGap)
-                        .items((if (isDarkPresets.use()) presetsDark else presetsLight).map { it.first })
+                        .items((if (isDarkPresets.use()) presetsDark else presetsLight).map { it.first.l })
                         .selectedIndex(selectedPreset.use())
                         .onItemSelected {
                             selectedPreset.set(it)
@@ -106,7 +107,7 @@ class ThemeEditorWindow(uiDemo: UiDemo) : DemoWindow("Theme Editor", uiDemo) {
                             applyPreset()
                         }
                 }
-                Text("Dark") {
+                Text("Dark".l) {
                     modifier
                         .alignY(AlignmentY.Center)
                         .margin(end = sizes.largeGap)
@@ -124,7 +125,7 @@ class ThemeEditorWindow(uiDemo: UiDemo) : DemoWindow("Theme Editor", uiDemo) {
                             applyPreset()
                         }
                 }
-                Text("Light") {
+                Text("Light".l) {
                     modifier
                         .alignY(AlignmentY.Center)
                         .margin(end = sizes.largeGap)
@@ -137,7 +138,7 @@ class ThemeEditorWindow(uiDemo: UiDemo) : DemoWindow("Theme Editor", uiDemo) {
 
             Row {
                 modifier.margin(start = sizes.gap, end = sizes.gap, top = sizes.gap, bottom = sizes.largeGap)
-                Text("Size:") { modifier.width(sizes.largeGap * 3f).alignY(AlignmentY.Center) }
+                Text("Size:".l) { modifier.width(sizes.largeGap * 3f).alignY(AlignmentY.Center) }
 
                 RadioButton(uiDemo.selectedUiSize.use() == Sizes.small) {
                     modifier
@@ -145,7 +146,7 @@ class ThemeEditorWindow(uiDemo: UiDemo) : DemoWindow("Theme Editor", uiDemo) {
                         .alignY(AlignmentY.Center)
                         .onClick {uiDemo.selectedUiSize.set(Sizes.small) }
                 }
-                Text("Small") {
+                Text("Small".l) {
                     modifier
                         .alignY(AlignmentY.Center)
                         .onClick { uiDemo.selectedUiSize.set(Sizes.small) }
@@ -157,7 +158,7 @@ class ThemeEditorWindow(uiDemo: UiDemo) : DemoWindow("Theme Editor", uiDemo) {
                         .alignY(AlignmentY.Center)
                         .onClick {uiDemo.selectedUiSize.set(Sizes.medium) }
                 }
-                Text("Medium") {
+                Text("Medium".l) {
                     modifier
                         .alignY(AlignmentY.Center)
                         .onClick {uiDemo.selectedUiSize.set(Sizes.medium) }
@@ -169,7 +170,7 @@ class ThemeEditorWindow(uiDemo: UiDemo) : DemoWindow("Theme Editor", uiDemo) {
                         .alignY(AlignmentY.Center)
                         .onClick {uiDemo.selectedUiSize.set(Sizes.large) }
                 }
-                Text("Large") {
+                Text("Large".l) {
                     modifier
                         .alignY(AlignmentY.Center)
                         .onClick {uiDemo.selectedUiSize.set(Sizes.large) }

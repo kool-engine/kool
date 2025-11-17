@@ -37,7 +37,7 @@ class AndroidWindow(val ctx: KoolContextAndroid, config: KoolConfigAndroid) : Ko
 
     override var title: String = ""
 
-    private var _flags = WindowFlags.DEFAULT
+    private var _flags = WindowFlags()
     override val flags: WindowFlags
         get() = _flags
     override val capabilities: WindowCapabilities = WindowCapabilities.NONE

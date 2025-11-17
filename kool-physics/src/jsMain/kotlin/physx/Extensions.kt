@@ -1,7 +1,7 @@
 /*
  * Generated from WebIDL by webidl-util
  */
-@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused")
+@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused", "INLINE_CLASS_IN_EXTERNAL_DECLARATION_WARNING", "NOTHING_TO_INLINE")
 
 package physx
 
@@ -398,13 +398,13 @@ external interface PxD6Joint : PxJoint {
      * @param axis WebIDL type: [PxD6AxisEnum] (enum)
      * @param type WebIDL type: [PxD6MotionEnum] (enum)
      */
-    fun setMotion(axis: Int, type: Int)
+    fun setMotion(axis: PxD6AxisEnum, type: PxD6MotionEnum)
 
     /**
      * @param axis WebIDL type: [PxD6AxisEnum] (enum)
      * @return WebIDL type: [PxD6MotionEnum] (enum)
      */
-    fun getMotion(axis: Int): Int
+    fun getMotion(axis: PxD6AxisEnum): PxD6MotionEnum
 
     /**
      * @return WebIDL type: float
@@ -430,7 +430,7 @@ external interface PxD6Joint : PxJoint {
      * @param axis  WebIDL type: [PxD6AxisEnum] (enum)
      * @param limit WebIDL type: [PxJointLinearLimitPair] (Const, Ref)
      */
-    fun setLinearLimit(axis: Int, limit: PxJointLinearLimitPair)
+    fun setLinearLimit(axis: PxD6AxisEnum, limit: PxJointLinearLimitPair)
 
     /**
      * @param limit WebIDL type: [PxJointAngularLimitPair] (Const, Ref)
@@ -451,13 +451,13 @@ external interface PxD6Joint : PxJoint {
      * @param index WebIDL type: [PxD6DriveEnum] (enum)
      * @param drive WebIDL type: [PxD6JointDrive] (Const, Ref)
      */
-    fun setDrive(index: Int, drive: PxD6JointDrive)
+    fun setDrive(index: PxD6DriveEnum, drive: PxD6JointDrive)
 
     /**
      * @param index WebIDL type: [PxD6DriveEnum] (enum)
      * @return WebIDL type: [PxD6JointDrive] (Value)
      */
-    fun getDrive(index: Int): PxD6JointDrive
+    fun getDrive(index: PxD6DriveEnum): PxD6JointDrive
 
     /**
      * @param pose WebIDL type: [PxTransform] (Const, Ref)
@@ -550,17 +550,17 @@ external interface PxD6JointDriveFlags {
      * @param flag WebIDL type: [PxD6JointDriveFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxD6JointDriveFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxD6JointDriveFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxD6JointDriveFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxD6JointDriveFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxD6JointDriveFlagEnum)
 
 }
 
@@ -640,7 +640,7 @@ external interface PxDistanceJoint : PxJoint {
      * @param flag  WebIDL type: [PxDistanceJointFlagEnum] (enum)
      * @param value WebIDL type: boolean
      */
-    fun setDistanceJointFlag(flag: Int, value: Boolean)
+    fun setDistanceJointFlag(flag: PxDistanceJointFlagEnum, value: Boolean)
 
     /**
      * @return WebIDL type: [PxDistanceJointFlags] (Value)
@@ -687,17 +687,17 @@ external interface PxDistanceJointFlags {
      * @param flag WebIDL type: [PxDistanceJointFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxDistanceJointFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxDistanceJointFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxDistanceJointFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxDistanceJointFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxDistanceJointFlagEnum)
 
 }
 
@@ -766,13 +766,13 @@ external interface PxJoint : PxBase {
      * @param actor     WebIDL type: [PxJointActorIndexEnum] (enum)
      * @param localPose WebIDL type: [PxTransform] (Const, Ref)
      */
-    fun setLocalPose(actor: Int, localPose: PxTransform)
+    fun setLocalPose(actor: PxJointActorIndexEnum, localPose: PxTransform)
 
     /**
      * @param actor WebIDL type: [PxJointActorIndexEnum] (enum)
      * @return WebIDL type: [PxTransform] (Value)
      */
-    fun getLocalPose(actor: Int): PxTransform
+    fun getLocalPose(actor: PxJointActorIndexEnum): PxTransform
 
     /**
      * @return WebIDL type: [PxTransform] (Value)
@@ -804,7 +804,7 @@ external interface PxJoint : PxBase {
      * @param flag  WebIDL type: [PxConstraintFlagEnum] (enum)
      * @param value WebIDL type: boolean
      */
-    fun setConstraintFlag(flag: Int, value: Boolean)
+    fun setConstraintFlag(flag: PxConstraintFlagEnum, value: Boolean)
 
     /**
      * @return WebIDL type: [PxConstraintFlags] (Value)
@@ -1112,7 +1112,7 @@ external interface PxPrismaticJoint : PxJoint {
      * @param flag  WebIDL type: [PxPrismaticJointFlagEnum] (enum)
      * @param value WebIDL type: boolean
      */
-    fun setPrismaticJointFlag(flag: Int, value: Boolean)
+    fun setPrismaticJointFlag(flag: PxPrismaticJointFlagEnum, value: Boolean)
 
     /**
      * @return WebIDL type: [PxPrismaticJointFlags] (Value)
@@ -1146,17 +1146,17 @@ external interface PxPrismaticJointFlags {
      * @param flag WebIDL type: [PxPrismaticJointFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxPrismaticJointFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxPrismaticJointFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxPrismaticJointFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxPrismaticJointFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxPrismaticJointFlagEnum)
 
 }
 
@@ -1270,7 +1270,7 @@ external interface PxRevoluteJoint : PxJoint {
      * @param flag  WebIDL type: [PxRevoluteJointFlagEnum] (enum)
      * @param value WebIDL type: boolean
      */
-    fun setRevoluteJointFlag(flag: Int, value: Boolean)
+    fun setRevoluteJointFlag(flag: PxRevoluteJointFlagEnum, value: Boolean)
 
     /**
      * @return WebIDL type: [PxRevoluteJointFlags] (Value)
@@ -1313,17 +1313,17 @@ external interface PxRevoluteJointFlags {
      * @param flag WebIDL type: [PxRevoluteJointFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxRevoluteJointFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxRevoluteJointFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxRevoluteJointFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxRevoluteJointFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxRevoluteJointFlagEnum)
 
 }
 
@@ -1363,7 +1363,7 @@ external interface PxSphericalJoint : PxJoint {
      * @param flag  WebIDL type: [PxSphericalJointFlagEnum] (enum)
      * @param value WebIDL type: boolean
      */
-    fun setSphericalJointFlag(flag: Int, value: Boolean)
+    fun setSphericalJointFlag(flag: PxSphericalJointFlagEnum, value: Boolean)
 
     /**
      * @return WebIDL type: [PxSphericalJointFlags] (Value)
@@ -1397,17 +1397,17 @@ external interface PxSphericalJointFlags {
      * @param flag WebIDL type: [PxSphericalJointFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxSphericalJointFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxSphericalJointFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxSphericalJointFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxSphericalJointFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxSphericalJointFlagEnum)
 
 }
 
@@ -1807,7 +1807,7 @@ external interface PxRigidBodyExt {
      * @param pos   WebIDL type: [PxVec3] (Const, Ref)
      * @param mode  WebIDL type: [PxForceModeEnum] (enum)
      */
-    fun addForceAtPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int)
+    fun addForceAtPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: PxForceModeEnum)
 
     /**
      * @param body   WebIDL type: [PxRigidBody] (Ref)
@@ -1816,7 +1816,7 @@ external interface PxRigidBodyExt {
      * @param mode   WebIDL type: [PxForceModeEnum] (enum)
      * @param wakeup WebIDL type: boolean
      */
-    fun addForceAtPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int, wakeup: Boolean)
+    fun addForceAtPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: PxForceModeEnum, wakeup: Boolean)
 
     /**
      * @param body  WebIDL type: [PxRigidBody] (Ref)
@@ -1831,7 +1831,7 @@ external interface PxRigidBodyExt {
      * @param pos   WebIDL type: [PxVec3] (Const, Ref)
      * @param mode  WebIDL type: [PxForceModeEnum] (enum)
      */
-    fun addForceAtLocalPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int)
+    fun addForceAtLocalPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: PxForceModeEnum)
 
     /**
      * @param body   WebIDL type: [PxRigidBody] (Ref)
@@ -1840,7 +1840,7 @@ external interface PxRigidBodyExt {
      * @param mode   WebIDL type: [PxForceModeEnum] (enum)
      * @param wakeup WebIDL type: boolean
      */
-    fun addForceAtLocalPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int, wakeup: Boolean)
+    fun addForceAtLocalPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: PxForceModeEnum, wakeup: Boolean)
 
     /**
      * @param body  WebIDL type: [PxRigidBody] (Ref)
@@ -1855,7 +1855,7 @@ external interface PxRigidBodyExt {
      * @param pos   WebIDL type: [PxVec3] (Const, Ref)
      * @param mode  WebIDL type: [PxForceModeEnum] (enum)
      */
-    fun addLocalForceAtPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int)
+    fun addLocalForceAtPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: PxForceModeEnum)
 
     /**
      * @param body   WebIDL type: [PxRigidBody] (Ref)
@@ -1864,7 +1864,7 @@ external interface PxRigidBodyExt {
      * @param mode   WebIDL type: [PxForceModeEnum] (enum)
      * @param wakeup WebIDL type: boolean
      */
-    fun addLocalForceAtPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int, wakeup: Boolean)
+    fun addLocalForceAtPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: PxForceModeEnum, wakeup: Boolean)
 
     /**
      * @param body  WebIDL type: [PxRigidBody] (Ref)
@@ -1879,7 +1879,7 @@ external interface PxRigidBodyExt {
      * @param pos   WebIDL type: [PxVec3] (Const, Ref)
      * @param mode  WebIDL type: [PxForceModeEnum] (enum)
      */
-    fun addLocalForceAtLocalPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int)
+    fun addLocalForceAtLocalPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: PxForceModeEnum)
 
     /**
      * @param body   WebIDL type: [PxRigidBody] (Ref)
@@ -1888,7 +1888,7 @@ external interface PxRigidBodyExt {
      * @param mode   WebIDL type: [PxForceModeEnum] (enum)
      * @param wakeup WebIDL type: boolean
      */
-    fun addLocalForceAtLocalPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int, wakeup: Boolean)
+    fun addLocalForceAtLocalPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: PxForceModeEnum, wakeup: Boolean)
 
     /**
      * @param body WebIDL type: [PxRigidBody] (Const, Ref)
@@ -2112,56 +2112,74 @@ external interface PxSerializationRegistry {
 
 fun PxSerializationRegistryFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSerializationRegistry = js("_module.wrapPointer(ptr, _module.PxSerializationRegistry)")
 
-object PxD6AxisEnum {
-    val eX: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxD6AxisEnum_eX()
-    val eY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxD6AxisEnum_eY()
-    val eZ: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxD6AxisEnum_eZ()
-    val eTWIST: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxD6AxisEnum_eTWIST()
-    val eSWING1: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxD6AxisEnum_eSWING1()
-    val eSWING2: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxD6AxisEnum_eSWING2()
+value class PxD6AxisEnum private constructor(val value: Int) {
+    companion object {
+        val eX: PxD6AxisEnum = PxD6AxisEnum(PhysXJsLoader.physXJs._emscripten_enum_PxD6AxisEnum_eX())
+        val eY: PxD6AxisEnum = PxD6AxisEnum(PhysXJsLoader.physXJs._emscripten_enum_PxD6AxisEnum_eY())
+        val eZ: PxD6AxisEnum = PxD6AxisEnum(PhysXJsLoader.physXJs._emscripten_enum_PxD6AxisEnum_eZ())
+        val eTWIST: PxD6AxisEnum = PxD6AxisEnum(PhysXJsLoader.physXJs._emscripten_enum_PxD6AxisEnum_eTWIST())
+        val eSWING1: PxD6AxisEnum = PxD6AxisEnum(PhysXJsLoader.physXJs._emscripten_enum_PxD6AxisEnum_eSWING1())
+        val eSWING2: PxD6AxisEnum = PxD6AxisEnum(PhysXJsLoader.physXJs._emscripten_enum_PxD6AxisEnum_eSWING2())
+    }
 }
 
-object PxD6DriveEnum {
-    val eX: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxD6DriveEnum_eX()
-    val eY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxD6DriveEnum_eY()
-    val eZ: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxD6DriveEnum_eZ()
-    val eSWING: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxD6DriveEnum_eSWING()
-    val eTWIST: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxD6DriveEnum_eTWIST()
-    val eSLERP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxD6DriveEnum_eSLERP()
+value class PxD6DriveEnum private constructor(val value: Int) {
+    companion object {
+        val eX: PxD6DriveEnum = PxD6DriveEnum(PhysXJsLoader.physXJs._emscripten_enum_PxD6DriveEnum_eX())
+        val eY: PxD6DriveEnum = PxD6DriveEnum(PhysXJsLoader.physXJs._emscripten_enum_PxD6DriveEnum_eY())
+        val eZ: PxD6DriveEnum = PxD6DriveEnum(PhysXJsLoader.physXJs._emscripten_enum_PxD6DriveEnum_eZ())
+        val eSWING: PxD6DriveEnum = PxD6DriveEnum(PhysXJsLoader.physXJs._emscripten_enum_PxD6DriveEnum_eSWING())
+        val eTWIST: PxD6DriveEnum = PxD6DriveEnum(PhysXJsLoader.physXJs._emscripten_enum_PxD6DriveEnum_eTWIST())
+        val eSLERP: PxD6DriveEnum = PxD6DriveEnum(PhysXJsLoader.physXJs._emscripten_enum_PxD6DriveEnum_eSLERP())
+    }
 }
 
-object PxD6JointDriveFlagEnum {
-    val eACCELERATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxD6JointDriveFlagEnum_eACCELERATION()
+value class PxD6JointDriveFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eACCELERATION: PxD6JointDriveFlagEnum = PxD6JointDriveFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxD6JointDriveFlagEnum_eACCELERATION())
+    }
 }
 
-object PxD6MotionEnum {
-    val eLOCKED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxD6MotionEnum_eLOCKED()
-    val eLIMITED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxD6MotionEnum_eLIMITED()
-    val eFREE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxD6MotionEnum_eFREE()
+value class PxD6MotionEnum private constructor(val value: Int) {
+    companion object {
+        val eLOCKED: PxD6MotionEnum = PxD6MotionEnum(PhysXJsLoader.physXJs._emscripten_enum_PxD6MotionEnum_eLOCKED())
+        val eLIMITED: PxD6MotionEnum = PxD6MotionEnum(PhysXJsLoader.physXJs._emscripten_enum_PxD6MotionEnum_eLIMITED())
+        val eFREE: PxD6MotionEnum = PxD6MotionEnum(PhysXJsLoader.physXJs._emscripten_enum_PxD6MotionEnum_eFREE())
+    }
 }
 
-object PxDistanceJointFlagEnum {
-    val eMAX_DISTANCE_ENABLED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDistanceJointFlagEnum_eMAX_DISTANCE_ENABLED()
-    val eMIN_DISTANCE_ENABLED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDistanceJointFlagEnum_eMIN_DISTANCE_ENABLED()
-    val eSPRING_ENABLED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDistanceJointFlagEnum_eSPRING_ENABLED()
+value class PxDistanceJointFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eMAX_DISTANCE_ENABLED: PxDistanceJointFlagEnum = PxDistanceJointFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxDistanceJointFlagEnum_eMAX_DISTANCE_ENABLED())
+        val eMIN_DISTANCE_ENABLED: PxDistanceJointFlagEnum = PxDistanceJointFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxDistanceJointFlagEnum_eMIN_DISTANCE_ENABLED())
+        val eSPRING_ENABLED: PxDistanceJointFlagEnum = PxDistanceJointFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxDistanceJointFlagEnum_eSPRING_ENABLED())
+    }
 }
 
-object PxJointActorIndexEnum {
-    val eACTOR0: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxJointActorIndexEnum_eACTOR0()
-    val eACTOR1: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxJointActorIndexEnum_eACTOR1()
+value class PxJointActorIndexEnum private constructor(val value: Int) {
+    companion object {
+        val eACTOR0: PxJointActorIndexEnum = PxJointActorIndexEnum(PhysXJsLoader.physXJs._emscripten_enum_PxJointActorIndexEnum_eACTOR0())
+        val eACTOR1: PxJointActorIndexEnum = PxJointActorIndexEnum(PhysXJsLoader.physXJs._emscripten_enum_PxJointActorIndexEnum_eACTOR1())
+    }
 }
 
-object PxPrismaticJointFlagEnum {
-    val eLIMIT_ENABLED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPrismaticJointFlagEnum_eLIMIT_ENABLED()
+value class PxPrismaticJointFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eLIMIT_ENABLED: PxPrismaticJointFlagEnum = PxPrismaticJointFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPrismaticJointFlagEnum_eLIMIT_ENABLED())
+    }
 }
 
-object PxRevoluteJointFlagEnum {
-    val eLIMIT_ENABLED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxRevoluteJointFlagEnum_eLIMIT_ENABLED()
-    val eDRIVE_ENABLED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxRevoluteJointFlagEnum_eDRIVE_ENABLED()
-    val eDRIVE_FREESPIN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxRevoluteJointFlagEnum_eDRIVE_FREESPIN()
+value class PxRevoluteJointFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eLIMIT_ENABLED: PxRevoluteJointFlagEnum = PxRevoluteJointFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxRevoluteJointFlagEnum_eLIMIT_ENABLED())
+        val eDRIVE_ENABLED: PxRevoluteJointFlagEnum = PxRevoluteJointFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxRevoluteJointFlagEnum_eDRIVE_ENABLED())
+        val eDRIVE_FREESPIN: PxRevoluteJointFlagEnum = PxRevoluteJointFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxRevoluteJointFlagEnum_eDRIVE_FREESPIN())
+    }
 }
 
-object PxSphericalJointFlagEnum {
-    val eLIMIT_ENABLED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSphericalJointFlagEnum_eLIMIT_ENABLED()
+value class PxSphericalJointFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eLIMIT_ENABLED: PxSphericalJointFlagEnum = PxSphericalJointFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSphericalJointFlagEnum_eLIMIT_ENABLED())
+    }
 }
 

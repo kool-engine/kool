@@ -1,18 +1,17 @@
 package de.fabmax.kool.physics
 
-import de.fabmax.kool.math.MutablePoseF
-import de.fabmax.kool.math.PoseF
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.physics.character.HitActorBehavior
 import de.fabmax.kool.scene.Tags
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.checkIsNotReleased
 import physx.*
 
-@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 actual class RigidActorHolder(val px: PxRigidActor)
 
 abstract class RigidActorImpl : BaseReleasable(), RigidActor {
@@ -32,19 +31,25 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
 
     override var characterControllerHitBehavior: HitActorBehavior = HitActorBehavior.SLIDE
 
+    private val simPose = MutablePoseF()
+    private val poseA = CapturedPose()
+    private val poseB = CapturedPose()
     private val bufBounds = BoundingBoxF()
-    private val poseBuffer = MutablePoseF()
 
     override var pose: PoseF
-        get() = poseBuffer
+        get() = simPose
         set(value) {
-            poseBuffer.set(value)
+            simPose.set(value)
+            poseA.pose.set(value)
+            poseB.pose.set(value)
             val pose = holder.px.globalPose
-            value.position.toPxVec3(pose.p)
-            value.rotation.toPxQuat(pose.q)
+            simPose.toPxTransform(pose)
             holder.px.globalPose = pose
             transform.setCompositionOf(value.position, value.rotation, Vec3f.ONES)
         }
+
+    private val lerpPos = MutableVec3f()
+    private val lerpRot = MutableQuatF()
 
     override val worldBounds: BoundingBoxF
         get() = holder.px.worldBounds.toBoundingBox(bufBounds)
@@ -60,10 +65,9 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
         }
 
     override var isActive = true
-
+    override var isAttachedToSimulation: Boolean = false
+        internal set
     override val transform = TrsTransformF()
-
-    override val onPhysicsUpdate = BufferedList<PhysicsStepListener>()
 
     private val _shapes = mutableListOf<Shape>()
     override val shapes: List<Shape>
@@ -72,9 +76,9 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
     override val tags: Tags = Tags()
 
     private fun updateFilterData() {
-        MemoryStack.stackPush().use { mem ->
-            val sfd = simulationFilterData.toPxFilterData(mem.createPxFilterData())
-            val qfd = queryFilterData.toPxFilterData(mem.createPxFilterData())
+        memStack {
+            val sfd = simulationFilterData.toPxFilterData(createPxFilterData())
+            val qfd = queryFilterData.toPxFilterData(createPxFilterData())
             shapes.forEach { shape ->
                 shape.holder?.px?.let {
                     it.simulationFilterData = sfd
@@ -86,18 +90,17 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
 
     override fun attachShape(shape: Shape) {
         _shapes += shape
-        MemoryStack.stackPush().use { mem ->
+        memStack {
             val flags = if (isTrigger) TRIGGER_SHAPE_FLAGS else SIM_SHAPE_FLAGS
-            val shapeFlags = mem.createPxShapeFlags(flags)
+            val shapeFlags = createPxShapeFlags(flags)
 
-            val pxGeom = shape.geometry.holder.px
-            val pxShape = PxRigidActorExt.createExclusiveShape(holder.px, pxGeom, shape.material.pxMaterial, shapeFlags)
-            pxShape.localPose = shape.localPose.toPxTransform(mem.createPxTransform())
+            val pxShape = PxRigidActorExt.createExclusiveShape(holder.px, shape.geometry.holder.px, shape.material.pxMaterial, shapeFlags)
+            pxShape.localPose = shape.localPose.toPxTransform(createPxTransform())
 
             val simFd = shape.simFilterData ?: simulationFilterData
-            pxShape.simulationFilterData = simFd.toPxFilterData(mem.createPxFilterData())
+            pxShape.simulationFilterData = simFd.toPxFilterData(createPxFilterData())
             val qryFd = shape.queryFilterData ?: queryFilterData
-            pxShape.queryFilterData = qryFd.toPxFilterData(mem.createPxFilterData())
+            pxShape.queryFilterData = qryFd.toPxFilterData(createPxFilterData())
             shape.holder = ShapeHolder(pxShape)
         }
     }
@@ -113,21 +116,38 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
         _shapes.clear()
     }
 
-    override fun onPhysicsUpdate(timeStep: Float) {
-        checkIsNotReleased()
-        updateTransform()
-        super.onPhysicsUpdate(timeStep)
+    override fun syncSimulationData() {
+        holder.px.globalPose.toPoseF(simPose)
     }
 
-    private fun updateTransform() {
-        if (isActive) {
-            holder.px.globalPose.toPoseF(poseBuffer)
-            holder.px.globalPose.toTrsTransform(transform)
+    override fun capture(simulationTime: Double) {
+        checkIsNotReleased()
+        poseA.set(poseB)
+        poseB.pose.set(simPose)
+        poseB.time = simulationTime
+    }
+
+    override fun interpolateTransform(captureTimeA: Double, captureTimeB: Double, frameTime: Double, weightB: Float) {
+        if (!isActive) {
+            return
+        }
+        poseA.pose.position.mix(poseB.pose.position, weightB, lerpPos)
+        poseA.pose.rotation.mix(poseB.pose.rotation, weightB, lerpRot)
+        transform.setCompositionOf(lerpPos, lerpRot)
+    }
+
+    private class CapturedPose {
+        var time: Double = 0.0
+        val pose = MutablePoseF()
+
+        fun set(other: CapturedPose) {
+            time = other.time
+            pose.set(other.pose)
         }
     }
 
     companion object {
-        val SIM_SHAPE_FLAGS: Int = PxShapeFlagEnum.eSIMULATION_SHAPE or PxShapeFlagEnum.eSCENE_QUERY_SHAPE
-        val TRIGGER_SHAPE_FLAGS: Int = PxShapeFlagEnum.eTRIGGER_SHAPE
+        val SIM_SHAPE_FLAGS: Int = PxShapeFlagEnum.eSIMULATION_SHAPE.value or PxShapeFlagEnum.eSCENE_QUERY_SHAPE.value
+        val TRIGGER_SHAPE_FLAGS: Int = PxShapeFlagEnum.eTRIGGER_SHAPE.value
     }
 }

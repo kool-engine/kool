@@ -3,18 +3,12 @@ package de.fabmax.kool.physics.joints
 import de.fabmax.kool.math.AngleF
 import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.PhysicsImpl
-import de.fabmax.kool.physics.RigidActor
-import de.fabmax.kool.physics.createPxTransform
+import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.joints.RevoluteJoint.Companion.computeFrame
-import de.fabmax.kool.physics.toPxTransform
 import de.fabmax.kool.util.memStack
-import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
-import physx.extensions.PxJointAngularLimitPair
 import physx.extensions.PxRevoluteJoint
 import physx.extensions.PxRevoluteJointFlagEnum
-import physx.extensions.PxSpring
 
 actual fun RevoluteJoint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): RevoluteJoint {
     return RevoluteJointImpl(bodyA, bodyB, frameA, frameB)
@@ -33,40 +27,40 @@ class RevoluteJointImpl(
     frameB: PoseF
 ) : JointImpl(frameA, frameB), RevoluteJoint {
 
-    override val joint: PxRevoluteJoint
+    override val pxJoint: PxRevoluteJoint
 
     init {
-        MemoryStack.stackPush().use { mem ->
-            val frmA = frameA.toPxTransform(mem.createPxTransform())
-            val frmB = frameB.toPxTransform(mem.createPxTransform())
-            joint = PxTopLevelFunctions.RevoluteJointCreate(PhysicsImpl.physics, bodyA?.holder, frmA, bodyB.holder, frmB)
+        memStack {
+            val frmA = frameA.toPxTransform(createPxTransform())
+            val frmB = frameB.toPxTransform(createPxTransform())
+            pxJoint = PxTopLevelFunctions.RevoluteJointCreate(PhysicsImpl.physics, bodyA?.holder?.px, frmA, bodyB.holder.px, frmB)
         }
     }
 
     override fun disableAngularMotor() {
-        joint.driveVelocity = 0f
-        joint.driveForceLimit = 0f
-        joint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eDRIVE_ENABLED, false)
+        pxJoint.driveVelocity = 0f
+        pxJoint.driveForceLimit = 0f
+        pxJoint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eDRIVE_ENABLED, false)
     }
 
     override fun enableAngularMotor(angularVelocity: Float, forceLimit: Float) {
-        joint.driveVelocity = angularVelocity
-        joint.driveForceLimit = forceLimit
-        joint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eDRIVE_ENABLED, true)
+        pxJoint.driveVelocity = angularVelocity
+        pxJoint.driveForceLimit = forceLimit
+        pxJoint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eDRIVE_ENABLED, true)
     }
 
     override fun enableLimit(lowerLimit: AngleF, upperLimit: AngleF, limitBehavior: LimitBehavior) {
         memStack {
-            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, limitBehavior.stiffness, limitBehavior.damping)
-            val limit = PxJointAngularLimitPair.createAt(this, MemoryStack::nmalloc, lowerLimit.rad, upperLimit.rad, spring)
+            val spring = createPxSpring(limitBehavior.stiffness, limitBehavior.damping)
+            val limit = createPxJointAngularLimitPair(lowerLimit, upperLimit, spring)
             limit.restitution = limitBehavior.restitution
             limit.bounceThreshold = limitBehavior.bounceThreshold
-            joint.setLimit(limit)
-            joint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eLIMIT_ENABLED, true)
+            pxJoint.setLimit(limit)
+            pxJoint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eLIMIT_ENABLED, true)
         }
     }
 
     override fun disableLimit() {
-        joint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eLIMIT_ENABLED, false)
+        pxJoint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eLIMIT_ENABLED, false)
     }
 }

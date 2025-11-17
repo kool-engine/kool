@@ -1,12 +1,18 @@
+@file:Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
+
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.QuatF
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.util.logE
 import physx.PxRigidBodyFlagEnum
 import physx.PxRigidDynamic
 import physx.PxRigidDynamicLockFlagEnum
 import physx.globalPose
+
+// GENERATED CODE BELOW:
+// Transformed from desktop source
 
 actual fun RigidDynamic(mass: Float, pose: Mat4f, isKinematic: Boolean): RigidDynamic {
     return RigidDynamicImpl(mass, pose, isKinematic)
@@ -22,9 +28,7 @@ class RigidDynamicImpl(
     constructor(mass: Float, pose: Mat4f, isKinematic: Boolean) : this(mass, pose, isKinematic, null)
 
     override val holder: RigidActorHolder
-
-    @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
-    protected val pxRigidDynamic: PxRigidDynamic
+    private val pxRigidDynamic: PxRigidDynamic
         get() = holder.px as PxRigidDynamic
 
     init {
@@ -40,8 +44,8 @@ class RigidDynamicImpl(
         if (isKinematic) {
             pxRigidDynamic.setRigidBodyFlag(PxRigidBodyFlagEnum.eKINEMATIC, true)
         }
-
         transform.setMatrix(pose)
+        syncSimulationData()
     }
 
     override fun wakeUp() {
@@ -53,6 +57,14 @@ class RigidDynamicImpl(
     }
 
     override fun setKinematicTarget(pose: Mat4f) {
+        if (!PhysicsImpl.isPhysicsThread()) {
+            logE { "setKinematicTarget must be called from PhysicsThread / PhysicsStepListener.onUpdatePhysics" }
+            return
+        }
+        if (!isAttachedToSimulation) {
+            logE { "Body needs to be attached to simulation before setKinematicTarget can be called" }
+            return
+        }
         MemoryStack.stackPush().use { mem ->
             val pxPose = pose.toPxTransform(mem.createPxTransform())
             pxRigidDynamic.setKinematicTarget(pxPose)
@@ -60,6 +72,14 @@ class RigidDynamicImpl(
     }
 
     override fun setKinematicTarget(position: Vec3f?, rotation: QuatF?) {
+        if (!PhysicsImpl.isPhysicsThread()) {
+            logE { "setKinematicTarget must be called from PhysicsThread / PhysicsStepListener.onUpdatePhysics" }
+            return
+        }
+        if (!isAttachedToSimulation) {
+            logE { "Body needs to be attached to simulation before setKinematicTarget can be called" }
+            return
+        }
         MemoryStack.stackPush().use { mem ->
             val pxPose = mem.createPxTransform()
             pxPose.p = position?.toPxVec3(mem.createPxVec3()) ?: pxRigidDynamic.globalPose.p
@@ -69,12 +89,20 @@ class RigidDynamicImpl(
     }
 
     override fun setLinearLockFlags(lockLinearX: Boolean, lockLinearY: Boolean, lockLinearZ: Boolean) {
+        if (!PhysicsImpl.isPhysicsThread()) {
+            logE { "setLinearLockFlags must be called from PhysicsThread / PhysicsStepListener.onUpdatePhysics" }
+            return
+        }
         pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_X, lockLinearX)
         pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_Y, lockLinearY)
         pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_LINEAR_Z, lockLinearZ)
     }
 
     override fun setAngularLockFlags(lockAngularX: Boolean, lockAngularY: Boolean, lockAngularZ: Boolean) {
+        if (!PhysicsImpl.isPhysicsThread()) {
+            logE { "setLinearLockFlags must be called from PhysicsThread / PhysicsStepListener.onUpdatePhysics" }
+            return
+        }
         pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_X, lockAngularX)
         pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_Y, lockAngularY)
         pxRigidDynamic.setRigidDynamicLockFlag(PxRigidDynamicLockFlagEnum.eLOCK_ANGULAR_Z, lockAngularZ)

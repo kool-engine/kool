@@ -1,5 +1,6 @@
 package de.fabmax.kool.physics.character
 
+import de.fabmax.kool.physics.PhysicsStepListener
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.util.BaseReleasable
 
@@ -10,15 +11,23 @@ abstract class CharacterControllerManager : BaseReleasable() {
     val controllers: List<CharacterController>
         get() = _controllers
 
-    protected val onAdvanceListener: (Float) -> Unit = { timeStep ->
-        for (i in controllers.indices) {
-            controllers[i].onAdvancePhysics(timeStep)
+    protected val onUpdateListener = object : PhysicsStepListener {
+        override fun onPhysicsUpdate(timeStep: Float) {
+            for (i in controllers.indices) {
+                controllers[i].onPhysicsUpdate(timeStep)
+            }
         }
-    }
 
-    protected val onUpdateListener: (Float) -> Unit = { timeStep ->
-        for (i in controllers.indices) {
-            controllers[i].onPhysicsUpdate(timeStep)
+        override fun onPhysicsCapture(simulationTime: Double) {
+            for (i in controllers.indices) {
+                controllers[i].onPhysicsCapture(simulationTime)
+            }
+        }
+
+        override fun onPhysicsInterpolate(captureTimeA: Double, captureTimeB: Double, frameTime: Double, weightB: Float) {
+            for (i in controllers.indices) {
+                controllers[i].onPhysicsInterpolate(captureTimeA, captureTimeB, frameTime, weightB)
+            }
         }
     }
 

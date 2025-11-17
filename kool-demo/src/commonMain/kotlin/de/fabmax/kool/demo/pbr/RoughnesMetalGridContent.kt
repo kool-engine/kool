@@ -9,10 +9,7 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.MemoryLayout
-import de.fabmax.kool.util.Struct
+import de.fabmax.kool.util.*
 import kotlin.math.max
 
 class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("Material grid") {
@@ -23,11 +20,11 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
 
     override fun UiScope.createContentMenu() {
         MenuRow {
-            Text("Color") { labelStyle(Grow.Std) }
+            Text("Color".l) { labelStyle(Grow.Std) }
             ComboBox {
                 modifier
                     .width(UiSizes.baseSize * 3.5f)
-                    .items(matColors)
+                    .items(matColors.map { it.name.l })
                     .selectedIndex(selectedColorIdx.use())
                     .onItemSelected {
                         selectedColorIdx.set(it)

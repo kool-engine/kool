@@ -10,6 +10,7 @@ import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.util.ColorGradient
+import de.fabmax.kool.util.l
 import kotlin.math.*
 
 class Hexagons(val resources: CreativeCodingDemo.Resources) : CreativeContent("Hexagons") {
@@ -112,35 +113,35 @@ class Hexagons(val resources: CreativeCodingDemo.Resources) : CreativeContent("H
         var endScale by remember(settings.endScale)
         var randomness by remember(settings.randomness)
 
-        MenuSlider2("Orbit radius:", orbitRadius, 50f, 200f, CreativeCodingDemo.txtFormatInt) {
+        MenuSlider2("Orbit radius:".l, orbitRadius, 50f, 200f, CreativeCodingDemo.txtFormatInt) {
             orbitRadius = it
             rebuildMesh(settings.copy(orbitRadius = orbitRadius))
         }
-        MenuSlider2("Belt radius:", beltRadius, 10f, 150f, CreativeCodingDemo.txtFormatInt) {
+        MenuSlider2("Belt radius:".l, beltRadius, 10f, 150f, CreativeCodingDemo.txtFormatInt) {
             beltRadius = it
             rebuildMesh(settings.copy(beltRadius = beltRadius))
         }
-        MenuSlider2("Number of hexagons:", numberOfHexagons.toFloat(), 8f, 40f, CreativeCodingDemo.txtFormatInt) {
+        MenuSlider2("Number of hexagons:".l, numberOfHexagons.toFloat(), 8f, 40f, CreativeCodingDemo.txtFormatInt) {
             numberOfHexagons = it.roundToInt()
             rebuildMesh(settings.copy(numHexagonsBelt = numberOfHexagons))
         }
-        MenuSlider2("Hexagon size:", hexagonScale, 0.5f, 2f) {
+        MenuSlider2("Hexagon size:".l, hexagonScale, 0.5f, 2f) {
             hexagonScale = it
             rebuildMesh(settings.copy(hexagonScale = hexagonScale))
         }
-        MenuSlider2("Slope:", slope, 0f, 200f, CreativeCodingDemo.txtFormatInt) {
+        MenuSlider2("Slope:".l, slope, 0f, 200f, CreativeCodingDemo.txtFormatInt) {
             slope = it
             rebuildMesh(settings.copy(slope = slope))
         }
-        MenuSlider2("Number of turns:", numTurns.toFloat(), 1f, 10f, CreativeCodingDemo.txtFormatInt) {
+        MenuSlider2("Number of turns:".l, numTurns.toFloat(), 1f, 10f, CreativeCodingDemo.txtFormatInt) {
             numTurns = it.roundToInt()
             rebuildMesh(settings.copy(numTurns = numTurns))
         }
-        MenuSlider2("Tail scale:", endScale, 0f, 2f) {
+        MenuSlider2("Tail scale:".l, endScale, 0f, 2f) {
             endScale = it
             rebuildMesh(settings.copy(endScale = endScale))
         }
-        MenuSlider2("Randomness:", randomness, 0f, 1f) {
+        MenuSlider2("Randomness:".l, randomness, 0f, 1f) {
             randomness = it
             rebuildMesh(settings.copy(randomness = randomness))
         }

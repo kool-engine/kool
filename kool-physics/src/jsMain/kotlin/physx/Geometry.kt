@@ -1,7 +1,7 @@
 /*
  * Generated from WebIDL by webidl-util
  */
-@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused")
+@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused", "INLINE_CLASS_IN_EXTERNAL_DECLARATION_WARNING", "NOTHING_TO_INLINE")
 
 package physx
 
@@ -108,6 +108,9 @@ fun PxContactBufferFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJ
 fun PxContactBuffer.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+inline fun PxContactBuffer.getContacts(index: Int) = get_contacts(index)
+inline fun PxContactBuffer.setContacts(index: Int, value: PxContactPoint) = set_contacts(index, value)
 
 external interface PxContactPoint {
     /**
@@ -271,17 +274,17 @@ external interface PxConvexMeshGeometryFlags {
      * @param flag WebIDL type: [PxConvexMeshGeometryFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxConvexMeshGeometryFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxConvexMeshGeometryFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxConvexMeshGeometryFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxConvexMeshGeometryFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxConvexMeshGeometryFlagEnum)
 
 }
 
@@ -305,7 +308,7 @@ external interface PxGeometry {
     /**
      * @return WebIDL type: [PxGeometryTypeEnum] (enum)
      */
-    fun getType(): Int
+    fun getType(): PxGeometryTypeEnum
 
 }
 
@@ -327,7 +330,7 @@ external interface PxGeometryHolder {
     /**
      * @return WebIDL type: [PxGeometryTypeEnum] (enum)
      */
-    fun getType(): Int
+    fun getType(): PxGeometryTypeEnum
 
     /**
      * @return WebIDL type: [PxSphereGeometry] (Ref)
@@ -538,7 +541,7 @@ external interface PxHeightField : PxRefCounted {
     /**
      * @return WebIDL type: [PxHeightFieldFormatEnum] (enum)
      */
-    fun getFormat(): Int
+    fun getFormat(): PxHeightFieldFormatEnum
 
     /**
      * @return WebIDL type: unsigned long
@@ -622,7 +625,7 @@ external interface PxHeightFieldDesc {
     /**
      * WebIDL type: [PxHeightFieldFormatEnum] (enum)
      */
-    var format: Int
+    var format: PxHeightFieldFormatEnum
     /**
      * WebIDL type: [PxStridedData] (Value)
      */
@@ -663,17 +666,17 @@ external interface PxHeightFieldFlags {
      * @param flag WebIDL type: [PxHeightFieldFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxHeightFieldFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxHeightFieldFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxHeightFieldFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxHeightFieldFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxHeightFieldFlagEnum)
 
 }
 
@@ -801,6 +804,9 @@ fun PxHullPolygon.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+inline fun PxHullPolygon.getMPlane(index: Int) = get_mPlane(index)
+inline fun PxHullPolygon.setMPlane(index: Int, value: Float) = set_mPlane(index, value)
+
 external interface PxMeshFlags {
     /**
      * Native object address.
@@ -811,17 +817,17 @@ external interface PxMeshFlags {
      * @param flag WebIDL type: [PxMeshFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxMeshFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxMeshFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxMeshFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxMeshFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxMeshFlagEnum)
 
 }
 
@@ -846,17 +852,17 @@ external interface PxMeshGeometryFlags {
      * @param flag WebIDL type: [PxMeshGeometryFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxMeshGeometryFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxMeshGeometryFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxMeshGeometryFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxMeshGeometryFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxMeshGeometryFlagEnum)
 
 }
 
@@ -1184,17 +1190,17 @@ external interface PxTetrahedronMeshAnalysisResults {
      * @param flag WebIDL type: [PxTetrahedronMeshAnalysisResultEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxTetrahedronMeshAnalysisResultEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxTetrahedronMeshAnalysisResultEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxTetrahedronMeshAnalysisResultEnum)
 
     /**
      * @param flag WebIDL type: [PxTetrahedronMeshAnalysisResultEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxTetrahedronMeshAnalysisResultEnum)
 
 }
 
@@ -1256,7 +1262,7 @@ fun PxTetrahedronMeshDesc(meshVertices: PxArray_PxVec3, meshTetIndices: PxArray_
  * @param meshTetIndices WebIDL type: [PxArray_PxU32] (Ref)
  * @param meshFormat     WebIDL type: [PxTetrahedronMeshFormatEnum] (enum)
  */
-fun PxTetrahedronMeshDesc(meshVertices: PxArray_PxVec3, meshTetIndices: PxArray_PxU32, meshFormat: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTetrahedronMeshDesc = js("new _module.PxTetrahedronMeshDesc(meshVertices, meshTetIndices, meshFormat)")
+fun PxTetrahedronMeshDesc(meshVertices: PxArray_PxVec3, meshTetIndices: PxArray_PxU32, meshFormat: PxTetrahedronMeshFormatEnum, _module: dynamic = PhysXJsLoader.physXJs): PxTetrahedronMeshDesc = js("new _module.PxTetrahedronMeshDesc(meshVertices, meshTetIndices, meshFormat)")
 
 /**
  * @param meshVertices              WebIDL type: [PxArray_PxVec3] (Ref)
@@ -1264,7 +1270,7 @@ fun PxTetrahedronMeshDesc(meshVertices: PxArray_PxVec3, meshTetIndices: PxArray_
  * @param meshFormat                WebIDL type: [PxTetrahedronMeshFormatEnum] (enum)
  * @param numberOfTetsPerHexElement WebIDL type: unsigned short
  */
-fun PxTetrahedronMeshDesc(meshVertices: PxArray_PxVec3, meshTetIndices: PxArray_PxU32, meshFormat: Int, numberOfTetsPerHexElement: Short, _module: dynamic = PhysXJsLoader.physXJs): PxTetrahedronMeshDesc = js("new _module.PxTetrahedronMeshDesc(meshVertices, meshTetIndices, meshFormat, numberOfTetsPerHexElement)")
+fun PxTetrahedronMeshDesc(meshVertices: PxArray_PxVec3, meshTetIndices: PxArray_PxU32, meshFormat: PxTetrahedronMeshFormatEnum, numberOfTetsPerHexElement: Short, _module: dynamic = PhysXJsLoader.physXJs): PxTetrahedronMeshDesc = js("new _module.PxTetrahedronMeshDesc(meshVertices, meshTetIndices, meshFormat, numberOfTetsPerHexElement)")
 
 fun PxTetrahedronMeshDescFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTetrahedronMeshDesc = js("_module.wrapPointer(ptr, _module.PxTetrahedronMeshDesc)")
 
@@ -1394,17 +1400,17 @@ external interface PxTetrahedronMeshFlags {
      * @param flag WebIDL type: [PxTetrahedronMeshFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxTetrahedronMeshFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxTetrahedronMeshFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxTetrahedronMeshFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxTetrahedronMeshFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxTetrahedronMeshFlagEnum)
 
 }
 
@@ -1567,17 +1573,17 @@ external interface PxTriangleMeshAnalysisResults {
      * @param flag WebIDL type: [PxTriangleMeshAnalysisResultEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxTriangleMeshAnalysisResultEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxTriangleMeshAnalysisResultEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxTriangleMeshAnalysisResultEnum)
 
     /**
      * @param flag WebIDL type: [PxTriangleMeshAnalysisResultEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxTriangleMeshAnalysisResultEnum)
 
 }
 
@@ -1602,17 +1608,17 @@ external interface PxTriangleMeshFlags {
      * @param flag WebIDL type: [PxTriangleMeshFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxTriangleMeshFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxTriangleMeshFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxTriangleMeshFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxTriangleMeshFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxTriangleMeshFlagEnum)
 
 }
 
@@ -1672,72 +1678,94 @@ fun PxTriangleMeshGeometry.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-object PxConvexMeshGeometryFlagEnum {
-    val eTIGHT_BOUNDS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConvexMeshGeometryFlagEnum_eTIGHT_BOUNDS()
+value class PxConvexMeshGeometryFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eTIGHT_BOUNDS: PxConvexMeshGeometryFlagEnum = PxConvexMeshGeometryFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxConvexMeshGeometryFlagEnum_eTIGHT_BOUNDS())
+    }
 }
 
-object PxGeometryTypeEnum {
-    val eSPHERE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eSPHERE()
-    val ePLANE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_ePLANE()
-    val eCAPSULE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eCAPSULE()
-    val eBOX: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eBOX()
-    val eCONVEXMESH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eCONVEXMESH()
-    val eTRIANGLEMESH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eTRIANGLEMESH()
-    val eHEIGHTFIELD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eHEIGHTFIELD()
-    val eCUSTOM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eCUSTOM()
+value class PxGeometryTypeEnum private constructor(val value: Int) {
+    companion object {
+        val eSPHERE: PxGeometryTypeEnum = PxGeometryTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eSPHERE())
+        val ePLANE: PxGeometryTypeEnum = PxGeometryTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_ePLANE())
+        val eCAPSULE: PxGeometryTypeEnum = PxGeometryTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eCAPSULE())
+        val eBOX: PxGeometryTypeEnum = PxGeometryTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eBOX())
+        val eCONVEXMESH: PxGeometryTypeEnum = PxGeometryTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eCONVEXMESH())
+        val eTRIANGLEMESH: PxGeometryTypeEnum = PxGeometryTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eTRIANGLEMESH())
+        val eHEIGHTFIELD: PxGeometryTypeEnum = PxGeometryTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eHEIGHTFIELD())
+        val eCUSTOM: PxGeometryTypeEnum = PxGeometryTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxGeometryTypeEnum_eCUSTOM())
+    }
 }
 
-object PxHeightFieldFlagEnum {
-    val eNO_BOUNDARY_EDGES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHeightFieldFlagEnum_eNO_BOUNDARY_EDGES()
+value class PxHeightFieldFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eNO_BOUNDARY_EDGES: PxHeightFieldFlagEnum = PxHeightFieldFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxHeightFieldFlagEnum_eNO_BOUNDARY_EDGES())
+    }
 }
 
-object PxHeightFieldFormatEnum {
-    val eS16_TM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHeightFieldFormatEnum_eS16_TM()
+value class PxHeightFieldFormatEnum private constructor(val value: Int) {
+    companion object {
+        val eS16_TM: PxHeightFieldFormatEnum = PxHeightFieldFormatEnum(PhysXJsLoader.physXJs._emscripten_enum_PxHeightFieldFormatEnum_eS16_TM())
+    }
 }
 
-object PxMeshFlagEnum {
-    val eFLIPNORMALS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMeshFlagEnum_eFLIPNORMALS()
-    val e16_BIT_INDICES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMeshFlagEnum_e16_BIT_INDICES()
+value class PxMeshFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eFLIPNORMALS: PxMeshFlagEnum = PxMeshFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxMeshFlagEnum_eFLIPNORMALS())
+        val e16_BIT_INDICES: PxMeshFlagEnum = PxMeshFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxMeshFlagEnum_e16_BIT_INDICES())
+    }
 }
 
-object PxMeshGeometryFlagEnum {
-    val eDOUBLE_SIDED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMeshGeometryFlagEnum_eDOUBLE_SIDED()
+value class PxMeshGeometryFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eDOUBLE_SIDED: PxMeshGeometryFlagEnum = PxMeshGeometryFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxMeshGeometryFlagEnum_eDOUBLE_SIDED())
+    }
 }
 
-object PxTetrahedronMeshAnalysisResultEnum {
-    val eVALID: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshAnalysisResultEnum_eVALID()
-    val eDEGENERATE_TETRAHEDRON: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshAnalysisResultEnum_eDEGENERATE_TETRAHEDRON()
-    val eMESH_IS_PROBLEMATIC: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshAnalysisResultEnum_eMESH_IS_PROBLEMATIC()
-    val eMESH_IS_INVALID: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshAnalysisResultEnum_eMESH_IS_INVALID()
+value class PxTetrahedronMeshAnalysisResultEnum private constructor(val value: Int) {
+    companion object {
+        val eVALID: PxTetrahedronMeshAnalysisResultEnum = PxTetrahedronMeshAnalysisResultEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshAnalysisResultEnum_eVALID())
+        val eDEGENERATE_TETRAHEDRON: PxTetrahedronMeshAnalysisResultEnum = PxTetrahedronMeshAnalysisResultEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshAnalysisResultEnum_eDEGENERATE_TETRAHEDRON())
+        val eMESH_IS_PROBLEMATIC: PxTetrahedronMeshAnalysisResultEnum = PxTetrahedronMeshAnalysisResultEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshAnalysisResultEnum_eMESH_IS_PROBLEMATIC())
+        val eMESH_IS_INVALID: PxTetrahedronMeshAnalysisResultEnum = PxTetrahedronMeshAnalysisResultEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshAnalysisResultEnum_eMESH_IS_INVALID())
+    }
 }
 
-object PxTetrahedronMeshFlagEnum {
-    val e16_BIT_INDICES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshFlagEnum_e16_BIT_INDICES()
+value class PxTetrahedronMeshFlagEnum private constructor(val value: Int) {
+    companion object {
+        val e16_BIT_INDICES: PxTetrahedronMeshFlagEnum = PxTetrahedronMeshFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshFlagEnum_e16_BIT_INDICES())
+    }
 }
 
-object PxTetrahedronMeshFormatEnum {
-    val eTET_MESH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshFormatEnum_eTET_MESH()
-    val eHEX_MESH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshFormatEnum_eHEX_MESH()
+value class PxTetrahedronMeshFormatEnum private constructor(val value: Int) {
+    companion object {
+        val eTET_MESH: PxTetrahedronMeshFormatEnum = PxTetrahedronMeshFormatEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshFormatEnum_eTET_MESH())
+        val eHEX_MESH: PxTetrahedronMeshFormatEnum = PxTetrahedronMeshFormatEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTetrahedronMeshFormatEnum_eHEX_MESH())
+    }
 }
 
-object PxTriangleMeshAnalysisResultEnum {
-    val eVALID: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eVALID()
-    val eZERO_VOLUME: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eZERO_VOLUME()
-    val eOPEN_BOUNDARIES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eOPEN_BOUNDARIES()
-    val eSELF_INTERSECTIONS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eSELF_INTERSECTIONS()
-    val eINCONSISTENT_TRIANGLE_ORIENTATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eINCONSISTENT_TRIANGLE_ORIENTATION()
-    val eCONTAINS_ACUTE_ANGLED_TRIANGLES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eCONTAINS_ACUTE_ANGLED_TRIANGLES()
-    val eEDGE_SHARED_BY_MORE_THAN_TWO_TRIANGLES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eEDGE_SHARED_BY_MORE_THAN_TWO_TRIANGLES()
-    val eCONTAINS_DUPLICATE_POINTS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eCONTAINS_DUPLICATE_POINTS()
-    val eCONTAINS_INVALID_POINTS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eCONTAINS_INVALID_POINTS()
-    val eREQUIRES_32BIT_INDEX_BUFFER: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eREQUIRES_32BIT_INDEX_BUFFER()
-    val eTRIANGLE_INDEX_OUT_OF_RANGE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eTRIANGLE_INDEX_OUT_OF_RANGE()
-    val eMESH_IS_PROBLEMATIC: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eMESH_IS_PROBLEMATIC()
-    val eMESH_IS_INVALID: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eMESH_IS_INVALID()
+value class PxTriangleMeshAnalysisResultEnum private constructor(val value: Int) {
+    companion object {
+        val eVALID: PxTriangleMeshAnalysisResultEnum = PxTriangleMeshAnalysisResultEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eVALID())
+        val eZERO_VOLUME: PxTriangleMeshAnalysisResultEnum = PxTriangleMeshAnalysisResultEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eZERO_VOLUME())
+        val eOPEN_BOUNDARIES: PxTriangleMeshAnalysisResultEnum = PxTriangleMeshAnalysisResultEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eOPEN_BOUNDARIES())
+        val eSELF_INTERSECTIONS: PxTriangleMeshAnalysisResultEnum = PxTriangleMeshAnalysisResultEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eSELF_INTERSECTIONS())
+        val eINCONSISTENT_TRIANGLE_ORIENTATION: PxTriangleMeshAnalysisResultEnum = PxTriangleMeshAnalysisResultEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eINCONSISTENT_TRIANGLE_ORIENTATION())
+        val eCONTAINS_ACUTE_ANGLED_TRIANGLES: PxTriangleMeshAnalysisResultEnum = PxTriangleMeshAnalysisResultEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eCONTAINS_ACUTE_ANGLED_TRIANGLES())
+        val eEDGE_SHARED_BY_MORE_THAN_TWO_TRIANGLES: PxTriangleMeshAnalysisResultEnum = PxTriangleMeshAnalysisResultEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eEDGE_SHARED_BY_MORE_THAN_TWO_TRIANGLES())
+        val eCONTAINS_DUPLICATE_POINTS: PxTriangleMeshAnalysisResultEnum = PxTriangleMeshAnalysisResultEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eCONTAINS_DUPLICATE_POINTS())
+        val eCONTAINS_INVALID_POINTS: PxTriangleMeshAnalysisResultEnum = PxTriangleMeshAnalysisResultEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eCONTAINS_INVALID_POINTS())
+        val eREQUIRES_32BIT_INDEX_BUFFER: PxTriangleMeshAnalysisResultEnum = PxTriangleMeshAnalysisResultEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eREQUIRES_32BIT_INDEX_BUFFER())
+        val eTRIANGLE_INDEX_OUT_OF_RANGE: PxTriangleMeshAnalysisResultEnum = PxTriangleMeshAnalysisResultEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eTRIANGLE_INDEX_OUT_OF_RANGE())
+        val eMESH_IS_PROBLEMATIC: PxTriangleMeshAnalysisResultEnum = PxTriangleMeshAnalysisResultEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eMESH_IS_PROBLEMATIC())
+        val eMESH_IS_INVALID: PxTriangleMeshAnalysisResultEnum = PxTriangleMeshAnalysisResultEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshAnalysisResultEnum_eMESH_IS_INVALID())
+    }
 }
 
-object PxTriangleMeshFlagEnum {
-    val e16_BIT_INDICES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshFlagEnum_e16_BIT_INDICES()
-    val eADJACENCY_INFO: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshFlagEnum_eADJACENCY_INFO()
+value class PxTriangleMeshFlagEnum private constructor(val value: Int) {
+    companion object {
+        val e16_BIT_INDICES: PxTriangleMeshFlagEnum = PxTriangleMeshFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshFlagEnum_e16_BIT_INDICES())
+        val eADJACENCY_INFO: PxTriangleMeshFlagEnum = PxTriangleMeshFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTriangleMeshFlagEnum_eADJACENCY_INFO())
+    }
 }
 

@@ -14,6 +14,7 @@ import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MutableColor
+import de.fabmax.kool.util.l
 import kotlin.math.*
 
 class LargeSpheres(val resources: CreativeCodingDemo.Resources) : CreativeContent("Large Spheres") {
@@ -101,31 +102,31 @@ class LargeSpheres(val resources: CreativeCodingDemo.Resources) : CreativeConten
         var curvatureInc by remember(settings.curvatureInc)
         var planeCurvature by remember(settings.planeCurvature)
 
-        MenuSlider2("Inner radius:", innerRadius, 0f, 200f, CreativeCodingDemo.txtFormatInt) {
+        MenuSlider2("Inner radius:".l, innerRadius, 0f, 200f, CreativeCodingDemo.txtFormatInt) {
             innerRadius = it
             rebuildInstances(settings.copy(innerRadius = innerRadius))
         }
-        MenuSlider2("Sphere size:", sphereSize, 0.1f, 3f) {
+        MenuSlider2("Sphere size:".l, sphereSize, 0.1f, 3f) {
             sphereSize = it
             rebuildInstances(settings.copy(sphereSize = sphereSize))
         }
-        MenuSlider2("Number of strings:", numStrings.toFloat(), 2f, 32f, CreativeCodingDemo.txtFormatInt) {
+        MenuSlider2("Number of strings:".l, numStrings.toFloat(), 2f, 32f, CreativeCodingDemo.txtFormatInt) {
             numStrings = it.roundToInt()
             rebuildInstances(settings.copy(numStrings = numStrings))
         }
-        MenuSlider2("Number of spheres:", spheresPerString.toFloat(), 5f, 50f, CreativeCodingDemo.txtFormatInt) {
+        MenuSlider2("Number of spheres:".l, spheresPerString.toFloat(), 5f, 50f, CreativeCodingDemo.txtFormatInt) {
             spheresPerString = it.roundToInt()
             rebuildInstances(settings.copy(spheresPerString = spheresPerString))
         }
-        MenuSlider2("String curvature:", startCurvature, 0f, 30f) {
+        MenuSlider2("String curvature:".l, startCurvature, 0f, 30f) {
             startCurvature = it
             rebuildInstances(settings.copy(startCurvature = startCurvature))
         }
-        MenuSlider2("Curvature increment:", curvatureInc, 0f, 5f) {
+        MenuSlider2("Curvature increment:".l, curvatureInc, 0f, 5f) {
             curvatureInc = it
             rebuildInstances(settings.copy(curvatureInc = curvatureInc))
         }
-        MenuSlider2("Plane curvature:", planeCurvature, 0f, 30f) {
+        MenuSlider2("Plane curvature:".l, planeCurvature, 0f, 30f) {
             planeCurvature = it
             rebuildInstances(settings.copy(planeCurvature = planeCurvature))
         }

@@ -1,7 +1,7 @@
 /*
  * Generated from WebIDL by webidl-util
  */
-@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused")
+@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused", "INLINE_CLASS_IN_EXTERNAL_DECLARATION_WARNING", "NOTHING_TO_INLINE")
 
 package physx
 
@@ -202,7 +202,7 @@ external interface PxBase {
      * @param flag  WebIDL type: [PxBaseFlagEnum] (enum)
      * @param value WebIDL type: boolean
      */
-    fun setBaseFlag(flag: Int, value: Boolean)
+    fun setBaseFlag(flag: PxBaseFlagEnum, value: Boolean)
 
     /**
      * @param inFlags WebIDL type: [PxBaseFlags] (Ref)
@@ -242,17 +242,17 @@ external interface PxBaseFlags {
      * @param flag WebIDL type: [PxBaseFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxBaseFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxBaseFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxBaseFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxBaseFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxBaseFlagEnum)
 
 }
 
@@ -538,7 +538,7 @@ external interface PxErrorCallback {
      * @param file    WebIDL type: DOMString (Const)
      * @param line    WebIDL type: long
      */
-    fun reportError(code: Int, message: String, file: String, line: Int)
+    fun reportError(code: PxErrorCodeEnum, message: String, file: String, line: Int)
 
 }
 
@@ -638,7 +638,7 @@ fun PxMat33(_module: dynamic = PhysXJsLoader.physXJs): PxMat33 = js("new _module
 /**
  * @param r WebIDL type: [PxIDENTITYEnum] (enum)
  */
-fun PxMat33(r: Int, _module: dynamic = PhysXJsLoader.physXJs): PxMat33 = js("new _module.PxMat33(r)")
+fun PxMat33(r: PxIDENTITYEnum, _module: dynamic = PhysXJsLoader.physXJs): PxMat33 = js("new _module.PxMat33(r)")
 
 /**
  * @param col0 WebIDL type: [PxVec3] (Const, Ref)
@@ -875,7 +875,7 @@ fun PxQuat(_module: dynamic = PhysXJsLoader.physXJs): PxQuat = js("new _module.P
 /**
  * @param r WebIDL type: [PxIDENTITYEnum] (enum)
  */
-fun PxQuat(r: Int, _module: dynamic = PhysXJsLoader.physXJs): PxQuat = js("new _module.PxQuat(r)")
+fun PxQuat(r: PxIDENTITYEnum, _module: dynamic = PhysXJsLoader.physXJs): PxQuat = js("new _module.PxQuat(r)")
 
 /**
  * @param nx WebIDL type: float
@@ -1038,7 +1038,7 @@ fun PxTransform(_module: dynamic = PhysXJsLoader.physXJs): PxTransform = js("new
 /**
  * @param r WebIDL type: [PxIDENTITYEnum] (enum)
  */
-fun PxTransform(r: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTransform = js("new _module.PxTransform(r)")
+fun PxTransform(r: PxIDENTITYEnum, _module: dynamic = PhysXJsLoader.physXJs): PxTransform = js("new _module.PxTransform(r)")
 
 /**
  * @param p0 WebIDL type: [PxVec3] (Const, Ref)
@@ -1340,40 +1340,48 @@ val PxVec4.normalized
 val PxVec4.xYZ
     get() = getXYZ()
 
-object PxDebugColorEnum {
-    val eARGB_BLACK: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_BLACK()
-    val eARGB_RED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_RED()
-    val eARGB_GREEN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_GREEN()
-    val eARGB_BLUE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_BLUE()
-    val eARGB_YELLOW: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_YELLOW()
-    val eARGB_MAGENTA: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_MAGENTA()
-    val eARGB_CYAN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_CYAN()
-    val eARGB_WHITE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_WHITE()
-    val eARGB_GREY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_GREY()
-    val eARGB_DARKRED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_DARKRED()
-    val eARGB_DARKGREEN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_DARKGREEN()
-    val eARGB_DARKBLUE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_DARKBLUE()
+value class PxDebugColorEnum private constructor(val value: Int) {
+    companion object {
+        val eARGB_BLACK: PxDebugColorEnum = PxDebugColorEnum(PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_BLACK())
+        val eARGB_RED: PxDebugColorEnum = PxDebugColorEnum(PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_RED())
+        val eARGB_GREEN: PxDebugColorEnum = PxDebugColorEnum(PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_GREEN())
+        val eARGB_BLUE: PxDebugColorEnum = PxDebugColorEnum(PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_BLUE())
+        val eARGB_YELLOW: PxDebugColorEnum = PxDebugColorEnum(PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_YELLOW())
+        val eARGB_MAGENTA: PxDebugColorEnum = PxDebugColorEnum(PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_MAGENTA())
+        val eARGB_CYAN: PxDebugColorEnum = PxDebugColorEnum(PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_CYAN())
+        val eARGB_WHITE: PxDebugColorEnum = PxDebugColorEnum(PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_WHITE())
+        val eARGB_GREY: PxDebugColorEnum = PxDebugColorEnum(PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_GREY())
+        val eARGB_DARKRED: PxDebugColorEnum = PxDebugColorEnum(PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_DARKRED())
+        val eARGB_DARKGREEN: PxDebugColorEnum = PxDebugColorEnum(PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_DARKGREEN())
+        val eARGB_DARKBLUE: PxDebugColorEnum = PxDebugColorEnum(PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_DARKBLUE())
+    }
 }
 
-object PxBaseFlagEnum {
-    val eOWNS_MEMORY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBaseFlagEnum_eOWNS_MEMORY()
-    val eIS_RELEASABLE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBaseFlagEnum_eIS_RELEASABLE()
+value class PxBaseFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eOWNS_MEMORY: PxBaseFlagEnum = PxBaseFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxBaseFlagEnum_eOWNS_MEMORY())
+        val eIS_RELEASABLE: PxBaseFlagEnum = PxBaseFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxBaseFlagEnum_eIS_RELEASABLE())
+    }
 }
 
-object PxErrorCodeEnum {
-    val eNO_ERROR: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eNO_ERROR()
-    val eDEBUG_INFO: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eDEBUG_INFO()
-    val eDEBUG_WARNING: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eDEBUG_WARNING()
-    val eINVALID_PARAMETER: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eINVALID_PARAMETER()
-    val eINVALID_OPERATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eINVALID_OPERATION()
-    val eOUT_OF_MEMORY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eOUT_OF_MEMORY()
-    val eINTERNAL_ERROR: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eINTERNAL_ERROR()
-    val eABORT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eABORT()
-    val ePERF_WARNING: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_ePERF_WARNING()
-    val eMASK_ALL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eMASK_ALL()
+value class PxErrorCodeEnum private constructor(val value: Int) {
+    companion object {
+        val eNO_ERROR: PxErrorCodeEnum = PxErrorCodeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eNO_ERROR())
+        val eDEBUG_INFO: PxErrorCodeEnum = PxErrorCodeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eDEBUG_INFO())
+        val eDEBUG_WARNING: PxErrorCodeEnum = PxErrorCodeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eDEBUG_WARNING())
+        val eINVALID_PARAMETER: PxErrorCodeEnum = PxErrorCodeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eINVALID_PARAMETER())
+        val eINVALID_OPERATION: PxErrorCodeEnum = PxErrorCodeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eINVALID_OPERATION())
+        val eOUT_OF_MEMORY: PxErrorCodeEnum = PxErrorCodeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eOUT_OF_MEMORY())
+        val eINTERNAL_ERROR: PxErrorCodeEnum = PxErrorCodeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eINTERNAL_ERROR())
+        val eABORT: PxErrorCodeEnum = PxErrorCodeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eABORT())
+        val ePERF_WARNING: PxErrorCodeEnum = PxErrorCodeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_ePERF_WARNING())
+        val eMASK_ALL: PxErrorCodeEnum = PxErrorCodeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxErrorCodeEnum_eMASK_ALL())
+    }
 }
 
-object PxIDENTITYEnum {
-    val PxIdentity: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxIDENTITYEnum_PxIdentity()
+value class PxIDENTITYEnum private constructor(val value: Int) {
+    companion object {
+        val PxIdentity: PxIDENTITYEnum = PxIDENTITYEnum(PhysXJsLoader.physXJs._emscripten_enum_PxIDENTITYEnum_PxIdentity())
+    }
 }
 

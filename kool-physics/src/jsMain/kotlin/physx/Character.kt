@@ -1,7 +1,7 @@
 /*
  * Generated from WebIDL by webidl-util
  */
-@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused")
+@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused", "INLINE_CLASS_IN_EXTERNAL_DECLARATION_WARNING", "NOTHING_TO_INLINE")
 
 package physx
 
@@ -120,13 +120,13 @@ external interface PxCapsuleController : PxController {
     /**
      * @return WebIDL type: [PxCapsuleClimbingModeEnum] (enum)
      */
-    fun getClimbingMode(): Int
+    fun getClimbingMode(): PxCapsuleClimbingModeEnum
 
     /**
      * @param mode WebIDL type: [PxCapsuleClimbingModeEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun setClimbingMode(mode: Int): Boolean
+    fun setClimbingMode(mode: PxCapsuleClimbingModeEnum): Boolean
 
 }
 
@@ -154,7 +154,7 @@ external interface PxCapsuleControllerDesc : PxControllerDesc {
     /**
      * WebIDL type: [PxCapsuleClimbingModeEnum] (enum)
      */
-    var climbingMode: Int
+    var climbingMode: PxCapsuleClimbingModeEnum
 
     fun setToDefault()
 
@@ -196,7 +196,7 @@ external interface PxController {
     /**
      * @return WebIDL type: [PxControllerShapeTypeEnum] (enum)
      */
-    fun getType(): Int
+    fun getType(): PxControllerShapeTypeEnum
 
     fun release()
 
@@ -259,12 +259,12 @@ external interface PxController {
     /**
      * @param flag WebIDL type: [PxControllerNonWalkableModeEnum] (enum)
      */
-    fun setNonWalkableMode(flag: Int)
+    fun setNonWalkableMode(flag: PxControllerNonWalkableModeEnum)
 
     /**
      * @return WebIDL type: [PxControllerNonWalkableModeEnum] (enum)
      */
-    fun getNonWalkableMode(): Int
+    fun getNonWalkableMode(): PxControllerNonWalkableModeEnum
 
     /**
      * @return WebIDL type: float
@@ -430,17 +430,17 @@ external interface PxControllerBehaviorFlags {
      * @param flag WebIDL type: [PxControllerBehaviorFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxControllerBehaviorFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxControllerBehaviorFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxControllerBehaviorFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxControllerBehaviorFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxControllerBehaviorFlagEnum)
 
 }
 
@@ -465,17 +465,17 @@ external interface PxControllerCollisionFlags {
      * @param flag WebIDL type: [PxControllerCollisionFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxControllerCollisionFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxControllerCollisionFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxControllerCollisionFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxControllerCollisionFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxControllerCollisionFlagEnum)
 
 }
 
@@ -547,7 +547,7 @@ external interface PxControllerDesc {
     /**
      * WebIDL type: [PxControllerNonWalkableModeEnum] (enum)
      */
-    var nonWalkableMode: Int
+    var nonWalkableMode: PxControllerNonWalkableModeEnum
     /**
      * WebIDL type: [PxMaterial]
      */
@@ -569,7 +569,7 @@ external interface PxControllerDesc {
     /**
      * @return WebIDL type: [PxControllerShapeTypeEnum] (enum)
      */
-    fun getType(): Int
+    fun getType(): PxControllerShapeTypeEnum
 
 }
 
@@ -954,7 +954,7 @@ external interface PxObstacle {
     /**
      * @return WebIDL type: [PxGeometryTypeEnum] (enum)
      */
-    fun getType(): Int
+    fun getType(): PxGeometryTypeEnum
 
 }
 
@@ -1074,30 +1074,40 @@ external interface PxUserControllerHitReportImpl : PxUserControllerHitReport {
 
 fun PxUserControllerHitReportImpl(_module: dynamic = PhysXJsLoader.physXJs): PxUserControllerHitReportImpl = js("new _module.PxUserControllerHitReportImpl()")
 
-object PxCapsuleClimbingModeEnum {
-    val eEASY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCapsuleClimbingModeEnum_eEASY()
-    val eCONSTRAINED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCapsuleClimbingModeEnum_eCONSTRAINED()
+value class PxCapsuleClimbingModeEnum private constructor(val value: Int) {
+    companion object {
+        val eEASY: PxCapsuleClimbingModeEnum = PxCapsuleClimbingModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxCapsuleClimbingModeEnum_eEASY())
+        val eCONSTRAINED: PxCapsuleClimbingModeEnum = PxCapsuleClimbingModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxCapsuleClimbingModeEnum_eCONSTRAINED())
+    }
 }
 
-object PxControllerBehaviorFlagEnum {
-    val eCCT_CAN_RIDE_ON_OBJECT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxControllerBehaviorFlagEnum_eCCT_CAN_RIDE_ON_OBJECT()
-    val eCCT_SLIDE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxControllerBehaviorFlagEnum_eCCT_SLIDE()
-    val eCCT_USER_DEFINED_RIDE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxControllerBehaviorFlagEnum_eCCT_USER_DEFINED_RIDE()
+value class PxControllerBehaviorFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eCCT_CAN_RIDE_ON_OBJECT: PxControllerBehaviorFlagEnum = PxControllerBehaviorFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxControllerBehaviorFlagEnum_eCCT_CAN_RIDE_ON_OBJECT())
+        val eCCT_SLIDE: PxControllerBehaviorFlagEnum = PxControllerBehaviorFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxControllerBehaviorFlagEnum_eCCT_SLIDE())
+        val eCCT_USER_DEFINED_RIDE: PxControllerBehaviorFlagEnum = PxControllerBehaviorFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxControllerBehaviorFlagEnum_eCCT_USER_DEFINED_RIDE())
+    }
 }
 
-object PxControllerCollisionFlagEnum {
-    val eCOLLISION_SIDES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxControllerCollisionFlagEnum_eCOLLISION_SIDES()
-    val eCOLLISION_UP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxControllerCollisionFlagEnum_eCOLLISION_UP()
-    val eCOLLISION_DOWN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxControllerCollisionFlagEnum_eCOLLISION_DOWN()
+value class PxControllerCollisionFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eCOLLISION_SIDES: PxControllerCollisionFlagEnum = PxControllerCollisionFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxControllerCollisionFlagEnum_eCOLLISION_SIDES())
+        val eCOLLISION_UP: PxControllerCollisionFlagEnum = PxControllerCollisionFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxControllerCollisionFlagEnum_eCOLLISION_UP())
+        val eCOLLISION_DOWN: PxControllerCollisionFlagEnum = PxControllerCollisionFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxControllerCollisionFlagEnum_eCOLLISION_DOWN())
+    }
 }
 
-object PxControllerNonWalkableModeEnum {
-    val ePREVENT_CLIMBING: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxControllerNonWalkableModeEnum_ePREVENT_CLIMBING()
-    val ePREVENT_CLIMBING_AND_FORCE_SLIDING: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxControllerNonWalkableModeEnum_ePREVENT_CLIMBING_AND_FORCE_SLIDING()
+value class PxControllerNonWalkableModeEnum private constructor(val value: Int) {
+    companion object {
+        val ePREVENT_CLIMBING: PxControllerNonWalkableModeEnum = PxControllerNonWalkableModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxControllerNonWalkableModeEnum_ePREVENT_CLIMBING())
+        val ePREVENT_CLIMBING_AND_FORCE_SLIDING: PxControllerNonWalkableModeEnum = PxControllerNonWalkableModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxControllerNonWalkableModeEnum_ePREVENT_CLIMBING_AND_FORCE_SLIDING())
+    }
 }
 
-object PxControllerShapeTypeEnum {
-    val eBOX: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxControllerShapeTypeEnum_eBOX()
-    val eCAPSULE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxControllerShapeTypeEnum_eCAPSULE()
+value class PxControllerShapeTypeEnum private constructor(val value: Int) {
+    companion object {
+        val eBOX: PxControllerShapeTypeEnum = PxControllerShapeTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxControllerShapeTypeEnum_eBOX())
+        val eCAPSULE: PxControllerShapeTypeEnum = PxControllerShapeTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxControllerShapeTypeEnum_eCAPSULE())
+    }
 }
 

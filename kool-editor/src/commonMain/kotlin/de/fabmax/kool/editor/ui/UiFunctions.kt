@@ -154,7 +154,7 @@ fun UiScope.doubleTextField(
         modifier.clearDragCallbacks()
         modifier.clearHoverCallbacks()
         modifier
-            .onHover { PointerInput.cursorShape = CursorShape.RESIZE_EW }
+            .onHover { PointerInput.cursorShape = CursorShape.RESIZE_E }
             .onDragStart {
                 dragStartValue = value
                 editHandler.onEditStart(dragStartValue)
@@ -234,7 +234,7 @@ fun UiScope.intTextField(
         modifier.clearDragCallbacks()
         modifier.clearHoverCallbacks()
         modifier
-            .onHover { PointerInput.cursorShape = CursorShape.RESIZE_EW }
+            .onHover { PointerInput.cursorShape = CursorShape.RESIZE_E }
             .onDragStart {
                 dragStartValue = value
                 editHandler.onEditStart(dragStartValue)

@@ -1,7 +1,7 @@
 /*
  * Generated from WebIDL by webidl-util
  */
-@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused")
+@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused", "INLINE_CLASS_IN_EXTERNAL_DECLARATION_WARNING", "NOTHING_TO_INLINE")
 
 package physx
 
@@ -163,12 +163,12 @@ external interface PxScene : PxSceneSQSystem {
     /**
      * @return WebIDL type: [PxPairFilteringModeEnum] (enum)
      */
-    fun getKinematicKinematicFilteringMode(): Int
+    fun getKinematicKinematicFilteringMode(): PxPairFilteringModeEnum
 
     /**
      * @return WebIDL type: [PxPairFilteringModeEnum] (enum)
      */
-    fun getStaticKinematicFilteringMode(): Int
+    fun getStaticKinematicFilteringMode(): PxPairFilteringModeEnum
 
     /**
      * @param elapsedTime WebIDL type: float
@@ -391,12 +391,12 @@ external interface PxScene : PxSceneSQSystem {
     /**
      * @return WebIDL type: [PxFrictionTypeEnum] (enum)
      */
-    fun getFrictionType(): Int
+    fun getFrictionType(): PxFrictionTypeEnum
 
     /**
      * @return WebIDL type: [PxSolverTypeEnum] (enum)
      */
-    fun getSolverType(): Int
+    fun getSolverType(): PxSolverTypeEnum
 
     /**
      * @return WebIDL type: [PxRenderBuffer] (Const, Ref)
@@ -408,13 +408,13 @@ external interface PxScene : PxSceneSQSystem {
      * @param value WebIDL type: float
      * @return WebIDL type: boolean
      */
-    fun setVisualizationParameter(param: Int, value: Float): Boolean
+    fun setVisualizationParameter(param: PxVisualizationParameterEnum, value: Float): Boolean
 
     /**
      * @param paramEnum WebIDL type: [PxVisualizationParameterEnum] (enum)
      * @return WebIDL type: float
      */
-    fun getVisualizationParameter(paramEnum: Int): Float
+    fun getVisualizationParameter(paramEnum: PxVisualizationParameterEnum): Float
 
     /**
      * @param box WebIDL type: [PxBounds3] (Const, Ref)
@@ -434,7 +434,7 @@ external interface PxScene : PxSceneSQSystem {
     /**
      * @return WebIDL type: [PxBroadPhaseTypeEnum] (enum)
      */
-    fun getBroadPhaseType(): Int
+    fun getBroadPhaseType(): PxBroadPhaseTypeEnum
 
     /**
      * @param caps WebIDL type: [PxBroadPhaseCaps] (Ref)
@@ -557,7 +557,7 @@ external interface PxScene : PxSceneSQSystem {
      * @param flag  WebIDL type: [PxSceneFlagEnum] (enum)
      * @param value WebIDL type: boolean
      */
-    fun setFlag(flag: Int, value: Boolean)
+    fun setFlag(flag: PxSceneFlagEnum, value: Boolean)
 
     /**
      * @return WebIDL type: [PxSceneFlags] (Value)
@@ -705,15 +705,15 @@ external interface PxSceneDesc {
     /**
      * WebIDL type: [PxPairFilteringModeEnum] (enum)
      */
-    var kineKineFilteringMode: Int
+    var kineKineFilteringMode: PxPairFilteringModeEnum
     /**
      * WebIDL type: [PxPairFilteringModeEnum] (enum)
      */
-    var staticKineFilteringMode: Int
+    var staticKineFilteringMode: PxPairFilteringModeEnum
     /**
      * WebIDL type: [PxBroadPhaseTypeEnum] (enum)
      */
-    var broadPhaseType: Int
+    var broadPhaseType: PxBroadPhaseTypeEnum
     /**
      * WebIDL type: [PxSceneLimits] (Value)
      */
@@ -721,11 +721,11 @@ external interface PxSceneDesc {
     /**
      * WebIDL type: [PxFrictionTypeEnum] (enum)
      */
-    var frictionType: Int
+    var frictionType: PxFrictionTypeEnum
     /**
      * WebIDL type: [PxSolverTypeEnum] (enum)
      */
-    var solverType: Int
+    var solverType: PxSolverTypeEnum
     /**
      * WebIDL type: float
      */
@@ -813,11 +813,11 @@ external interface PxSceneDesc {
     /**
      * WebIDL type: [PxPruningStructureTypeEnum] (enum)
      */
-    var staticStructure: Int
+    var staticStructure: PxPruningStructureTypeEnum
     /**
      * WebIDL type: [PxPruningStructureTypeEnum] (enum)
      */
-    var dynamicStructure: Int
+    var dynamicStructure: PxPruningStructureTypeEnum
     /**
      * WebIDL type: unsigned long
      */
@@ -825,15 +825,15 @@ external interface PxSceneDesc {
     /**
      * WebIDL type: [PxDynamicTreeSecondaryPrunerEnum] (enum)
      */
-    var dynamicTreeSecondaryPruner: Int
+    var dynamicTreeSecondaryPruner: PxDynamicTreeSecondaryPrunerEnum
     /**
      * WebIDL type: [PxBVHBuildStrategyEnum] (enum)
      */
-    var staticBVHBuildStrategy: Int
+    var staticBVHBuildStrategy: PxBVHBuildStrategyEnum
     /**
      * WebIDL type: [PxBVHBuildStrategyEnum] (enum)
      */
-    var dynamicBVHBuildStrategy: Int
+    var dynamicBVHBuildStrategy: PxBVHBuildStrategyEnum
     /**
      * WebIDL type: unsigned long
      */
@@ -845,7 +845,7 @@ external interface PxSceneDesc {
     /**
      * WebIDL type: [PxSceneQueryUpdateModeEnum] (enum)
      */
-    var sceneQueryUpdateMode: Int
+    var sceneQueryUpdateMode: PxSceneQueryUpdateModeEnum
 
     /**
      * @param scale WebIDL type: [PxTolerancesScale] (Const, Ref)
@@ -880,17 +880,17 @@ external interface PxSceneFlags {
      * @param flag WebIDL type: [PxSceneFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxSceneFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxSceneFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxSceneFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxSceneFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxSceneFlagEnum)
 
 }
 
@@ -1153,17 +1153,17 @@ external interface PxArticulationCacheFlags {
      * @param flag WebIDL type: [PxArticulationCacheFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxArticulationCacheFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxArticulationCacheFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxArticulationCacheFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxArticulationCacheFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxArticulationCacheFlagEnum)
 
 }
 
@@ -1199,7 +1199,7 @@ external interface PxArticulationDrive {
     /**
      * WebIDL type: [PxArticulationDriveTypeEnum] (enum)
      */
-    var driveType: Int
+    var driveType: PxArticulationDriveTypeEnum
 }
 
 fun PxArticulationDrive(_module: dynamic = PhysXJsLoader.physXJs): PxArticulationDrive = js("new _module.PxArticulationDrive()")
@@ -1210,7 +1210,7 @@ fun PxArticulationDrive(_module: dynamic = PhysXJsLoader.physXJs): PxArticulatio
  * @param maxForce  WebIDL type: float
  * @param driveType WebIDL type: [PxArticulationDriveTypeEnum] (enum)
  */
-fun PxArticulationDrive(stiffness: Float, damping: Float, maxForce: Float, driveType: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationDrive = js("new _module.PxArticulationDrive(stiffness, damping, maxForce, driveType)")
+fun PxArticulationDrive(stiffness: Float, damping: Float, maxForce: Float, driveType: PxArticulationDriveTypeEnum, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationDrive = js("new _module.PxArticulationDrive(stiffness, damping, maxForce, driveType)")
 
 fun PxArticulationDriveFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationDrive = js("_module.wrapPointer(ptr, _module.PxArticulationDrive)")
 
@@ -1227,7 +1227,7 @@ external interface PxArticulationFixedTendon : PxArticulationTendon {
      * @param link             WebIDL type: [PxArticulationLink]
      * @return WebIDL type: [PxArticulationTendonJoint]
      */
-    fun createTendonJoint(parent: PxArticulationTendonJoint, axis: Int, coefficient: Float, recipCoefficient: Float, link: PxArticulationLink): PxArticulationTendonJoint
+    fun createTendonJoint(parent: PxArticulationTendonJoint, axis: PxArticulationAxisEnum, coefficient: Float, recipCoefficient: Float, link: PxArticulationLink): PxArticulationTendonJoint
 
     /**
      * @return WebIDL type: unsigned long
@@ -1282,17 +1282,17 @@ external interface PxArticulationFlags {
      * @param flag WebIDL type: [PxArticulationFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxArticulationFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxArticulationFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxArticulationFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxArticulationFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxArticulationFlagEnum)
 
 }
 
@@ -1341,92 +1341,92 @@ external interface PxArticulationJointReducedCoordinate : PxBase {
     /**
      * @param jointType WebIDL type: [PxArticulationJointTypeEnum] (enum)
      */
-    fun setJointType(jointType: Int)
+    fun setJointType(jointType: PxArticulationJointTypeEnum)
 
     /**
      * @return WebIDL type: [PxArticulationJointTypeEnum] (enum)
      */
-    fun getJointType(): Int
+    fun getJointType(): PxArticulationJointTypeEnum
 
     /**
      * @param axis   WebIDL type: [PxArticulationAxisEnum] (enum)
      * @param motion WebIDL type: [PxArticulationMotionEnum] (enum)
      */
-    fun setMotion(axis: Int, motion: Int)
+    fun setMotion(axis: PxArticulationAxisEnum, motion: PxArticulationMotionEnum)
 
     /**
      * @param axis WebIDL type: [PxArticulationAxisEnum] (enum)
      * @return WebIDL type: [PxArticulationMotionEnum] (enum)
      */
-    fun getMotion(axis: Int): Int
+    fun getMotion(axis: PxArticulationAxisEnum): PxArticulationMotionEnum
 
     /**
      * @param axis  WebIDL type: [PxArticulationAxisEnum] (enum)
      * @param limit WebIDL type: [PxArticulationLimit] (Const, Ref)
      */
-    fun setLimitParams(axis: Int, limit: PxArticulationLimit)
+    fun setLimitParams(axis: PxArticulationAxisEnum, limit: PxArticulationLimit)
 
     /**
      * @param axis WebIDL type: [PxArticulationAxisEnum] (enum)
      * @return WebIDL type: [PxArticulationLimit] (Value)
      */
-    fun getLimitParams(axis: Int): PxArticulationLimit
+    fun getLimitParams(axis: PxArticulationAxisEnum): PxArticulationLimit
 
     /**
      * @param axis  WebIDL type: [PxArticulationAxisEnum] (enum)
      * @param drive WebIDL type: [PxArticulationDrive] (Const, Ref)
      */
-    fun setDriveParams(axis: Int, drive: PxArticulationDrive)
+    fun setDriveParams(axis: PxArticulationAxisEnum, drive: PxArticulationDrive)
 
     /**
      * @param axis   WebIDL type: [PxArticulationAxisEnum] (enum)
      * @param target WebIDL type: float
      */
-    fun setDriveTarget(axis: Int, target: Float)
+    fun setDriveTarget(axis: PxArticulationAxisEnum, target: Float)
 
     /**
      * @param axis     WebIDL type: [PxArticulationAxisEnum] (enum)
      * @param target   WebIDL type: float
      * @param autowake WebIDL type: boolean
      */
-    fun setDriveTarget(axis: Int, target: Float, autowake: Boolean)
+    fun setDriveTarget(axis: PxArticulationAxisEnum, target: Float, autowake: Boolean)
 
     /**
      * @param axis WebIDL type: [PxArticulationAxisEnum] (enum)
      * @return WebIDL type: float
      */
-    fun getDriveTarget(axis: Int): Float
+    fun getDriveTarget(axis: PxArticulationAxisEnum): Float
 
     /**
      * @param axis      WebIDL type: [PxArticulationAxisEnum] (enum)
      * @param targetVel WebIDL type: float
      */
-    fun setDriveVelocity(axis: Int, targetVel: Float)
+    fun setDriveVelocity(axis: PxArticulationAxisEnum, targetVel: Float)
 
     /**
      * @param axis      WebIDL type: [PxArticulationAxisEnum] (enum)
      * @param targetVel WebIDL type: float
      * @param autowake  WebIDL type: boolean
      */
-    fun setDriveVelocity(axis: Int, targetVel: Float, autowake: Boolean)
+    fun setDriveVelocity(axis: PxArticulationAxisEnum, targetVel: Float, autowake: Boolean)
 
     /**
      * @param axis WebIDL type: [PxArticulationAxisEnum] (enum)
      * @return WebIDL type: float
      */
-    fun getDriveVelocity(axis: Int): Float
+    fun getDriveVelocity(axis: PxArticulationAxisEnum): Float
 
     /**
      * @param axis     WebIDL type: [PxArticulationAxisEnum] (enum)
      * @param armature WebIDL type: float
      */
-    fun setArmature(axis: Int, armature: Float)
+    fun setArmature(axis: PxArticulationAxisEnum, armature: Float)
 
     /**
      * @param axis WebIDL type: [PxArticulationAxisEnum] (enum)
      * @return WebIDL type: float
      */
-    fun getArmature(axis: Int): Float
+    fun getArmature(axis: PxArticulationAxisEnum): Float
 
     /**
      * @param coefficient WebIDL type: float
@@ -1452,25 +1452,25 @@ external interface PxArticulationJointReducedCoordinate : PxBase {
      * @param axis     WebIDL type: [PxArticulationAxisEnum] (enum)
      * @param jointPos WebIDL type: float
      */
-    fun setJointPosition(axis: Int, jointPos: Float)
+    fun setJointPosition(axis: PxArticulationAxisEnum, jointPos: Float)
 
     /**
      * @param axis WebIDL type: [PxArticulationAxisEnum] (enum)
      * @return WebIDL type: float
      */
-    fun getJointPosition(axis: Int): Float
+    fun getJointPosition(axis: PxArticulationAxisEnum): Float
 
     /**
      * @param axis     WebIDL type: [PxArticulationAxisEnum] (enum)
      * @param jointVel WebIDL type: float
      */
-    fun setJointVelocity(axis: Int, jointVel: Float)
+    fun setJointVelocity(axis: PxArticulationAxisEnum, jointVel: Float)
 
     /**
      * @param axis WebIDL type: [PxArticulationAxisEnum] (enum)
      * @return WebIDL type: float
      */
-    fun getJointVelocity(axis: Int): Float
+    fun getJointVelocity(axis: PxArticulationAxisEnum): Float
 
 }
 
@@ -1511,17 +1511,17 @@ external interface PxArticulationKinematicFlags {
      * @param flag WebIDL type: [PxArticulationKinematicFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxArticulationKinematicFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxArticulationKinematicFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxArticulationKinematicFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxArticulationKinematicFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxArticulationKinematicFlagEnum)
 
 }
 
@@ -1765,7 +1765,7 @@ external interface PxArticulationReducedCoordinate : PxBase {
      * @param flag  WebIDL type: [PxArticulationFlagEnum] (enum)
      * @param value WebIDL type: boolean
      */
-    fun setArticulationFlag(flag: Int, value: Boolean)
+    fun setArticulationFlag(flag: PxArticulationFlagEnum, value: Boolean)
 
     /**
      * @return WebIDL type: [PxArticulationFlags] (Value)
@@ -2154,7 +2154,7 @@ external interface PxArticulationTendonJoint {
      * @param coefficient      WebIDL type: float
      * @param recipCoefficient WebIDL type: float
      */
-    fun setCoefficient(axis: Int, coefficient: Float, recipCoefficient: Float)
+    fun setCoefficient(axis: PxArticulationAxisEnum, coefficient: Float, recipCoefficient: Float)
 
     /**
      * @return WebIDL type: [PxArticulationLink]
@@ -2301,17 +2301,17 @@ external interface PxHitFlags {
      * @param flag WebIDL type: [PxHitFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxHitFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxHitFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxHitFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxHitFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxHitFlagEnum)
 
 }
 
@@ -2443,6 +2443,8 @@ external interface PxOverlapResult : PxOverlapCallback {
      * @return WebIDL type: [PxOverlapHit] (Const, Ref)
      */
     fun getTouch(index: Int): PxOverlapHit
+
+    fun clear()
 
 }
 
@@ -2598,17 +2600,17 @@ external interface PxQueryFlags {
      * @param flag WebIDL type: [PxQueryFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxQueryFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxQueryFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxQueryFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxQueryFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxQueryFlagEnum)
 
 }
 
@@ -2734,6 +2736,8 @@ external interface PxRaycastResult : PxRaycastCallback {
      */
     fun getTouch(index: Int): PxRaycastHit
 
+    fun clear()
+
 }
 
 fun PxRaycastResult(_module: dynamic = PhysXJsLoader.physXJs): PxRaycastResult = js("new _module.PxRaycastResult()")
@@ -2811,12 +2815,12 @@ external interface PxSceneQuerySystemBase {
     /**
      * @param updateMode WebIDL type: [PxSceneQueryUpdateModeEnum] (enum)
      */
-    fun setUpdateMode(updateMode: Int)
+    fun setUpdateMode(updateMode: PxSceneQueryUpdateModeEnum)
 
     /**
      * @return WebIDL type: [PxSceneQueryUpdateModeEnum] (enum)
      */
-    fun getUpdateMode(): Int
+    fun getUpdateMode(): PxSceneQueryUpdateModeEnum
 
     /**
      * @return WebIDL type: unsigned long
@@ -2923,12 +2927,12 @@ external interface PxSceneSQSystem : PxSceneQuerySystemBase {
     /**
      * @param updateMode WebIDL type: [PxSceneQueryUpdateModeEnum] (enum)
      */
-    fun setSceneQueryUpdateMode(updateMode: Int)
+    fun setSceneQueryUpdateMode(updateMode: PxSceneQueryUpdateModeEnum)
 
     /**
      * @return WebIDL type: [PxSceneQueryUpdateModeEnum] (enum)
      */
-    fun getSceneQueryUpdateMode(): Int
+    fun getSceneQueryUpdateMode(): PxSceneQueryUpdateModeEnum
 
     /**
      * @return WebIDL type: unsigned long
@@ -2946,12 +2950,12 @@ external interface PxSceneSQSystem : PxSceneQuerySystemBase {
     /**
      * @return WebIDL type: [PxPruningStructureTypeEnum] (enum)
      */
-    fun getStaticStructure(): Int
+    fun getStaticStructure(): PxPruningStructureTypeEnum
 
     /**
      * @return WebIDL type: [PxPruningStructureTypeEnum] (enum)
      */
-    fun getDynamicStructure(): Int
+    fun getDynamicStructure(): PxPruningStructureTypeEnum
 
     fun sceneQueriesUpdate()
 
@@ -3096,6 +3100,8 @@ external interface PxSweepResult : PxSweepCallback {
      */
     fun getTouch(index: Int): PxSweepHit
 
+    fun clear()
+
 }
 
 fun PxSweepResult(_module: dynamic = PhysXJsLoader.physXJs): PxSweepResult = js("new _module.PxSweepResult()")
@@ -3158,7 +3164,7 @@ external interface PxActor : PxBase {
     /**
      * @return WebIDL type: [PxActorTypeEnum] (enum)
      */
-    fun getType(): Int
+    fun getType(): PxActorTypeEnum
 
     /**
      * @return WebIDL type: [PxScene]
@@ -3190,7 +3196,7 @@ external interface PxActor : PxBase {
      * @param flag  WebIDL type: [PxActorFlagEnum] (enum)
      * @param value WebIDL type: boolean
      */
-    fun setActorFlag(flag: Int, value: Boolean)
+    fun setActorFlag(flag: PxActorFlagEnum, value: Boolean)
 
     /**
      * @param flags WebIDL type: [PxActorFlags] (Ref)
@@ -3256,17 +3262,17 @@ external interface PxActorFlags {
      * @param flag WebIDL type: [PxActorFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxActorFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxActorFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxActorFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxActorFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxActorFlagEnum)
 
 }
 
@@ -3291,17 +3297,17 @@ external interface PxActorTypeFlags {
      * @param flag WebIDL type: [PxActorTypeFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxActorTypeFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxActorTypeFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxActorTypeFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxActorTypeFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxActorTypeFlagEnum)
 
 }
 
@@ -3481,14 +3487,14 @@ external interface PxRigidBody : PxRigidActor {
      * @param force WebIDL type: [PxVec3] (Const, Ref)
      * @param mode  WebIDL type: [PxForceModeEnum] (enum)
      */
-    fun addForce(force: PxVec3, mode: Int)
+    fun addForce(force: PxVec3, mode: PxForceModeEnum)
 
     /**
      * @param force    WebIDL type: [PxVec3] (Const, Ref)
      * @param mode     WebIDL type: [PxForceModeEnum] (enum)
      * @param autowake WebIDL type: boolean
      */
-    fun addForce(force: PxVec3, mode: Int, autowake: Boolean)
+    fun addForce(force: PxVec3, mode: PxForceModeEnum, autowake: Boolean)
 
     /**
      * @param torque WebIDL type: [PxVec3] (Const, Ref)
@@ -3499,24 +3505,24 @@ external interface PxRigidBody : PxRigidActor {
      * @param torque WebIDL type: [PxVec3] (Const, Ref)
      * @param mode   WebIDL type: [PxForceModeEnum] (enum)
      */
-    fun addTorque(torque: PxVec3, mode: Int)
+    fun addTorque(torque: PxVec3, mode: PxForceModeEnum)
 
     /**
      * @param torque   WebIDL type: [PxVec3] (Const, Ref)
      * @param mode     WebIDL type: [PxForceModeEnum] (enum)
      * @param autowake WebIDL type: boolean
      */
-    fun addTorque(torque: PxVec3, mode: Int, autowake: Boolean)
+    fun addTorque(torque: PxVec3, mode: PxForceModeEnum, autowake: Boolean)
 
     /**
      * @param mode WebIDL type: [PxForceModeEnum] (enum)
      */
-    fun clearForce(mode: Int)
+    fun clearForce(mode: PxForceModeEnum)
 
     /**
      * @param mode WebIDL type: [PxForceModeEnum] (enum)
      */
-    fun clearTorque(mode: Int)
+    fun clearTorque(mode: PxForceModeEnum)
 
     /**
      * @param force  WebIDL type: [PxVec3] (Const, Ref)
@@ -3529,13 +3535,13 @@ external interface PxRigidBody : PxRigidActor {
      * @param torque WebIDL type: [PxVec3] (Const, Ref)
      * @param mode   WebIDL type: [PxForceModeEnum] (enum)
      */
-    fun setForceAndTorque(force: PxVec3, torque: PxVec3, mode: Int)
+    fun setForceAndTorque(force: PxVec3, torque: PxVec3, mode: PxForceModeEnum)
 
     /**
      * @param flag  WebIDL type: [PxRigidBodyFlagEnum] (enum)
      * @param value WebIDL type: boolean
      */
-    fun setRigidBodyFlag(flag: Int, value: Boolean)
+    fun setRigidBodyFlag(flag: PxRigidBodyFlagEnum, value: Boolean)
 
     /**
      * @param inFlags WebIDL type: [PxRigidBodyFlags] (Ref)
@@ -3647,17 +3653,17 @@ external interface PxRigidBodyFlags {
      * @param flag WebIDL type: [PxRigidBodyFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxRigidBodyFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxRigidBodyFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxRigidBodyFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxRigidBodyFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxRigidBodyFlagEnum)
 
 }
 
@@ -3718,7 +3724,7 @@ external interface PxRigidDynamic : PxRigidBody {
      * @param flag  WebIDL type: [PxRigidDynamicLockFlagEnum] (enum)
      * @param value WebIDL type: boolean
      */
-    fun setRigidDynamicLockFlag(flag: Int, value: Boolean)
+    fun setRigidDynamicLockFlag(flag: PxRigidDynamicLockFlagEnum, value: Boolean)
 
     /**
      * @param flags WebIDL type: [PxRigidDynamicLockFlags] (Ref)
@@ -3812,17 +3818,17 @@ external interface PxRigidDynamicLockFlags {
      * @param flag WebIDL type: [PxRigidDynamicLockFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxRigidDynamicLockFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxRigidDynamicLockFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxRigidDynamicLockFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxRigidDynamicLockFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxRigidDynamicLockFlagEnum)
 
 }
 
@@ -3931,7 +3937,7 @@ external interface PxShape : PxRefCounted {
      * @param flag  WebIDL type: [PxShapeFlagEnum] (enum)
      * @param value WebIDL type: boolean
      */
-    fun setFlag(flag: Int, value: Boolean)
+    fun setFlag(flag: PxShapeFlagEnum, value: Boolean)
 
     /**
      * @param inFlags WebIDL type: [PxShapeFlags] (Ref)
@@ -4109,17 +4115,17 @@ external interface PxShapeFlags {
      * @param flag WebIDL type: [PxShapeFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxShapeFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxShapeFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxShapeFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxShapeFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxShapeFlagEnum)
 
 }
 
@@ -4322,7 +4328,7 @@ external interface PxConstraint : PxBase {
      * @param flag  WebIDL type: [PxConstraintFlagEnum] (enum)
      * @param value WebIDL type: boolean
      */
-    fun setFlag(flag: Int, value: Boolean)
+    fun setFlag(flag: PxConstraintFlagEnum, value: Boolean)
 
     /**
      * @param linear  WebIDL type: [PxVec3] (Ref)
@@ -4429,17 +4435,17 @@ external interface PxConstraintFlags {
      * @param flag WebIDL type: [PxConstraintFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxConstraintFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxConstraintFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxConstraintFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxConstraintFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxConstraintFlagEnum)
 
 }
 
@@ -4498,17 +4504,17 @@ external interface PxContactPairHeaderFlags {
      * @param flag WebIDL type: [PxContactPairHeaderFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxContactPairHeaderFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxContactPairHeaderFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxContactPairHeaderFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxContactPairHeaderFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxContactPairHeaderFlagEnum)
 
 }
 
@@ -4566,6 +4572,9 @@ fun PxContactPair.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+inline fun PxContactPair.getShapes(index: Int) = get_shapes(index)
+inline fun PxContactPair.setShapes(index: Int, value: PxShape) = set_shapes(index, value)
+
 external interface PxContactPairFlags {
     /**
      * Native object address.
@@ -4576,17 +4585,17 @@ external interface PxContactPairFlags {
      * @param flag WebIDL type: [PxContactPairFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxContactPairFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxContactPairFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxContactPairFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxContactPairFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxContactPairFlagEnum)
 
 }
 
@@ -4631,6 +4640,9 @@ fun PxContactPairHeaderFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.ph
 fun PxContactPairHeader.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+inline fun PxContactPairHeader.getActors(index: Int) = get_actors(index)
+inline fun PxContactPairHeader.setActors(index: Int, value: PxActor) = set_actors(index, value)
 
 external interface PxContactPairPoint {
     /**
@@ -4778,7 +4790,7 @@ external interface PxMaterial : PxBaseMaterial {
      * @param flag WebIDL type: [PxMaterialFlagEnum] (enum)
      * @param b    WebIDL type: boolean
      */
-    fun setFlag(flag: Int, b: Boolean)
+    fun setFlag(flag: PxMaterialFlagEnum, b: Boolean)
 
     /**
      * @param flags WebIDL type: [PxMaterialFlags] (Ref)
@@ -4793,22 +4805,22 @@ external interface PxMaterial : PxBaseMaterial {
     /**
      * @param combMode WebIDL type: [PxCombineModeEnum] (enum)
      */
-    fun setFrictionCombineMode(combMode: Int)
+    fun setFrictionCombineMode(combMode: PxCombineModeEnum)
 
     /**
      * @return WebIDL type: [PxCombineModeEnum] (enum)
      */
-    fun getFrictionCombineMode(): Int
+    fun getFrictionCombineMode(): PxCombineModeEnum
 
     /**
      * @param combMode WebIDL type: [PxCombineModeEnum] (enum)
      */
-    fun setRestitutionCombineMode(combMode: Int)
+    fun setRestitutionCombineMode(combMode: PxCombineModeEnum)
 
     /**
      * @return WebIDL type: [PxCombineModeEnum] (enum)
      */
-    fun getRestitutionCombineMode(): Int
+    fun getRestitutionCombineMode(): PxCombineModeEnum
 
 }
 
@@ -4843,17 +4855,17 @@ external interface PxMaterialFlags {
      * @param flag WebIDL type: [PxMaterialFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxMaterialFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxMaterialFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxMaterialFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxMaterialFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxMaterialFlagEnum)
 
 }
 
@@ -4878,17 +4890,17 @@ external interface PxPairFlags {
      * @param flag WebIDL type: [PxPairFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxPairFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxPairFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxPairFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxPairFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxPairFlagEnum)
 
 }
 
@@ -5222,6 +5234,9 @@ fun PxSimulationStatistics.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+inline fun PxSimulationStatistics.getNbShapes(index: Int) = get_nbShapes(index)
+inline fun PxSimulationStatistics.setNbShapes(index: Int, value: Int) = set_nbShapes(index, value)
+
 external interface PxTriggerPair {
     /**
      * Native object address.
@@ -5247,7 +5262,7 @@ external interface PxTriggerPair {
     /**
      * WebIDL type: [PxPairFlagEnum] (enum)
      */
-    var status: Int
+    var status: PxPairFlagEnum
     /**
      * WebIDL type: [PxTriggerPairFlags] (Value)
      */
@@ -5270,17 +5285,17 @@ external interface PxTriggerPairFlags {
      * @param flag WebIDL type: [PxTriggerPairFlagEnum] (enum)
      * @return WebIDL type: boolean
      */
-    fun isSet(flag: Int): Boolean
+    fun isSet(flag: PxTriggerPairFlagEnum): Boolean
 
     /**
      * @param flag WebIDL type: [PxTriggerPairFlagEnum] (enum)
      */
-    fun raise(flag: Int)
+    fun raise(flag: PxTriggerPairFlagEnum)
 
     /**
      * @param flag WebIDL type: [PxTriggerPairFlagEnum] (enum)
      */
-    fun clear(flag: Int)
+    fun clear(flag: PxTriggerPairFlagEnum)
 
 }
 
@@ -5295,292 +5310,362 @@ fun PxTriggerPairFlags.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-object PxSceneFlagEnum {
-    val eENABLE_ACTIVE_ACTORS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_ACTIVE_ACTORS()
-    val eENABLE_CCD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_CCD()
-    val eDISABLE_CCD_RESWEEP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eDISABLE_CCD_RESWEEP()
-    val eENABLE_PCM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_PCM()
-    val eDISABLE_CONTACT_REPORT_BUFFER_RESIZE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eDISABLE_CONTACT_REPORT_BUFFER_RESIZE()
-    val eDISABLE_CONTACT_CACHE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eDISABLE_CONTACT_CACHE()
-    val eREQUIRE_RW_LOCK: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eREQUIRE_RW_LOCK()
-    val eENABLE_STABILIZATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_STABILIZATION()
-    val eENABLE_AVERAGE_POINT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_AVERAGE_POINT()
-    val eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS()
-    val eENABLE_GPU_DYNAMICS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_GPU_DYNAMICS()
-    val eENABLE_ENHANCED_DETERMINISM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_ENHANCED_DETERMINISM()
-    val eENABLE_FRICTION_EVERY_ITERATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_FRICTION_EVERY_ITERATION()
-    val eENABLE_DIRECT_GPU_API: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_DIRECT_GPU_API()
-    val eMUTABLE_FLAGS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eMUTABLE_FLAGS()
+value class PxSceneFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eENABLE_ACTIVE_ACTORS: PxSceneFlagEnum = PxSceneFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_ACTIVE_ACTORS())
+        val eENABLE_CCD: PxSceneFlagEnum = PxSceneFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_CCD())
+        val eDISABLE_CCD_RESWEEP: PxSceneFlagEnum = PxSceneFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eDISABLE_CCD_RESWEEP())
+        val eENABLE_PCM: PxSceneFlagEnum = PxSceneFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_PCM())
+        val eDISABLE_CONTACT_REPORT_BUFFER_RESIZE: PxSceneFlagEnum = PxSceneFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eDISABLE_CONTACT_REPORT_BUFFER_RESIZE())
+        val eDISABLE_CONTACT_CACHE: PxSceneFlagEnum = PxSceneFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eDISABLE_CONTACT_CACHE())
+        val eREQUIRE_RW_LOCK: PxSceneFlagEnum = PxSceneFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eREQUIRE_RW_LOCK())
+        val eENABLE_STABILIZATION: PxSceneFlagEnum = PxSceneFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_STABILIZATION())
+        val eENABLE_AVERAGE_POINT: PxSceneFlagEnum = PxSceneFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_AVERAGE_POINT())
+        val eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS: PxSceneFlagEnum = PxSceneFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS())
+        val eENABLE_GPU_DYNAMICS: PxSceneFlagEnum = PxSceneFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_GPU_DYNAMICS())
+        val eENABLE_ENHANCED_DETERMINISM: PxSceneFlagEnum = PxSceneFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_ENHANCED_DETERMINISM())
+        val eENABLE_FRICTION_EVERY_ITERATION: PxSceneFlagEnum = PxSceneFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_FRICTION_EVERY_ITERATION())
+        val eENABLE_DIRECT_GPU_API: PxSceneFlagEnum = PxSceneFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eENABLE_DIRECT_GPU_API())
+        val eMUTABLE_FLAGS: PxSceneFlagEnum = PxSceneFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSceneFlagEnum_eMUTABLE_FLAGS())
+    }
 }
 
-object PxSceneQueryUpdateModeEnum {
-    val eBUILD_ENABLED_COMMIT_ENABLED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneQueryUpdateModeEnum_eBUILD_ENABLED_COMMIT_ENABLED()
-    val eBUILD_ENABLED_COMMIT_DISABLED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneQueryUpdateModeEnum_eBUILD_ENABLED_COMMIT_DISABLED()
-    val eBUILD_DISABLED_COMMIT_DISABLED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSceneQueryUpdateModeEnum_eBUILD_DISABLED_COMMIT_DISABLED()
+value class PxSceneQueryUpdateModeEnum private constructor(val value: Int) {
+    companion object {
+        val eBUILD_ENABLED_COMMIT_ENABLED: PxSceneQueryUpdateModeEnum = PxSceneQueryUpdateModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSceneQueryUpdateModeEnum_eBUILD_ENABLED_COMMIT_ENABLED())
+        val eBUILD_ENABLED_COMMIT_DISABLED: PxSceneQueryUpdateModeEnum = PxSceneQueryUpdateModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSceneQueryUpdateModeEnum_eBUILD_ENABLED_COMMIT_DISABLED())
+        val eBUILD_DISABLED_COMMIT_DISABLED: PxSceneQueryUpdateModeEnum = PxSceneQueryUpdateModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSceneQueryUpdateModeEnum_eBUILD_DISABLED_COMMIT_DISABLED())
+    }
 }
 
-object PxArticulationAxisEnum {
-    val eTWIST: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationAxisEnum_eTWIST()
-    val eSWING1: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationAxisEnum_eSWING1()
-    val eSWING2: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationAxisEnum_eSWING2()
-    val eX: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationAxisEnum_eX()
-    val eY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationAxisEnum_eY()
-    val eZ: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationAxisEnum_eZ()
+value class PxArticulationAxisEnum private constructor(val value: Int) {
+    companion object {
+        val eTWIST: PxArticulationAxisEnum = PxArticulationAxisEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationAxisEnum_eTWIST())
+        val eSWING1: PxArticulationAxisEnum = PxArticulationAxisEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationAxisEnum_eSWING1())
+        val eSWING2: PxArticulationAxisEnum = PxArticulationAxisEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationAxisEnum_eSWING2())
+        val eX: PxArticulationAxisEnum = PxArticulationAxisEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationAxisEnum_eX())
+        val eY: PxArticulationAxisEnum = PxArticulationAxisEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationAxisEnum_eY())
+        val eZ: PxArticulationAxisEnum = PxArticulationAxisEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationAxisEnum_eZ())
+    }
 }
 
-object PxArticulationCacheFlagEnum {
-    val eVELOCITY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eVELOCITY()
-    val eACCELERATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eACCELERATION()
-    val ePOSITION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_ePOSITION()
-    val eFORCE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eFORCE()
-    val eLINK_VELOCITY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eLINK_VELOCITY()
-    val eLINK_ACCELERATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eLINK_ACCELERATION()
-    val eROOT_TRANSFORM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eROOT_TRANSFORM()
-    val eROOT_VELOCITIES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eROOT_VELOCITIES()
-    val eLINK_INCOMING_JOINT_FORCE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eLINK_INCOMING_JOINT_FORCE()
-    val eJOINT_TARGET_POSITIONS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eJOINT_TARGET_POSITIONS()
-    val eJOINT_TARGET_VELOCITIES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eJOINT_TARGET_VELOCITIES()
-    val eALL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eALL()
+value class PxArticulationCacheFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eVELOCITY: PxArticulationCacheFlagEnum = PxArticulationCacheFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eVELOCITY())
+        val eACCELERATION: PxArticulationCacheFlagEnum = PxArticulationCacheFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eACCELERATION())
+        val ePOSITION: PxArticulationCacheFlagEnum = PxArticulationCacheFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_ePOSITION())
+        val eFORCE: PxArticulationCacheFlagEnum = PxArticulationCacheFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eFORCE())
+        val eLINK_VELOCITY: PxArticulationCacheFlagEnum = PxArticulationCacheFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eLINK_VELOCITY())
+        val eLINK_ACCELERATION: PxArticulationCacheFlagEnum = PxArticulationCacheFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eLINK_ACCELERATION())
+        val eROOT_TRANSFORM: PxArticulationCacheFlagEnum = PxArticulationCacheFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eROOT_TRANSFORM())
+        val eROOT_VELOCITIES: PxArticulationCacheFlagEnum = PxArticulationCacheFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eROOT_VELOCITIES())
+        val eLINK_INCOMING_JOINT_FORCE: PxArticulationCacheFlagEnum = PxArticulationCacheFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eLINK_INCOMING_JOINT_FORCE())
+        val eJOINT_TARGET_POSITIONS: PxArticulationCacheFlagEnum = PxArticulationCacheFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eJOINT_TARGET_POSITIONS())
+        val eJOINT_TARGET_VELOCITIES: PxArticulationCacheFlagEnum = PxArticulationCacheFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eJOINT_TARGET_VELOCITIES())
+        val eALL: PxArticulationCacheFlagEnum = PxArticulationCacheFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eALL())
+    }
 }
 
-object PxArticulationDriveTypeEnum {
-    val eFORCE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationDriveTypeEnum_eFORCE()
-    val eACCELERATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationDriveTypeEnum_eACCELERATION()
-    val eNONE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationDriveTypeEnum_eNONE()
+value class PxArticulationDriveTypeEnum private constructor(val value: Int) {
+    companion object {
+        val eFORCE: PxArticulationDriveTypeEnum = PxArticulationDriveTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationDriveTypeEnum_eFORCE())
+        val eACCELERATION: PxArticulationDriveTypeEnum = PxArticulationDriveTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationDriveTypeEnum_eACCELERATION())
+        val eNONE: PxArticulationDriveTypeEnum = PxArticulationDriveTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationDriveTypeEnum_eNONE())
+    }
 }
 
-object PxArticulationFlagEnum {
-    val eFIX_BASE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationFlagEnum_eFIX_BASE()
-    val eDRIVE_LIMITS_ARE_FORCES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationFlagEnum_eDRIVE_LIMITS_ARE_FORCES()
-    val eDISABLE_SELF_COLLISION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationFlagEnum_eDISABLE_SELF_COLLISION()
+value class PxArticulationFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eFIX_BASE: PxArticulationFlagEnum = PxArticulationFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationFlagEnum_eFIX_BASE())
+        val eDRIVE_LIMITS_ARE_FORCES: PxArticulationFlagEnum = PxArticulationFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationFlagEnum_eDRIVE_LIMITS_ARE_FORCES())
+        val eDISABLE_SELF_COLLISION: PxArticulationFlagEnum = PxArticulationFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationFlagEnum_eDISABLE_SELF_COLLISION())
+    }
 }
 
-object PxArticulationJointTypeEnum {
-    val eFIX: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationJointTypeEnum_eFIX()
-    val ePRISMATIC: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationJointTypeEnum_ePRISMATIC()
-    val eREVOLUTE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationJointTypeEnum_eREVOLUTE()
-    val eSPHERICAL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationJointTypeEnum_eSPHERICAL()
-    val eUNDEFINED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationJointTypeEnum_eUNDEFINED()
+value class PxArticulationJointTypeEnum private constructor(val value: Int) {
+    companion object {
+        val eFIX: PxArticulationJointTypeEnum = PxArticulationJointTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationJointTypeEnum_eFIX())
+        val ePRISMATIC: PxArticulationJointTypeEnum = PxArticulationJointTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationJointTypeEnum_ePRISMATIC())
+        val eREVOLUTE: PxArticulationJointTypeEnum = PxArticulationJointTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationJointTypeEnum_eREVOLUTE())
+        val eSPHERICAL: PxArticulationJointTypeEnum = PxArticulationJointTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationJointTypeEnum_eSPHERICAL())
+        val eUNDEFINED: PxArticulationJointTypeEnum = PxArticulationJointTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationJointTypeEnum_eUNDEFINED())
+    }
 }
 
-object PxArticulationKinematicFlagEnum {
-    val ePOSITION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationKinematicFlagEnum_ePOSITION()
-    val eVELOCITY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationKinematicFlagEnum_eVELOCITY()
+value class PxArticulationKinematicFlagEnum private constructor(val value: Int) {
+    companion object {
+        val ePOSITION: PxArticulationKinematicFlagEnum = PxArticulationKinematicFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationKinematicFlagEnum_ePOSITION())
+        val eVELOCITY: PxArticulationKinematicFlagEnum = PxArticulationKinematicFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationKinematicFlagEnum_eVELOCITY())
+    }
 }
 
-object PxArticulationMotionEnum {
-    val eLOCKED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationMotionEnum_eLOCKED()
-    val eLIMITED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationMotionEnum_eLIMITED()
-    val eFREE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationMotionEnum_eFREE()
+value class PxArticulationMotionEnum private constructor(val value: Int) {
+    companion object {
+        val eLOCKED: PxArticulationMotionEnum = PxArticulationMotionEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationMotionEnum_eLOCKED())
+        val eLIMITED: PxArticulationMotionEnum = PxArticulationMotionEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationMotionEnum_eLIMITED())
+        val eFREE: PxArticulationMotionEnum = PxArticulationMotionEnum(PhysXJsLoader.physXJs._emscripten_enum_PxArticulationMotionEnum_eFREE())
+    }
 }
 
-object PxHitFlagEnum {
-    val ePOSITION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_ePOSITION()
-    val eNORMAL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eNORMAL()
-    val eUV: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eUV()
-    val eASSUME_NO_INITIAL_OVERLAP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eASSUME_NO_INITIAL_OVERLAP()
-    val eANY_HIT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eANY_HIT()
-    val eMESH_MULTIPLE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eMESH_MULTIPLE()
-    val eMESH_BOTH_SIDES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eMESH_BOTH_SIDES()
-    val ePRECISE_SWEEP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_ePRECISE_SWEEP()
-    val eMTD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eMTD()
-    val eFACE_INDEX: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eFACE_INDEX()
-    val eDEFAULT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eDEFAULT()
-    val eMODIFIABLE_FLAGS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eMODIFIABLE_FLAGS()
+value class PxHitFlagEnum private constructor(val value: Int) {
+    companion object {
+        val ePOSITION: PxHitFlagEnum = PxHitFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_ePOSITION())
+        val eNORMAL: PxHitFlagEnum = PxHitFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eNORMAL())
+        val eUV: PxHitFlagEnum = PxHitFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eUV())
+        val eASSUME_NO_INITIAL_OVERLAP: PxHitFlagEnum = PxHitFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eASSUME_NO_INITIAL_OVERLAP())
+        val eANY_HIT: PxHitFlagEnum = PxHitFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eANY_HIT())
+        val eMESH_MULTIPLE: PxHitFlagEnum = PxHitFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eMESH_MULTIPLE())
+        val eMESH_BOTH_SIDES: PxHitFlagEnum = PxHitFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eMESH_BOTH_SIDES())
+        val ePRECISE_SWEEP: PxHitFlagEnum = PxHitFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_ePRECISE_SWEEP())
+        val eMTD: PxHitFlagEnum = PxHitFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eMTD())
+        val eFACE_INDEX: PxHitFlagEnum = PxHitFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eFACE_INDEX())
+        val eDEFAULT: PxHitFlagEnum = PxHitFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eDEFAULT())
+        val eMODIFIABLE_FLAGS: PxHitFlagEnum = PxHitFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eMODIFIABLE_FLAGS())
+    }
 }
 
-object PxQueryFlagEnum {
-    val eSTATIC: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_eSTATIC()
-    val eDYNAMIC: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_eDYNAMIC()
-    val ePREFILTER: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_ePREFILTER()
-    val ePOSTFILTER: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_ePOSTFILTER()
-    val eANY_HIT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_eANY_HIT()
-    val eNO_BLOCK: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_eNO_BLOCK()
+value class PxQueryFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eSTATIC: PxQueryFlagEnum = PxQueryFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_eSTATIC())
+        val eDYNAMIC: PxQueryFlagEnum = PxQueryFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_eDYNAMIC())
+        val ePREFILTER: PxQueryFlagEnum = PxQueryFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_ePREFILTER())
+        val ePOSTFILTER: PxQueryFlagEnum = PxQueryFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_ePOSTFILTER())
+        val eANY_HIT: PxQueryFlagEnum = PxQueryFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_eANY_HIT())
+        val eNO_BLOCK: PxQueryFlagEnum = PxQueryFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxQueryFlagEnum_eNO_BLOCK())
+    }
 }
 
-object PxQueryHitType {
-    val eNONE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryHitType_eNONE()
-    val eBLOCK: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryHitType_eBLOCK()
-    val eTOUCH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxQueryHitType_eTOUCH()
+value class PxQueryHitType private constructor(val value: Int) {
+    companion object {
+        val eNONE: PxQueryHitType = PxQueryHitType(PhysXJsLoader.physXJs._emscripten_enum_PxQueryHitType_eNONE())
+        val eBLOCK: PxQueryHitType = PxQueryHitType(PhysXJsLoader.physXJs._emscripten_enum_PxQueryHitType_eBLOCK())
+        val eTOUCH: PxQueryHitType = PxQueryHitType(PhysXJsLoader.physXJs._emscripten_enum_PxQueryHitType_eTOUCH())
+    }
 }
 
-object PxActorFlagEnum {
-    val eVISUALIZATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorFlagEnum_eVISUALIZATION()
-    val eDISABLE_GRAVITY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorFlagEnum_eDISABLE_GRAVITY()
-    val eSEND_SLEEP_NOTIFIES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorFlagEnum_eSEND_SLEEP_NOTIFIES()
-    val eDISABLE_SIMULATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorFlagEnum_eDISABLE_SIMULATION()
+value class PxActorFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eVISUALIZATION: PxActorFlagEnum = PxActorFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxActorFlagEnum_eVISUALIZATION())
+        val eDISABLE_GRAVITY: PxActorFlagEnum = PxActorFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxActorFlagEnum_eDISABLE_GRAVITY())
+        val eSEND_SLEEP_NOTIFIES: PxActorFlagEnum = PxActorFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxActorFlagEnum_eSEND_SLEEP_NOTIFIES())
+        val eDISABLE_SIMULATION: PxActorFlagEnum = PxActorFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxActorFlagEnum_eDISABLE_SIMULATION())
+    }
 }
 
-object PxActorTypeEnum {
-    val eRIGID_STATIC: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eRIGID_STATIC()
-    val eRIGID_DYNAMIC: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eRIGID_DYNAMIC()
-    val eARTICULATION_LINK: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eARTICULATION_LINK()
-    val eDEFORMABLE_SURFACE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eDEFORMABLE_SURFACE()
-    val eDEFORMABLE_VOLUME: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eDEFORMABLE_VOLUME()
-    val eSOFTBODY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eSOFTBODY()
-    val ePBD_PARTICLESYSTEM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_ePBD_PARTICLESYSTEM()
+value class PxActorTypeEnum private constructor(val value: Int) {
+    companion object {
+        val eRIGID_STATIC: PxActorTypeEnum = PxActorTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eRIGID_STATIC())
+        val eRIGID_DYNAMIC: PxActorTypeEnum = PxActorTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eRIGID_DYNAMIC())
+        val eARTICULATION_LINK: PxActorTypeEnum = PxActorTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eARTICULATION_LINK())
+        val eDEFORMABLE_SURFACE: PxActorTypeEnum = PxActorTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eDEFORMABLE_SURFACE())
+        val eDEFORMABLE_VOLUME: PxActorTypeEnum = PxActorTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eDEFORMABLE_VOLUME())
+        val eSOFTBODY: PxActorTypeEnum = PxActorTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eSOFTBODY())
+        val ePBD_PARTICLESYSTEM: PxActorTypeEnum = PxActorTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_ePBD_PARTICLESYSTEM())
+    }
 }
 
-object PxActorTypeFlagEnum {
-    val eRIGID_STATIC: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeFlagEnum_eRIGID_STATIC()
-    val eRIGID_DYNAMIC: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeFlagEnum_eRIGID_DYNAMIC()
+value class PxActorTypeFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eRIGID_STATIC: PxActorTypeFlagEnum = PxActorTypeFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeFlagEnum_eRIGID_STATIC())
+        val eRIGID_DYNAMIC: PxActorTypeFlagEnum = PxActorTypeFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeFlagEnum_eRIGID_DYNAMIC())
+    }
 }
 
-object PxRigidBodyFlagEnum {
-    val eKINEMATIC: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxRigidBodyFlagEnum_eKINEMATIC()
-    val eUSE_KINEMATIC_TARGET_FOR_SCENE_QUERIES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxRigidBodyFlagEnum_eUSE_KINEMATIC_TARGET_FOR_SCENE_QUERIES()
-    val eENABLE_CCD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxRigidBodyFlagEnum_eENABLE_CCD()
-    val eENABLE_CCD_FRICTION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxRigidBodyFlagEnum_eENABLE_CCD_FRICTION()
-    val eENABLE_POSE_INTEGRATION_PREVIEW: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxRigidBodyFlagEnum_eENABLE_POSE_INTEGRATION_PREVIEW()
-    val eENABLE_SPECULATIVE_CCD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxRigidBodyFlagEnum_eENABLE_SPECULATIVE_CCD()
-    val eENABLE_CCD_MAX_CONTACT_IMPULSE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxRigidBodyFlagEnum_eENABLE_CCD_MAX_CONTACT_IMPULSE()
-    val eRETAIN_ACCELERATIONS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxRigidBodyFlagEnum_eRETAIN_ACCELERATIONS()
+value class PxRigidBodyFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eKINEMATIC: PxRigidBodyFlagEnum = PxRigidBodyFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxRigidBodyFlagEnum_eKINEMATIC())
+        val eUSE_KINEMATIC_TARGET_FOR_SCENE_QUERIES: PxRigidBodyFlagEnum = PxRigidBodyFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxRigidBodyFlagEnum_eUSE_KINEMATIC_TARGET_FOR_SCENE_QUERIES())
+        val eENABLE_CCD: PxRigidBodyFlagEnum = PxRigidBodyFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxRigidBodyFlagEnum_eENABLE_CCD())
+        val eENABLE_CCD_FRICTION: PxRigidBodyFlagEnum = PxRigidBodyFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxRigidBodyFlagEnum_eENABLE_CCD_FRICTION())
+        val eENABLE_POSE_INTEGRATION_PREVIEW: PxRigidBodyFlagEnum = PxRigidBodyFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxRigidBodyFlagEnum_eENABLE_POSE_INTEGRATION_PREVIEW())
+        val eENABLE_SPECULATIVE_CCD: PxRigidBodyFlagEnum = PxRigidBodyFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxRigidBodyFlagEnum_eENABLE_SPECULATIVE_CCD())
+        val eENABLE_CCD_MAX_CONTACT_IMPULSE: PxRigidBodyFlagEnum = PxRigidBodyFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxRigidBodyFlagEnum_eENABLE_CCD_MAX_CONTACT_IMPULSE())
+        val eRETAIN_ACCELERATIONS: PxRigidBodyFlagEnum = PxRigidBodyFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxRigidBodyFlagEnum_eRETAIN_ACCELERATIONS())
+    }
 }
 
-object PxRigidDynamicLockFlagEnum {
-    val eLOCK_LINEAR_X: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_LINEAR_X()
-    val eLOCK_LINEAR_Y: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_LINEAR_Y()
-    val eLOCK_LINEAR_Z: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_LINEAR_Z()
-    val eLOCK_ANGULAR_X: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_ANGULAR_X()
-    val eLOCK_ANGULAR_Y: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_ANGULAR_Y()
-    val eLOCK_ANGULAR_Z: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_ANGULAR_Z()
+value class PxRigidDynamicLockFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eLOCK_LINEAR_X: PxRigidDynamicLockFlagEnum = PxRigidDynamicLockFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_LINEAR_X())
+        val eLOCK_LINEAR_Y: PxRigidDynamicLockFlagEnum = PxRigidDynamicLockFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_LINEAR_Y())
+        val eLOCK_LINEAR_Z: PxRigidDynamicLockFlagEnum = PxRigidDynamicLockFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_LINEAR_Z())
+        val eLOCK_ANGULAR_X: PxRigidDynamicLockFlagEnum = PxRigidDynamicLockFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_ANGULAR_X())
+        val eLOCK_ANGULAR_Y: PxRigidDynamicLockFlagEnum = PxRigidDynamicLockFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_ANGULAR_Y())
+        val eLOCK_ANGULAR_Z: PxRigidDynamicLockFlagEnum = PxRigidDynamicLockFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxRigidDynamicLockFlagEnum_eLOCK_ANGULAR_Z())
+    }
 }
 
-object PxShapeFlagEnum {
-    val eSIMULATION_SHAPE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxShapeFlagEnum_eSIMULATION_SHAPE()
-    val eSCENE_QUERY_SHAPE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxShapeFlagEnum_eSCENE_QUERY_SHAPE()
-    val eTRIGGER_SHAPE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxShapeFlagEnum_eTRIGGER_SHAPE()
-    val eVISUALIZATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxShapeFlagEnum_eVISUALIZATION()
+value class PxShapeFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eSIMULATION_SHAPE: PxShapeFlagEnum = PxShapeFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxShapeFlagEnum_eSIMULATION_SHAPE())
+        val eSCENE_QUERY_SHAPE: PxShapeFlagEnum = PxShapeFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxShapeFlagEnum_eSCENE_QUERY_SHAPE())
+        val eTRIGGER_SHAPE: PxShapeFlagEnum = PxShapeFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxShapeFlagEnum_eTRIGGER_SHAPE())
+        val eVISUALIZATION: PxShapeFlagEnum = PxShapeFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxShapeFlagEnum_eVISUALIZATION())
+    }
 }
 
-object PxBroadPhaseTypeEnum {
-    val eSAP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBroadPhaseTypeEnum_eSAP()
-    val eMBP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBroadPhaseTypeEnum_eMBP()
-    val eABP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBroadPhaseTypeEnum_eABP()
-    val ePABP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBroadPhaseTypeEnum_ePABP()
-    val eGPU: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBroadPhaseTypeEnum_eGPU()
+value class PxBroadPhaseTypeEnum private constructor(val value: Int) {
+    companion object {
+        val eSAP: PxBroadPhaseTypeEnum = PxBroadPhaseTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxBroadPhaseTypeEnum_eSAP())
+        val eMBP: PxBroadPhaseTypeEnum = PxBroadPhaseTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxBroadPhaseTypeEnum_eMBP())
+        val eABP: PxBroadPhaseTypeEnum = PxBroadPhaseTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxBroadPhaseTypeEnum_eABP())
+        val ePABP: PxBroadPhaseTypeEnum = PxBroadPhaseTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxBroadPhaseTypeEnum_ePABP())
+        val eGPU: PxBroadPhaseTypeEnum = PxBroadPhaseTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxBroadPhaseTypeEnum_eGPU())
+    }
 }
 
-object PxBVHBuildStrategyEnum {
-    val eFAST: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBVHBuildStrategyEnum_eFAST()
-    val eDEFAULT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBVHBuildStrategyEnum_eDEFAULT()
-    val eSAH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBVHBuildStrategyEnum_eSAH()
+value class PxBVHBuildStrategyEnum private constructor(val value: Int) {
+    companion object {
+        val eFAST: PxBVHBuildStrategyEnum = PxBVHBuildStrategyEnum(PhysXJsLoader.physXJs._emscripten_enum_PxBVHBuildStrategyEnum_eFAST())
+        val eDEFAULT: PxBVHBuildStrategyEnum = PxBVHBuildStrategyEnum(PhysXJsLoader.physXJs._emscripten_enum_PxBVHBuildStrategyEnum_eDEFAULT())
+        val eSAH: PxBVHBuildStrategyEnum = PxBVHBuildStrategyEnum(PhysXJsLoader.physXJs._emscripten_enum_PxBVHBuildStrategyEnum_eSAH())
+    }
 }
 
-object PxCombineModeEnum {
-    val eAVERAGE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCombineModeEnum_eAVERAGE()
-    val eMIN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCombineModeEnum_eMIN()
-    val eMULTIPLY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCombineModeEnum_eMULTIPLY()
-    val eMAX: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxCombineModeEnum_eMAX()
+value class PxCombineModeEnum private constructor(val value: Int) {
+    companion object {
+        val eAVERAGE: PxCombineModeEnum = PxCombineModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxCombineModeEnum_eAVERAGE())
+        val eMIN: PxCombineModeEnum = PxCombineModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxCombineModeEnum_eMIN())
+        val eMULTIPLY: PxCombineModeEnum = PxCombineModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxCombineModeEnum_eMULTIPLY())
+        val eMAX: PxCombineModeEnum = PxCombineModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxCombineModeEnum_eMAX())
+    }
 }
 
-object PxConstraintFlagEnum {
-    val eBROKEN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eBROKEN()
-    val eCOLLISION_ENABLED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eCOLLISION_ENABLED()
-    val eVISUALIZATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eVISUALIZATION()
-    val eDRIVE_LIMITS_ARE_FORCES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eDRIVE_LIMITS_ARE_FORCES()
-    val eIMPROVED_SLERP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eIMPROVED_SLERP()
-    val eDISABLE_PREPROCESSING: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eDISABLE_PREPROCESSING()
-    val eENABLE_EXTENDED_LIMITS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eENABLE_EXTENDED_LIMITS()
-    val eGPU_COMPATIBLE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eGPU_COMPATIBLE()
-    val eALWAYS_UPDATE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eALWAYS_UPDATE()
-    val eDISABLE_CONSTRAINT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eDISABLE_CONSTRAINT()
+value class PxConstraintFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eBROKEN: PxConstraintFlagEnum = PxConstraintFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eBROKEN())
+        val eCOLLISION_ENABLED: PxConstraintFlagEnum = PxConstraintFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eCOLLISION_ENABLED())
+        val eVISUALIZATION: PxConstraintFlagEnum = PxConstraintFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eVISUALIZATION())
+        val eDRIVE_LIMITS_ARE_FORCES: PxConstraintFlagEnum = PxConstraintFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eDRIVE_LIMITS_ARE_FORCES())
+        val eIMPROVED_SLERP: PxConstraintFlagEnum = PxConstraintFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eIMPROVED_SLERP())
+        val eDISABLE_PREPROCESSING: PxConstraintFlagEnum = PxConstraintFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eDISABLE_PREPROCESSING())
+        val eENABLE_EXTENDED_LIMITS: PxConstraintFlagEnum = PxConstraintFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eENABLE_EXTENDED_LIMITS())
+        val eGPU_COMPATIBLE: PxConstraintFlagEnum = PxConstraintFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eGPU_COMPATIBLE())
+        val eALWAYS_UPDATE: PxConstraintFlagEnum = PxConstraintFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eALWAYS_UPDATE())
+        val eDISABLE_CONSTRAINT: PxConstraintFlagEnum = PxConstraintFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxConstraintFlagEnum_eDISABLE_CONSTRAINT())
+    }
 }
 
-object PxContactPairHeaderFlagEnum {
-    val eREMOVED_ACTOR_0: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxContactPairHeaderFlagEnum_eREMOVED_ACTOR_0()
-    val eREMOVED_ACTOR_1: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxContactPairHeaderFlagEnum_eREMOVED_ACTOR_1()
+value class PxContactPairHeaderFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eREMOVED_ACTOR_0: PxContactPairHeaderFlagEnum = PxContactPairHeaderFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxContactPairHeaderFlagEnum_eREMOVED_ACTOR_0())
+        val eREMOVED_ACTOR_1: PxContactPairHeaderFlagEnum = PxContactPairHeaderFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxContactPairHeaderFlagEnum_eREMOVED_ACTOR_1())
+    }
 }
 
-object PxContactPairFlagEnum {
-    val eREMOVED_SHAPE_0: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxContactPairFlagEnum_eREMOVED_SHAPE_0()
-    val eREMOVED_SHAPE_1: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxContactPairFlagEnum_eREMOVED_SHAPE_1()
-    val eACTOR_PAIR_HAS_FIRST_TOUCH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxContactPairFlagEnum_eACTOR_PAIR_HAS_FIRST_TOUCH()
-    val eACTOR_PAIR_LOST_TOUCH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxContactPairFlagEnum_eACTOR_PAIR_LOST_TOUCH()
-    val eINTERNAL_HAS_IMPULSES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxContactPairFlagEnum_eINTERNAL_HAS_IMPULSES()
-    val eINTERNAL_CONTACTS_ARE_FLIPPED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxContactPairFlagEnum_eINTERNAL_CONTACTS_ARE_FLIPPED()
+value class PxContactPairFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eREMOVED_SHAPE_0: PxContactPairFlagEnum = PxContactPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxContactPairFlagEnum_eREMOVED_SHAPE_0())
+        val eREMOVED_SHAPE_1: PxContactPairFlagEnum = PxContactPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxContactPairFlagEnum_eREMOVED_SHAPE_1())
+        val eACTOR_PAIR_HAS_FIRST_TOUCH: PxContactPairFlagEnum = PxContactPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxContactPairFlagEnum_eACTOR_PAIR_HAS_FIRST_TOUCH())
+        val eACTOR_PAIR_LOST_TOUCH: PxContactPairFlagEnum = PxContactPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxContactPairFlagEnum_eACTOR_PAIR_LOST_TOUCH())
+        val eINTERNAL_HAS_IMPULSES: PxContactPairFlagEnum = PxContactPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxContactPairFlagEnum_eINTERNAL_HAS_IMPULSES())
+        val eINTERNAL_CONTACTS_ARE_FLIPPED: PxContactPairFlagEnum = PxContactPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxContactPairFlagEnum_eINTERNAL_CONTACTS_ARE_FLIPPED())
+    }
 }
 
-object PxDynamicTreeSecondaryPrunerEnum {
-    val eNONE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDynamicTreeSecondaryPrunerEnum_eNONE()
-    val eBUCKET: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDynamicTreeSecondaryPrunerEnum_eBUCKET()
-    val eINCREMENTAL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDynamicTreeSecondaryPrunerEnum_eINCREMENTAL()
-    val eBVH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDynamicTreeSecondaryPrunerEnum_eBVH()
+value class PxDynamicTreeSecondaryPrunerEnum private constructor(val value: Int) {
+    companion object {
+        val eNONE: PxDynamicTreeSecondaryPrunerEnum = PxDynamicTreeSecondaryPrunerEnum(PhysXJsLoader.physXJs._emscripten_enum_PxDynamicTreeSecondaryPrunerEnum_eNONE())
+        val eBUCKET: PxDynamicTreeSecondaryPrunerEnum = PxDynamicTreeSecondaryPrunerEnum(PhysXJsLoader.physXJs._emscripten_enum_PxDynamicTreeSecondaryPrunerEnum_eBUCKET())
+        val eINCREMENTAL: PxDynamicTreeSecondaryPrunerEnum = PxDynamicTreeSecondaryPrunerEnum(PhysXJsLoader.physXJs._emscripten_enum_PxDynamicTreeSecondaryPrunerEnum_eINCREMENTAL())
+        val eBVH: PxDynamicTreeSecondaryPrunerEnum = PxDynamicTreeSecondaryPrunerEnum(PhysXJsLoader.physXJs._emscripten_enum_PxDynamicTreeSecondaryPrunerEnum_eBVH())
+    }
 }
 
-object PxFilterFlagEnum {
-    val eKILL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFilterFlagEnum_eKILL()
-    val eSUPPRESS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFilterFlagEnum_eSUPPRESS()
-    val eCALLBACK: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFilterFlagEnum_eCALLBACK()
-    val eNOTIFY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFilterFlagEnum_eNOTIFY()
-    val eDEFAULT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFilterFlagEnum_eDEFAULT()
+value class PxFilterFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eKILL: PxFilterFlagEnum = PxFilterFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxFilterFlagEnum_eKILL())
+        val eSUPPRESS: PxFilterFlagEnum = PxFilterFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxFilterFlagEnum_eSUPPRESS())
+        val eCALLBACK: PxFilterFlagEnum = PxFilterFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxFilterFlagEnum_eCALLBACK())
+        val eNOTIFY: PxFilterFlagEnum = PxFilterFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxFilterFlagEnum_eNOTIFY())
+        val eDEFAULT: PxFilterFlagEnum = PxFilterFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxFilterFlagEnum_eDEFAULT())
+    }
 }
 
-object PxFilterObjectFlagEnum {
-    val eKINEMATIC: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFilterObjectFlagEnum_eKINEMATIC()
-    val eTRIGGER: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFilterObjectFlagEnum_eTRIGGER()
+value class PxFilterObjectFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eKINEMATIC: PxFilterObjectFlagEnum = PxFilterObjectFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxFilterObjectFlagEnum_eKINEMATIC())
+        val eTRIGGER: PxFilterObjectFlagEnum = PxFilterObjectFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxFilterObjectFlagEnum_eTRIGGER())
+    }
 }
 
-object PxForceModeEnum {
-    val eFORCE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxForceModeEnum_eFORCE()
-    val eIMPULSE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxForceModeEnum_eIMPULSE()
-    val eVELOCITY_CHANGE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxForceModeEnum_eVELOCITY_CHANGE()
-    val eACCELERATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxForceModeEnum_eACCELERATION()
+value class PxForceModeEnum private constructor(val value: Int) {
+    companion object {
+        val eFORCE: PxForceModeEnum = PxForceModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxForceModeEnum_eFORCE())
+        val eIMPULSE: PxForceModeEnum = PxForceModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxForceModeEnum_eIMPULSE())
+        val eVELOCITY_CHANGE: PxForceModeEnum = PxForceModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxForceModeEnum_eVELOCITY_CHANGE())
+        val eACCELERATION: PxForceModeEnum = PxForceModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxForceModeEnum_eACCELERATION())
+    }
 }
 
-object PxFrictionTypeEnum {
-    val ePATCH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFrictionTypeEnum_ePATCH()
-    val eFRICTION_COUNT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFrictionTypeEnum_eFRICTION_COUNT()
+value class PxFrictionTypeEnum private constructor(val value: Int) {
+    companion object {
+        val ePATCH: PxFrictionTypeEnum = PxFrictionTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxFrictionTypeEnum_ePATCH())
+        val eFRICTION_COUNT: PxFrictionTypeEnum = PxFrictionTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxFrictionTypeEnum_eFRICTION_COUNT())
+    }
 }
 
-object PxMaterialFlagEnum {
-    val eDISABLE_FRICTION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMaterialFlagEnum_eDISABLE_FRICTION()
-    val eDISABLE_STRONG_FRICTION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMaterialFlagEnum_eDISABLE_STRONG_FRICTION()
-    val eCOMPLIANT_ACCELERATION_SPRING: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMaterialFlagEnum_eCOMPLIANT_ACCELERATION_SPRING()
+value class PxMaterialFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eDISABLE_FRICTION: PxMaterialFlagEnum = PxMaterialFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxMaterialFlagEnum_eDISABLE_FRICTION())
+        val eDISABLE_STRONG_FRICTION: PxMaterialFlagEnum = PxMaterialFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxMaterialFlagEnum_eDISABLE_STRONG_FRICTION())
+        val eCOMPLIANT_ACCELERATION_SPRING: PxMaterialFlagEnum = PxMaterialFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxMaterialFlagEnum_eCOMPLIANT_ACCELERATION_SPRING())
+    }
 }
 
-object PxPairFilteringModeEnum {
-    val eKEEP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFilteringModeEnum_eKEEP()
-    val eSUPPRESS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFilteringModeEnum_eSUPPRESS()
-    val eKILL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFilteringModeEnum_eKILL()
-    val eDEFAULT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFilteringModeEnum_eDEFAULT()
+value class PxPairFilteringModeEnum private constructor(val value: Int) {
+    companion object {
+        val eKEEP: PxPairFilteringModeEnum = PxPairFilteringModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFilteringModeEnum_eKEEP())
+        val eSUPPRESS: PxPairFilteringModeEnum = PxPairFilteringModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFilteringModeEnum_eSUPPRESS())
+        val eKILL: PxPairFilteringModeEnum = PxPairFilteringModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFilteringModeEnum_eKILL())
+        val eDEFAULT: PxPairFilteringModeEnum = PxPairFilteringModeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFilteringModeEnum_eDEFAULT())
+    }
 }
 
-object PxPairFlagEnum {
-    val eSOLVE_CONTACT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eSOLVE_CONTACT()
-    val eMODIFY_CONTACTS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eMODIFY_CONTACTS()
-    val eNOTIFY_TOUCH_FOUND: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNOTIFY_TOUCH_FOUND()
-    val eNOTIFY_TOUCH_PERSISTS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNOTIFY_TOUCH_PERSISTS()
-    val eNOTIFY_TOUCH_LOST: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNOTIFY_TOUCH_LOST()
-    val eNOTIFY_TOUCH_CCD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNOTIFY_TOUCH_CCD()
-    val eNOTIFY_THRESHOLD_FORCE_FOUND: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNOTIFY_THRESHOLD_FORCE_FOUND()
-    val eNOTIFY_THRESHOLD_FORCE_PERSISTS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNOTIFY_THRESHOLD_FORCE_PERSISTS()
-    val eNOTIFY_THRESHOLD_FORCE_LOST: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNOTIFY_THRESHOLD_FORCE_LOST()
-    val eNOTIFY_CONTACT_POINTS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNOTIFY_CONTACT_POINTS()
-    val eDETECT_DISCRETE_CONTACT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eDETECT_DISCRETE_CONTACT()
-    val eDETECT_CCD_CONTACT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eDETECT_CCD_CONTACT()
-    val ePRE_SOLVER_VELOCITY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_ePRE_SOLVER_VELOCITY()
-    val ePOST_SOLVER_VELOCITY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_ePOST_SOLVER_VELOCITY()
-    val eCONTACT_EVENT_POSE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eCONTACT_EVENT_POSE()
-    val eNEXT_FREE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNEXT_FREE()
-    val eCONTACT_DEFAULT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eCONTACT_DEFAULT()
-    val eTRIGGER_DEFAULT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eTRIGGER_DEFAULT()
+value class PxPairFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eSOLVE_CONTACT: PxPairFlagEnum = PxPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eSOLVE_CONTACT())
+        val eMODIFY_CONTACTS: PxPairFlagEnum = PxPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eMODIFY_CONTACTS())
+        val eNOTIFY_TOUCH_FOUND: PxPairFlagEnum = PxPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNOTIFY_TOUCH_FOUND())
+        val eNOTIFY_TOUCH_PERSISTS: PxPairFlagEnum = PxPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNOTIFY_TOUCH_PERSISTS())
+        val eNOTIFY_TOUCH_LOST: PxPairFlagEnum = PxPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNOTIFY_TOUCH_LOST())
+        val eNOTIFY_TOUCH_CCD: PxPairFlagEnum = PxPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNOTIFY_TOUCH_CCD())
+        val eNOTIFY_THRESHOLD_FORCE_FOUND: PxPairFlagEnum = PxPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNOTIFY_THRESHOLD_FORCE_FOUND())
+        val eNOTIFY_THRESHOLD_FORCE_PERSISTS: PxPairFlagEnum = PxPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNOTIFY_THRESHOLD_FORCE_PERSISTS())
+        val eNOTIFY_THRESHOLD_FORCE_LOST: PxPairFlagEnum = PxPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNOTIFY_THRESHOLD_FORCE_LOST())
+        val eNOTIFY_CONTACT_POINTS: PxPairFlagEnum = PxPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNOTIFY_CONTACT_POINTS())
+        val eDETECT_DISCRETE_CONTACT: PxPairFlagEnum = PxPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eDETECT_DISCRETE_CONTACT())
+        val eDETECT_CCD_CONTACT: PxPairFlagEnum = PxPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eDETECT_CCD_CONTACT())
+        val ePRE_SOLVER_VELOCITY: PxPairFlagEnum = PxPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_ePRE_SOLVER_VELOCITY())
+        val ePOST_SOLVER_VELOCITY: PxPairFlagEnum = PxPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_ePOST_SOLVER_VELOCITY())
+        val eCONTACT_EVENT_POSE: PxPairFlagEnum = PxPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eCONTACT_EVENT_POSE())
+        val eNEXT_FREE: PxPairFlagEnum = PxPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eNEXT_FREE())
+        val eCONTACT_DEFAULT: PxPairFlagEnum = PxPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eCONTACT_DEFAULT())
+        val eTRIGGER_DEFAULT: PxPairFlagEnum = PxPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPairFlagEnum_eTRIGGER_DEFAULT())
+    }
 }
 
-object PxPruningStructureTypeEnum {
-    val eNONE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPruningStructureTypeEnum_eNONE()
-    val eDYNAMIC_AABB_TREE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPruningStructureTypeEnum_eDYNAMIC_AABB_TREE()
-    val eSTATIC_AABB_TREE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPruningStructureTypeEnum_eSTATIC_AABB_TREE()
+value class PxPruningStructureTypeEnum private constructor(val value: Int) {
+    companion object {
+        val eNONE: PxPruningStructureTypeEnum = PxPruningStructureTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPruningStructureTypeEnum_eNONE())
+        val eDYNAMIC_AABB_TREE: PxPruningStructureTypeEnum = PxPruningStructureTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPruningStructureTypeEnum_eDYNAMIC_AABB_TREE())
+        val eSTATIC_AABB_TREE: PxPruningStructureTypeEnum = PxPruningStructureTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxPruningStructureTypeEnum_eSTATIC_AABB_TREE())
+    }
 }
 
-object PxSolverTypeEnum {
-    val ePGS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSolverTypeEnum_ePGS()
-    val eTGS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxSolverTypeEnum_eTGS()
+value class PxSolverTypeEnum private constructor(val value: Int) {
+    companion object {
+        val ePGS: PxSolverTypeEnum = PxSolverTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSolverTypeEnum_ePGS())
+        val eTGS: PxSolverTypeEnum = PxSolverTypeEnum(PhysXJsLoader.physXJs._emscripten_enum_PxSolverTypeEnum_eTGS())
+    }
 }
 
-object PxTriggerPairFlagEnum {
-    val eREMOVED_SHAPE_TRIGGER: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriggerPairFlagEnum_eREMOVED_SHAPE_TRIGGER()
-    val eREMOVED_SHAPE_OTHER: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriggerPairFlagEnum_eREMOVED_SHAPE_OTHER()
-    val eNEXT_FREE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxTriggerPairFlagEnum_eNEXT_FREE()
+value class PxTriggerPairFlagEnum private constructor(val value: Int) {
+    companion object {
+        val eREMOVED_SHAPE_TRIGGER: PxTriggerPairFlagEnum = PxTriggerPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTriggerPairFlagEnum_eREMOVED_SHAPE_TRIGGER())
+        val eREMOVED_SHAPE_OTHER: PxTriggerPairFlagEnum = PxTriggerPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTriggerPairFlagEnum_eREMOVED_SHAPE_OTHER())
+        val eNEXT_FREE: PxTriggerPairFlagEnum = PxTriggerPairFlagEnum(PhysXJsLoader.physXJs._emscripten_enum_PxTriggerPairFlagEnum_eNEXT_FREE())
+    }
 }
 

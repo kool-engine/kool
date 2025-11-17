@@ -5,6 +5,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.l
 import kotlin.math.round
 
 class Timer(val vehicleUi: VehicleUi) : Composable {
@@ -71,12 +72,14 @@ class Timer(val vehicleUi: VehicleUi) : Composable {
                     .height(Grow.Std)
                     .font(sizes.largeText)
                     .baselineMargin(sizes.gap * 1.5f)
+                    .clipToBounds(false)
             }
-            Text("Total") {
+            Text("Total".l) {
                 modifier
                     .height(Grow.Std)
                     .margin(start = sizes.smallGap)
                     .baselineMargin(sizes.gap * 1.5f)
+                    .clipToBounds(false)
                     .textColor(labelColor)
             }
 
@@ -97,7 +100,7 @@ class Timer(val vehicleUi: VehicleUi) : Composable {
                             .width(Grow.Std)
                             .textAlign(AlignmentX.End)
                     }
-                    Text("Sec 1") {
+                    Text("Sec 1".l) {
                         modifier
                             .alignY(AlignmentY.Center)
                             .margin(start = sizes.gap)
@@ -117,7 +120,7 @@ class Timer(val vehicleUi: VehicleUi) : Composable {
                             .baselineMargin(sizes.gap * 1.5f)
                             .textAlign(AlignmentX.End)
                     }
-                    Text("Sec 2") {
+                    Text("Sec 2".l) {
                         modifier
                             .margin(start = sizes.gap)
                             .height(Grow.Std)
@@ -135,7 +138,7 @@ class Timer(val vehicleUi: VehicleUi) : Composable {
                         .width(Grow.Std)
                         .height(Grow.Std)
                         .margin(start = sizes.smallGap)
-                    Text("Sound") {
+                    Text("Sound".l) {
                         modifier
                             .width(Grow.Std)
                             .alignY(AlignmentY.Center)
@@ -153,7 +156,7 @@ class Timer(val vehicleUi: VehicleUi) : Composable {
                     modifier
                         .width(Grow.Std)
                         .height(Grow.Std)
-                    Text("Headlights") {
+                    Text("Headlights".l) {
                         modifier
                             .width(Grow.Std)
                             .height(Grow.Std)

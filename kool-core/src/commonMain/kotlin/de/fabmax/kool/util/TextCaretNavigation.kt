@@ -23,7 +23,7 @@ object TextCaretNavigation {
     }
 
     fun moveWordLeft(text: String, caretPos: Int): Int {
-        var i = (caretPos - 1).clamp(0, text.lastIndex)
+        var i = (caretPos - 1).clamp(0, text.lastIndex.coerceAtLeast(0))
         return when {
             i == 0 -> 0
             !text[i].isLimitingChar() -> startOfWord(text, i)

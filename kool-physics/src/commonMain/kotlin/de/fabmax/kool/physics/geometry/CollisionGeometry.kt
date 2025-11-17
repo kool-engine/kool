@@ -5,7 +5,6 @@ import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Releasable
 
-@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 expect class GeometryHolder
 
 interface CollisionGeometry : Releasable {

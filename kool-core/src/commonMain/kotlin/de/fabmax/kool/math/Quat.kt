@@ -110,8 +110,8 @@ open class QuatF(open val x: Float, open val y: Float, open val z: Float, open v
     fun sqrLength(): Float = x*x + y*y + z*z + w*w
 
     /**
-     * Linearly interpolates the values of this and another vector and returns the result as an (optionally provided)
-     * [MutableVec4f]: result = that * weight + this * (1 - weight).
+     * Linearly interpolates the values of this and another quaternion and returns the result as an (optionally
+     * provided) [MutableQuatF]: result = that * weight + this * (1 - weight).
      */
     fun mix(that: QuatF, weight: Float, result: MutableQuatF = MutableQuatF()): MutableQuatF {
         val dot = x * that.x + y * that.y + z * that.z + w * that.w
@@ -504,8 +504,8 @@ open class QuatD(open val x: Double, open val y: Double, open val z: Double, ope
     fun sqrLength(): Double = x*x + y*y + z*z + w*w
 
     /**
-     * Linearly interpolates the values of this and another vector and returns the result as an (optionally provided)
-     * [MutableVec4d]: result = that * weight + this * (1 - weight).
+     * Linearly interpolates the values of this and another quaternion and returns the result as an (optionally
+     * provided) [MutableQuatD]: result = that * weight + this * (1 - weight).
      */
     fun mix(that: QuatD, weight: Double, result: MutableQuatD = MutableQuatD()): MutableQuatD {
         val dot = x * that.x + y * that.y + z * that.z + w * that.w

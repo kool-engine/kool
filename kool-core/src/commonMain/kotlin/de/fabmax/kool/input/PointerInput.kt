@@ -155,9 +155,13 @@ enum class CursorShape {
     CROSSHAIR,
     HAND,
     NOT_ALLOWED,
-    RESIZE_EW,
-    RESIZE_NS,
-    RESIZE_NWSE,
-    RESIZE_NESW,
-    RESIZE_ALL
+    MOVE,
+    RESIZE_E,
+    RESIZE_W,
+    RESIZE_N,
+    RESIZE_S,
+    RESIZE_NW,
+    RESIZE_SE,
+    RESIZE_NE,
+    RESIZE_SW,
 }

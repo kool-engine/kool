@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.ao
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.NormalLinearDepthMapPass
@@ -8,10 +7,7 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.deferred.DeferredPassSwapListener
 import de.fabmax.kool.pipeline.deferred.DeferredPasses
 import de.fabmax.kool.pipeline.deferred.DeferredPipeline
-import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.PerspectiveCamera
-import de.fabmax.kool.scene.PerspectiveProxyCam
-import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.BaseReleasable
 import kotlin.math.max
 
@@ -82,7 +78,7 @@ abstract class AoPipeline : BaseReleasable() {
         private var mapWidth = max(32, (scene.mainRenderPass.viewport.width * mapSize).toInt())
         private var mapHeight = max(32, (scene.mainRenderPass.viewport.height * mapSize).toInt())
 
-        private val onRenderSceneCallback: (KoolContext) -> Unit = { onRenderScene() }
+        private val onRenderSceneCallback = OnRenderScene { onRenderScene() }
 
         val proxyCamera = PerspectiveProxyCam(camera)
 

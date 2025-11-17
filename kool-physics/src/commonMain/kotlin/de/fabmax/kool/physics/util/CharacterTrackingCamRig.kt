@@ -4,6 +4,7 @@ import de.fabmax.kool.input.CursorMode
 import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.HitResult
+import de.fabmax.kool.physics.PhysicsStepListener
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.scene.MatrixTransformF
@@ -13,8 +14,10 @@ import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.Time
 import kotlin.math.*
 
-class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
-    Node("PointerLockCamRig") {
+class CharacterTrackingCamRig(
+    world: PhysicsWorld,
+    enableCursorLock: Boolean = true
+) : Node("CharacterTrackingCamRig"), PhysicsStepListener {
 
     var isCursorLocked: Boolean
         get() = PointerInput.cursorMode == CursorMode.LOCKED
@@ -53,11 +56,12 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
         isCursorLocked = enableCursorLock
         transform = MatrixTransformF()
 
+        world.physicsStepListeners += this
+        onRelease { world.physicsStepListeners -= this }
         onUpdate {
             if (isCursorLocked) {
                 handlePointerInput()
             }
-            updateTracking(Time.deltaT)
         }
     }
 
@@ -98,19 +102,17 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
         if (isZoomEnabled && !ptr.isConsumed(PointerInput.CONSUMED_SCROLL_Y)) {
             zoom *= 1f - PointerInput.primaryPointer.scroll.y / 10f
             zoom = zoom.clamp(minZoom, maxZoom)
+            actualZoom = actualZoom.expDecay(zoomModifier(zoom), 16f, Time.deltaT)
         }
     }
 
-    private fun updateTracking(deltaT: Float) {
+    override fun onPhysicsInterpolate(captureTimeA: Double, captureTimeB: Double, frameTime: Double, weightB: Float) {
         trackedPose.transform(poseOrigin.set(Vec3f.ZERO))
-
         transform.setIdentity()
         transform.translate(poseOrigin)
         transform.rotate((lookPhi.toDeg() + 90f).deg, Vec3f.Y_AXIS)
         transform.translate(pivotPoint)
         transform.rotate((lookTheta.toDeg() - 90f).deg, Vec3f.X_AXIS)
-
-        actualZoom = actualZoom.expDecay(zoomModifier(zoom), 16f, deltaT)
         transform.scale(actualZoom)
     }
 }

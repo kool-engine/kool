@@ -13,7 +13,9 @@ import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
+import kotlin.math.log10
 import kotlin.math.max
+import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -34,16 +36,14 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private val drawBodyState = mutableStateOf(false)
     private val friction = mutableStateOf(0.5f)
     private val restitution = mutableStateOf(0.2f)
+    private val simTimeFactor = mutableStateOf(1f).onChange { _, new -> physicsWorld.simStepper.desiredTimeFactor = new }
     private var material: Material = Material(friction.value, friction.value, restitution.value)
 
     private val physicsTimeTxt = mutableStateOf("0.00 ms")
     private val activeActorsTxt = mutableStateOf("0")
     private val timeFactorTxt = mutableStateOf("1.00 x")
 
-    private val physicsStepper = ConstantPhysicsStepperSync()
-    private val physicsWorld: PhysicsWorld = PhysicsWorld(mainScene).apply {
-        simStepper = physicsStepper
-    }
+    private val physicsWorld: PhysicsWorld = PhysicsWorld(mainScene, isContinuousCollisionDetection = true)
     private val bodies = mutableMapOf<ShapeType, MutableList<ColoredBody>>()
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -114,16 +114,15 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                     removeBodies.forEach { body ->
                         logI { "Removing out-of-range body" }
                         typeBodies.remove(body)
-                        physicsWorld.removeActor(body.rigidActor)
-                        body.rigidActor.release()
+                        physicsWorld.removeActor(body.rigidActor, true)
                     }
                     removeBodies.clear()
                 }
             }
 
-            physicsTimeTxt.set("${physicsStepper.perfCpuTime.toString(2)} ms")
+            physicsTimeTxt.set("${physicsWorld.simStepper.cpuMilliesPerStep.toString(2)} ms")
             activeActorsTxt.set("${physicsWorld.activeActors}")
-            timeFactorTxt.set("${physicsStepper.perfTimeFactor.toString(2)} x")
+            timeFactorTxt.set("${physicsWorld.simStepper.actualTimeFactor.toString(2)} x")
         }
 
         addNode(Skybox.cube(ibl.reflectionMap, 1.5f))
@@ -147,8 +146,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private fun resetPhysics() {
         bodies.values.forEach { typedBodies ->
             typedBodies.forEach {
-                physicsWorld.removeActor(it.rigidActor)
-                it.rigidActor.release()
+                physicsWorld.removeActor(it.rigidActor, true)
             }
         }
         bodies.clear()
@@ -360,24 +358,27 @@ class CollisionDemo : DemoScene("Physics - Collision") {
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
         MenuRow {
-            Text("Body shape") { labelStyle() }
+            Text("Body shape".l) { labelStyle() }
             ComboBox {
                 modifier
                     .width(Grow.Std)
                     .margin(start = sizes.largeGap)
-                    .items(shapeTypes)
+                    .items(shapeTypes.map { it.label.l })
                     .selectedIndex(selectedShapeType.use())
                     .onItemSelected { selectedShapeType.set(it) }
             }
         }
 
-        MenuSlider2("Number of Bodies", numSpawnBodies.use().toFloat(), 50f, 2000f, { "${it.roundToInt()}" }) {
+        MenuSlider2("Number of Bodies".l, numSpawnBodies.use().toFloat(), 50f, 2000f, { "${it.roundToInt()}" }) {
             numSpawnBodies.set(it.roundToInt())
         }
-        MenuSlider2("Friction", friction.use(), 0f, 2f) { friction.set(it) }
-        MenuSlider2("Restitution", restitution.use(), 0f, 1f) { restitution.set(it) }
+        MenuSlider2("Friction".l, friction.use(), 0f, 2f) { friction.set(it) }
+        MenuSlider2("Restitution".l, restitution.use(), 0f, 1f) { restitution.set(it) }
+        MenuSlider2("Time factor".l, log10(simTimeFactor.use()), -1f, 1f, { 10f.pow(it).toString(2) }) {
+            simTimeFactor.set(10f.pow(it))
+        }
 
-        Button("Apply settings") {
+        Button("Apply settings".l) {
             modifier
                 .alignX(AlignmentX.Center)
                 .width(Grow.Std)
@@ -385,18 +386,18 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                 .onClick { resetPhysics() }
         }
 
-        Text("Statistics") { sectionTitleStyle() }
-        LabeledSwitch("Show body state", drawBodyState)
+        Text("Statistics".l) { sectionTitleStyle() }
+        LabeledSwitch("Show body state".l, drawBodyState)
         MenuRow {
-            Text("Active actors") { labelStyle(Grow.Std) }
+            Text("Active actors".l) { labelStyle(Grow.Std) }
             Text(activeActorsTxt.use()) { labelStyle() }
         }
         MenuRow {
-            Text("Physics step CPU time") { labelStyle(Grow.Std) }
+            Text("Physics step CPU time".l) { labelStyle(Grow.Std) }
             Text(physicsTimeTxt.use()) { labelStyle() }
         }
         MenuRow {
-            Text("Time factor") { labelStyle(Grow.Std) }
+            Text("Actual time factor".l) { labelStyle(Grow.Std) }
             Text(timeFactorTxt.use()) { labelStyle() }
         }
     }

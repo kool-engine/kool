@@ -17,10 +17,7 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.TextureMesh
 import de.fabmax.kool.scene.addTextureMesh
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.releaseWith
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.launch
 
 class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene) : PbrDemo.PbrContent("PBR material") {
@@ -64,12 +61,12 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
 
     override fun UiScope.createContentMenu() {
         MenuRow {
-            Text("Material") { labelStyle() }
+            Text("Material".l) { labelStyle() }
             ComboBox {
                 modifier
                     .width(Grow.Std)
                     .margin(start = sizes.largeGap)
-                    .items(materialLoaders.map { it.first })
+                    .items(materialLoaders.map { it.first.l })
                     .selectedIndex(selectedMatIdx.use())
                     .onItemSelected {
                         selectedMatIdx.set(it)
@@ -78,14 +75,14 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
             }
         }
 
-        MenuSlider2("Displacement Strength:", displacement.use(), 0f, 1f) { displacement.set(it) }
+        MenuSlider2("Displacement Strength:".l, displacement.use(), 0f, 1f) { displacement.set(it) }
 
         MenuRow {
-            Text("Displacement Method:") { labelStyle(Grow.Std) }
+            Text("Displacement Method:".l) { labelStyle(Grow.Std) }
         }
         val isParallax = useParallaxMapping.use()
-        LabeledRadioButton("Parallax Mapping", isParallax) { useParallaxMapping.set(true) }
-        LabeledRadioButton("Vertex Displacement", !isParallax) { useParallaxMapping.set(false) }
+        LabeledRadioButton("Parallax Mapping".l, isParallax) { useParallaxMapping.set(true) }
+        LabeledRadioButton("Vertex Displacement".l, !isParallax) { useParallaxMapping.set(false) }
     }
 
     override fun createContent(scene: Scene, envMap: EnvironmentMap, ctx: KoolContext): Node {

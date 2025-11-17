@@ -14,6 +14,7 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.l
 
 class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("Color grid") {
     private val shaders = mutableListOf<KslPbrShader>()
@@ -26,11 +27,11 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
         val lblSize = UiSizes.baseSize * 2f
         val txtSize = UiSizes.baseSize * 0.75f
         MenuRow {
-            Text("Roughness") { labelStyle(lblSize) }
+            Text("Roughness".l) { labelStyle(lblSize) }
             MenuSlider(roughness.use(), 0f, 1f, txtWidth = txtSize) { roughness.set(it) }
         }
         MenuRow {
-            Text("Metallic") { labelStyle(lblSize) }
+            Text("Metallic".l) { labelStyle(lblSize) }
             MenuSlider(metallic.use(), 0f, 1f, txtWidth = txtSize) { metallic.set(it) }
         }
     }

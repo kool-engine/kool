@@ -1,6 +1,7 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.l10n.DemoL10n
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.util.DebugOverlay
@@ -28,6 +29,7 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
         get() = currentDemo?.second
 
     init {
+        DemoL10n.registerStrings()
         Settings.loadSettings()
         ctx.window.renderResolutionFactor = Settings.renderScale.value / 100f
 

@@ -10,6 +10,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MsdfFont
+import de.fabmax.kool.util.l
 
 class DemoMenu(val demoLoader: DemoLoader) {
 
@@ -96,7 +97,7 @@ class DemoMenu(val demoLoader: DemoLoader) {
         navDemoButton()
         navSettingsButton()
 
-        Text("kool Demos") {
+        Text("kool Demos".l) {
             modifier
                 .height(Grow.Std)
                 .textRotation(270f)

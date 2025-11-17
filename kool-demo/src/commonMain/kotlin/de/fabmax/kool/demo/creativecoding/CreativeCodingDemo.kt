@@ -62,10 +62,10 @@ class CreativeCodingDemo : DemoScene("Creative Coding") {
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
         Column(Grow.Std, scopeName = "content-${contentIndex.value}") {
-            LabeledSwitch("Auto rotate view:", isAutoRotate)
+            LabeledSwitch("Auto rotate view:".l, isAutoRotate)
 
             MenuRow {
-                Text("Scene:") {
+                Text("Scene:".l) {
                     modifier
                         .alignY(AlignmentY.Center)
                         .margin(end = sizes.largeGap)

@@ -31,7 +31,6 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
     private val rand = Random(1337)
     private lateinit var physicsWorld: PhysicsWorld
-    private val physicsStepper = ConstantPhysicsStepperSync()//.apply { simTimeFactor = 0.1f }
 
     private val ibl by hdriImage("${DemoLoader.hdriPath}/colorful_studio_1k.rgbe.png")
     private val groundAlbedo by texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
@@ -68,7 +67,6 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         mainScene += Skybox.cube(ibl.reflectionMap, 1.5f)
 
         physicsWorld = PhysicsWorld(mainScene)
-        physicsWorld.simStepper = physicsStepper
 
         val gravKeyListener = KeyboardInput.addKeyListener(UniversalKeyCode(' '), "Change Gravity",  { true }) {
             if (it.isPressed) {
@@ -130,9 +128,11 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         }
 
         val forceHelper = ForceHelper()
+        physicsWorld.physicsStepListeners += forceHelper
         InputStack.defaultInputHandler.pointerListeners += forceHelper
         onRelease {
             InputStack.defaultInputHandler.pointerListeners -= forceHelper
+            physicsWorld.physicsStepListeners -= forceHelper
         }
 
         addColorMesh(instances = bodyInstanceData) {
@@ -166,16 +166,16 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         }
 
         onUpdate += {
-            physicsTimeTxt.set("${physicsStepper.perfCpuTime.toString(2)} ms")
-            timeFactorTxt.set("${physicsStepper.perfTimeFactor.toString(2)} x")
+            physicsTimeTxt.set("${physicsWorld.simStepper.cpuMilliesPerStep.toString(2)} ms")
+            timeFactorTxt.set("${physicsWorld.simStepper.actualTimeFactor.toString(2)} x")
         }
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
-        MenuSlider2("Number of ragdolls", numRagdolls.use().toFloat(), 1f, 100f, { "${it.roundToInt()}" }) {
+        MenuSlider2("Number of ragdolls".l, numRagdolls.use().toFloat(), 1f, 100f, { "${it.roundToInt()}" }) {
             numRagdolls.set(it.roundToInt())
         }
-        Button("Respawn") {
+        Button("Respawn".l) {
             modifier
                 .alignX(AlignmentX.Center)
                 .width(Grow.Std)
@@ -183,32 +183,31 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
                 .onClick { spawnDolls() }
         }
 
-        Text("Statistics") { sectionTitleStyle() }
+        Text("Statistics".l) { sectionTitleStyle() }
         MenuRow {
-            Text("Physics step CPU time") { labelStyle(Grow.Std) }
+            Text("Physics step CPU time".l) { labelStyle(Grow.Std) }
             Text(physicsTimeTxt.use()) { labelStyle() }
         }
         MenuRow {
-            Text("Time factor") { labelStyle(Grow.Std) }
+            Text("Time factor".l) { labelStyle(Grow.Std) }
             Text(timeFactorTxt.use()) { labelStyle() }
         }
 
-        Text("Controls") { sectionTitleStyle() }
+        Text("Controls".l) { sectionTitleStyle() }
         MenuRow {
-            Text("[Space]") { labelStyle(Grow.Std) }
-            Text("invert gravity") { labelStyle() }
+            Text("[Space]".l) { labelStyle(Grow.Std) }
+            Text("invert gravity".l) { labelStyle() }
         }
         MenuRow {
-            Text("[Middle mouse drag]") { labelStyle(Grow.Std) }
-            Text("grab ragdolls") { labelStyle() }
+            Text("[Middle mouse drag]".l) { labelStyle(Grow.Std) }
+            Text("grab ragdolls".l) { labelStyle() }
         }
     }
 
     private fun spawnDolls() {
         // remove existing dolls
         ragdolls.forEach {
-            physicsWorld.removeArticulation(it)
-            it.release()
+            physicsWorld.removeArticulation(it, true)
         }
         ragdolls.clear()
         bodyInstances.clear()
@@ -226,8 +225,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
     private fun makeRagdollYUp(pose: Mat4f): Articulation {
         val ragdoll = Articulation(false)
-        //ragdoll.minPositionIterations = 8
-        //ragdoll.minVelocityIterations = 2
+        ragdoll.minVelocityIterations = 2
 
         // create links / ragdoll bones
 
@@ -499,7 +497,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         }
     }
 
-    private inner class ForceHelper : InputStack.PointerListener {
+    private inner class ForceHelper : InputStack.PointerListener, PhysicsStepListener {
         val pickRay = RayF()
         val hitResult = HitResult()
         var hitActor: RigidBody? = null
@@ -522,7 +520,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             mainScene.camera.computePickRay(pickRay, dragPtr, mainScene.mainRenderPass.viewport)
             when {
                 dragPtr.isMiddleButtonPressed -> initDrag()
-                dragPtr.isMiddleButtonDown -> applyForce()
+                dragPtr.isMiddleButtonDown -> updateForce()
                 else -> isActive = false
             }
         }
@@ -539,13 +537,18 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             }
         }
 
-        fun applyForce() {
+        private fun updateForce() {
             hitActor?.let { actor ->
                 actor.toGlobal(forceAppPosGlobal.set(forceAppPosLocal))
                 dragPlane.intersectionPoint(pickRay, forceDragPos)
                 force.set(forceDragPos).subtract(forceAppPosGlobal).mul(500f)
-                actor.addForceAtPos(force, forceAppPosGlobal)
                 isActive = true
+            }
+        }
+
+        override fun onPhysicsUpdate(timeStep: Float) {
+            if (isActive) {
+                hitActor?.addForceAtPos(force, forceAppPosGlobal)
             }
         }
     }

@@ -15,10 +15,7 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.get
-import de.fabmax.kool.util.set
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.launch
 
 /**
@@ -83,11 +80,11 @@ class PbrDemo : DemoScene("PBR Materials") {
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
         val comboW = UiSizes.baseSize * 3.5f
         MenuRow {
-            Text("Scene") { labelStyle(Grow.Std) }
+            Text("Scene".l) { labelStyle(Grow.Std) }
             ComboBox {
                 modifier
                     .width(comboW)
-                    .items(pbrContent)
+                    .items(pbrContent.map { it.name.l })
                     .selectedIndex(selectedContentIdx.use())
                     .onItemSelected {
                         selectedContent.hide()
@@ -98,13 +95,13 @@ class PbrDemo : DemoScene("PBR Materials") {
         }
         with(selectedContent) { createContentMenu() }
 
-        Text("View") { sectionTitleStyle() }
+        Text("View".l) { sectionTitleStyle() }
         MenuRow {
-            Text("Environment") { labelStyle(Grow.Std) }
+            Text("Environment".l) { labelStyle(Grow.Std) }
             ComboBox {
                 modifier
                     .width(comboW)
-                    .items(hdriTextures)
+                    .items(hdriTextures.map { it.name.l })
                     .selectedIndex(selectedHdriIdx.use())
                     .onItemSelected {
                         selectedHdriIdx.set(it)
@@ -113,11 +110,11 @@ class PbrDemo : DemoScene("PBR Materials") {
             }
         }
         MenuRow {
-            Text("Discrete lights") { labelStyle(Grow.Std) }
+            Text("Discrete lights".l) { labelStyle(Grow.Std) }
             ComboBox {
                 modifier
                     .width(comboW)
-                    .items(lightSetups)
+                    .items(lightSetups.map { it.name.l })
                     .selectedIndex(selectedLightIdx.use())
                     .onItemSelected {
                         selectedLightIdx.set(it)
@@ -125,7 +122,7 @@ class PbrDemo : DemoScene("PBR Materials") {
                     }
             }
         }
-        LabeledSwitch("Auto rotate view", isAutoRotate)
+        LabeledSwitch("Auto rotate view".l, isAutoRotate)
     }
 
     private suspend fun updateHdri(idx: Int) {

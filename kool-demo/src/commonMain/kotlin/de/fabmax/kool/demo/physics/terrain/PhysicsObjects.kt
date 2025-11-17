@@ -1,7 +1,10 @@
 package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.PoseF
+import de.fabmax.kool.math.QuatF
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.geometry.PlaneGeometry
@@ -25,9 +28,6 @@ class PhysicsObjects(mainScene: Scene, terrain: Terrain, trees: Trees, ctx: Kool
         // CCD is recommended when using height fields, to avoid objects tunneling through the ground
         world = PhysicsWorld(mainScene, isContinuousCollisionDetection = true)
 
-        // use constant time step for more stable bridge behavior
-        world.simStepper = ConstantPhysicsStepperSync()
-
         world.addActor(terrain.terrainBody)
 
         trees.trees.asSequence().flatMap { it.instances }.forEach {
@@ -49,12 +49,10 @@ class PhysicsObjects(mainScene: Scene, terrain: Terrain, trees: Trees, ctx: Kool
         // spawn player
         playerController = PlayerController(this, mainScene, ctx).apply {
             // set spawn position
-            controller.position = Vec3d(-146.5, 47.8, -89.0)
+            controller.position = Vec3f(-146.5f, 47.8f, -89.0f)
         }
 
-        world.onPhysicsUpdate += { timeStep ->
-            playerController.onPhysicsUpdate(timeStep)
-        }
+        world.physicsStepListeners += playerController
     }
 
     private fun spawnBoxes() {

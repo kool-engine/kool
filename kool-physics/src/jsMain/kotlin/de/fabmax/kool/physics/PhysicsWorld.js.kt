@@ -11,6 +11,8 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Releasable
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import physx.*
 
 actual fun PhysicsWorld(scene: Scene?, isContinuousCollisionDetection: Boolean) : PhysicsWorld {
@@ -35,14 +37,18 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         get() = mutActiveActors
 
     private val pxActors = mutableMapOf<Int, RigidActor>()
+    private val addActors = mutableSetOf<RigidActor>()
+    private val removeActors = mutableMapOf<RigidActor, Boolean>()
+    private val addArticulations = mutableSetOf<Articulation>()
+    private val removeArticulations = mutableMapOf<Articulation, Boolean>()
+    private val addRemoveLock = SynchronizedObject()
 
     init {
         PhysicsImpl.checkIsLoaded()
 
-        MemoryStack.stackPush().use { mem ->
-            val sceneDesc = mem.createPxSceneDesc(PhysicsImpl.physics.tolerancesScale)
+        memStack {
+            val sceneDesc = createPxSceneDesc(PhysicsImpl.physics.tolerancesScale)
             sceneDesc.gravity = bufPxGravity
-            // ignore numWorkers parameter and set numThreads to 0, since multi-threading is disabled for wasm
             sceneDesc.cpuDispatcher = PhysicsImpl.defaultCpuDispatcher
             sceneDesc.filterShader = PxTopLevelFunctions.DefaultFilterShader()
             sceneDesc.simulationEventCallback = simEventCallback()
@@ -55,12 +61,9 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         scene?.let { registerHandlers(it) }
     }
 
-    override fun singleStepAsync(timeStep: Float) {
-        super.singleStepAsync(timeStep)
+    override fun simulate(timeStep: Float) {
+        addAndRemoveActors()
         pxScene.simulate(timeStep)
-    }
-
-    override fun fetchAsyncStepResults() {
         pxScene.fetchResults(true)
 
         for (i in actors.indices) {
@@ -69,18 +72,11 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         val activeActors = SupportFunctions.PxScene_getActiveActors(pxScene)
         mutActiveActors = activeActors.size()
         for (i in 0 until mutActiveActors) {
-            pxActors[activeActors.get(i).ptr]?.isActive = true
+            pxActors[activeActors.get(i).ptr]?.let {
+                it.isActive = true
+                it.syncSimulationData()
+            }
         }
-
-        super.fetchAsyncStepResults()
-    }
-
-    internal fun registerActorReference(actor: RigidActor) {
-        pxActors[actor.holder.px.ptr] = actor
-    }
-
-    internal fun deleteActorReference(actor: RigidActor) {
-        pxActors -= actor.holder.px.ptr
     }
 
     fun getActor(pxActor: PxActor): RigidActor? {
@@ -89,44 +85,39 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
 
     override fun addActor(actor: RigidActor) {
         super.addActor(actor)
-        pxScene.addActor(actor.holder.px)
-        registerActorReference(actor)
+        synchronized(addRemoveLock) {
+            removeActors -= actor
+            addActors += actor
+        }
+    }
 
-        // set necessary ccd flags in case it is enabled for this scene
-        val pxActor = actor.holder.px
-        if (isContinuousCollisionDetection && actor is RigidBody) {
-            if (actor is RigidDynamic && !actor.isKinematic) {
-                // in javascript we cannot check for pxActor being an instance of PxRigidBody (because it's an external
-                // interface), however if actor is RigidBody pxActor must be PxRigidBody...
-                pxActor.unsafeCast<PxRigidBody>().setRigidBodyFlag(PxRigidBodyFlagEnum.eENABLE_CCD, true)
-            }
-            actor.simulationFilterData = FilterData {
-                set(actor.simulationFilterData)
-                word2 = PxPairFlagEnum.eDETECT_CCD_CONTACT
+    override fun removeActor(actor: RigidActor, releaseActor: Boolean) {
+        super.removeActor(actor, releaseActor)
+        synchronized(addRemoveLock) {
+            if (!addActors.remove(actor)) {
+                removeActors += actor to releaseActor
             }
         }
     }
 
-    override fun removeActor(actor: RigidActor) {
-        super.removeActor(actor)
-        pxScene.removeActor(actor.holder.px)
-        deleteActorReference(actor)
-    }
-
     override fun addArticulation(articulation: Articulation) {
         super.addArticulation(articulation)
-        articulation.links.forEach { pxActors[it.holder.px.ptr] = it }
-        pxScene.addArticulation((articulation as ArticulationImpl).pxArticulation)
+        synchronized(addRemoveLock) {
+            removeArticulations -= articulation
+            addArticulations += articulation
+        }
     }
 
-    override fun removeArticulation(articulation: Articulation) {
-        super.removeArticulation(articulation)
-        articulation.links.forEach { pxActors -= it.holder.px.ptr }
-        pxScene.removeArticulation((articulation as ArticulationImpl).pxArticulation)
+    override fun removeArticulation(articulation: Articulation, releaseArticulation: Boolean) {
+        super.removeArticulation(articulation, releaseArticulation)
+        synchronized(addRemoveLock) {
+            if (!addArticulations.remove(articulation)) {
+                removeArticulations += articulation to releaseArticulation
+            }
+        }
     }
 
-    override fun doRelease() {
-        super.doRelease()
+    override fun releaseWorld() {
         pxScene.release()
         bufPxGravity.destroy()
         raycastResult.destroy()
@@ -135,29 +126,31 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
 
     override fun raycast(ray: RayF, maxDistance: Float, result: HitResult): Boolean {
         result.clear()
-        MemoryStack.stackPush().use { mem ->
-            val ori = ray.origin.toPxVec3(mem.createPxVec3())
-            val dir = ray.direction.toPxVec3(mem.createPxVec3())
-            if (pxScene.raycast(ori, dir, maxDistance, raycastResult)) {
-                var minDist = maxDistance
-                var nearestHit: PxRaycastHit? = null
-                var nearestActor: RigidActor? = null
+        memStack {
+            synchronized(raycastResult) {
+                val ori = ray.origin.toPxVec3(createPxVec3())
+                val dir = ray.direction.toPxVec3(createPxVec3())
+                if (pxScene.raycast(ori, dir, maxDistance, raycastResult)) {
+                    var minDist = maxDistance
+                    var nearestHit: PxRaycastHit? = null
+                    var nearestActor: RigidActor? = null
 
-                for (i in 0 until raycastResult.nbAnyHits) {
-                    val hit = raycastResult.getAnyHit(i)
-                    val actor = pxActors[hit.actor.ptr]
-                    if (actor != null && hit.distance < minDist) {
-                        result.hitActors += actor
-                        minDist = hit.distance
-                        nearestHit = hit
-                        nearestActor = actor
+                    for (i in 0 until raycastResult.nbAnyHits) {
+                        val hit = raycastResult.getAnyHit(i)
+                        val actor = pxActors[hit.actor.ptr]
+                        if (actor != null && hit.distance < minDist) {
+                            result.hitActors += actor
+                            minDist = hit.distance
+                            nearestHit = hit
+                            nearestActor = actor
+                        }
                     }
-                }
-                if (nearestHit != null) {
-                    result.nearestActor = nearestActor
-                    result.hitDistance = minDist
-                    nearestHit.position.toVec3f(result.hitPosition)
-                    nearestHit.normal.toVec3f(result.hitNormal)
+                    if (nearestHit != null) {
+                        result.nearestActor = nearestActor
+                        result.hitDistance = minDist
+                        nearestHit.position.toVec3f(result.hitPosition)
+                        nearestHit.normal.toVec3f(result.hitNormal)
+                    }
                 }
             }
         }
@@ -166,12 +159,10 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
 
     override fun sweepTest(testGeometry: CollisionGeometry, geometryPose: Mat4f, testDirection: Vec3f, distance: Float, result: HitResult): Boolean {
         result.clear()
-        MemoryStack.stackPush().use { mem ->
-            val sweepPose = geometryPose.toPxTransform(mem.createPxTransform())
-            val sweepDir = testDirection.toPxVec3(mem.createPxVec3())
-            val geom = testGeometry.holder.px
-
-            if (pxScene.sweep(geom, sweepPose, sweepDir, distance, sweepResult)) {
+        memStack {
+            val sweepPose = geometryPose.toPxTransform(createPxTransform())
+            val sweepDir = testDirection.toPxVec3(createPxVec3())
+            if (pxScene.sweep(testGeometry.holder.px, sweepPose, sweepDir, distance, sweepResult)) {
                 var minDist = distance
                 var nearestHit: PxSweepHit? = null
                 var nearestActor: RigidActor? = null
@@ -195,6 +186,72 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
             }
         }
         return result.isHit
+    }
+
+    internal fun registerActorReference(actor: RigidActor) {
+        pxActors[actor.holder.px.ptr] = actor
+    }
+
+    internal fun deleteActorReference(actor: RigidActor) {
+        pxActors -= actor.holder.px.ptr
+    }
+
+    private fun addAndRemoveActors() {
+        synchronized(addRemoveLock) {
+            if (addActors.isNotEmpty()) {
+                addActors.forEach { actor ->
+                    pxScene.addActor(actor.holder.px)
+                    (actor as RigidActorImpl).isAttachedToSimulation = true
+                    registerActorReference(actor)
+                    if (isContinuousCollisionDetection) {
+                        actor.enableCcd()
+                    }
+                }
+                addActors.clear()
+            }
+            if (removeActors.isNotEmpty()) {
+                removeActors.forEach { (actor, release) ->
+                    pxScene.removeActor(actor.holder.px)
+                    (actor as RigidActorImpl).isAttachedToSimulation = false
+                    deleteActorReference(actor)
+                    if (release) {
+                        actor.release()
+                    }
+                }
+                removeActors.clear()
+            }
+            if (addArticulations.isNotEmpty()) {
+                addArticulations.forEach { articulation ->
+                    articulation.links.forEach { registerActorReference(it) }
+                    pxScene.addArticulation((articulation as ArticulationImpl).pxArticulation)
+                }
+                addArticulations.clear()
+            }
+            if (removeArticulations.isNotEmpty()) {
+                removeArticulations.forEach { (articulation, release) ->
+                    articulation.links.forEach { deleteActorReference(it) }
+                    pxScene.removeArticulation((articulation as ArticulationImpl).pxArticulation)
+                    if (release) {
+                        articulation.release()
+                    }
+                }
+                removeArticulations.clear()
+            }
+        }
+    }
+
+    private fun RigidActor.enableCcd() {
+        val pxActor = holder.px
+        if (this !is RigidBody) {
+            return
+        }
+        if (this is RigidDynamic && !isKinematic) {
+            pxActor.unsafeCast<PxRigidBody>().setRigidBodyFlag(PxRigidBodyFlagEnum.eENABLE_CCD, true)
+        }
+        simulationFilterData = FilterData {
+            set(simulationFilterData)
+            word2 = PxPairFlagEnum.eDETECT_CCD_CONTACT.value
+        }
     }
 
     private fun simEventCallback() = PxSimulationEventCallbackImpl().apply {
@@ -236,12 +293,11 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         onContact = { ph: Int, pairs: Int, nbPairs: Int ->
             val pairsWrapped = PxContactPairFromPointer(pairs)
             val pairHeader = PxContactPairHeaderFromPointer(ph)
-            val actorA = pxActors[pairHeader.get_actors(0).ptr]
-            val actorB = pxActors[pairHeader.get_actors(1).ptr]
+            val actorA = pxActors[pairHeader.getActors(0).ptr]
+            val actorB = pxActors[pairHeader.getActors(1).ptr]
 
             if (actorA == null || actorB == null) {
                 logW { "onContact: actor reference not found" }
-
             } else {
                 for (i in 0 until nbPairs) {
                     val pair = NativeArrayHelpers.getContactPairAt(pairsWrapped, i)

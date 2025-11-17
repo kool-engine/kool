@@ -3,6 +3,7 @@ package de.fabmax.kool.editor.api
 import de.fabmax.kool.editor.components.PhysicsWorldComponent
 import de.fabmax.kool.editor.components.SceneComponent
 import de.fabmax.kool.editor.data.*
+import de.fabmax.kool.physics.PhysicsStepListener
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.TrsTransformD
@@ -146,9 +147,11 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
     fun startScene() {
         sceneEntities.values.forEach { it.onStart() }
         getAllComponents<PhysicsWorldComponent>().firstOrNull()?.physicsWorld?.let { physics ->
-            physics.onPhysicsUpdate += { timeStep ->
-                for (entity in sceneEntities.values) {
-                    entity.onPhysicsUpdate(timeStep)
+            physics.physicsStepListeners += object : PhysicsStepListener {
+                override fun onPhysicsUpdate(timeStep: Float) {
+                    for (entity in sceneEntities.values) {
+                        entity.onPhysicsUpdate(timeStep)
+                    }
                 }
             }
         }

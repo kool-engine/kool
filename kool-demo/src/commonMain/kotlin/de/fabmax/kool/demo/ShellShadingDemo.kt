@@ -73,12 +73,12 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
         MenuRow {
-            Text("Model") { labelStyle() }
+            Text("Model".l) { labelStyle() }
             ComboBox {
                 modifier
                     .width(Grow.Std)
                     .margin(start = sizes.largeGap)
-                    .items(listOf("Sphere", "Bunny"))
+                    .items(listOf("Sphere".l, "Bunny".l))
                     .selectedIndex(selectedModel.use())
                     .onItemSelected {
                         selectedModel.set(it)
@@ -98,66 +98,66 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
             }
         }
         MenuRow {
-            Text("Color") { labelStyle() }
+            Text("Color".l) { labelStyle() }
             ComboBox {
                 modifier
                     .width(Grow.Std)
                     .margin(start = sizes.largeGap)
-                    .items(themes)
+                    .items(themes.map { it.name.l })
                     .selectedIndex(themes.indexOf(activeFurShader.theme.use()))
                     .onItemSelected { activeFurShader.theme.set(themes[it]) }
             }
         }
         MenuRow {
-            Text("Density") { labelStyle() }
+            Text("Density".l) { labelStyle() }
             MenuSlider(activeFurShader.density.use(), 10f, 1000f, txtFormat = { "${it.toInt()}" }) { value ->
                 activeFurShader.density.set(round(value))
             }
         }
         MenuRow {
-            Text("Hair Length") { labelStyle() }
+            Text("Hair Length".l) { labelStyle() }
             MenuSlider(activeFurShader.hairLength.use(), 0.01f, 1f) { value -> activeFurShader.hairLength.set(value) }
         }
         MenuRow {
-            Text("Hair Thickness") { labelStyle() }
+            Text("Hair Thickness".l) { labelStyle() }
             MenuSlider(activeFurShader.hairThickness.use(), 0.01f, 2f) { value -> activeFurShader.hairThickness.set(value) }
         }
         MenuRow {
-            Text("Hair Random") { labelStyle() }
+            Text("Hair Random".l) { labelStyle() }
             MenuSlider(activeFurShader.hairRandomness.use(), 0.01f, 1f) { value -> activeFurShader.hairRandomness.set(value) }
         }
         MenuRow {
-            Text("Num Shells") { labelStyle() }
+            Text("Num Shells".l) { labelStyle() }
             MenuSlider(activeFurShader.numShells.use().toFloat(), 8f, 128f, txtFormat = { "${it.toInt()}" }) { value ->
                 activeFurShader.numShells.set(value.toInt())
             }
         }
         MenuRow {
-            Text("Curliness") { labelStyle() }
+            Text("Curliness".l) { labelStyle() }
             MenuSlider(activeFurShader.curliness.use(), 0f, 25f, txtFormat = { it.toString(1) }) { value ->
                 activeFurShader.curliness.set(value)
             }
         }
 
-        Text("Noise") { sectionTitleStyle() }
+        Text("Noise".l) { sectionTitleStyle() }
         MenuRow {
-            Text("Length Scale") { labelStyle() }
+            Text("Length Scale".l) { labelStyle() }
             MenuSlider(activeFurShader.lenScale.use(), 0f, 5f) { value -> activeFurShader.lenScale.set(value) }
         }
         MenuRow {
-            Text("Length Strength") { labelStyle() }
+            Text("Length Strength".l) { labelStyle() }
             MenuSlider(activeFurShader.lenStrength.use(), 0f, 1f) { value -> activeFurShader.lenStrength.set(value) }
         }
         MenuRow {
-            Text("Wind Scale") { labelStyle() }
+            Text("Wind Scale".l) { labelStyle() }
             MenuSlider(activeFurShader.dispScale.use(), 0f, 3f) { value -> activeFurShader.dispScale.set(value) }
         }
         MenuRow {
-            Text("Wind Strength") { labelStyle() }
+            Text("Wind Strength".l) { labelStyle() }
             MenuSlider(activeFurShader.dispStrength.use(), 0f, 1f) { value -> activeFurShader.dispStrength.set(value) }
         }
         MenuRow {
-            Text("Wind Speed") { labelStyle() }
+            Text("Wind Speed".l) { labelStyle() }
             MenuSlider(activeFurShader.windSpeed.use(), 0f, 1f) { value -> activeFurShader.windSpeed.set(value) }
         }
     }

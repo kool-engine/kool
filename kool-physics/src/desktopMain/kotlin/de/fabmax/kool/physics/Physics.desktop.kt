@@ -3,6 +3,8 @@ package de.fabmax.kool.physics
 import de.fabmax.kool.physics.geometry.ConvexMeshImpl
 import de.fabmax.kool.physics.geometry.CylinderGeometry
 import de.fabmax.kool.util.logI
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.asCoroutineDispatcher
 import physx.PxTopLevelFunctions
 import physx.common.*
 import physx.cooking.PxCookingParams
@@ -15,6 +17,7 @@ import physx.support.PxPvd
 import physx.vehicle2.PxVehicleAxesEnum
 import physx.vehicle2.PxVehicleFrame
 import physx.vehicle2.PxVehicleTopLevelFunctions
+import java.util.concurrent.Executors
 import kotlin.math.max
 import kotlin.math.min
 
@@ -27,6 +30,16 @@ object PhysicsImpl : PhysicsSystem {
     override val NOTIFY_CONTACT_POINTS = PxPairFlagEnum.eNOTIFY_CONTACT_POINTS.value
 
     override val isLoaded = true
+
+    private var physicsThread: Thread? = null
+    override val physicsDispatcher: CoroutineDispatcher = Executors
+        .newSingleThreadExecutor { target ->
+            Thread(target, "physics-thread").also {
+                it.isDaemon = true
+                physicsThread = it
+            }
+        }
+        .asCoroutineDispatcher()
 
     val defaultCpuDispatcher: PxDefaultCpuDispatcher
 
@@ -83,6 +96,10 @@ object PhysicsImpl : PhysicsSystem {
 
     override suspend fun loadAndAwaitPhysics() {
         // on JVM, there's nothing to do here
+    }
+
+    internal fun isPhysicsThread(): Boolean {
+        return Thread.currentThread() === physicsThread
     }
 
     private fun pxVersionToString(pxVersion: Int): String {

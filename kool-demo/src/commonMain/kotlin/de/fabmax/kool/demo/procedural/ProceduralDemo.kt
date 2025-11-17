@@ -14,10 +14,7 @@ import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.Skybox
 import de.fabmax.kool.scene.orbitCamera
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.SimpleShadowMap
-import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.*
 
 class ProceduralDemo : DemoScene("Procedural Geometry") {
     private val isAutoRotate = mutableStateOf(true)
@@ -85,7 +82,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
         MenuRow {
-            Text("Seed") { labelStyle() }
+            Text("Seed".l) { labelStyle() }
             TextField(seedText.use()) {
                 modifier
                     .width(Grow.Std)
@@ -95,7 +92,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
                     .onChange { seedText.set(it) }
             }
         }
-        Button("Generate rose") {
+        Button("Generate rose".l) {
             modifier
                 .alignX(AlignmentX.Center)
                 .width(Grow.Std)
@@ -111,7 +108,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
                     roses.makeRose(seed.hashCode())
                 }
         }
-        Button("Empty vase") {
+        Button("Empty vase".l) {
             modifier
                 .alignX(AlignmentX.Center)
                 .width(Grow.Std)
@@ -121,7 +118,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
                     roses.clearChildren()
                 }
         }
-        LabeledSwitch("Replace last rose", isReplaceRose)
-        LabeledSwitch("Auto rotate view", isAutoRotate)
+        LabeledSwitch("Replace last rose".l, isReplaceRose)
+        LabeledSwitch("Auto rotate view".l, isAutoRotate)
     }
 }

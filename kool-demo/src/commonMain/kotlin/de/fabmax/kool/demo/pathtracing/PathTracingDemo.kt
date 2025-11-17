@@ -462,12 +462,12 @@ class PathTracingDemo : DemoScene("Path-tracing") {
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
-        MenuSlider1("Focus:", defocusAngle.use(), 0f, 5f) { defocusAngle.set(it) }
-        MenuSlider1("Distance:", sqrt(focusDistance.use()), 1f, sqrt(1000f), { (it*it).toString(2) }) { focusDistance.set(it * it) }
-        MenuSlider1("Zoom:", cameraFovy.use(), 10f, 60f) { cameraFovy.set(it) }
-        MenuSlider1("Resolution:", resolution.use(), 0.25f, 1f) { resolution.set(it) }
+        MenuSlider1("Focus:".l, defocusAngle.use(), 0f, 5f) { defocusAngle.set(it) }
+        MenuSlider1("Distance:".l, sqrt(focusDistance.use()), 1f, sqrt(1000f), { (it*it).toString(2) }) { focusDistance.set(it * it) }
+        MenuSlider1("Zoom:".l, cameraFovy.use(), 10f, 60f) { cameraFovy.set(it) }
+        MenuSlider1("Resolution:".l, resolution.use(), 0.25f, 1f) { resolution.set(it) }
         MenuRow {
-            Text("Samples:") { modifier.width(Grow.Std).alignY(AlignmentY.Center) }
+            Text("Samples:".l) { modifier.width(Grow.Std).alignY(AlignmentY.Center) }
             Text("${numSamples.use()}") { modifier.alignY(AlignmentY.Center) }
         }
     }

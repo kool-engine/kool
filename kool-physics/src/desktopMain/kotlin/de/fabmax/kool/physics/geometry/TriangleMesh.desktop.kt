@@ -5,7 +5,6 @@ import de.fabmax.kool.physics.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
-import physx.common.PxVec3
 import physx.geometry.PxTriangleMesh
 import physx.geometry.PxTriangleMeshGeometry
 import physx.support.PxArray_PxU32
@@ -38,7 +37,7 @@ class TriangleMeshImpl(override val geometry: IndexedVertexList<*>) : TriangleMe
             // create mesh descriptor
             val points = mem.createPxBoundedData()
             points.count = pointVector.size()
-            points.stride = PxVec3.SIZEOF
+            points.stride = SIZEOF.PxVec3
             points.data = pointVector.begin()
 
             val triangles = mem.createPxBoundedData()
@@ -69,7 +68,7 @@ class TriangleMeshImpl(override val geometry: IndexedVertexList<*>) : TriangleMe
 class TriangleMeshGeometryImpl(override val triangleMesh: TriangleMesh, override val scale: Vec3f) : CollisionGeometryImpl(), TriangleMeshGeometry {
     constructor(geometry: IndexedVertexList<*>, scale: Vec3f) : this(TriangleMesh(geometry), scale)
 
-    override val holder: PxTriangleMeshGeometry
+    override val pxGeometry: PxTriangleMeshGeometry
 
     init {
         PhysicsImpl.checkIsLoaded()
@@ -77,7 +76,7 @@ class TriangleMeshGeometryImpl(override val triangleMesh: TriangleMesh, override
             val s = scale.toPxVec3(mem.createPxVec3())
             val r = mem.createPxQuat(0f, 0f, 0f, 1f)
             val meshScale = mem.createPxMeshScale(s, r)
-            holder = PxTriangleMeshGeometry(triangleMesh.pxTriangleMesh, meshScale)
+            pxGeometry = PxTriangleMeshGeometry(triangleMesh.pxTriangleMesh, meshScale)
         }
 
         if (triangleMesh.releaseWithGeometry) {

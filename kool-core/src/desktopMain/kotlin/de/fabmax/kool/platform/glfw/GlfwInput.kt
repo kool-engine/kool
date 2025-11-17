@@ -98,13 +98,17 @@ class GlfwInput(val window: GlfwWindow) : PlatformInput {
         cursorShapes[CursorShape.TEXT] = glfwCreateStandardCursor(GLFW_IBEAM_CURSOR)
         cursorShapes[CursorShape.CROSSHAIR] = glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR)
         cursorShapes[CursorShape.HAND] = glfwCreateStandardCursor(GLFW_HAND_CURSOR)
-        cursorShapes[CursorShape.RESIZE_EW] = glfwCreateStandardCursor(GLFW_RESIZE_EW_CURSOR)
-        cursorShapes[CursorShape.RESIZE_NS] = glfwCreateStandardCursor(GLFW_RESIZE_NS_CURSOR)
-        cursorShapes[CursorShape.RESIZE_ALL] = glfwCreateStandardCursor(GLFW_RESIZE_ALL_CURSOR)
+        cursorShapes[CursorShape.RESIZE_E] = glfwCreateStandardCursor(GLFW_RESIZE_EW_CURSOR)
+        cursorShapes[CursorShape.RESIZE_W] = glfwCreateStandardCursor(GLFW_RESIZE_EW_CURSOR)
+        cursorShapes[CursorShape.RESIZE_N] = glfwCreateStandardCursor(GLFW_RESIZE_NS_CURSOR)
+        cursorShapes[CursorShape.RESIZE_S] = glfwCreateStandardCursor(GLFW_RESIZE_NS_CURSOR)
+        cursorShapes[CursorShape.MOVE] = glfwCreateStandardCursor(GLFW_RESIZE_ALL_CURSOR)
         if (GlfwWindowSubsystem.platform != GlfwPlatform.LinuxWayland) {
             cursorShapes[CursorShape.NOT_ALLOWED] = glfwCreateStandardCursor(GLFW_NOT_ALLOWED_CURSOR)
-            cursorShapes[CursorShape.RESIZE_NESW] = glfwCreateStandardCursor(GLFW_RESIZE_NESW_CURSOR)
-            cursorShapes[CursorShape.RESIZE_NWSE] = glfwCreateStandardCursor(GLFW_RESIZE_NWSE_CURSOR)
+            cursorShapes[CursorShape.RESIZE_NE] = glfwCreateStandardCursor(GLFW_RESIZE_NESW_CURSOR)
+            cursorShapes[CursorShape.RESIZE_SW] = glfwCreateStandardCursor(GLFW_RESIZE_NESW_CURSOR)
+            cursorShapes[CursorShape.RESIZE_NW] = glfwCreateStandardCursor(GLFW_RESIZE_NWSE_CURSOR)
+            cursorShapes[CursorShape.RESIZE_SE] = glfwCreateStandardCursor(GLFW_RESIZE_NWSE_CURSOR)
         }
     }
 

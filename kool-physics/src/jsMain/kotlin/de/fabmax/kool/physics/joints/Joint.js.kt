@@ -6,7 +6,9 @@ import physx.PxConstraintFlagEnum
 import physx.PxJoint
 import physx.constraintFlags
 
-@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+// GENERATED CODE BELOW:
+// Transformed from desktop source
+
 actual class JointHolder(val px: PxJoint)
 
 abstract class JointImpl(frameA: PoseF, frameB: PoseF) : BaseReleasable(), Joint {
@@ -14,7 +16,6 @@ abstract class JointImpl(frameA: PoseF, frameB: PoseF) : BaseReleasable(), Joint
     override val frameB = PoseF(frameB)
 
     abstract val pxJoint: PxJoint
-
     override val joint: JointHolder by lazy { JointHolder(pxJoint) }
 
     override val isBroken: Boolean
