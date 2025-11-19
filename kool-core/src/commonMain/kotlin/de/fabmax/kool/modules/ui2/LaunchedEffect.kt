@@ -8,31 +8,15 @@ import kotlinx.coroutines.launch
  * Runs a coroutine when entering the composition and relaunches it when [key1] changes.
  * Useful for triggering suspend operations (e.g. animations) in response to state updates.
  */
-fun UiScope.LaunchedEffect(key1: Any?, block: suspend CoroutineScope.() -> Unit) {
-    val holder = remember { LaunchedEffectHolder(key1) }
-    if (holder.keysChanged(key1)) {
+fun UiScope.LaunchedEffect(vararg keys: Any?, block: suspend CoroutineScope.() -> Unit) {
+    val holder = remember { LaunchedEffectHolder(*keys) }
+    if (holder.keysChanged(*keys)) {
         holder.job?.cancel()
         holder.job = coroutineScope.launch { block() }
     }
 }
 
-fun UiScope.LaunchedEffect(key1: Any?, key2: Any?, block: suspend CoroutineScope.() -> Unit) {
-    val holder = remember { LaunchedEffectHolder(key1, key2) }
-    if (holder.keysChanged(key1, key2)) {
-        holder.job?.cancel()
-        holder.job = coroutineScope.launch { block() }
-    }
-}
-
-fun UiScope.LaunchedEffect(key1: Any?, key2: Any?, key3: Any?, block: suspend CoroutineScope.() -> Unit) {
-    val holder = remember { LaunchedEffectHolder(key1, key2, key3) }
-    if (holder.keysChanged(key1, key2, key3)) {
-        holder.job?.cancel()
-        holder.job = coroutineScope.launch { block() }
-    }
-}
-
-internal class LaunchedEffectHolder(vararg initialKeys: Any?) {
+private class LaunchedEffectHolder(vararg initialKeys: Any?) {
     private var keys: Array<out Any?> = initialKeys
     var job: Job? = null
 

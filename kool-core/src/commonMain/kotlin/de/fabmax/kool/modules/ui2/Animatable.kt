@@ -54,8 +54,6 @@ class AnimatableFloat(initialValue: Float) : Animatable<Float>(initialValue) {
  * An animatable Color value. Colors are correctly interpolated in linear space.
  */
 class ColorAnimatable(initialValue: Color) : Animatable<Color>(initialValue) {
-    constructor(initialHex: String) : this(Color(initialHex))
-
     /**
      * Animates the color from its current value to the [targetValue].
      *
@@ -93,6 +91,11 @@ class ColorAnimatable(initialValue: Color) : Animatable<Color>(initialValue) {
         animateTo(Color(targetHex), duration, easing)
     }
 }
+
+/**
+ * An animatable Color value. Colors are correctly interpolated in linear space.
+ */
+fun ColorAnimatable(initialHex: String): ColorAnimatable = ColorAnimatable(Color(initialHex))
 
 fun UiScope.rememberAnimatable(initialValue: Float) = remember { AnimatableFloat(initialValue) }
 fun UiScope.rememberColorAnimatable(initialValue: Color) = remember { ColorAnimatable(initialValue) }
