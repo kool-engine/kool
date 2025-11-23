@@ -10,11 +10,9 @@ fun UiScope.animateFloatAsState(
     animationSpec: AnimationSpec<Float> = tween()
 ): MutableStateValue<Float> {
     val animatable = remember { AnimatableFloat(targetValue) }
-
     LaunchedEffect(targetValue) {
         animationSpec.animateTo(animatable, targetValue)
     }
-
     return animatable
 }
 
@@ -26,10 +24,8 @@ fun UiScope.animateColorAsState(
     animationSpec: AnimationSpec<Color> = tween()
 ): MutableStateValue<Color> {
     val animatable = remember { ColorAnimatable(targetValue) }
-
     LaunchedEffect(targetValue) {
         animationSpec.animateTo(animatable, targetValue)
     }
-
     return animatable
 }

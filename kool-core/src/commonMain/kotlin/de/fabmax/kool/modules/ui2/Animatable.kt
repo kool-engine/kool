@@ -12,7 +12,9 @@ import kotlin.math.abs
  * A value holder that can be animated by calling suspend functions like [animateTo].
  * When the value changes, dependent UI elements are recomposed.
  */
-abstract class Animatable<T: Any>(initialValue: T) : MutableStateValue<T>(initialValue)
+abstract class Animatable<T: Any>(initialValue: T) : MutableStateValue<T>(initialValue) {
+    abstract suspend fun animateTo(targetValue: T, duration: Float = 0.3f, easing: Easing.Easing = Easing.smooth)
+}
 
 /**
  * An animatable Float value.
@@ -26,7 +28,7 @@ class AnimatableFloat(initialValue: Float) : Animatable<Float>(initialValue) {
      * @param duration The duration of the animation in seconds.
      * @param easing The easing function to use for the animation.
      */
-    suspend fun animateTo(targetValue: Float, duration: Float = 0.3f, easing: Easing.Easing = Easing.smooth) {
+    override suspend fun animateTo(targetValue: Float, duration: Float, easing: Easing.Easing) {
         if (duration <= 0f) {
             set(targetValue)
             return
@@ -61,7 +63,7 @@ class ColorAnimatable(initialValue: Color) : Animatable<Color>(initialValue) {
      * @param duration The duration of the animation in seconds.
      * @param easing The easing function to use for the animation.
      */
-    suspend fun animateTo(targetValue: Color, duration: Float = 0.3f, easing: Easing.Easing = Easing.smooth) {
+    override suspend fun animateTo(targetValue: Color, duration: Float, easing: Easing.Easing) {
         if (duration <= 0f) {
             set(targetValue)
             return
