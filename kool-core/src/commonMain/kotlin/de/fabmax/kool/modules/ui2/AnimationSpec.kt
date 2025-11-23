@@ -1,32 +1,42 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.math.Easing
+import de.fabmax.kool.util.Color
 
 /**
- * Base interface for animation specifications. Defines how a value evolves over time.
+ * Defines an animation specification that holds the logic of how an [Animatable]
+ * should evolve towards a target value over time.
  */
-interface AnimationSpec<T>
+interface AnimationSpec<T: Any> {
+    /**
+     * Executes the animation. This function should suspend until the animation is finished.
+     */
+    suspend fun animateTo(animatable: Animatable<T>, targetValue: T)
+}
 
 /**
- * Creates a tween (in-between) animation spec using the given [duration] and [easing] curve.
+ * Implementation of a Tween (in-between) animation.
  */
-data class TweenSpec<T>(
+data class TweenSpec<T: Any>(
     val duration: Float = 0.3f,
     val easing: Easing.Easing = Easing.smooth
-) : AnimationSpec<T>
+) : AnimationSpec<T> {
+    override suspend fun animateTo(animatable: Animatable<T>, targetValue: T) {
+        when (animatable) {
+            is AnimatableFloat -> animatable.animateTo(targetValue as Float, duration, easing)
+            is ColorAnimatable -> animatable.animateTo(targetValue as Color, duration, easing)
+        }
+    }
+}
 
 /**
- * Specification for snapping the value instantly without any animation.
+ * Implementation of a Snap (instant) animation.
  */
-class SnapSpec<T> : AnimationSpec<T>
+class SnapSpec<T: Any> : AnimationSpec<T> {
+    override suspend fun animateTo(animatable: Animatable<T>, targetValue: T) {
+        animatable.set(targetValue)
+    }
+}
 
-/**
- * Convenience builder for [TweenSpec].
- */
-fun <T> tween(duration: Float = 0.3f, easing: Easing.Easing = Easing.smooth): TweenSpec<T> =
-    TweenSpec(duration, easing)
-
-/**
- * Convenience builder for [SnapSpec].
- */
-fun <T> snap(): SnapSpec<T> = SnapSpec()
+fun <T: Any> tween(duration: Float = 0.3f, easing: Easing.Easing = Easing.smooth) = TweenSpec<T>(duration, easing)
+fun <T: Any> snap() = SnapSpec<T>()
