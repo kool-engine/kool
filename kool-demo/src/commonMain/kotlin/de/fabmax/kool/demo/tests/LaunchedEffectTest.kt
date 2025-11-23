@@ -163,7 +163,7 @@ class LaunchedEffectTest : DemoScene("Animation API Test") {
             modifier
                 .size(trackWidth.dp, trackHeight.dp)
                 .alignX(AlignmentX.Center)
-                .background(RoundRectBackground(colors.onBackground.withAlpha(0.2f), 100.dp))
+                .background(RoundRectBackground(colors.onBackground.withAlpha(0.2f), 15f.dp))
                 .onClick { isToggled = !isToggled }
                 .onEnter { PointerInput.cursorShape = CursorShape.HAND }
                 .onExit { PointerInput.cursorShape = CursorShape.DEFAULT }
