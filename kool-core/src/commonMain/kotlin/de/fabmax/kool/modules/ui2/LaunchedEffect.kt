@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
  * Useful for triggering suspend operations (e.g. animations) in response to state updates.
  */
 fun UiScope.LaunchedEffect(vararg keys: Any?, block: suspend CoroutineScope.() -> Unit) {
-    val holder = remember { LaunchedEffectHolder(*keys) }
+    val holder = remember { LaunchedEffectHolder() }
     if (holder.keysChanged(*keys)) {
         holder.job?.cancel()
         holder.job = coroutineScope.launch { block() }
@@ -21,14 +21,11 @@ private class LaunchedEffectHolder(vararg initialKeys: Any?) {
     var job: Job? = null
 
     /**
-     * Returns true if tracked keys change or the job is no longer active.
+     * Returns true if tracked keys change
      */
     fun keysChanged(vararg newKeys: Any?): Boolean {
-        return if (!arrayContentsEquals(keys, newKeys)) {
-            keys = newKeys
-            true
-        } else {
-            job == null || !job!!.isActive
+        return (!arrayContentsEquals(keys, newKeys)).also { changed ->
+            if (changed) keys = newKeys
         }
     }
 
