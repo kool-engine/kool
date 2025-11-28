@@ -354,8 +354,8 @@ class DriveAxes(
             setButtonRange(-1f, 0.75f)
         }
         steerAx = registerAxis("left / right") {
-            addControllerAxis(ControllerAxis.LEFT_X, easing = Easing.sqr)
-            addControllerAxis(ControllerAxis.RIGHT_X, easing = Easing.sqr)
+            addControllerAxis(ControllerAxis.LEFT_X, easing = Easing.easeInQuad)
+            addControllerAxis(ControllerAxis.RIGHT_X, easing = Easing.easeInQuad)
             setPositiveKeys(KeyboardInput.KEY_CURSOR_RIGHT, UniversalKeyCode('d'))
             setNegativeKeys(KeyboardInput.KEY_CURSOR_LEFT, UniversalKeyCode('a'))
             setAnalogRiseFallTime(0.1f)
