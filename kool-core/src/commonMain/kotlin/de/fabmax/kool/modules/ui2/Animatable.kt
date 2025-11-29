@@ -3,10 +3,9 @@ package de.fabmax.kool.modules.ui2
 import de.fabmax.kool.math.Easing
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MutableColor
 import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.delayFrames
-import kotlin.math.abs
+import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.takeWhile
 
 /**
  * A value holder that can be animated by calling suspend functions like [animateTo].
@@ -35,20 +34,13 @@ class AnimatableFloat(initialValue: Float) : Animatable<Float>(initialValue) {
         }
         val startTime = Time.gameTime
         val startValue = value
-        while (true) {
-            delayFrames(1)
+
+        Time.frameFlow.takeWhile {
             val elapsed = Time.gameTime - startTime
             val progress = (elapsed / duration).toFloat().clamp()
-            val easedProgress = easing.eased(progress)
-            val newValue = lerp(startValue, targetValue, easedProgress)
-
-            if (progress >= 1f || abs(value - targetValue) < 0.0001f) {
-                set(targetValue)
-                break
-            } else {
-                set(newValue)
-            }
-        }
+            set(lerp(startValue, targetValue, easing.eased(progress)))
+            progress < 1f
+        }.count()
     }
 }
 
@@ -69,24 +61,15 @@ class ColorAnimatable(initialValue: Color) : Animatable<Color>(initialValue) {
             return
         }
         val startTime = Time.gameTime
-        val startValue = value.toLinear()
-        val targetLinear = targetValue.toLinear()
-        val animatedColor = MutableColor()
-        while (true) {
-            delayFrames(1)
+        val startValue: Color = value.toLinear()
+        val targetLinear: Color = targetValue.toLinear()
+
+        Time.frameFlow.takeWhile {
             val elapsed = Time.gameTime - startTime
             val progress = (elapsed / duration).toFloat().clamp()
-            val easedProgress = easing.eased(progress)
-
-            startValue.mix(targetLinear, easedProgress, animatedColor)
-
-            if (progress >= 1f) {
-                set(targetValue)
-                break
-            } else {
-                set(animatedColor.toSrgb())
-            }
-        }
+            set(startValue.mix(targetLinear, easing.eased(progress)).toSrgb())
+            progress < 1f
+        }.count()
     }
 
     suspend fun animateTo(targetHex: String, duration: Float = 0.3f, easing: Easing.Easing = Easing.smooth) {

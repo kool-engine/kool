@@ -68,25 +68,25 @@ class LaunchedEffectTest : DemoScene("Animation API Test") {
 
 
     private fun UiScope.AnimatedButton(text: String) {
-        val isHovered = remember(false)
+        var isHovered by remember(false)
 
-        val targetBg = if (isHovered.value) colors.primary else colors.secondaryVariant
-        val targetText = if (isHovered.value) colors.onPrimary else colors.onSecondary
-        val targetScale = if (isHovered.value) 1.1f else 1.0f
+        val targetBg = if (isHovered) colors.primary else colors.secondaryVariant
+        val targetText = if (isHovered) colors.onPrimary else colors.onSecondary
+        val targetScale = if (isHovered) 1.1f else 1.0f
 
         val animBg by animateColorAsState(targetBg, tween(0.2f))
         val animTextColor by animateColorAsState(targetText, tween(0.2f))
-        val animScale by animateFloatAsState(targetScale, tween(0.2f, Easing.sqrRev))
+        val animScale by animateFloatAsState(targetScale, tween(0.2f, Easing.easeOutQuad))
 
         Box {
             modifier
                 .alignX(AlignmentX.Center)
                 .onEnter {
-                    isHovered.set(true)
+                    isHovered = true
                     PointerInput.cursorShape = CursorShape.HAND
                 }
                 .onExit {
-                    isHovered.set(false)
+                    isHovered = false
                     PointerInput.cursorShape = CursorShape.DEFAULT
                 }
                 .onClick { }
@@ -115,8 +115,8 @@ class LaunchedEffectTest : DemoScene("Animation API Test") {
         val targetRadius = if (isExpanded) 75f else 16f
         val targetColor = if (isExpanded) MdColor.AMBER else MdColor.CYAN
 
-        val animSize by animateFloatAsState(targetSize, tween(0.5f, Easing.quadRev))
-        val animRadius by animateFloatAsState(targetRadius, tween(0.5f, Easing.quadRev))
+        val animSize by animateFloatAsState(targetSize, tween(0.5f, Easing.easeOutQuart))
+        val animRadius by animateFloatAsState(targetRadius, tween(0.5f, Easing.easeOutQuart))
         val animColor by animateColorAsState(targetColor, tween(0.5f))
 
         Box {
@@ -172,7 +172,7 @@ class LaunchedEffectTest : DemoScene("Animation API Test") {
                 modifier
                     .size(knobSize.dp, knobSize.dp)
                     .alignY(AlignmentY.Center)
-                    .margin(start = Dp.fromPx(animX))
+                    .margin(start = animX.dp)
                     .background(CircularBackground(animColor))
                     .border(CircularBorder(Color.WHITE, 2.dp))
             }

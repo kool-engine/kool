@@ -46,7 +46,7 @@ fun UiScope.appModeControlButtons() {
         modifier
             .alignX(AlignmentX.Center)
 
-        val p = 1f - Easing.quadRev(playStopAnimator.progressAndUse())
+        val p = 1f - Easing.easeOutQuart(playStopAnimator.progressAndUse())
 
         // reset / rewind running app
         Button {
@@ -244,7 +244,7 @@ private class PauseButtonBg(playStopAnimator: AnimatedFloatBidir, val playPauseA
         val pAnim = playPauseAnimator.progressAndUse()
         val fg = fgColor.getColor(pHover)
 
-        getPlainBuilder().configured(MutableColor(fg).apply { a *= Easing.quadRev(playStopAnimator.value) }) {
+        getPlainBuilder().configured(MutableColor(fg).apply { a *= Easing.easeOutQuart(playStopAnimator.value) }) {
             translate(round(widthPx * 0.5f), round(heightPx * 0.5f), 0f)
             rotate(90f.deg * (1f - pAnim), 0f, 0f, 1f)
 
@@ -283,7 +283,7 @@ private class ResetButtonBg(playStopAnimator: AnimatedFloatBidir)
         val w = round(r * 0.4f)
         val h = round(r * 2f)
         getUiPrimitives().localRect(x, y, w, h, fg)
-        getPlainBuilder().configured(MutableColor(fg).apply { a *= Easing.quadRev(playStopAnimator.value) }) {
+        getPlainBuilder().configured(MutableColor(fg).apply { a *= Easing.easeOutQuart(playStopAnimator.value) }) {
             translate(round(widthPx * 0.5f + r * 0.3f), round(heightPx * 0.5f), 0f)
             val i0 = vertex { it.position.set(-r, 0f, 0f) }
             val i1 = vertex { it.position.set(-cos(120f.toRad()) * r, sin(120f.toRad()) * r, 0f) }

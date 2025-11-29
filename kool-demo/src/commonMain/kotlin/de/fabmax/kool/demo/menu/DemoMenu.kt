@@ -66,7 +66,7 @@ class DemoMenu(val demoLoader: DemoLoader) {
     }
 
     private fun UiScope.MenuContent() = Row {
-        val p = 1f - Easing.quadRev(menuPositionAnimator.progressAndUse())
+        val p = 1f - Easing.easeOutQuart(menuPositionAnimator.progressAndUse())
         val position = UiSizes.menuWidth * -p
         modifier
             .margin(start = position)
