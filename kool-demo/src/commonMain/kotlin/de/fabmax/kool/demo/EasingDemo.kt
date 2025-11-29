@@ -9,11 +9,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ColorGradient
-import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -57,7 +53,7 @@ class EasingDemo : DemoScene("Easings") {
         val inOutItem: EasingItem
     )
 
-    private val easingGroups = mutableListOf<EasingGroup>().apply {
+    private val easingGroups = buildList<EasingGroup> {
         fun grp(name: String, inFunc: Easing.Easing, outFunc: Easing.Easing, inOutFunc: Easing.Easing) {
             add(EasingGroup(
                 name,
@@ -95,6 +91,8 @@ class EasingDemo : DemoScene("Easings") {
             sizes = Settings.uiSize.value.sizes,
             layout = CellLayout
         ) {
+            surface.sizes = Settings.uiSize.use().sizes
+
             Column(Grow.Std, Grow.Std) {
                 modifier.padding(sizes.gap)
 
@@ -170,7 +168,10 @@ class EasingDemo : DemoScene("Easings") {
 
         val animValue by animator
         val alpha = animValue.clamp(0f, 1f)
-        val slideOffset = 50.dp * (1f - animValue)
+
+        val baseSize = sizes.largeGap * 2.5f
+        val slideOffset = baseSize * (1f - animValue)
+        val dialogWidth = baseSize * 10f
 
         Box(Grow.Std, Grow.Std) {
             modifier
@@ -182,7 +183,7 @@ class EasingDemo : DemoScene("Easings") {
 
             Box {
                 modifier
-                    .width(500.dp)
+                    .width(dialogWidth)
                     .height(FitContent)
                     .margin(top = slideOffset)
                     .background(RoundRectBackground(colorBackground.withAlpha(alpha), sizes.largeGap))
@@ -224,7 +225,7 @@ class EasingDemo : DemoScene("Easings") {
                         animationSpec = tween(duration = 1f, easing = item.function)
                     )
 
-                    Box(Grow.Std, 150.dp) {
+                    Box(Grow.Std, baseSize * 3f) {
                         modifier
                             .background(RoundRectBackground(colorCardBg.withAlpha(contentAlpha), sizes.gap))
                             .margin(bottom = sizes.gap)
@@ -234,7 +235,7 @@ class EasingDemo : DemoScene("Easings") {
                         })
                     }
 
-                    val tileSize = 100.dp
+                    val tileSize = baseSize * 2f
                     Row(Grow.Std) {
                         modifier.margin(bottom = sizes.largeGap)
 
@@ -256,7 +257,6 @@ class EasingDemo : DemoScene("Easings") {
                                 Box(tileSize, tileSize) {
                                     modifier.align(AlignmentX.Center, AlignmentY.Center)
 
-                                    val baseSize = 50.dp
                                     val maxScale = 1.3f
                                     val targetSize = baseSize * maxScale
 
@@ -290,8 +290,7 @@ class EasingDemo : DemoScene("Easings") {
                             DemoTile("Morph (Shape)", contentAlpha) {
                                 Box(tileSize, tileSize) {
                                     modifier.align(AlignmentX.Center, AlignmentY.Center)
-                                    val size = 60.dp
-
+                                    val size = baseSize * 1.2f
                                     val maxRadius = size.value / 2f
                                     val minRadius = 12f
                                     val radius = minRadius + (maxRadius - minRadius) * progressEased
@@ -312,7 +311,7 @@ class EasingDemo : DemoScene("Easings") {
                     Button("Close") {
                         modifier
                             .alignX(AlignmentX.Center)
-                            .width(150.dp)
+                            .width(baseSize * 3f)
                             .margin(bottom = sizes.gap)
                             .onClick { close() }
                             .colors(
@@ -351,24 +350,24 @@ class EasingDemo : DemoScene("Easings") {
 
     private fun renderGraphComparison(node: UiNode, linearPos: Float, easedPos: Float, alpha: Float = 1f) {
         node.apply {
-            val builder = getPlainBuilder(UiSurface.LAYER_DEFAULT)
+            val builder = getPlainBuilder(UiSurface.LAYER_BACKGROUND)
             val fontBuilder = getTextBuilder(Font.DEFAULT_FONT, UiSurface.LAYER_FLOATING)
             val draw = getUiPrimitives(UiSurface.LAYER_DEFAULT)
 
             val w = widthPx
             val h = heightPx
-            val trackPadding = 40.dp.px
+            val graphBaseSize = sizes.largeGap.px
+            val trackPadding = graphBaseSize * 2
             val trackWidth = w - trackPadding * 2
             val centerY = h / 2f
-            val trackSpacing = 60.dp.px
+            val trackSpacing = graphBaseSize * 3
 
             val yLinear = centerY - trackSpacing / 2
             val yEased = centerY + trackSpacing / 2
-            val boxSize = 20.dp.px
 
             val axesCol = MdColor.GREY.withAlpha(0.5f * alpha)
             val textCol = colors.onBackground.withAlpha(colors.onBackground.a * alpha)
-            val objLinearCol = Color.WHITE.withAlpha(0.3f * alpha)
+            val objLinearCol = MdColor.GREY.withAlpha(alpha)
             val objEasedCol = colorCurveEnd.withAlpha(alpha)
 
             builder.configured(axesCol) {
@@ -380,12 +379,12 @@ class EasingDemo : DemoScene("Easings") {
                 withTransform {
                     translate(trackPadding, yLinear - 20.dp.px, 0f)
                     scale(1f, -1f, 1f)
-                    text(Font.DEFAULT_FONT) { text = "Linear"; origin.set(0f, 0f, 0f) }
+                    text(sizes.normalText) { text = "Linear"; origin.set(0f, 0f, 0f) }
                 }
                 withTransform {
                     translate(trackPadding, yEased - 20.dp.px, 0f)
                     scale(1f, -1f, 1f)
-                    text(Font.DEFAULT_FONT) { text = "Eased"; origin.set(0f, 0f, 0f) }
+                    text(sizes.normalText) { text = "Eased"; origin.set(0f, 0f, 0f) }
                 }
             }
 
@@ -394,14 +393,14 @@ class EasingDemo : DemoScene("Easings") {
             val xEased = trackPadding + easedPos * trackWidth
 
             draw.localRoundRect(
-                xLinear - boxSize / 2, yLinear - boxSize / 2,
-                boxSize, boxSize, 4.dp.px,
+                xLinear - graphBaseSize / 2, yLinear - graphBaseSize / 2,
+                graphBaseSize, graphBaseSize, 4.dp.px,
                 objLinearCol
             )
 
             draw.localRoundRect(
-                xEased - boxSize / 2, yEased - boxSize / 2,
-                boxSize, boxSize, 4.dp.px,
+                xEased - graphBaseSize / 2, yEased - graphBaseSize / 2,
+                graphBaseSize, graphBaseSize, 4.dp.px,
                 objEasedCol
             )
         }
@@ -419,7 +418,7 @@ class EasingDemo : DemoScene("Easings") {
     }
 
     private fun UiScope.EasingCard(item: EasingItem) {
-        val cardSize = 130.dp
+        val cardSize = sizes.largeGap * 6.5f
 
         Column {
             modifier
@@ -477,7 +476,7 @@ class EasingDemo : DemoScene("Easings") {
             val linkColor = if (isHovered) MdColor.LIGHT_BLUE else Color.WHITE.withAlpha(0.5f)
 
             modifier
-                .align(AlignmentX.End, AlignmentY.Bottom)
+                .align(AlignmentX.Center, AlignmentY.Bottom)
                 .margin(sizes.gap)
                 .apply {
                     if (!isPopupActive) {
@@ -496,8 +495,8 @@ class EasingDemo : DemoScene("Easings") {
                 }
 
             Column {
-                Text("Website from which easings and demo style were taken") {
-                    modifier.textColor(linkColor)
+                Text("Source: easings.net") {
+                    modifier.textColor(linkColor).font(sizes.smallText)
                 }
                 Box(width = Grow.Std, height = 1.dp) {
                     modifier.backgroundColor(linkColor)
@@ -575,12 +574,12 @@ class EasingDemo : DemoScene("Easings") {
                     withTransform {
                         translate(pad + graphW + 4.dp.px, y0 - 4.dp.px, 0f)
                         scale(1f, -1f, 1f)
-                        text(Font.DEFAULT_FONT) { text = "t"; origin.set(0f, 0f, 0f) }
+                        text(sizes.smallText) { text = "t"; origin.set(0f, 0f, 0f) }
                     }
                     withTransform {
                         translate(pad - 8.dp.px, y0 - graphH - 8.dp.px, 0f)
                         scale(1f, -1f, 1f)
-                        text(Font.DEFAULT_FONT) { text = "x"; origin.set(0f, 0f, 0f) }
+                        text(sizes.smallText) { text = "x"; origin.set(0f, 0f, 0f) }
                     }
                 }
 

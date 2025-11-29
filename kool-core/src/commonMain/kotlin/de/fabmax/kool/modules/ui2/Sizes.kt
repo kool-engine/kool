@@ -4,6 +4,7 @@ import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.MsdfFont
 
 data class Sizes(
+    val smallText: Font,
     val normalText: Font,
     val largeText: Font,
     val sliderHeight: Dp,
@@ -22,6 +23,7 @@ data class Sizes(
         val large = large()
 
         fun small(
+            smallText: Font = MsdfFont(sizePts = 9.6f),
             normalText: Font = MsdfFont(sizePts = 12f),
             largeText: Font = MsdfFont(sizePts = 16f),
             sliderHeight: Dp = Dp(14f),
@@ -33,6 +35,7 @@ data class Sizes(
             largeGap: Dp = Dp(16f),
             borderWidth: Dp = Dp.roundToWholePx(1f)
         ): Sizes = Sizes(
+            smallText,
             normalText,
             largeText,
             sliderHeight,
@@ -46,6 +49,7 @@ data class Sizes(
         )
 
         fun medium(
+            smallText: Font = MsdfFont(sizePts = 12f),
             normalText: Font = MsdfFont(sizePts = 15f),
             largeText: Font = MsdfFont(sizePts = 20f),
             sliderHeight: Dp = Dp(17f),
@@ -57,6 +61,7 @@ data class Sizes(
             largeGap: Dp = Dp(20f),
             borderWidth: Dp = Dp.roundToWholePx(1f)
         ): Sizes = Sizes(
+            smallText,
             normalText,
             largeText,
             sliderHeight,
@@ -70,6 +75,7 @@ data class Sizes(
         )
 
         fun large(
+            smallText: Font = MsdfFont(sizePts = 14.4f),
             normalText: Font = MsdfFont(sizePts = 18f),
             largeText: Font = MsdfFont(sizePts = 24f),
             sliderHeight: Dp = Dp(20f),
@@ -81,6 +87,7 @@ data class Sizes(
             largeGap: Dp = Dp(24f),
             borderWidth: Dp = Dp.roundToWholePx(1.5f)
         ): Sizes = Sizes(
+            smallText,
             normalText,
             largeText,
             sliderHeight,

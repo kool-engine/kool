@@ -29,7 +29,8 @@ cloning this repo and running `./gradlew :kool-demo:runDesktop`
 - [Pathtracing](https://kool-engine.github.io/live/demos/?demo=pathtracing): Compute shader based implementation of the
   [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html) book. **WebGPU only**
 - [Embedded UI](https://kool-engine.github.io/live/demos/?demo=ui): Integrated UI framework implemented completely within
-  the engine. Fast, highly customizable and easy-to-use.
+  the engine. Fast, highly customizable and easy-to-use. Offers advanced features like compose-style `LaunchedEffect`,
+  [Animations](https://kool-engine.github.io/live/demos/?demo=ui-easings) and more.
 - [Particles](https://kool-engine.github.io/live/demos/?demo=bees): Two teams of bees fighting against each other.
   Simulation can be toggled between CPU and compute-shader (if available, i.e. on **WebGPU**).
 - [Fluffy Bunny](https://kool-engine.github.io/live/demos/?demo=shell): Shell-shading based rendering of animated fur

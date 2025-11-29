@@ -75,7 +75,7 @@ object Demos {
         entry("bloom", "Bloom", NeedsComputeShaders) { HelloBloom() }
         entry("pathtracing", "Path-tracing", NeedsComputeShaders) { PathTracingDemo() }
         entry("tetris", "Tetris") { TetrisDemo() }
-        entry("easing", "Easing Functions") { EasingDemo() }
+        entry("ui-easings", "Easing Functions") { EasingDemo() }
     }
 
     val hiddenDemos = Category("Hidden", true, 0.75f, 0.95f).apply {
