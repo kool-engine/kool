@@ -2,6 +2,7 @@ package de.fabmax.kool.physics.character
 
 import de.fabmax.kool.physics.*
 import physx.*
+import physx.prototypes.PxTopLevelFunctions
 import kotlin.math.cos
 
 // GENERATED CODE BELOW:

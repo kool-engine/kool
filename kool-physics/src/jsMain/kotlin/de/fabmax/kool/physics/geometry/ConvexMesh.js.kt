@@ -7,6 +7,8 @@ import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.generateNormals
 import physx.*
+import physx.prototypes.NativeArrayHelpers
+import physx.prototypes.PxTopLevelFunctions
 
 // GENERATED CODE BELOW:
 // Transformed from desktop source

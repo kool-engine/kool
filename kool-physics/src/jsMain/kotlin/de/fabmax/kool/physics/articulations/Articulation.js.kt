@@ -4,12 +4,12 @@ package de.fabmax.kool.physics.articulations
 
 import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.PhysicsImpl
-import de.fabmax.kool.physics.SupportFunctions
 import de.fabmax.kool.physics.memStack
 import de.fabmax.kool.physics.toPxTransform
 import physx.PxArticulationFlagEnum
 import physx.PxArticulationLink
 import physx.PxArticulationReducedCoordinate
+import physx.prototypes.SupportFunctions
 
 // GENERATED CODE BELOW:
 // Transformed from desktop source

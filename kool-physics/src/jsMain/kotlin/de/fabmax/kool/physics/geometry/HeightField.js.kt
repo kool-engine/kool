@@ -1,7 +1,6 @@
 package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.physics.PhysicsImpl
-import de.fabmax.kool.physics.PxTopLevelFunctions
 import de.fabmax.kool.physics.SIZEOF
 import de.fabmax.kool.physics.memStack
 import de.fabmax.kool.util.Heightmap
@@ -9,6 +8,7 @@ import physx.PxArray_PxHeightFieldSample
 import physx.PxHeightField
 import physx.PxHeightFieldFormatEnum
 import physx.PxHeightFieldGeometry
+import physx.prototypes.PxTopLevelFunctions
 import kotlin.math.max
 import kotlin.math.roundToInt
 

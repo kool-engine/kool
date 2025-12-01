@@ -2,7 +2,7 @@ plugins {
     id("kool.androidlib-conventions")
     id("kool.lib-conventions")
     id("kool.publish-conventions")
-    id("de.fabmax.webidl-util") version "0.10.4"
+    id("de.fabmax.webidl-util") version "0.10.5-SNAPSHOT"
 }
 
 kotlin {
@@ -32,7 +32,7 @@ kotlin {
 }
 
 webidl {
-    localProperties["physx-js.webidldir"]?.let { modelPath = file(it) }
+    localProperties["physxjs.webidldir"]?.let { modelPath = file(it) }
     modelName = "PhysXJs"
 
     generateKotlinJsInterfaces {

@@ -8,34 +8,21 @@ import kotlinx.coroutines.asDeferred
 import kotlin.js.Promise
 
 @JsModule("physx-js-webidl")
-internal external val PhysX: () -> Promise<dynamic>
+private external val PhysX: () -> Promise<dynamic>
 
 object PhysXJsLoader {
     @JsName("physXJs")
     internal var physXJs: dynamic = null
     private val physXJsPromise = PhysX()
-    internal var physxDeferred = physXJsPromise.asDeferred()
+    internal var physXJsDeferred = physXJsPromise.asDeferred()
 
-    val isLoaded: Boolean get() = physxDeferred.isCompleted
-    private var isLoading = false
-    private val onLoadListeners = mutableListOf<() -> Unit>()
+    val isLoaded: Boolean get() = physXJsDeferred.isCompleted
 
-    fun loadModule() {
-        if (!isLoading) {
-            isLoading = true
-            physXJsPromise.then { module: dynamic ->
-                physXJs = module
-                onLoadListeners.forEach { it() }
-            }
+    suspend fun loadModule() {
+        if (!isLoaded) {
+            physXJsPromise.then { module: dynamic -> physXJs = module }
         }
-    }
-
-    fun addOnLoadListener(listener: () -> Unit) {
-        if (isLoaded) {
-            listener()
-        } else {
-            onLoadListeners += listener
-        }
+        physXJsDeferred.await()
     }
 
     fun checkIsLoaded() {
