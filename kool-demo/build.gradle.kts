@@ -54,6 +54,7 @@ kotlin {
             implementation(project(":kool-core"))
             implementation(project(":kool-backend-wgpu4k"))
             implementation(project(":kool-physics"))
+            implementation(project(":kool-physics-2d"))
             implementation(libs.kotlin.coroutines)
             implementation(libs.kotlin.serialization.core)
             implementation(libs.kotlin.serialization.json)
