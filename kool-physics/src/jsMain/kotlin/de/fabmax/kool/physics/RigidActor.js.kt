@@ -8,6 +8,7 @@ import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.checkIsNotReleased
 import physx.*
+import physx.prototypes.PxRigidActorExt
 
 // GENERATED CODE BELOW:
 // Transformed from desktop source

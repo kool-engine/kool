@@ -1,9 +1,13 @@
 package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.*
+import de.fabmax.kool.physics.MemoryStack
+import de.fabmax.kool.physics.PhysicsImpl
+import de.fabmax.kool.physics.SIZEOF
+import de.fabmax.kool.physics.toPxVec3
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import physx.*
+import physx.prototypes.PxTopLevelFunctions
 
 // GENERATED CODE BELOW:
 // Transformed from desktop source

@@ -4,6 +4,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.util.logW
 import physx.*
+import physx.prototypes.PxTopLevelFunctions
 import kotlin.math.max
 
 // GENERATED CODE BELOW:

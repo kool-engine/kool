@@ -8,15 +8,8 @@ import de.fabmax.kool.util.logI
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import physx.*
-
-// static top-level PhysX functions
-val NativeArrayHelpers: NativeArrayHelpers get() = PhysXJsLoader.physXJs.NativeArrayHelpers.prototype as NativeArrayHelpers
-val SupportFunctions: SupportFunctions get() = PhysXJsLoader.physXJs.SupportFunctions.prototype as SupportFunctions
-val PxTopLevelFunctions: PxTopLevelFunctions get() = PhysXJsLoader.physXJs.PxTopLevelFunctions.prototype as PxTopLevelFunctions
-val PxVehicleTopLevelFunctions: PxVehicleTopLevelFunctions get() = PhysXJsLoader.physXJs.PxVehicleTopLevelFunctions.prototype as PxVehicleTopLevelFunctions
-val PxRigidActorExt: PxRigidActorExt get() = PhysXJsLoader.physXJs.PxRigidActorExt.prototype as PxRigidActorExt
-val PxRigidBodyExt: PxRigidBodyExt get() = PhysXJsLoader.physXJs.PxRigidBodyExt.prototype as PxRigidBodyExt
-val PxVehicleTireForceParamsExt: PxVehicleTireForceParamsExt get() = PhysXJsLoader.physXJs.PxVehicleTireForceParamsExt.prototype as PxVehicleTireForceParamsExt
+import physx.prototypes.PxTopLevelFunctions
+import physx.prototypes.PxVehicleTopLevelFunctions
 
 internal actual fun PhysicsSystem(): PhysicsSystem = PhysicsImpl
 
@@ -29,9 +22,8 @@ object PhysicsImpl : PhysicsSystem {
     override val NOTIFY_CONTACT_POINTS: Int
         get() = PxPairFlagEnum.eNOTIFY_CONTACT_POINTS.value
 
-    private var isLoading = false
     override val isLoaded: Boolean
-        get() = PhysXJsLoader.physxDeferred.isCompleted
+        get() = PhysXJsLoader.isLoaded
 
     override val physicsDispatcher: CoroutineDispatcher
         get() = Dispatchers.Default
@@ -51,42 +43,39 @@ object PhysicsImpl : PhysicsSystem {
         private set
 
     override suspend fun loadAndAwaitPhysics() {
-        if (!isLoading) {
-            isLoading = true
-            PhysXJsLoader.addOnLoadListener {
-                val allocator = PxDefaultAllocator()
-                val errorCallback = PxErrorCallbackImpl()
-                errorCallback.reportError = { code, message, file, line ->
-                    PhysicsLogging.logPhysics(code, message, file, line)
-                }
-                foundation = PxTopLevelFunctions.CreateFoundation(PxTopLevelFunctions.PHYSICS_VERSION, allocator, errorCallback)
-
-                val scale = PxTolerancesScale()
-                physics = PxTopLevelFunctions.CreatePhysics(PxTopLevelFunctions.PHYSICS_VERSION, foundation, scale)
-
-                PxTopLevelFunctions.InitExtensions(physics)
-
-                cookingParams = PxCookingParams(scale)
-                cookingParams.suppressTriangleMeshRemapTable = true
-
-                unitCylinder = ConvexMeshImpl.makePxConvexMesh(CylinderGeometry.convexMeshPoints(1f, 1f))
-
-                // init vehicle simulation framework
-                PxVehicleTopLevelFunctions.InitVehicleExtension(foundation)
-                vehicleFrame = PxVehicleFrame().apply {
-                    lngAxis = PxVehicleAxesEnum.ePosZ
-                    latAxis = PxVehicleAxesEnum.ePosX
-                    vrtAxis = PxVehicleAxesEnum.ePosY
-                }
-
-                defaultCpuDispatcher = PxTopLevelFunctions.DefaultCpuDispatcherCreate(0)
-
-                logI { "PhysX loaded, version: ${pxVersionToString(PxTopLevelFunctions.PHYSICS_VERSION)}" }
-            }
-            PhysXJsLoader.loadModule()
+        if (PhysXJsLoader.isLoaded) {
+            return
         }
 
-        PhysXJsLoader.physxDeferred.await()
+        PhysXJsLoader.loadModule()
+        logI { "PhysX loaded, version: ${pxVersionToString(PxTopLevelFunctions.PHYSICS_VERSION)}" }
+
+        val allocator = PxDefaultAllocator()
+        val errorCallback = PxErrorCallbackImpl()
+        errorCallback.reportError = { code, message, file, line ->
+            PhysicsLogging.logPhysics(code, message, file, line)
+        }
+        foundation = PxTopLevelFunctions.CreateFoundation(PxTopLevelFunctions.PHYSICS_VERSION, allocator, errorCallback)
+
+        val scale = PxTolerancesScale()
+        physics = PxTopLevelFunctions.CreatePhysics(PxTopLevelFunctions.PHYSICS_VERSION, foundation, scale)
+
+        PxTopLevelFunctions.InitExtensions(physics)
+
+        cookingParams = PxCookingParams(scale)
+        cookingParams.suppressTriangleMeshRemapTable = true
+
+        unitCylinder = ConvexMeshImpl.makePxConvexMesh(CylinderGeometry.convexMeshPoints(1f, 1f))
+
+        // init vehicle simulation framework
+        PxVehicleTopLevelFunctions.InitVehicleExtension(foundation)
+        vehicleFrame = PxVehicleFrame().apply {
+            lngAxis = PxVehicleAxesEnum.ePosZ
+            latAxis = PxVehicleAxesEnum.ePosX
+            vrtAxis = PxVehicleAxesEnum.ePosY
+        }
+
+        defaultCpuDispatcher = PxTopLevelFunctions.DefaultCpuDispatcherCreate(0)
     }
 
     internal fun isPhysicsThread(): Boolean {

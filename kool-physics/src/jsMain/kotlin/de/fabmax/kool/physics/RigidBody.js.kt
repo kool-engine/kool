@@ -8,6 +8,7 @@ import de.fabmax.kool.physics.util.SyncedFloat
 import de.fabmax.kool.physics.util.SyncedVec3
 import de.fabmax.kool.util.logE
 import physx.*
+import physx.prototypes.PxRigidBodyExt
 
 // GENERATED CODE BELOW:
 // Transformed from desktop source

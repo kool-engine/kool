@@ -14,6 +14,9 @@ import de.fabmax.kool.util.logW
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import physx.*
+import physx.prototypes.NativeArrayHelpers
+import physx.prototypes.PxTopLevelFunctions
+import physx.prototypes.SupportFunctions
 
 actual fun PhysicsWorld(scene: Scene?, isContinuousCollisionDetection: Boolean) : PhysicsWorld {
     return PhysicsWorldImpl(scene, isContinuousCollisionDetection)

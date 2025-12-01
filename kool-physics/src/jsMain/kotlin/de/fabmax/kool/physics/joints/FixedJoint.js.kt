@@ -1,8 +1,12 @@
 package de.fabmax.kool.physics.joints
 
 import de.fabmax.kool.math.PoseF
-import de.fabmax.kool.physics.*
+import de.fabmax.kool.physics.PhysicsImpl
+import de.fabmax.kool.physics.RigidActor
+import de.fabmax.kool.physics.memStack
+import de.fabmax.kool.physics.toPxTransform
 import physx.PxFixedJoint
+import physx.prototypes.PxTopLevelFunctions
 
 // GENERATED CODE BELOW:
 // Transformed from desktop source

@@ -8,6 +8,8 @@ import de.fabmax.kool.physics.vehicle.Vehicle.Companion.OMEGA_TO_RPM
 import de.fabmax.kool.physics.vehicle.Vehicle.Companion.REAR_LEFT
 import de.fabmax.kool.physics.vehicle.Vehicle.Companion.REAR_RIGHT
 import physx.*
+import physx.prototypes.PxVehicleTireForceParamsExt
+import physx.prototypes.PxVehicleTopLevelFunctions
 import kotlin.math.abs
 import kotlin.math.max
 
