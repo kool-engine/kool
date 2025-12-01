@@ -2,6 +2,7 @@ rootProject.name = "kool"
 
 pluginManagement {
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
         gradlePluginPortal()
@@ -21,6 +22,7 @@ dependencyResolutionManagement {
 include("kool-core")
 include("kool-backend-wgpu4k")
 include("kool-physics")
+include("kool-physics-2d")
 include("kool-editor-model")
 include("kool-editor")
 include("kool-demo")
