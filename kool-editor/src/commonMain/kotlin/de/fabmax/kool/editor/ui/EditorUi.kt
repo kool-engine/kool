@@ -118,6 +118,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 
             val sz = uiSizes.value
             uiSizes.set(sz.copy(
+                smallText = uiFont.copy(sizePts = sz.smallText.sizePts),
                 normalText = uiFont.copy(sizePts = sz.normalText.sizePts),
                 largeText = uiFont.copy(sizePts = sz.largeText.sizePts),
             ))
@@ -264,7 +265,6 @@ val Sizes.browserItemSize: Dp get() = baseSize * 2.5f
 val Sizes.editorPanelMarginStart: Dp get() = gap * 1.5f
 val Sizes.editorPanelMarginEnd: Dp get() = gap
 
-val Sizes.smallText: MsdfFont get() = (normalText as MsdfFont).copy(sizePts = normalText.sizePts * 0.8f)
 val Sizes.boldText: MsdfFont get() = (normalText as MsdfFont).copy(weight = 0.075f)
 val Sizes.italicText: MsdfFont get() = (normalText as MsdfFont).copy(italic = MsdfFont.ITALIC_STD)
 
