@@ -8,6 +8,7 @@ import de.fabmax.kool.demo.creativecoding.CreativeCodingDemo
 import de.fabmax.kool.demo.helloworld.*
 import de.fabmax.kool.demo.pathtracing.PathTracingDemo
 import de.fabmax.kool.demo.pbr.PbrDemo
+import de.fabmax.kool.demo.physics.box2d.mixer.MixerDemo
 import de.fabmax.kool.demo.physics.collision.CollisionDemo
 import de.fabmax.kool.demo.physics.joints.JointsDemo
 import de.fabmax.kool.demo.physics.manybodies.ManyBodiesDemo
@@ -54,6 +55,7 @@ object Demos {
         entry("phys-ragdoll", "Ragdolls") { RagdollDemo() }
         entry("phys-joints", "Chain Drive") { JointsDemo() }
         entry("physics", "Rigid Bodies") { CollisionDemo() }
+        entry("box2d-mixer", "Box2d - Mixer") { MixerDemo() }
     }
 
     val graphicsDemos = Category("Graphics", false, 0.25f, 0.45f).apply {
