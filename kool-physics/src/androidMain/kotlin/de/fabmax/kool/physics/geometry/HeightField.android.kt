@@ -1,14 +1,12 @@
 package de.fabmax.kool.physics.geometry
 
-import de.fabmax.kool.physics.PhysicsImpl
-import de.fabmax.kool.physics.SIZEOF
-import de.fabmax.kool.physics.memStack
+import de.fabmax.kool.physics.*
 import de.fabmax.kool.util.Heightmap
+import de.fabmax.kool.util.memStack
 import physxandroid.PxTopLevelFunctions
 import physxandroid.geometry.PxHeightField
 import physxandroid.geometry.PxHeightFieldFormatEnum
 import physxandroid.geometry.PxHeightFieldGeometry
-import physxandroid.geometry.PxHeightFieldSample
 import physxandroid.support.PxArray_PxHeightFieldSample
 import kotlin.math.max
 import kotlin.math.roundToInt

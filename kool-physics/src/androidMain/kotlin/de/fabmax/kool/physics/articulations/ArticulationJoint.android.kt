@@ -2,8 +2,11 @@ package de.fabmax.kool.physics.articulations
 
 import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.math.toRad
-import de.fabmax.kool.physics.memStack
+import de.fabmax.kool.physics.createPxArticulationDrive
+import de.fabmax.kool.physics.createPxArticulationLimit
+import de.fabmax.kool.physics.createPxTransform
 import de.fabmax.kool.physics.toPxTransform
+import de.fabmax.kool.util.memStack
 import physxandroid.physics.*
 
 // GENERATED CODE BELOW:

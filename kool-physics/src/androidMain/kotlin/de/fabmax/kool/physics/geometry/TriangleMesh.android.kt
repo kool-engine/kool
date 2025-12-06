@@ -3,8 +3,8 @@ package de.fabmax.kool.physics.geometry
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.util.memStack
 import physxandroid.PxTopLevelFunctions
-import physxandroid.common.PxVec3
 import physxandroid.geometry.PxTriangleMesh
 import physxandroid.geometry.PxTriangleMeshGeometry
 import physxandroid.support.PxArray_PxU32
@@ -26,10 +26,10 @@ class TriangleMeshImpl(override val geometry: IndexedVertexList<*>) : TriangleMe
 
     init {
         PhysicsImpl.checkIsLoaded()
-        MemoryStack.stackPush().use { mem ->
+        memStack {
             val pointVector = PxArray_PxVec3()
             val indexVector = PxArray_PxU32()
-            val pxVec3 = mem.createPxVec3()
+            val pxVec3 = createPxVec3()
             geometry.forEach {
                 pointVector.pushBack(it.toPxVec3(pxVec3))
             }
@@ -38,17 +38,17 @@ class TriangleMeshImpl(override val geometry: IndexedVertexList<*>) : TriangleMe
             }
 
             // create mesh descriptor
-            val points = mem.createPxBoundedData()
+            val points = createPxBoundedData()
             points.count = pointVector.size()
             points.stride = SIZEOF.PxVec3
             points.data = pointVector.begin()
 
-            val triangles = mem.createPxBoundedData()
+            val triangles = createPxBoundedData()
             triangles.count = indexVector.size() / 3
             triangles.stride = 12
             triangles.data = indexVector.begin()
 
-            val desc = mem.createPxTriangleMeshDesc()
+            val desc = createPxTriangleMeshDesc()
             desc.points = points
             desc.triangles = triangles
 
@@ -75,10 +75,10 @@ class TriangleMeshGeometryImpl(override val triangleMesh: TriangleMesh, override
 
     init {
         PhysicsImpl.checkIsLoaded()
-        MemoryStack.stackPush().use { mem ->
-            val s = scale.toPxVec3(mem.createPxVec3())
-            val r = mem.createPxQuat(0f, 0f, 0f, 1f)
-            val meshScale = mem.createPxMeshScale(s, r)
+        memStack {
+            val s = scale.toPxVec3(createPxVec3())
+            val r = createPxQuat(0f, 0f, 0f, 1f)
+            val meshScale = createPxMeshScale(s, r)
             pxGeometry = PxTriangleMeshGeometry(triangleMesh.pxTriangleMesh, meshScale)
         }
 

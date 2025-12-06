@@ -1,9 +1,8 @@
 package de.fabmax.kool.physics.geometry
 
-import de.fabmax.kool.physics.PhysicsImpl
-import de.fabmax.kool.physics.SIZEOF
-import de.fabmax.kool.physics.memStack
+import de.fabmax.kool.physics.*
 import de.fabmax.kool.util.Heightmap
+import de.fabmax.kool.util.memStack
 import physx.PxArray_PxHeightFieldSample
 import physx.PxHeightField
 import physx.PxHeightFieldFormatEnum

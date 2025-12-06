@@ -4,7 +4,6 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.util.logW
 import de.fabmax.kool.util.memStack
-import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.extensions.*
 import kotlin.math.max
@@ -32,9 +31,9 @@ class D6JointImpl(
     private val targetDriveVelAngular = MutableVec3f()
 
     init {
-        MemoryStack.stackPush().use { mem ->
-            val frmA = frameA.toPxTransform(mem.createPxTransform())
-            val frmB = frameB.toPxTransform(mem.createPxTransform())
+        memStack {
+            val frmA = frameA.toPxTransform(createPxTransform())
+            val frmB = frameB.toPxTransform(createPxTransform())
             pxJoint = PxTopLevelFunctions.D6JointCreate(PhysicsImpl.physics, bodyA?.holder?.px, frmA, bodyB.holder.px, frmB)
         }
     }

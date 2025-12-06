@@ -11,6 +11,7 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Releasable
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.memStack
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import physx.*

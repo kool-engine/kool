@@ -1,15 +1,11 @@
 package de.fabmax.kool.physics.joints
 
 import de.fabmax.kool.math.PoseF
-import de.fabmax.kool.physics.PhysicsImpl
-import de.fabmax.kool.physics.RigidActor
-import de.fabmax.kool.physics.memStack
-import de.fabmax.kool.physics.toPxTransform
+import de.fabmax.kool.physics.*
+import de.fabmax.kool.util.memStack
 import physxandroid.PxTopLevelFunctions
-import physxandroid.extensions.PxJointLinearLimitPair
 import physxandroid.extensions.PxPrismaticJoint
 import physxandroid.extensions.PxPrismaticJointFlagEnum
-import physxandroid.extensions.PxSpring
 
 // GENERATED CODE BELOW:
 // Transformed from desktop source

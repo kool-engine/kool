@@ -8,7 +8,6 @@ import de.fabmax.kool.physics.vehicle.Vehicle.Companion.OMEGA_TO_RPM
 import de.fabmax.kool.physics.vehicle.Vehicle.Companion.REAR_LEFT
 import de.fabmax.kool.physics.vehicle.Vehicle.Companion.REAR_RIGHT
 import de.fabmax.kool.util.memStack
-import org.lwjgl.system.MemoryStack
 import physx.common.PxVec3
 import physx.geometry.PxBoxGeometry
 import physx.physics.PxPairFlagEnum
@@ -245,7 +244,7 @@ class VehicleImpl(
         vehicleProps: VehicleProperties,
         wheelCenterActorOffsets: List<Vec3f>
     ) {
-        MemoryStack.stackPush().use { mem ->
+        memStack {
             val numWheels = vehicleProps.numWheels
             val wheelOffsets = wheelCenterActorOffsets.map { MutableVec3f(it).add(vehicleProps.chassisCMOffset) }
             val pxWheelCenterActorOffsets = wheelOffsets.toPxArray_PxVec3()
@@ -351,7 +350,7 @@ class VehicleImpl(
                 PxVehicleSuspensionJounceCalculationTypeEnum.eSWEEP
             baseParams.suspensionStateCalculationParams.limitSuspensionExpansionVelocity = false
 
-            val forceAppPoint = mem.createPxVec3(0f, 0f, -0.2f)
+            val forceAppPoint = createPxVec3(0f, 0f, -0.2f)
             val suspSprungMasses = PxArray_PxReal(numWheels)
             PxVehicleTopLevelFunctions.VehicleComputeSprungMasses(
                 numWheels, pxWheelCenterActorOffsets,
@@ -363,7 +362,7 @@ class VehicleImpl(
                 val suspForce = baseParams.getSuspensionForceParams(i)
                 val suspComp = baseParams.getSuspensionComplianceParams(i)
 
-                susp.suspensionAttachment.p = wheelOffsets[i].toPxVec3(mem.createPxVec3())
+                susp.suspensionAttachment.p = wheelOffsets[i].toPxVec3(createPxVec3())
                 susp.suspensionAttachment.q.setIdentity()
                 susp.suspensionTravelDir.set(Vec3f.NEG_Y_AXIS)
                 susp.suspensionTravelDist = vehicleProps.maxCompression + vehicleProps.maxDroop

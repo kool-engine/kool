@@ -1,7 +1,7 @@
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.Mat4f
-import org.lwjgl.system.MemoryStack
+import de.fabmax.kool.util.memStack
 import physx.physics.PxRigidStatic
 
 actual fun RigidStatic(pose: Mat4f): RigidStatic = RigidStaticImpl(pose)
@@ -11,8 +11,8 @@ class RigidStaticImpl(pose: Mat4f) : RigidActorImpl(), RigidStatic {
     override val holder: RigidActorHolder
 
     init {
-        MemoryStack.stackPush().use { mem ->
-            val pxPose = pose.toPxTransform(mem.createPxTransform())
+        memStack {
+            val pxPose = pose.toPxTransform(createPxTransform())
             pxRigidStatic = PhysicsImpl.physics.createRigidStatic(pxPose)
             holder = RigidActorHolder(pxRigidStatic)
         }

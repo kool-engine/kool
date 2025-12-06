@@ -3,16 +3,12 @@ package de.fabmax.kool.physics.joints
 import de.fabmax.kool.math.AngleF
 import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.PhysicsImpl
-import de.fabmax.kool.physics.RigidActor
+import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.joints.RevoluteJoint.Companion.computeFrame
-import de.fabmax.kool.physics.memStack
-import de.fabmax.kool.physics.toPxTransform
+import de.fabmax.kool.util.memStack
 import physxandroid.PxTopLevelFunctions
-import physxandroid.extensions.PxJointAngularLimitPair
 import physxandroid.extensions.PxRevoluteJoint
 import physxandroid.extensions.PxRevoluteJointFlagEnum
-import physxandroid.extensions.PxSpring
 
 // GENERATED CODE BELOW:
 // Transformed from desktop source
