@@ -16,7 +16,7 @@ class Instance(val backend: RenderBackendVk, appName: String) : BaseReleasable()
     private var debugMessenger = 0L
 
     init {
-        memStack {
+        scopedMem {
             val enabledLayers: PointerBuffer? = getRequestedLayers()
             val enableExtensions = getRequestedExtensions()
 

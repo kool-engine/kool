@@ -4,7 +4,7 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.QuatF
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import physxandroid.physics.PxRigidBodyFlagEnum
 import physxandroid.physics.PxRigidDynamic
 import physxandroid.physics.PxRigidDynamicLockFlagEnum
@@ -31,7 +31,7 @@ class RigidDynamicImpl(
 
     init {
         if (pxActor == null) {
-            memStack {
+            scopedMem {
                 val pxPose = pose.toPxTransform(createPxTransform())
                 holder = RigidActorHolder(PhysicsImpl.physics.createRigidDynamic(pxPose))
                 this@RigidDynamicImpl.mass = mass
@@ -63,7 +63,7 @@ class RigidDynamicImpl(
             logE { "Body needs to be attached to simulation before setKinematicTarget can be called" }
             return
         }
-        memStack {
+        scopedMem {
             val pxPose = pose.toPxTransform(createPxTransform())
             pxRigidDynamic.setKinematicTarget(pxPose)
         }
@@ -78,7 +78,7 @@ class RigidDynamicImpl(
             logE { "Body needs to be attached to simulation before setKinematicTarget can be called" }
             return
         }
-        memStack {
+        scopedMem {
             val pxPose = createPxTransform()
             pxPose.p = position?.toPxVec3(createPxVec3()) ?: pxRigidDynamic.globalPose.p
             pxPose.q = rotation?.toPxQuat(createPxQuat()) ?: pxRigidDynamic.globalPose.q

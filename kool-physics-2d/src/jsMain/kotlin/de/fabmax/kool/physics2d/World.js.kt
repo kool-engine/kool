@@ -5,10 +5,10 @@ import box2d.prototypes.B2_World
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.util.Releasable
 import de.fabmax.kool.util.logW
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 
 internal actual fun createWorld(worldDef: WorldDef): Pair<WorldId, Releasable?> {
-    return memStack {
+    return scopedMem {
         val b2WorldDef = allocWordDef()
         B2_World.defaultWorldDef(b2WorldDef)
         b2WorldDef.gravity = allocVec2(worldDef.gravity)

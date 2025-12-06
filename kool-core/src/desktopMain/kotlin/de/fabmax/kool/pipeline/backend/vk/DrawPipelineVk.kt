@@ -5,7 +5,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.gl.getAttribLocations
 import de.fabmax.kool.pipeline.backend.gl.locationSize
 import de.fabmax.kool.scene.geometry.PrimitiveType
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.VK10.*
@@ -89,7 +89,7 @@ class DrawPipelineVk(
         return true
     }
 
-    private fun createPipeline(passEncoderState: PassEncoderState): VkGraphicsPipeline = memStack {
+    private fun createPipeline(passEncoderState: PassEncoderState): VkGraphicsPipeline = scopedMem {
         val renderPass = passEncoderState.renderPass
         val renderPassVk = passEncoderState.gpuRenderPass
 

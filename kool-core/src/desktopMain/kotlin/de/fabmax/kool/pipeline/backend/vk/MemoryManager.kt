@@ -114,7 +114,7 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
         val allocator: Long
 
         init {
-            memStack {
+            scopedMem {
                 val vkFunctions = VmaVulkanFunctions.calloc(this).apply {
                     val pCaps = backend.physicalDevice.vkPhysicalDevice.capabilities
                     val dCaps = backend.device.vkDevice.capabilities
@@ -153,7 +153,7 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
         }
 
         override fun createBuffer(info: MemoryInfo): VkBuffer {
-            return memStack {
+            return scopedMem {
                 val pBuffer = mallocLong(1)
                 val pAllocation = mallocPointer(1)
                 val bufferInfo = callocVkBufferCreateInfo {
@@ -192,7 +192,7 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
         }
 
         override fun createImage(info: ImageInfo): VkImage {
-            return memStack {
+            return scopedMem {
                 val pImage = mallocLong(1)
                 val pAllocation = mallocPointer(1)
                 val imageInfo = callocVkImageCreateInfo {
@@ -227,7 +227,7 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
         }
 
         override fun mapMemory(allocation: Long): Long {
-            return memStack {
+            return scopedMem {
                 val pp = mallocPointer(1)
                 vmaMapMemory(allocator, allocation, pp)
                 pp[0]
@@ -239,7 +239,7 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
         }
 
         fun printMemoryStats() {
-            memStack {
+            scopedMem {
                 val pp = mallocPointer(1)
                 vmaBuildStatsString(allocator, pp, true)
                 val str = MemoryUtil.memASCII(pp[0])

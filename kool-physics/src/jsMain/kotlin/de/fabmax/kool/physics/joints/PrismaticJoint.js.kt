@@ -2,7 +2,7 @@ package de.fabmax.kool.physics.joints
 
 import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.*
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import physx.PxPrismaticJoint
 import physx.PxPrismaticJointFlagEnum
 import physx.prototypes.PxTopLevelFunctions
@@ -24,7 +24,7 @@ class PrismaticJointImpl(
     override val pxJoint: PxPrismaticJoint
 
     init {
-        memStack {
+        scopedMem {
             val frmA = frameA.toPxTransform(createPxTransform())
             val frmB = frameB.toPxTransform(createPxTransform())
             pxJoint = PxTopLevelFunctions.PrismaticJointCreate(PhysicsImpl.physics, bodyA?.holder?.px, frmA, bodyB.holder.px, frmB)
@@ -32,7 +32,7 @@ class PrismaticJointImpl(
     }
 
     override fun enableLimit(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior) {
-        memStack {
+        scopedMem {
             val spring = createPxSpring(limitBehavior.stiffness, limitBehavior.damping)
             val limit = createPxJointLinearLimitPair(lowerLimit, upperLimit, spring)
             limit.restitution = limitBehavior.restitution

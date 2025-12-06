@@ -2,7 +2,7 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.ComputePass
 import de.fabmax.kool.pipeline.ComputePipeline
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 
 class ComputePipelineVk(
     val computePipeline: ComputePipeline,
@@ -26,7 +26,7 @@ class ComputePipelineVk(
         return true
     }
 
-    private fun createComputePipelineVk(): VkComputePipeline = memStack {
+    private fun createComputePipelineVk(): VkComputePipeline = scopedMem {
         device.createComputePipeline(stack = this) {
             layout(pipelineLayout.handle)
 

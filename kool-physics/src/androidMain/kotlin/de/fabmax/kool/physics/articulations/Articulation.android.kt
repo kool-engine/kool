@@ -4,7 +4,7 @@ import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.PhysicsImpl
 import de.fabmax.kool.physics.createPxTransform
 import de.fabmax.kool.physics.toPxTransform
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import physxandroid.physics.PxArticulationFlagEnum
 import physxandroid.physics.PxArticulationLink
 import physxandroid.physics.PxArticulationReducedCoordinate
@@ -41,7 +41,7 @@ class ArticulationImpl(val isFixedBase: Boolean) : Articulation() {
 
     override fun createLink(parent: ArticulationLink?, pose: PoseF): ArticulationLink {
         parent as ArticulationLinkImpl?
-        return memStack {
+        return scopedMem {
             val parentLink = parent?.holder?.px as PxArticulationLink?
             val pxPose = pose.toPxTransform(createPxTransform())
             val pxLink = pxArticulation.createLink(parentLink, pxPose)

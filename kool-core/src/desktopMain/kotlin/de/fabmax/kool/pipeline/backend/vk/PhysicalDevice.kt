@@ -43,7 +43,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
     private val imgFormatTilingFeatures = mutableMapOf<Int, Int>()
 
     init {
-        memStack {
+        scopedMem {
             val devPtrs = enumeratePointers { cnt, ptrs -> vkEnumeratePhysicalDevices(backend.instance.vkInstance, cnt, ptrs) }
             val devices = (0 until devPtrs.capacity()).map { PhysicalDeviceWrapper(devPtrs[it], this) }
             selectedDevice = selectPhysicalDevice(devices)
@@ -109,7 +109,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
     }
 
     fun querySurfaceFormat(): VkSurfaceFormatKHR {
-        return memStack {
+        return scopedMem {
             val swapChainInfo = selectedDevice.querySwapChainSupport(this)
             swapChainInfo.chooseSurfaceFormat()
         }
@@ -156,7 +156,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
     }
 
     private fun findSupportedFormat(candidates: List<Int>, tiling: Int, features: Int): Int {
-        memStack {
+        scopedMem {
             val props = VkFormatProperties.calloc(this)
             candidates.forEach { format ->
                 vkGetPhysicalDeviceFormatProperties(vkPhysicalDevice, format, props)
@@ -171,7 +171,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
     }
 
     fun findMemoryType(typeFiler: Int, properties: Int): Int {
-        memStack {
+        scopedMem {
             val memProperties = VkPhysicalDeviceMemoryProperties.malloc(this)
             vkGetPhysicalDeviceMemoryProperties(vkPhysicalDevice, memProperties)
             for (i in 0 until memProperties.memoryTypeCount()) {
@@ -185,7 +185,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
 
     fun isImageFormatSupportingBlitting(format: Int): Boolean {
         val tilingFeatures = imgFormatTilingFeatures.getOrPut(format) {
-            memStack {
+            scopedMem {
                 val formatProperties = VkFormatProperties.malloc(this)
                 vkGetPhysicalDeviceFormatProperties(backend.physicalDevice.vkPhysicalDevice, format, formatProperties)
                 formatProperties.optimalTilingFeatures()
@@ -214,7 +214,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
             vkGetPhysicalDeviceProperties(physicalDevice, properties)
             vkGetPhysicalDeviceFeatures(physicalDevice, features)
 
-            availableExtensions = memStack {
+            availableExtensions = scopedMem {
                 enumerateExtensionProperties { cnt, buffer ->
                     vkEnumerateDeviceExtensionProperties(physicalDevice, null as String?, cnt, buffer)
                 }.map { it.extensionNameString() }.toSet()
@@ -222,7 +222,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
         }
 
         private fun findQueueFamilies(): QueueFamilyIndices {
-            memStack {
+            scopedMem {
                 val nFams = mallocInt(1)
                 vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, nFams, null)
                 val queueFamilies = VkQueueFamilyProperties.malloc(nFams[0], this)
@@ -376,7 +376,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
 }
 
 internal inline fun PhysicalDevice.createDevice(stack: MemoryStack? = null, block: VkDeviceCreateInfo.() -> Unit): VkDevice {
-    memStack(stack) {
+    scopedMem(stack) {
         val createInfo = callocVkDeviceCreateInfo(block)
         val handle = pointers(0)
         vkCheck(vkCreateDevice(vkPhysicalDevice, createInfo, null, handle)) { "Failed creating device: $it" }

@@ -129,7 +129,7 @@ class BindGroupDataVk(
         var isInitialized = false; private set
         var descriptorSets: List<VkDescriptorSet> = emptyList(); private set
 
-        fun resetBindGroup(passEncoderState: PassEncoderState): Unit = memStack {
+        fun resetBindGroup(passEncoderState: PassEncoderState): Unit = scopedMem {
             isInitialized = true
             if (!isReleasable) {
                 return
@@ -173,7 +173,7 @@ class BindGroupDataVk(
 
         companion object {
             val emptyBindGroup by lazy {
-                memStack {
+                scopedMem {
                     val backend = KoolSystem.requireContext().backend as RenderBackendVk
                     val emptyLayout = PoolLayout(0, 0, 0, 0)
                     val emptyPool = backend.device.createDescriptorPool(this) { maxSets(Swapchain.MAX_FRAMES_IN_FLIGHT) }

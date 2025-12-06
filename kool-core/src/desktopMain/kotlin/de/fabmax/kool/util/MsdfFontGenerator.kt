@@ -112,7 +112,7 @@ object MsdfFontGenerator {
         atlasDim: Int = 512,
         type: MsdfType = MsdfType.MTSDF,
     ): Pair<MsdfMeta, BufferedImageData2d> {
-        memStack {
+        scopedMem {
             val ftHandle = callocPointer(1)
             msdf_ft_init(ftHandle).checked()
             val fontContext = ftHandle.get(0)
@@ -125,7 +125,7 @@ object MsdfFontGenerator {
             val font = fontHandle.get(0)
             val shapes = glyphsToGenerate
                 .getCodepoints { stbtt_FindGlyphIndex(stbFontInfo, it) > 0 }
-                .mapNotNull { codePoint -> memStack { loadCharShape(font, codePoint) } }
+                .mapNotNull { codePoint -> scopedMem { loadCharShape(font, codePoint) } }
             logI { "Generating ${shapes.size} glyphs for font $fontName..." }
 
             val bitMapSize = msdfGenSize * 2
@@ -288,7 +288,7 @@ object MsdfFontGenerator {
         val padding = ceil(pxRange).toInt() / 2
         val glyphMeta = mutableListOf<MsdfGlyph>()
         shapes.sortedBy { it.codePoint }.forEach { shapeData ->
-            memStack {
+            scopedMem {
                 val t = MSDFGenTransform.calloc(this)
                 t.distance_mapping { it.set(-0.5 * (pxRange / msdfGenSize), 0.5 * (pxRange / msdfGenSize)) }
                 t.translation { it.set(0.5, 0.5) }

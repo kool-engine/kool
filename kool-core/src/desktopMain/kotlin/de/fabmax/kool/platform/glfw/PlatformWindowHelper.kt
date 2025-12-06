@@ -5,7 +5,7 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.platform.OsInfo
 import de.fabmax.kool.util.WindowTitleHoverHandler
 import de.fabmax.kool.util.logW
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import org.lwjgl.glfw.GLFW.glfwSetWindowPos
 import org.lwjgl.glfw.GLFW.glfwSetWindowSize
 import org.lwjgl.glfw.GLFWNativeWin32.glfwGetWin32Window
@@ -114,7 +114,7 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
     }
 
     override fun getWindowPos(windowPtr: Long, reportedPosX: Int, reportedPosY: Int): Vec2i {
-        return memStack {
+        return scopedMem {
             val hWnd = glfwGetWin32Window(windowPtr)
             val rect = RECT.calloc(this)
             GetWindowRect(null, hWnd, rect)

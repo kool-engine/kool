@@ -4,12 +4,12 @@ import box2dandroid.B2_World
 import box2dandroid.b2WorldDef
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.util.Releasable
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import kotlin.math.max
 import kotlin.math.min
 
 internal actual fun createWorld(worldDef: WorldDef): Pair<WorldId, Releasable?> {
-    return memStack {
+    return scopedMem {
         val b2WorldDef = allocWordDef()
         B2_World.defaultWorldDef(b2WorldDef)
         b2WorldDef.gravity = allocVec2(worldDef.gravity)

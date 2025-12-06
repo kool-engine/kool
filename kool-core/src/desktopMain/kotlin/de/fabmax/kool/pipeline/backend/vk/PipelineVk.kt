@@ -17,7 +17,7 @@ sealed class PipelineVk(
     private val bindGroupLayouts: List<VkDescriptorSetLayout> = createBindGroupLayouts(pipeline)
     val pipelineLayout: VkPipelineLayout = createPipelineLayout()
 
-    private fun createBindGroupLayouts(pipeline: PipelineBase): List<VkDescriptorSetLayout> = memStack {
+    private fun createBindGroupLayouts(pipeline: PipelineBase): List<VkDescriptorSetLayout> = scopedMem {
         val layouts = if (this@PipelineVk is ComputePipelineVk) {
             listOf(pipeline.bindGroupLayouts.pipelineScope)
         } else {
@@ -41,7 +41,7 @@ sealed class PipelineVk(
         }
     }
 
-    private fun createPipelineLayout(): VkPipelineLayout = memStack {
+    private fun createPipelineLayout(): VkPipelineLayout = scopedMem {
         device.createPipelineLayout(this) {
             if (bindGroupLayouts.isNotEmpty()) {
                 val ptrs = mallocLong(bindGroupLayouts.size)

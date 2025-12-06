@@ -7,7 +7,7 @@ import de.fabmax.kool.physics.vehicle.Vehicle.Companion.FRONT_RIGHT
 import de.fabmax.kool.physics.vehicle.Vehicle.Companion.OMEGA_TO_RPM
 import de.fabmax.kool.physics.vehicle.Vehicle.Companion.REAR_LEFT
 import de.fabmax.kool.physics.vehicle.Vehicle.Companion.REAR_RIGHT
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import physx.common.PxVec3
 import physx.geometry.PxBoxGeometry
 import physx.physics.PxPairFlagEnum
@@ -107,7 +107,7 @@ class VehicleImpl(
         pxVehicle.baseState.setToDefault()
         pxVehicle.engineDriveState.setToDefault()
 
-        memStack {
+        scopedMem {
             val pxVecZero = createPxVec3(0f, 0f, 0f)
             val actor = WrapPointer.PxRigidDynamic(pxVehicle.physXState.physxActor.rigidBody.ptr)
             actor.linearVelocity = pxVecZero
@@ -221,7 +221,7 @@ class VehicleImpl(
             EngineDriveVehicleEnum.eDIFFTYPE_FOURWHEELDRIVE
         )
 
-        memStack {
+        scopedMem {
             // Apply a start pose to the physx actor and add it to the physx scene.
             val vehiclePose = createPxTransform(Vec3f(0f, 1f, 0f), QuatF.IDENTITY)
             vehicle.physXState.physxActor.rigidBody.globalPose = vehiclePose
@@ -244,7 +244,7 @@ class VehicleImpl(
         vehicleProps: VehicleProperties,
         wheelCenterActorOffsets: List<Vec3f>
     ) {
-        memStack {
+        scopedMem {
             val numWheels = vehicleProps.numWheels
             val wheelOffsets = wheelCenterActorOffsets.map { MutableVec3f(it).add(vehicleProps.chassisCMOffset) }
             val pxWheelCenterActorOffsets = wheelOffsets.toPxArray_PxVec3()
@@ -401,7 +401,7 @@ class VehicleImpl(
     }
 
     private fun EngineDriveVehicle.setupPhysxParams(vehicleProps: VehicleProperties) {
-        memStack {
+        scopedMem {
             val roadFilterData = createPxFilterData(0, 0, 0, 0)
             val roadQueryFlags = createPxQueryFlags(PxQueryFlagEnum.eSTATIC)
             val roadQueryFilterData = createPxQueryFilterData(roadFilterData, roadQueryFlags)
