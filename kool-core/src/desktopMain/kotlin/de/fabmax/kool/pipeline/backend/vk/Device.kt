@@ -23,7 +23,7 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
     val computeQueueProperties: VkQueueFamilyProperties?
 
     init {
-        memStack {
+        scopedMem {
             val uniqueFamilies = physicalDevice.queueFamiliyIndices.uniqueFamilies
             val queueCreateInfo = callocVkDeviceQueueCreateInfoN(uniqueFamilies.size) {
                 uniqueFamilies.forEachIndexed { i, famIdx ->
@@ -113,7 +113,7 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
 
 internal inline fun Device.allocateDescriptorSets(stack: MemoryStack? = null, block: VkDescriptorSetAllocateInfo.() -> Unit): List<VkDescriptorSet>? {
     logT { "allocate descriptor sets" }
-    memStack(stack) {
+    scopedMem(stack) {
         val allocInfo = callocVkDescriptorSetAllocateInfo(block)
         val handles = mallocLong(allocInfo.descriptorSetCount())
         val result = vkAllocateDescriptorSets(vkDevice, allocInfo, handles)
@@ -125,7 +125,7 @@ internal inline fun Device.allocateDescriptorSets(stack: MemoryStack? = null, bl
 
 internal inline fun Device.createCommandPool(stack: MemoryStack? = null, block: VkCommandPoolCreateInfo.() -> Unit): VkCommandPool {
     logT { "create command pool" }
-    memStack(stack) {
+    scopedMem(stack) {
         val createInfo = callocVkCommandPoolCreateInfo(block)
         val handle = mallocLong(1)
         vkCheck(vkCreateCommandPool(vkDevice, createInfo, null, handle)) { "Failed creating command pool: $it" }
@@ -135,7 +135,7 @@ internal inline fun Device.createCommandPool(stack: MemoryStack? = null, block: 
 
 internal fun Device.createComputePipeline(stack: MemoryStack? = null, block: VkComputePipelineCreateInfo.() -> Unit): VkComputePipeline {
     logT { "create compute pipeline" }
-    memStack(stack) {
+    scopedMem(stack) {
         val createInfo = callocVkComputePipelineCreateInfoN(1) {
             this[0].block()
         }
@@ -147,7 +147,7 @@ internal fun Device.createComputePipeline(stack: MemoryStack? = null, block: VkC
 
 internal inline fun Device.createDescriptorPool(stack: MemoryStack? = null, block: VkDescriptorPoolCreateInfo.() -> Unit): VkDescriptorPool {
     logT { "create descriptor pool" }
-    memStack(stack) {
+    scopedMem(stack) {
         val createInfo = callocVkDescriptorPoolCreateInfo(block)
         val handle = mallocLong(1)
         vkCheck(vkCreateDescriptorPool(vkDevice, createInfo, null, handle)) { "Failed creating descriptor pool: $it" }
@@ -157,7 +157,7 @@ internal inline fun Device.createDescriptorPool(stack: MemoryStack? = null, bloc
 
 internal inline fun Device.createDescriptorSetLayout(stack: MemoryStack? = null, block: VkDescriptorSetLayoutCreateInfo.() -> Unit): VkDescriptorSetLayout {
     logT { "create descriptor set layout" }
-    memStack(stack) {
+    scopedMem(stack) {
         val createInfo = callocVkDescriptorSetLayoutCreateInfo(block)
         val handle = mallocLong(1)
         vkCheck(vkCreateDescriptorSetLayout(vkDevice, createInfo, null, handle)) { "Failed creating descriptor set layout: $it" }
@@ -167,7 +167,7 @@ internal inline fun Device.createDescriptorSetLayout(stack: MemoryStack? = null,
 
 internal inline fun Device.createFramebuffer(stack: MemoryStack? = null, block: VkFramebufferCreateInfo.() -> Unit): VkFramebuffer {
     logT { "create framebuffer" }
-    memStack(stack) {
+    scopedMem(stack) {
         val createInfo = callocVkFramebufferCreateInfo(block)
         val handle = mallocLong(1)
         vkCheck(vkCreateFramebuffer(vkDevice, createInfo, null, handle)) { "Failed creating framebuffer: $it" }
@@ -177,7 +177,7 @@ internal inline fun Device.createFramebuffer(stack: MemoryStack? = null, block: 
 
 internal inline fun Device.createFence(stack: MemoryStack? = null, block: VkFenceCreateInfo.() -> Unit): VkFence {
     logT { "create fence" }
-    memStack(stack) {
+    scopedMem(stack) {
         val createInfo = callocVkFenceCreateInfo(block)
         val handle = mallocLong(1)
         vkCheck(vkCreateFence(vkDevice, createInfo, null, handle)) { "Failed creating fence: $it" }
@@ -187,7 +187,7 @@ internal inline fun Device.createFence(stack: MemoryStack? = null, block: VkFenc
 
 internal fun Device.createGraphicsPipeline(stack: MemoryStack? = null, block: VkGraphicsPipelineCreateInfo.() -> Unit): VkGraphicsPipeline {
     logT { "create graphics pipeline" }
-    memStack(stack) {
+    scopedMem(stack) {
         val createInfo = callocVkGraphicsPipelineCreateInfoN(1) {
             this[0].block()
         }
@@ -224,7 +224,7 @@ internal fun Device.createImageView(
 
 internal inline fun Device.createImageView(stack: MemoryStack? = null, block: VkImageViewCreateInfo.() -> Unit): VkImageView {
     logT { "create image view" }
-    memStack(stack) {
+    scopedMem(stack) {
         val createInfo = callocVkImageViewCreateInfo(block)
         val handle = mallocLong(1)
         vkCheck(vkCreateImageView(vkDevice, createInfo, null, handle)) { "Failed creating image view: $it" }
@@ -234,7 +234,7 @@ internal inline fun Device.createImageView(stack: MemoryStack? = null, block: Vk
 
 internal fun Device.createPipelineLayout(stack: MemoryStack? = null, block: VkPipelineLayoutCreateInfo.() -> Unit): VkPipelineLayout {
     logT { "create pipeline layout" }
-    memStack(stack) {
+    scopedMem(stack) {
         val createInfo = callocVkPipelineLayoutCreateInfo(block)
         val handle = mallocLong(1)
         vkCheck(vkCreatePipelineLayout(vkDevice, createInfo, null, handle)) { "Failed creating pipeline layout: $it" }
@@ -244,7 +244,7 @@ internal fun Device.createPipelineLayout(stack: MemoryStack? = null, block: VkPi
 
 internal fun Device.createQueryPool(stack: MemoryStack? = null, block: VkQueryPoolCreateInfo.() -> Unit): VkQueryPool {
     logT { "create query pool" }
-    memStack(stack) {
+    scopedMem(stack) {
         val createInfo = callocVkQueryPoolCreateInfo(block)
         val handle = mallocLong(1)
         vkCheck(vkCreateQueryPool(vkDevice, createInfo, null, handle)) { "Failed creating query pool: $it" }
@@ -254,7 +254,7 @@ internal fun Device.createQueryPool(stack: MemoryStack? = null, block: VkQueryPo
 
 internal fun Device.createRenderPass(stack: MemoryStack? = null, block: VkRenderPassCreateInfo.() -> Unit): VkRenderPass {
     logT { "create render pass" }
-    memStack(stack) {
+    scopedMem(stack) {
         val createInfo = callocVkRenderPassCreateInfo(block)
         val handle = mallocLong(1)
         vkCheck(vkCreateRenderPass(vkDevice, createInfo, null, handle)) { "Failed creating render pass: $it" }
@@ -264,7 +264,7 @@ internal fun Device.createRenderPass(stack: MemoryStack? = null, block: VkRender
 
 internal fun Device.createSampler(stack: MemoryStack? = null, block: VkSamplerCreateInfo.() -> Unit): VkSampler {
     logT { "create sampler" }
-    memStack(stack) {
+    scopedMem(stack) {
         val createInfo = callocVkSamplerCreateInfo(block)
         val handle = mallocLong(1)
         vkCheck(vkCreateSampler(vkDevice, createInfo, null, handle)) { "Failed creating sampler: $it" }
@@ -274,7 +274,7 @@ internal fun Device.createSampler(stack: MemoryStack? = null, block: VkSamplerCr
 
 internal fun Device.createSemaphore(stack: MemoryStack? = null): VkSemaphore {
     logT { "create semaphore" }
-    memStack(stack) {
+    scopedMem(stack) {
         val createInfo = callocVkSemaphoreCreateInfo { }
         val handle = mallocLong(1)
         vkCheck(vkCreateSemaphore(vkDevice, createInfo, null, handle)) { "Failed creating semaphore: $it" }
@@ -284,7 +284,7 @@ internal fun Device.createSemaphore(stack: MemoryStack? = null): VkSemaphore {
 
 internal fun Device.createShaderModule(stack: MemoryStack? = null, block: VkShaderModuleCreateInfo.() -> Unit): VkShaderModule {
     logT { "create shader module" }
-    memStack(stack) {
+    scopedMem(stack) {
         val createInfo = callocVkShaderModuleCreateInfo(block)
         val handle = mallocLong(1)
         vkCheck(vkCreateShaderModule(vkDevice, createInfo, null, handle)) { "Failed creating shader module: $it" }
@@ -294,7 +294,7 @@ internal fun Device.createShaderModule(stack: MemoryStack? = null, block: VkShad
 
 internal fun Device.createSwapchain(stack: MemoryStack? = null, block: VkSwapchainCreateInfoKHR.() -> Unit): VkSwapchain {
     logT { "create swapchain" }
-    memStack(stack) {
+    scopedMem(stack) {
         val createInfo = callocVkSwapchainCreateInfoKHR(block)
         val handle = mallocLong(1)
         vkCheck(vkCreateSwapchainKHR(vkDevice, createInfo, null, handle)) { "Failed creating swapchain: $it" }

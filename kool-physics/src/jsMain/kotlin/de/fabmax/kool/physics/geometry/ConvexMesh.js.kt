@@ -6,7 +6,7 @@ import de.fabmax.kool.physics.*
 import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.generateNormals
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import physx.*
 import physx.prototypes.NativeArrayHelpers
 import physx.prototypes.PxTopLevelFunctions
@@ -33,7 +33,7 @@ class ConvexMeshImpl(override val points: List<Vec3f>, override var releaseWithG
     }
 
     private fun makeConvexHull(convexMesh: PxConvexMesh): IndexedVertexList<*> {
-        return memStack {
+        return scopedMem {
             val geometry = IndexedVertexList(VertexLayouts.PositionNormal)
             val v = MutableVec3f()
             val polyIndices = mutableListOf<Int>()
@@ -68,7 +68,7 @@ class ConvexMeshImpl(override val points: List<Vec3f>, override var releaseWithG
     }
 
     companion object {
-        internal fun makePxConvexMesh(points: List<Vec3f>): PxConvexMesh = memStack {
+        internal fun makePxConvexMesh(points: List<Vec3f>): PxConvexMesh = scopedMem {
             val vec3Vector = points.toPxArray_PxVec3()
             val desc = createPxConvexMeshDesc()
             desc.flags = createPxConvexFlags(PxConvexFlagEnum.eCOMPUTE_CONVEX.value)
@@ -88,7 +88,7 @@ class ConvexMeshGeometryImpl(override val convexMesh: ConvexMesh, override val s
     override val pxGeometry: PxConvexMeshGeometry
 
     init {
-        memStack {
+        scopedMem {
             val s = scale.toPxVec3(createPxVec3())
             val r = createPxQuat(0f, 0f, 0f, 1f)
             val meshScale = createPxMeshScale(s, r)

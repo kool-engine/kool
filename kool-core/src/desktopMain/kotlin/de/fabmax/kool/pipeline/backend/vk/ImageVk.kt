@@ -9,7 +9,7 @@ import de.fabmax.kool.pipeline.backend.vk.ImageVk.Companion.srcStageMaskForLayou
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.KHRCopyCommands2.vkCmdBlitImage2KHR
 import org.lwjgl.vulkan.KHRSynchronization2.vkCmdPipelineBarrier2KHR
@@ -42,7 +42,7 @@ class ImageVk(
     )
 
     init {
-        memStack {
+        scopedMem {
             val w = max(1, width)
             val h = max(1, height)
             val d = max(1, depth)
@@ -91,7 +91,7 @@ class ImageVk(
         dstLayout: Int = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         stack: MemoryStack? = null
     ) {
-        memStack(stack) {
+        scopedMem(stack) {
             transitionLayout(
                 VK_IMAGE_LAYOUT_UNDEFINED,
                 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -116,7 +116,7 @@ class ImageVk(
         commandBuffer: VkCommandBuffer,
         stack: MemoryStack? = null
     ) {
-        memStack(stack) {
+        scopedMem(stack) {
             val prevLayout = lastKnownLayout
             transitionLayout(
                 VK_IMAGE_LAYOUT_UNDEFINED,
@@ -143,7 +143,7 @@ class ImageVk(
         dstLayout: Int = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         stack: MemoryStack? = null
     ) {
-        memStack(stack) {
+        scopedMem(stack) {
             val srcLayout = src.lastKnownLayout
             src.transitionLayout(srcLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, commandBuffer, stack = this)
             transitionLayout(
@@ -365,7 +365,7 @@ fun VkImage.transitionLayout(
     arrayLayers: Int,
     commandBuffer: VkCommandBuffer,
     stack: MemoryStack? = null
-) = memStack(stack) {
+) = scopedMem(stack) {
     val dependecy = callocVkDependencyInfo {
         val barrier = callocVkImageMemoryBarrier2N(1) {
             srcStageMask(srcStageMaskForLayout(oldLayout))

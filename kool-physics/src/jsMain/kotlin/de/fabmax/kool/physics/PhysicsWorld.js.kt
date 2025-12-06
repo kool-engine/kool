@@ -11,7 +11,7 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Releasable
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import physx.*
@@ -50,7 +50,7 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
     init {
         PhysicsImpl.checkIsLoaded()
 
-        memStack {
+        scopedMem {
             val sceneDesc = createPxSceneDesc(PhysicsImpl.physics.tolerancesScale)
             sceneDesc.gravity = bufPxGravity
             sceneDesc.cpuDispatcher = PhysicsImpl.defaultCpuDispatcher
@@ -130,7 +130,7 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
 
     override fun raycast(ray: RayF, maxDistance: Float, result: HitResult): Boolean {
         result.clear()
-        memStack {
+        scopedMem {
             synchronized(raycastResult) {
                 val ori = ray.origin.toPxVec3(createPxVec3())
                 val dir = ray.direction.toPxVec3(createPxVec3())
@@ -163,7 +163,7 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
 
     override fun sweepTest(testGeometry: CollisionGeometry, geometryPose: Mat4f, testDirection: Vec3f, distance: Float, result: HitResult): Boolean {
         result.clear()
-        memStack {
+        scopedMem {
             val sweepPose = geometryPose.toPxTransform(createPxTransform())
             val sweepDir = testDirection.toPxVec3(createPxVec3())
             if (pxScene.sweep(testGeometry.holder.px, sweepPose, sweepDir, distance, sweepResult)) {

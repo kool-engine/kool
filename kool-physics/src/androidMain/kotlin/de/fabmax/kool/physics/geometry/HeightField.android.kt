@@ -2,7 +2,7 @@ package de.fabmax.kool.physics.geometry
 
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.util.Heightmap
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import physxandroid.PxTopLevelFunctions
 import physxandroid.geometry.PxHeightField
 import physxandroid.geometry.PxHeightFieldFormatEnum
@@ -38,7 +38,7 @@ class HeightFieldImpl(
         val revHeightToI16 = if (heightScale > 0) 1f / heightScale else 0f
 
         PhysicsImpl.checkIsLoaded()
-        memStack {
+        scopedMem {
             val rows = heightMap.columns
             val cols = heightMap.rows
             val sample = createPxHeightFieldSample()
@@ -79,7 +79,7 @@ class HeightFieldGeometryImpl(override val heightField: HeightField) : Collision
 
     init {
         PhysicsImpl.checkIsLoaded()
-        memStack {
+        scopedMem {
             val flags = createPxMeshGeometryFlags(0)
             pxGeometry = PxHeightFieldGeometry(heightField.pxHeightField, flags, heightField.heightScale, heightField.rowScale, heightField.columnScale)
         }

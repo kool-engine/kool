@@ -7,7 +7,7 @@ import de.fabmax.kool.scene.Tags
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.checkIsNotReleased
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import physx.*
 import physx.prototypes.PxRigidActorExt
 
@@ -59,7 +59,7 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
     override var isTrigger: Boolean = false
         set(value) {
             field = value
-            memStack {
+            scopedMem {
                 val flags = if (isTrigger) TRIGGER_SHAPE_FLAGS else SIM_SHAPE_FLAGS
                 val shapeFlags = createPxShapeFlags(flags)
                 shapes.forEach { it.holder?.px?.flags = shapeFlags }
@@ -78,7 +78,7 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
     override val tags: Tags = Tags()
 
     private fun updateFilterData() {
-        memStack {
+        scopedMem {
             val sfd = simulationFilterData.toPxFilterData(createPxFilterData())
             val qfd = queryFilterData.toPxFilterData(createPxFilterData())
             shapes.forEach { shape ->
@@ -92,7 +92,7 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
 
     override fun attachShape(shape: Shape) {
         _shapes += shape
-        memStack {
+        scopedMem {
             val flags = if (isTrigger) TRIGGER_SHAPE_FLAGS else SIM_SHAPE_FLAGS
             val shapeFlags = createPxShapeFlags(flags)
 

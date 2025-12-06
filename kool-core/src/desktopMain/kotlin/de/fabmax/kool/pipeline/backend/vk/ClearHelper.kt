@@ -61,7 +61,7 @@ class ClearHelper(val backend: RenderBackendVk) {
             clearValues = bindGrpData.uniformBufferBindingData(0)
             bindGrpData.captureBuffer()
 
-            memStack {
+            scopedMem {
                 val bindings = callocVkDescriptorSetLayoutBindingN(1) {
                     binding(0)
                     descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
@@ -119,7 +119,7 @@ class ClearHelper(val backend: RenderBackendVk) {
             vkCmdDraw(passEncoderState.commandBuffer, 4, 1, 0, 0)
         }
 
-        private fun makeClearPipeline(isClearColor: Boolean, isClearDepth: Boolean): VkGraphicsPipeline = memStack {
+        private fun makeClearPipeline(isClearColor: Boolean, isClearDepth: Boolean): VkGraphicsPipeline = scopedMem {
             val shaderStageInfos = callocVkPipelineShaderStageCreateInfoN(2) {
                 this[0]
                     .stage(VK_SHADER_STAGE_VERTEX_BIT)

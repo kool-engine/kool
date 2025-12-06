@@ -142,7 +142,7 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
                 }
                 image.copyFromBuffer(stagingBuf, commandBuffer, dstLayout)
                 if (mipMapping.isMipMapped) {
-                    memStack { image.generateMipmaps(this, commandBuffer) }
+                    scopedMem { image.generateMipmaps(this, commandBuffer) }
                 }
             }
         }

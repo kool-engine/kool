@@ -5,7 +5,7 @@ import de.fabmax.kool.physics.PhysicsImpl
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.createPxTransform
 import de.fabmax.kool.physics.toPxTransform
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import physx.PxDistanceJoint
 import physx.PxDistanceJointFlagEnum
 import physx.maxDistance
@@ -29,7 +29,7 @@ class DistanceJointImpl(
     override val pxJoint: PxDistanceJoint
 
     init {
-        memStack {
+        scopedMem {
             val frmA = frameA.toPxTransform(createPxTransform())
             val frmB = frameB.toPxTransform(createPxTransform())
             pxJoint = PxTopLevelFunctions.DistanceJointCreate(PhysicsImpl.physics, bodyA?.holder?.px, frmA, bodyB.holder.px, frmB)

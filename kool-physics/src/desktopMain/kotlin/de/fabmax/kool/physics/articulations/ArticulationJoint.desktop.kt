@@ -6,7 +6,7 @@ import de.fabmax.kool.physics.createPxArticulationDrive
 import de.fabmax.kool.physics.createPxArticulationLimit
 import de.fabmax.kool.physics.createPxTransform
 import de.fabmax.kool.physics.toPxTransform
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import physx.physics.*
 
 class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) : ArticulationJoint {
@@ -20,13 +20,13 @@ class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) :
     }
 
     override fun setParentPose(pose: PoseF) {
-        memStack {
+        scopedMem {
             pxJoint.parentPose = pose.toPxTransform(createPxTransform())
         }
     }
 
     override fun setChildPose(pose: PoseF) {
-        memStack {
+        scopedMem {
             pxJoint.childPose = pose.toPxTransform(createPxTransform())
         }
     }
@@ -36,7 +36,7 @@ class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) :
     }
 
     override fun setAxisLimits(axis: ArticulationJointAxis, low: Float, high: Float) {
-        memStack {
+        scopedMem {
             val limit = createPxArticulationLimit(low, high)
             pxJoint.setLimitParams(axis.pxVal, limit)
         }
@@ -94,7 +94,7 @@ class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) :
         damping: Float,
         stiffness: Float
     ) {
-        memStack {
+        scopedMem {
             val drive = createPxArticulationDrive()
             drive.driveType = driveType.pxVal
             drive.stiffness = stiffness

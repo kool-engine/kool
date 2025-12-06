@@ -124,7 +124,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override fun renderFrame(frameData: FrameData, ctx: KoolContext) {
         BackendStats.resetPerFrameCounts()
 
-        memStack {
+        scopedMem {
             var imgOk = swapchain.acquireNextImage()
             if (imgOk) {
                 ReleaseQueue.processQueue()

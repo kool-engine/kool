@@ -5,7 +5,7 @@ import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.joints.RevoluteJoint.Companion.computeFrame
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import physxandroid.PxTopLevelFunctions
 import physxandroid.extensions.PxRevoluteJoint
 import physxandroid.extensions.PxRevoluteJointFlagEnum
@@ -33,7 +33,7 @@ class RevoluteJointImpl(
     override val pxJoint: PxRevoluteJoint
 
     init {
-        memStack {
+        scopedMem {
             val frmA = frameA.toPxTransform(createPxTransform())
             val frmB = frameB.toPxTransform(createPxTransform())
             pxJoint = PxTopLevelFunctions.RevoluteJointCreate(PhysicsImpl.physics, bodyA?.holder?.px, frmA, bodyB.holder.px, frmB)
@@ -53,7 +53,7 @@ class RevoluteJointImpl(
     }
 
     override fun enableLimit(lowerLimit: AngleF, upperLimit: AngleF, limitBehavior: LimitBehavior) {
-        memStack {
+        scopedMem {
             val spring = createPxSpring(limitBehavior.stiffness, limitBehavior.damping)
             val limit = createPxJointAngularLimitPair(lowerLimit, upperLimit, spring)
             limit.restitution = limitBehavior.restitution

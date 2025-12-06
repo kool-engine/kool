@@ -1,7 +1,7 @@
 package de.fabmax.kool.physics.character
 
 import de.fabmax.kool.physics.*
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import physx.*
 import physx.prototypes.PxTopLevelFunctions
 import kotlin.math.cos
@@ -47,7 +47,7 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
         val pxCharacter = WrapPointer.PxCapsuleController(pxManager.createController(desc).ptr)
         desc.destroy()
 
-        memStack {
+        scopedMem {
             val shapes = createPxArray_PxShapePtr(1)
             pxCharacter.actor.getShapes(shapes.begin(), 1, 0)
             val shape = shapes.get(0)

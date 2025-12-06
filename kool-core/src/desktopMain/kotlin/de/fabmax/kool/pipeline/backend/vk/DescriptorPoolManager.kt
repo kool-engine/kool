@@ -2,8 +2,8 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.memStack
 import de.fabmax.kool.util.releaseWith
+import de.fabmax.kool.util.scopedMem
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 
@@ -109,7 +109,7 @@ class DescriptorPoolManager(val backend: RenderBackendVk) : BaseReleasable() {
                     poolLayout.numStorageBuffers.coerceAtMost(1) +
                     poolLayout.numStorageTextures.coerceAtMost(1)
 
-            memStack {
+            scopedMem {
                 descriptorPool = backend.device.createDescriptorPool(this) {
                     val poolSizes = callocVkDescriptorPoolSizeN(numBindingTypes) {
                         var iPoolSize = 0

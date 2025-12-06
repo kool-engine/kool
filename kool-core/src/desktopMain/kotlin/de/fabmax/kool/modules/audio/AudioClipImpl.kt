@@ -3,7 +3,7 @@ package de.fabmax.kool.modules.audio
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.Uint8BufferImpl
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import de.fabmax.kool.util.toBuffer
 import org.lwjgl.stb.STBVorbis
 import org.lwjgl.system.MemoryUtil
@@ -167,7 +167,7 @@ class AudioClipImpl(private val audioData: ByteArray, private val format: String
         }
 
         private fun loadVorbis(data: ByteArray): AudioInputStream {
-            return memStack {
+            return scopedMem {
                 (data.toBuffer() as Uint8BufferImpl).useRaw { raw ->
                     val channels = callocInt(1)
                     val sampleRate = callocInt(1)

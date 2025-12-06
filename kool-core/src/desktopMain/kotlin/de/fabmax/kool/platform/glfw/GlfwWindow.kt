@@ -315,7 +315,7 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
 
     override fun createVulkanSurface(instance: VkInstance): Long {
         check(clientApi == ClientApi.UNMANAGED) { "Client api needs to be UNMANAGED for Vulkan to work" }
-        return memStack {
+        return scopedMem {
             val lp = mallocLong(1)
             vkCheck(GLFWVulkan.glfwCreateWindowSurface(instance, windowHandle, null, lp))
             lp[0]

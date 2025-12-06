@@ -39,7 +39,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
     val inFlightFence: VkFence get() = inFlightFences[currentFrameIndex]
 
     init {
-        memStack {
+        scopedMem {
             val swapChainSupport = physicalDevice.querySwapchainSupport(this)
             val surfaceFormat = swapChainSupport.chooseSurfaceFormat()
             val presentMode = swapChainSupport.choosePresentationMode()
@@ -93,14 +93,14 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
             }
 
             imageAvailableSemas = buildList {
-                repeat(MAX_FRAMES_IN_FLIGHT) { add(device.createSemaphore(this@memStack)) }
+                repeat(MAX_FRAMES_IN_FLIGHT) { add(device.createSemaphore(this@scopedMem)) }
             }
             renderFinishedSemas = buildList {
-                repeat(MAX_FRAMES_IN_FLIGHT) { add(device.createSemaphore(this@memStack)) }
+                repeat(MAX_FRAMES_IN_FLIGHT) { add(device.createSemaphore(this@scopedMem)) }
             }
             inFlightFences = buildList {
                 repeat(MAX_FRAMES_IN_FLIGHT) {
-                    add(device.createFence(this@memStack) { flags(VK_FENCE_CREATE_SIGNALED_BIT) })
+                    add(device.createFence(this@scopedMem) { flags(VK_FENCE_CREATE_SIGNALED_BIT) })
                 }
             }
         }

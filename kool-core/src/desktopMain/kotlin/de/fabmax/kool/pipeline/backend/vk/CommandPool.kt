@@ -2,8 +2,8 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.memStack
 import de.fabmax.kool.util.releaseWith
+import de.fabmax.kool.util.scopedMem
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
@@ -38,7 +38,7 @@ class CommandPool(val backendVk: RenderBackendVk, val queue: VkQueue) : BaseRele
 
     inline fun singleShotCommands(block: MemoryStack.(VkCommandBuffer) -> Unit) {
         contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-        memStack {
+        scopedMem {
             val commandBuffer = allocateCommandBuffers(1, stack = this).first()
             val beginInfo = callocVkCommandBufferBeginInfo {
                 flags(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT)
@@ -66,7 +66,7 @@ class CommandPool(val backendVk: RenderBackendVk, val queue: VkQueue) : BaseRele
         level: Int = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         stack: MemoryStack? = null
     ): List<VkCommandBuffer> {
-        memStack(stack) {
+        scopedMem(stack) {
             val allocateInfo = callocVkCommandBufferAllocateInfo {
                 commandPool(vkCommandPool.handle)
                 level(level)

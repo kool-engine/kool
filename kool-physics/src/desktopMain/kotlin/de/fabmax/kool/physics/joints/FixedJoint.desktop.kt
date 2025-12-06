@@ -5,7 +5,7 @@ import de.fabmax.kool.physics.PhysicsImpl
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.createPxTransform
 import de.fabmax.kool.physics.toPxTransform
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import physx.PxTopLevelFunctions
 import physx.extensions.PxFixedJoint
 
@@ -23,7 +23,7 @@ class FixedJointImpl(
     override val pxJoint: PxFixedJoint
 
     init {
-        memStack {
+        scopedMem {
             val frmA = frameA.toPxTransform(createPxTransform())
             val frmB = frameB.toPxTransform(createPxTransform())
             pxJoint = PxTopLevelFunctions.FixedJointCreate(PhysicsImpl.physics, bodyA?.holder?.px, frmA, bodyB.holder.px, frmB)

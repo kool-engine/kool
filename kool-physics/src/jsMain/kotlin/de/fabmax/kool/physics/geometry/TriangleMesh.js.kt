@@ -3,7 +3,7 @@ package de.fabmax.kool.physics.geometry
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import physx.*
 import physx.prototypes.PxTopLevelFunctions
 
@@ -23,7 +23,7 @@ class TriangleMeshImpl(override val geometry: IndexedVertexList<*>) : TriangleMe
 
     init {
         PhysicsImpl.checkIsLoaded()
-        memStack {
+        scopedMem {
             val pointVector = PxArray_PxVec3()
             val indexVector = PxArray_PxU32()
             val pxVec3 = createPxVec3()
@@ -72,7 +72,7 @@ class TriangleMeshGeometryImpl(override val triangleMesh: TriangleMesh, override
 
     init {
         PhysicsImpl.checkIsLoaded()
-        memStack {
+        scopedMem {
             val s = scale.toPxVec3(createPxVec3())
             val r = createPxQuat(0f, 0f, 0f, 1f)
             val meshScale = createPxMeshScale(s, r)

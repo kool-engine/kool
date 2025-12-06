@@ -76,7 +76,7 @@ object PlatformAssetsImpl : PlatformAssets {
         // apparently file dialog functions need to be called from main thread
         // unfortunately, this means the main loop is suspended while the dialog is open
         return withContext(KoolDispatchers.Backend) {
-            memStack {
+            scopedMem {
                 var fileFilters: NFDFilterItem.Buffer? = null
                 if (filterList.isNotEmpty()) {
                     fileFilters = NFDFilterItem.calloc(filterList.size)
@@ -123,7 +123,7 @@ object PlatformAssetsImpl : PlatformAssets {
         // apparently file dialog functions need to be called from main thread
         // unfortunately, this means the main loop is blocked while the dialog is open
         return withContext(KoolDispatchers.Backend) {
-            memStack {
+            scopedMem {
                 val outPath = callocPointer(1)
                 var fileFilters: NFDFilterItem.Buffer? = null
                 if (filterList.isNotEmpty()) {

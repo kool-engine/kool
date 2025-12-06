@@ -5,7 +5,7 @@ import de.fabmax.kool.physics.PhysicsImpl
 import de.fabmax.kool.physics.createPxMeshScale
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import physx.*
 
 // GENERATED CODE BELOW:
@@ -45,7 +45,7 @@ class CapsuleGeometryImpl(override val height: Float, override val radius: Float
 }
 
 class CylinderGeometryImpl(override val length: Float, override val radius: Float) : CollisionGeometryImpl(), CylinderGeometry {
-    override val pxGeometry: PxConvexMeshGeometry = memStack {
+    override val pxGeometry: PxConvexMeshGeometry = scopedMem {
         PxConvexMeshGeometry(PhysicsImpl.unitCylinder, createPxMeshScale(Vec3f(length, radius, radius)))
     }
 }

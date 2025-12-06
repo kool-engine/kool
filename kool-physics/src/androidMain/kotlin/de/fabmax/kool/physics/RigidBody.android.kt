@@ -5,7 +5,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.util.SyncedFloat
 import de.fabmax.kool.physics.util.SyncedVec3
 import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import physxandroid.common.PxVec3
 import physxandroid.extensions.PxRigidBodyExt
 import physxandroid.physics.PxForceModeEnum
@@ -93,7 +93,7 @@ abstract class RigidBodyImpl : RigidActorImpl(), RigidBody {
             logE { "addForceAtPos must be called from PhysicsThread / PhysicsStepListener.onUpdatePhysics" }
             return
         }
-        memStack {
+        scopedMem {
             val pxForce = force.toPxVec3(createPxVec3())
             val pxPos = pos.toPxVec3(createPxVec3())
             when {
@@ -110,7 +110,7 @@ abstract class RigidBodyImpl : RigidActorImpl(), RigidBody {
             logE { "addImpulseAtPos must be called from PhysicsThread / PhysicsStepListener.onUpdatePhysics" }
             return
         }
-        memStack {
+        scopedMem {
             val pxImpulse = impulse.toPxVec3(createPxVec3())
             val pxPos = pos.toPxVec3(createPxVec3())
             when {

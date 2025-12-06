@@ -22,7 +22,7 @@ object HdrImageConversion {
     }
 
     fun loadHdrImage(imageData: Uint8Buffer): BufferedImageData2d {
-        return memStack {
+        return scopedMem {
             val w: IntBuffer = mallocInt(1)
             val h: IntBuffer = mallocInt(1)
             val ch: IntBuffer = mallocInt(1)

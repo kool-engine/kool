@@ -8,10 +8,10 @@ import box2d.prototypes.B2_Body
 import box2d.prototypes.B2_Geometry
 import box2d.prototypes.B2_Shape
 import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.util.MemoryStack
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.ScopedMemory
+import de.fabmax.kool.util.scopedMem
 
-internal actual fun createBody(bodyDef: BodyDef, worldId: WorldId): BodyId = memStack {
+internal actual fun createBody(bodyDef: BodyDef, worldId: WorldId): BodyId = scopedMem {
     val b2BodyDef = allocBodyDef()
     B2_Body.defaultBodyDef(b2BodyDef)
 
@@ -49,13 +49,13 @@ internal actual fun BodyId.getPose(pose: MutablePose2f) {
 }
 
 internal actual fun BodyId.setTargetTransform(target: Pose2f, duration: Float) {
-    memStack {
+    scopedMem {
         val target = allocTransform(target)
         B2_Body.setTargetTransform(id, target, duration)
     }
 }
 
-internal actual fun BodyId.addShape(geometry: Geometry, shapeDef: ShapeDef): ShapeId = memStack {
+internal actual fun BodyId.addShape(geometry: Geometry, shapeDef: ShapeDef): ShapeId = scopedMem {
     val b2ShapeDef = allocShapeDef()
     B2_Shape.defaultShapeDef(b2ShapeDef)
     b2ShapeDef.material = allocMaterial(shapeDef.material)
@@ -83,7 +83,7 @@ internal actual fun BodyId.addShape(geometry: Geometry, shapeDef: ShapeDef): Sha
     ShapeId(shapeId)
 }
 
-context(ms: MemoryStack)
+context(ms: ScopedMemory)
 private inline fun BodyId.createPolygonShape(shapeDef: b2ShapeDef, block: (b2Polygon) -> Unit): Long {
     val polygon = ms.allocPolygon()
     block(polygon)

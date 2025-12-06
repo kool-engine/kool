@@ -3,7 +3,7 @@ package de.fabmax.kool.physics.joints
 import de.fabmax.kool.math.AngleF
 import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.*
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.scopedMem
 import physx.PxTopLevelFunctions
 import physx.extensions.PxSphericalJoint
 import physx.extensions.PxSphericalJointFlagEnum
@@ -23,7 +23,7 @@ class SphericalJointImpl(
 
     init {
         PhysicsImpl.checkIsLoaded()
-        memStack {
+        scopedMem {
             val frmA = frameA.toPxTransform(createPxTransform())
             val frmB = frameB.toPxTransform(createPxTransform())
             pxJoint = PxTopLevelFunctions.SphericalJointCreate(PhysicsImpl.physics, bodyA?.holder?.px, frmA, bodyB.holder.px, frmB)
@@ -31,7 +31,7 @@ class SphericalJointImpl(
     }
 
     override fun enableLimit(yLimitAngle: AngleF, zLimitAngle: AngleF, limitBehavior: LimitBehavior) {
-        memStack {
+        scopedMem {
             val limit = createPxJointLimitCone(yLimitAngle, zLimitAngle)
             limit.stiffness = limitBehavior.stiffness
             limit.damping = limitBehavior.damping
