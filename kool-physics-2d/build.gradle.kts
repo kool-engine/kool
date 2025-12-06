@@ -21,7 +21,7 @@ kotlin {
         }
 
         jsMain.dependencies {
-            api(npm(File("$projectDir/npm/kool-box2d-wasm")))
+            implementation(npm(File("$projectDir/npm/kool-box2d-wasm")))
         }
 
 //        androidMain.dependencies {

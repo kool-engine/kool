@@ -22,6 +22,12 @@ interface Releasable {
     fun release()
 }
 
+fun Releasable(onRelease: () -> Unit): BaseReleasable = object : BaseReleasable() {
+    override fun doRelease() {
+        onRelease()
+    }
+}
+
 /**
  * Attaches this [Releasable] to the given [baseReleasable], so that this object is automatically released when
  * [baseReleasable] is released.
