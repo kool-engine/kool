@@ -6,8 +6,8 @@ import de.fabmax.kool.physics.*
 import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.generateNormals
+import de.fabmax.kool.util.memStack
 import physxandroid.PxTopLevelFunctions
-import physxandroid.common.PxVec3
 import physxandroid.cooking.PxConvexFlagEnum
 import physxandroid.geometry.PxConvexMesh
 import physxandroid.geometry.PxConvexMeshGeometry
@@ -35,11 +35,11 @@ class ConvexMeshImpl(override val points: List<Vec3f>, override var releaseWithG
     }
 
     private fun makeConvexHull(convexMesh: PxConvexMesh): IndexedVertexList<*> {
-        return MemoryStack.stackPush().use { mem ->
+        return memStack {
             val geometry = IndexedVertexList(VertexLayouts.PositionNormal)
             val v = MutableVec3f()
             val polyIndices = mutableListOf<Int>()
-            val poly = mem.createPxHullPolygon()
+            val poly = createPxHullPolygon()
             for (i in 0 until convexMesh.nbPolygons) {
                 polyIndices.clear()
 
@@ -70,10 +70,10 @@ class ConvexMeshImpl(override val points: List<Vec3f>, override var releaseWithG
     }
 
     companion object {
-        internal fun makePxConvexMesh(points: List<Vec3f>): PxConvexMesh = MemoryStack.stackPush().use { mem ->
+        internal fun makePxConvexMesh(points: List<Vec3f>): PxConvexMesh = memStack {
             val vec3Vector = points.toPxArray_PxVec3()
-            val desc = mem.createPxConvexMeshDesc()
-            desc.flags = mem.createPxConvexFlags(PxConvexFlagEnum.eCOMPUTE_CONVEX.value)
+            val desc = createPxConvexMeshDesc()
+            desc.flags = createPxConvexFlags(PxConvexFlagEnum.eCOMPUTE_CONVEX.value)
             desc.points.count = points.size
             desc.points.stride = SIZEOF.PxVec3
             desc.points.data = vec3Vector.begin()
@@ -90,10 +90,10 @@ class ConvexMeshGeometryImpl(override val convexMesh: ConvexMesh, override val s
     override val pxGeometry: PxConvexMeshGeometry
 
     init {
-        MemoryStack.stackPush().use { mem ->
-            val s = scale.toPxVec3(mem.createPxVec3())
-            val r = mem.createPxQuat(0f, 0f, 0f, 1f)
-            val meshScale = mem.createPxMeshScale(s, r)
+        memStack {
+            val s = scale.toPxVec3(createPxVec3())
+            val r = createPxQuat(0f, 0f, 0f, 1f)
+            val meshScale = createPxMeshScale(s, r)
             pxGeometry = PxConvexMeshGeometry(convexMesh.pxConvexMesh, meshScale)
         }
 

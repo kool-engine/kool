@@ -7,6 +7,7 @@ import de.fabmax.kool.scene.Tags
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.checkIsNotReleased
+import de.fabmax.kool.util.memStack
 import physxandroid.extensions.PxRigidActorExt
 import physxandroid.physics.PxRigidActor
 import physxandroid.physics.PxShapeFlagEnum
@@ -59,9 +60,9 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
     override var isTrigger: Boolean = false
         set(value) {
             field = value
-            MemoryStack.stackPush().use { mem ->
+            memStack {
                 val flags = if (isTrigger) TRIGGER_SHAPE_FLAGS else SIM_SHAPE_FLAGS
-                val shapeFlags = mem.createPxShapeFlags(flags)
+                val shapeFlags = createPxShapeFlags(flags)
                 shapes.forEach { it.holder?.px?.flags = shapeFlags }
             }
         }

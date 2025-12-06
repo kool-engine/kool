@@ -1,6 +1,7 @@
 package de.fabmax.kool.physics.character
 
 import de.fabmax.kool.physics.*
+import de.fabmax.kool.util.memStack
 import physx.*
 import physx.prototypes.PxTopLevelFunctions
 import kotlin.math.cos

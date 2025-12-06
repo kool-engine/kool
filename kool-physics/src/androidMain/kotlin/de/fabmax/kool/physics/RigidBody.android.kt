@@ -5,11 +5,11 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.util.SyncedFloat
 import de.fabmax.kool.physics.util.SyncedVec3
 import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.memStack
 import physxandroid.common.PxVec3
 import physxandroid.extensions.PxRigidBodyExt
 import physxandroid.physics.PxForceModeEnum
 import physxandroid.physics.PxRigidBody
-import physxandroid.physics.PxRigidDynamic
 
 // GENERATED CODE BELOW:
 // Transformed from desktop source
@@ -93,9 +93,9 @@ abstract class RigidBodyImpl : RigidActorImpl(), RigidBody {
             logE { "addForceAtPos must be called from PhysicsThread / PhysicsStepListener.onUpdatePhysics" }
             return
         }
-        MemoryStack.stackPush().use { mem ->
-            val pxForce = force.toPxVec3(mem.createPxVec3())
-            val pxPos = pos.toPxVec3(mem.createPxVec3())
+        memStack {
+            val pxForce = force.toPxVec3(createPxVec3())
+            val pxPos = pos.toPxVec3(createPxVec3())
             when {
                 isLocalForce && isLocalPos -> PxRigidBodyExt.addLocalForceAtLocalPos(pxRigidBody, pxForce, pxPos)
                 isLocalForce && !isLocalPos -> PxRigidBodyExt.addLocalForceAtPos(pxRigidBody, pxForce, pxPos)
@@ -110,9 +110,9 @@ abstract class RigidBodyImpl : RigidActorImpl(), RigidBody {
             logE { "addImpulseAtPos must be called from PhysicsThread / PhysicsStepListener.onUpdatePhysics" }
             return
         }
-        MemoryStack.stackPush().use { mem ->
-            val pxImpulse = impulse.toPxVec3(mem.createPxVec3())
-            val pxPos = pos.toPxVec3(mem.createPxVec3())
+        memStack {
+            val pxImpulse = impulse.toPxVec3(createPxVec3())
+            val pxPos = pos.toPxVec3(createPxVec3())
             when {
                 isLocalImpulse && isLocalPos -> PxRigidBodyExt.addLocalForceAtLocalPos(pxRigidBody, pxImpulse, pxPos, PxForceModeEnum.eIMPULSE)
                 isLocalImpulse && !isLocalPos -> PxRigidBodyExt.addLocalForceAtPos(pxRigidBody, pxImpulse, pxPos, PxForceModeEnum.eIMPULSE)

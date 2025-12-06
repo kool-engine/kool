@@ -6,6 +6,7 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.QuatF
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.memStack
 import physx.PxRigidBodyFlagEnum
 import physx.PxRigidDynamic
 import physx.PxRigidDynamicLockFlagEnum
@@ -33,10 +34,10 @@ class RigidDynamicImpl(
 
     init {
         if (pxActor == null) {
-            MemoryStack.stackPush().use { mem ->
-                val pxPose = pose.toPxTransform(mem.createPxTransform())
+            memStack {
+                val pxPose = pose.toPxTransform(createPxTransform())
                 holder = RigidActorHolder(PhysicsImpl.physics.createRigidDynamic(pxPose))
-                this.mass = mass
+                this@RigidDynamicImpl.mass = mass
             }
         } else {
             holder = RigidActorHolder(pxActor)
@@ -65,8 +66,8 @@ class RigidDynamicImpl(
             logE { "Body needs to be attached to simulation before setKinematicTarget can be called" }
             return
         }
-        MemoryStack.stackPush().use { mem ->
-            val pxPose = pose.toPxTransform(mem.createPxTransform())
+        memStack {
+            val pxPose = pose.toPxTransform(createPxTransform())
             pxRigidDynamic.setKinematicTarget(pxPose)
         }
     }
@@ -80,10 +81,10 @@ class RigidDynamicImpl(
             logE { "Body needs to be attached to simulation before setKinematicTarget can be called" }
             return
         }
-        MemoryStack.stackPush().use { mem ->
-            val pxPose = mem.createPxTransform()
-            pxPose.p = position?.toPxVec3(mem.createPxVec3()) ?: pxRigidDynamic.globalPose.p
-            pxPose.q = rotation?.toPxQuat(mem.createPxQuat()) ?: pxRigidDynamic.globalPose.q
+        memStack {
+            val pxPose = createPxTransform()
+            pxPose.p = position?.toPxVec3(createPxVec3()) ?: pxRigidDynamic.globalPose.p
+            pxPose.q = rotation?.toPxQuat(createPxQuat()) ?: pxRigidDynamic.globalPose.q
             pxRigidDynamic.setKinematicTarget(pxPose)
         }
     }

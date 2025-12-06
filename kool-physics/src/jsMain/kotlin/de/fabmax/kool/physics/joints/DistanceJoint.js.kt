@@ -3,8 +3,9 @@ package de.fabmax.kool.physics.joints
 import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.PhysicsImpl
 import de.fabmax.kool.physics.RigidActor
-import de.fabmax.kool.physics.memStack
+import de.fabmax.kool.physics.createPxTransform
 import de.fabmax.kool.physics.toPxTransform
+import de.fabmax.kool.util.memStack
 import physx.PxDistanceJoint
 import physx.PxDistanceJointFlagEnum
 import physx.maxDistance

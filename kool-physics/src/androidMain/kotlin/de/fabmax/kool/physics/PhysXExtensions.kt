@@ -5,6 +5,7 @@ package de.fabmax.kool.physics
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.scene.TrsTransformF
+import de.fabmax.kool.util.MemoryStack
 import physxandroid.NativeObject
 import physxandroid.character.PxCapsuleController
 import physxandroid.character.PxExtendedVec3
@@ -12,19 +13,11 @@ import physxandroid.common.*
 import physxandroid.cooking.PxConvexFlags
 import physxandroid.cooking.PxConvexMeshDesc
 import physxandroid.cooking.PxTriangleMeshDesc
-import physxandroid.extensions.PxJointAngularLimitPair
-import physxandroid.extensions.PxJointLimitCone
-import physxandroid.extensions.PxJointLimitPyramid
-import physxandroid.extensions.PxJointLinearLimit
-import physxandroid.extensions.PxJointLinearLimitPair
-import physxandroid.extensions.PxRevoluteJointFlags
-import physxandroid.extensions.PxSpring
+import physxandroid.extensions.*
 import physxandroid.geometry.*
 import physxandroid.physics.*
 import physxandroid.support.PxArray_PxShapePtr
 import physxandroid.support.PxArray_PxVec3
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 
 val NativeObject.ptr: Long get() = address
 
@@ -133,88 +126,52 @@ fun FilterData.toPxFilterData(target: PxFilterData): PxFilterData {
     return target
 }
 
-inline fun <R> memStack(block: MemoryStack.() -> R): R {
-    contract {
-        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
-    }
-    return MemoryStack.stackPush().use(block)
-}
+fun MemoryStack.createPxArray_PxShapePtr(size: Int) = autoDelete(PxArray_PxShapePtr(size), PxArray_PxShapePtr::destroy)
+fun MemoryStack.createPxArticulationDrive() = autoDelete(PxArticulationDrive(), PxArticulationDrive::destroy)
+fun MemoryStack.createPxArticulationLimit(low: Float, high: Float) = autoDelete(PxArticulationLimit(low, high), PxArticulationLimit::destroy)
+fun MemoryStack.createPxBoundedData() = autoDelete(PxBoundedData(), PxBoundedData::destroy)
+fun MemoryStack.createPxFilterData() = autoDelete(PxFilterData(), PxFilterData::destroy)
+fun MemoryStack.createPxFilterData(w0: Int, w1: Int, w2: Int, w3: Int) = autoDelete(PxFilterData(w0, w1, w2, w3), PxFilterData::destroy)
+fun MemoryStack.createPxQueryFilterData(fd: PxFilterData, f: PxQueryFlags) = autoDelete(PxQueryFilterData(fd, f), PxQueryFilterData::destroy)
+fun MemoryStack.createPxQueryFlags(flags: PxQueryFlagEnum) = autoDelete(PxQueryFlags(flags.value.toShort()), PxQueryFlags::destroy)
+fun MemoryStack.createPxHeightFieldSample() = autoDelete(PxHeightFieldSample(), PxHeightFieldSample::destroy)
+fun MemoryStack.createPxHullPolygon() = autoDelete(PxHullPolygon(), PxHullPolygon::destroy)
+fun MemoryStack.createPxMeshScale(s: PxVec3, r: PxQuat) = autoDelete(PxMeshScale(s, r), PxMeshScale::destroy)
+fun MemoryStack.createPxMeshScale(s: Vec3f, r: QuatF = QuatF.IDENTITY) = autoDelete(PxMeshScale(s.toPxVec3(createPxVec3()), r.toPxQuat(createPxQuat())), PxMeshScale::destroy)
+fun MemoryStack.createPxVec3() = autoDelete(PxVec3(), PxVec3::destroy)
+fun MemoryStack.createPxVec3(x: Float, y: Float, z: Float) = autoDelete(PxVec3(x, y, z), PxVec3::destroy)
 
-class MemoryStack private constructor() {
-    val autoDeletables = mutableListOf<AutoDeleteRef<*>>()
+fun MemoryStack.createPxQuat() = autoDelete(PxQuat(), PxQuat::destroy)
+fun MemoryStack.createPxQuat(x: Float, y: Float, z: Float, w: Float) = autoDelete(PxQuat(x, y, z, w), PxQuat::destroy)
 
-    fun <T: NativeObject> autoDelete(obj: T, delete: T.() -> Unit): T {
-        autoDeletables += AutoDeleteRef(obj, delete)
-        return obj
-    }
+fun MemoryStack.createPxTransform() = autoDelete(PxTransform(PxIDENTITYEnum.PxIdentity), PxTransform::destroy)
+fun MemoryStack.createPxTransform(p: PxVec3, q: PxQuat) = autoDelete(PxTransform(p, q), PxTransform::destroy)
+fun MemoryStack.createPxTransform(p: Vec3f, q: QuatF) = autoDelete(PxTransform(p.toPxVec3(createPxVec3()), q.toPxQuat(createPxQuat())), PxTransform::destroy)
 
-    inline fun <R> use(block: (MemoryStack) -> R): R {
-        contract {
-            callsInPlace(block, InvocationKind.EXACTLY_ONCE)
-        }
-        try {
-            return block(this)
-        } finally {
-            autoDeletables.forEach { it.delete() }
-            autoDeletables.clear()
-        }
-    }
+fun MemoryStack.createPxSceneDesc(scale: PxTolerancesScale) = autoDelete(PxSceneDesc(scale), PxSceneDesc::destroy)
+fun MemoryStack.createPxConvexMeshDesc() = autoDelete(PxConvexMeshDesc(), PxConvexMeshDesc::destroy)
+fun MemoryStack.createPxHeightFieldDesc() = autoDelete(PxHeightFieldDesc(), PxHeightFieldDesc::destroy)
+fun MemoryStack.createPxTriangleMeshDesc() = autoDelete(PxTriangleMeshDesc(), PxTriangleMeshDesc::destroy)
 
-    class AutoDeleteRef<T: NativeObject>(val obj: T, val delete: T.() -> Unit) {
-        fun delete() = obj.delete()
-    }
+fun MemoryStack.createPxActorFlags(flags: Int) = autoDelete(PxActorFlags(flags.toByte()), PxActorFlags::destroy)
+fun MemoryStack.createPxBaseFlags(flags: Int) = autoDelete(PxBaseFlags(flags.toShort()), PxBaseFlags::destroy)
+fun MemoryStack.createPxConvexFlags(flags: Int) = autoDelete(PxConvexFlags(flags.toShort()), PxConvexFlags::destroy)
+fun MemoryStack.createPxConvexMeshGeometryFlags(flags: Int) = autoDelete(PxConvexMeshGeometryFlags(flags.toByte()), PxConvexMeshGeometryFlags::destroy)
+fun MemoryStack.createPxHitFlags(flags: Int) = autoDelete(PxHitFlags(flags.toShort()), PxHitFlags::destroy)
+fun MemoryStack.createPxMeshGeometryFlags(flags: Int) = autoDelete(PxMeshGeometryFlags(flags.toByte()), PxMeshGeometryFlags::destroy)
+fun MemoryStack.createPxRevoluteJointFlags(flags: Int) = autoDelete(PxRevoluteJointFlags(flags.toShort()), PxRevoluteJointFlags::destroy)
+fun MemoryStack.createPxRigidBodyFlags(flags: Int) = autoDelete(PxRigidBodyFlags(flags.toByte()), PxRigidBodyFlags::destroy)
+fun MemoryStack.createPxRigidDynamicLockFlags(flags: Int) = autoDelete(PxRigidDynamicLockFlags(flags.toByte()), PxRigidDynamicLockFlags::destroy)
+fun MemoryStack.createPxSceneFlags(flags: Int) = autoDelete(PxSceneFlags(flags), PxSceneFlags::destroy)
+fun MemoryStack.createPxShapeFlags(flags: Int) = autoDelete(PxShapeFlags(flags.toByte()), PxShapeFlags::destroy)
 
-    companion object {
-        fun stackPush(): MemoryStack = MemoryStack()
-    }
-
-    fun createPxArray_PxShapePtr(size: Int) = autoDelete(PxArray_PxShapePtr(size), PxArray_PxShapePtr::destroy)
-    fun createPxArticulationDrive() = autoDelete(PxArticulationDrive(), PxArticulationDrive::destroy)
-    fun createPxArticulationLimit(low: Float, high: Float) = autoDelete(PxArticulationLimit(low, high), PxArticulationLimit::destroy)
-    fun createPxBoundedData() = autoDelete(PxBoundedData(), PxBoundedData::destroy)
-    fun createPxFilterData() = autoDelete(PxFilterData(), PxFilterData::destroy)
-    fun createPxFilterData(w0: Int, w1: Int, w2: Int, w3: Int) = autoDelete(PxFilterData(w0, w1, w2, w3), PxFilterData::destroy)
-    fun createPxQueryFilterData(fd: PxFilterData, f: PxQueryFlags) = autoDelete(PxQueryFilterData(fd, f), PxQueryFilterData::destroy)
-    fun createPxQueryFlags(flags: PxQueryFlagEnum) = autoDelete(PxQueryFlags(flags.value.toShort()), PxQueryFlags::destroy)
-    fun createPxHeightFieldSample() = autoDelete(PxHeightFieldSample(), PxHeightFieldSample::destroy)
-    fun createPxHullPolygon() = autoDelete(PxHullPolygon(), PxHullPolygon::destroy)
-    fun createPxMeshScale(s: PxVec3, r: PxQuat) = autoDelete(PxMeshScale(s, r), PxMeshScale::destroy)
-    fun createPxMeshScale(s: Vec3f, r: QuatF = QuatF.IDENTITY) = autoDelete(PxMeshScale(s.toPxVec3(createPxVec3()), r.toPxQuat(createPxQuat())), PxMeshScale::destroy)
-    fun createPxVec3() = autoDelete(PxVec3(), PxVec3::destroy)
-    fun createPxVec3(x: Float, y: Float, z: Float) = autoDelete(PxVec3(x, y, z), PxVec3::destroy)
-
-    fun createPxQuat() = autoDelete(PxQuat(), PxQuat::destroy)
-    fun createPxQuat(x: Float, y: Float, z: Float, w: Float) = autoDelete(PxQuat(x, y, z, w), PxQuat::destroy)
-
-    fun createPxTransform() = autoDelete(PxTransform(PxIDENTITYEnum.PxIdentity), PxTransform::destroy)
-    fun createPxTransform(p: PxVec3, q: PxQuat) = autoDelete(PxTransform(p, q), PxTransform::destroy)
-    fun createPxTransform(p: Vec3f, q: QuatF) = autoDelete(PxTransform(p.toPxVec3(createPxVec3()), q.toPxQuat(createPxQuat())), PxTransform::destroy)
-
-    fun createPxSceneDesc(scale: PxTolerancesScale) = autoDelete(PxSceneDesc(scale), PxSceneDesc::destroy)
-    fun createPxConvexMeshDesc() = autoDelete(PxConvexMeshDesc(), PxConvexMeshDesc::destroy)
-    fun createPxHeightFieldDesc() = autoDelete(PxHeightFieldDesc(), PxHeightFieldDesc::destroy)
-    fun createPxTriangleMeshDesc() = autoDelete(PxTriangleMeshDesc(), PxTriangleMeshDesc::destroy)
-
-    fun createPxActorFlags(flags: Int) = autoDelete(PxActorFlags(flags.toByte()), PxActorFlags::destroy)
-    fun createPxBaseFlags(flags: Int) = autoDelete(PxBaseFlags(flags.toShort()), PxBaseFlags::destroy)
-    fun createPxConvexFlags(flags: Int) = autoDelete(PxConvexFlags(flags.toShort()), PxConvexFlags::destroy)
-    fun createPxConvexMeshGeometryFlags(flags: Int) = autoDelete(PxConvexMeshGeometryFlags(flags.toByte()), PxConvexMeshGeometryFlags::destroy)
-    fun createPxHitFlags(flags: Int) = autoDelete(PxHitFlags(flags.toShort()), PxHitFlags::destroy)
-    fun createPxMeshGeometryFlags(flags: Int) = autoDelete(PxMeshGeometryFlags(flags.toByte()), PxMeshGeometryFlags::destroy)
-    fun createPxRevoluteJointFlags(flags: Int) = autoDelete(PxRevoluteJointFlags(flags.toShort()), PxRevoluteJointFlags::destroy)
-    fun createPxRigidBodyFlags(flags: Int) = autoDelete(PxRigidBodyFlags(flags.toByte()), PxRigidBodyFlags::destroy)
-    fun createPxRigidDynamicLockFlags(flags: Int) = autoDelete(PxRigidDynamicLockFlags(flags.toByte()), PxRigidDynamicLockFlags::destroy)
-    fun createPxSceneFlags(flags: Int) = autoDelete(PxSceneFlags(flags), PxSceneFlags::destroy)
-    fun createPxShapeFlags(flags: Int) = autoDelete(PxShapeFlags(flags.toByte()), PxShapeFlags::destroy)
-
-    fun createPxSpring(stiffness: Float, damping: Float) = autoDelete(PxSpring(stiffness, damping), PxSpring::destroy)
-    fun createPxJointLinearLimitPair(lowerLimit: Float, upperLimit: Float, spring: PxSpring) =
-        autoDelete(PxJointLinearLimitPair(lowerLimit, upperLimit, spring), PxJointLinearLimitPair::destroy)
-    fun createPxJointLinearLimit(extent: Float, spring: PxSpring) = autoDelete(PxJointLinearLimit(extent, spring), PxJointLinearLimit::destroy)
-    fun createPxJointAngularLimitPair(lowerLimit: AngleF, upperLimit: AngleF, spring: PxSpring) =
-        autoDelete(PxJointAngularLimitPair(lowerLimit.rad, upperLimit.rad, spring), PxJointAngularLimitPair::destroy)
-    fun createPxJointLimitPyramid(yLimitAngleMin: Float, yLimitAngleMax: Float, zLimitAngleMin: Float, zLimitAngleMax: Float, spring: PxSpring) =
-        autoDelete(PxJointLimitPyramid(yLimitAngleMin, yLimitAngleMax, zLimitAngleMin, zLimitAngleMax, spring), PxJointLimitPyramid::destroy)
-    fun createPxJointLimitCone(yLimitAngle: AngleF, zLimitAngle: AngleF) =
-        autoDelete(PxJointLimitCone(yLimitAngle.rad, zLimitAngle.rad), PxJointLimitCone::destroy)
-}
+fun MemoryStack.createPxSpring(stiffness: Float, damping: Float) = autoDelete(PxSpring(stiffness, damping), PxSpring::destroy)
+fun MemoryStack.createPxJointLinearLimitPair(lowerLimit: Float, upperLimit: Float, spring: PxSpring) =
+    autoDelete(PxJointLinearLimitPair(lowerLimit, upperLimit, spring), PxJointLinearLimitPair::destroy)
+fun MemoryStack.createPxJointLinearLimit(extent: Float, spring: PxSpring) = autoDelete(PxJointLinearLimit(extent, spring), PxJointLinearLimit::destroy)
+fun MemoryStack.createPxJointAngularLimitPair(lowerLimit: AngleF, upperLimit: AngleF, spring: PxSpring) =
+    autoDelete(PxJointAngularLimitPair(lowerLimit.rad, upperLimit.rad, spring), PxJointAngularLimitPair::destroy)
+fun MemoryStack.createPxJointLimitPyramid(yLimitAngleMin: Float, yLimitAngleMax: Float, zLimitAngleMin: Float, zLimitAngleMax: Float, spring: PxSpring) =
+    autoDelete(PxJointLimitPyramid(yLimitAngleMin, yLimitAngleMax, zLimitAngleMin, zLimitAngleMax, spring), PxJointLimitPyramid::destroy)
+fun MemoryStack.createPxJointLimitCone(yLimitAngle: AngleF, zLimitAngle: AngleF) =
+    autoDelete(PxJointLimitCone(yLimitAngle.rad, zLimitAngle.rad), PxJointLimitCone::destroy)

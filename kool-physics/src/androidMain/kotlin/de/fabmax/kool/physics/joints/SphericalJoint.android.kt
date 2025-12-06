@@ -2,12 +2,9 @@ package de.fabmax.kool.physics.joints
 
 import de.fabmax.kool.math.AngleF
 import de.fabmax.kool.math.PoseF
-import de.fabmax.kool.physics.PhysicsImpl
-import de.fabmax.kool.physics.RigidActor
-import de.fabmax.kool.physics.memStack
-import de.fabmax.kool.physics.toPxTransform
+import de.fabmax.kool.physics.*
+import de.fabmax.kool.util.memStack
 import physxandroid.PxTopLevelFunctions
-import physxandroid.extensions.PxJointLimitCone
 import physxandroid.extensions.PxSphericalJoint
 import physxandroid.extensions.PxSphericalJointFlagEnum
 
