@@ -14,18 +14,21 @@ kotlin {
         }
 
         desktopMain.dependencies {
-            api(libs.box2djni)
-            listOf("natives-linux", "natives-windows", "natives-macos", "natives-macos-arm64").forEach { platform ->
-                runtimeOnly("${libs.box2djni.get()}:$platform")
-            }
+            api(libs.box2d.jni)
+            listOf(
+                "natives-linux", "natives-linux-arm64",
+                "natives-windows", "natives-windows-arm64",
+                "natives-macos", "natives-macos-arm64"
+            ).forEach { platform -> runtimeOnly("${libs.box2d.jni.get()}:$platform") }
         }
 
         jsMain.dependencies {
-            implementation(npm(File("$projectDir/npm/kool-box2d-wasm")))
+            implementation(npm(libs.box2d.wasm.get().name, libs.versions.box2d.wasm.get()))
+            //implementation(npm(File("$projectDir/npm/kool-box2d-wasm")))
         }
 
 //        androidMain.dependencies {
-//            api(libs.box2djniandroid)
+//            api(libs.box2d.android)
 //        }
     }
 }

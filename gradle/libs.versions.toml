@@ -11,7 +11,8 @@ jsvg = "2.0.0"
 androidsvg = "1.4"
 physxjni = "2.7.0"
 physxjswebidl = "2.7.0"
-box2d = "1.0.0-SNAPSHOT"
+box2d-jni = "1.0.0"
+box2d-wasm = "1.0.0"
 
 # wgpu backend
 wgpu4k = "0.1.1"
@@ -44,9 +45,9 @@ lwjgl-msdfgen = { group = "org.lwjgl", name = "lwjgl-msdfgen", version.ref = "lw
 physxjni = { group = "de.fabmax", name = "physx-jni", version.ref = "physxjni" }
 physxjniandroid = { group = "de.fabmax", name = "physx-jni-android", version.ref = "physxjni" }
 physxjswebidl = { group = "npm", name = "physx-js-webidl", version.ref = "physxjswebidl" }
-box2djni = { group = "de.fabmax.box2d-jni", name = "box2d-jni", version.ref = "box2d" }
-box2djniandroid = { group = "de.fabmax.box2d-jni", name = "box2d-jni-android", version.ref = "box2d" }
-box2dwasm = { group = "npm", name = "kool-box2d-wasm", version.ref = "box2d" }
+box2d-jni = { group = "de.fabmax.box2d-jni", name = "box2d-jni", version.ref = "box2d-jni" }
+box2d-android = { group = "de.fabmax.box2d-jni", name = "box2d-jni-android", version.ref = "box2d-jni" }
+box2d-wasm = { group = "npm", name = "kool-box2d-wasm", version.ref = "box2d-wasm" }
 
 # wgpu backend
 wgpu4k = { module = "io.ygdrasil:wgpu4k", version.ref = "wgpu4k" }
