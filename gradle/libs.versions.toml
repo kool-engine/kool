@@ -65,6 +65,9 @@ plugindep-dokka = { group = "org.jetbrains.dokka", name = "dokka-gradle-plugin",
 plugindep-android-library = { group = "com.android.library", name = "com.android.library.gradle.plugin", version.ref = "agp" }
 plugindep-maven-publish = { group = "com.vanniktech", name = "gradle-maven-publish-plugin", version = "0.35.0" }
 
+[plugins]
+webidl = { id = "de.fabmax.webidl-util", version = "0.10.5" }
+
 [bundles]
 lwjgl = ["lwjgl-core", "lwjgl-glfw", "lwjgl-jemalloc", "lwjgl-opengl", "lwjgl-vulkan", "lwjgl-vma", "lwjgl-shaderc", "lwjgl-nfd", "lwjgl-stb", "lwjgl-jawt", "lwjgl-msdfgen"]
 wgpu4k = ["wgpu4k", "webgpu-descriptors"]
