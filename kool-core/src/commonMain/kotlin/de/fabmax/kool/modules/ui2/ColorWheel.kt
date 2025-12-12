@@ -223,7 +223,7 @@ open class ColorWheelNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, 
                     it.position.set(cos(a) * ro, sin(a) * ro, 0f)
                 }
                 val vi4 = vertex {
-                    it.position.set(cos(a) * ro, sin(a) * ro, 0f)
+                    it.position.set(cos(a) * ri, sin(a) * ri, 0f)
                 }
                 if (i > 0) {
                     addTriIndices(vi1, vi2, vi4)
