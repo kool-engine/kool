@@ -65,8 +65,8 @@ class Physics2dWorld(
         }
 
         override fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float) {
+            bodies.values.forEach { it.lerpPose(weightNext) }
             simulationListeners.forEachUpdated { it.interpolateSteps(simulationTimePrev, simulationTimeNext, simulationTimeLerp, weightNext) }
-            // todo
         }
     }
 }

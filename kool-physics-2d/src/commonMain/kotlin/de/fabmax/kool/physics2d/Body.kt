@@ -2,6 +2,7 @@ package de.fabmax.kool.physics2d
 
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.checkIsNotReleased
 
 data class BodyDef(
     val type: BodyType,
@@ -34,15 +35,22 @@ class Body internal constructor(bodyDef: BodyDef, world: Physics2dWorld) : BaseR
 
     val type: BodyType = bodyDef.type
 
-    private val pose = MutablePose2f().apply {
-        position.set(bodyDef.position)
-        rotation.set(bodyDef.rotation)
-    }
-    val position: Vec2f get() = pose.position
-    val rotation: Rotation get() = pose.rotation
+    private val posePrev = MutablePose2f().set(bodyDef.position, bodyDef.rotation)
+    private val poseNext = MutablePose2f().set(bodyDef.position, bodyDef.rotation)
+    private val poseLerp = MutablePose2f().set(bodyDef.position, bodyDef.rotation)
+
+    val position: Vec2f get() = poseLerp.position
+    val rotation: Rotation get() = poseLerp.rotation
 
     internal fun fetchPose() {
-        bodyId.getPose(pose)
+        checkIsNotReleased()
+        posePrev.set(poseNext)
+        bodyId.getPose(poseNext)
+    }
+
+    internal fun lerpPose(weightNext: Float) {
+        posePrev.position.mix(poseNext.position, weightNext, poseLerp.position)
+        posePrev.rotation.mix(poseNext.rotation, weightNext, poseLerp.rotation)
     }
 
     fun attachShape(geometry: Geometry, shapeDef: ShapeDef = ShapeDef.DEFAULT) {

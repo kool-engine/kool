@@ -10,6 +10,11 @@ interface Rotation {
 
     fun toAngle(): AngleF = Box2dMath.rotationToAngle(this)
 
+    fun mix(that: Rotation, weight: Float, result: MutableRotation): MutableRotation = result.set(
+        sin * (1f - weight) + that.sin * weight,
+        cos * (1f - weight) + that.cos * weight
+    )
+
     companion object {
         val IDENTITY = Rotation(0f, 1f)
     }
@@ -27,9 +32,10 @@ fun MutableRotation() = MutableRotation(Rotation.IDENTITY)
 fun MutableRotation(other: Rotation) = MutableRotation(other.sin, other.cos)
 
 data class MutableRotation(override var sin: Float, override var cos: Float) : Rotation {
-    fun set(sin: Float, cos: Float) {
+    fun set(sin: Float, cos: Float): MutableRotation {
         this.sin = sin
         this.cos = cos
+        return this
     }
 
     fun set(other: Rotation): MutableRotation {
@@ -38,8 +44,9 @@ data class MutableRotation(override var sin: Float, override var cos: Float) : R
         return this
     }
 
-    fun set(angle: AngleF) {
+    fun set(angle: AngleF): MutableRotation {
         Box2dMath.angleToRotation(angle, this)
+        return this
     }
 }
 
@@ -59,6 +66,12 @@ data class MutablePose2f(
     fun set(other: Pose2f): MutablePose2f {
         position.set(other.position)
         rotation.set(other.rotation)
+        return this
+    }
+
+    fun set(position: Vec2f, rotation: Rotation): MutablePose2f {
+        this.position.set(position)
+        this.rotation.set(rotation)
         return this
     }
 }
