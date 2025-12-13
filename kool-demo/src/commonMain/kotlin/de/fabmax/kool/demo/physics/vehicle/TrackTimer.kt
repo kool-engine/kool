@@ -93,9 +93,6 @@ class TrackTimer(val vehicle: Vehicle, val track: Track, val world: VehicleWorld
                     trackTime += timeStep
                 }
             }
-
-            override fun captureStepResults(simulationTime: Double) { }
-            override fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float) { }
         }
     }
 

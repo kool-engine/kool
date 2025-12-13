@@ -33,3 +33,7 @@ internal object PhysicsSystemDesktop : PhysicsSystem {
         return Thread.currentThread() === physicsThread
     }
 }
+
+internal fun checkIsPhysicsThread(from: String) {
+    check(PhysicsSystemDesktop.isPhysicsThread()) { "$from must be called from physics thread" }
+}

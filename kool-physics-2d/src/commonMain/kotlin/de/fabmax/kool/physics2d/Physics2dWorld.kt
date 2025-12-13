@@ -5,16 +5,25 @@ import de.fabmax.kool.scene.OnRenderScene
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
 
-class Physics2dWorld(worldDef: WorldDef, private val substeps: Int = 4) : BaseReleasable(), InterpolatableSimulation {
+class Physics2dWorld(
+    worldDef: WorldDef,
+    simulationTimeStep: Float = 1f / 60f,
+    private val substeps: Int = 4
+) : BaseReleasable() {
     internal val worldId: WorldId
     private val taskManager: Releasable?
 
     private val bodies = mutableMapOf<BodyId, Body>()
-
-    val simStepper: SimulationStepper = AsyncSimulationStepper(this, Physics2d.system.physicsDispatcher)
+    val simulationListeners = BufferedList<InterpolatableSimulation>()
 
     private var registeredAtScene: Scene? = null
     private val onRenderSceneHook = OnRenderScene { simStepper.stepPhysics() }
+
+    val simStepper: SimulationStepper = AsyncSimulationStepper(
+        simulation = SimStepCallbacks(),
+        simulationCoroutineContext = Physics2d.system.physicsDispatcher,
+        simulationTimeStep = simulationTimeStep
+    )
 
     init {
         val (id, taskMgr) = createWorld(worldDef)
@@ -40,27 +49,25 @@ class Physics2dWorld(worldDef: WorldDef, private val substeps: Int = 4) : BaseRe
         return body
     }
 
-    override fun simulateStep(timeStep: Float) {
-        worldId.step(timeStep, substeps)
-        // todo: interpolation and stuff
-        bodies.values.forEach { it.fetchPose() }
-    }
-
-    override fun captureStepResults(simulationTime: Double) {
-        TODO("Not yet implemented")
-    }
-
-    override fun interpolateSteps(
-        simulationTimePrev: Double,
-        simulationTimeNext: Double,
-        simulationTimeLerp: Double,
-        weightNext: Float
-    ) {
-        TODO("Not yet implemented")
-    }
-
     override fun doRelease() {
         worldId.destroy()
+    }
+
+    private inner class SimStepCallbacks : InterpolatableSimulation {
+        override fun simulateStep(timeStep: Float) {
+            simulationListeners.forEachUpdated { it.simulateStep(timeStep) }
+            worldId.step(timeStep, substeps)
+        }
+
+        override fun captureStepResults(simulationTime: Double) {
+            bodies.values.forEach { it.fetchPose() }
+            simulationListeners.forEachUpdated { it.captureStepResults(simulationTime) }
+        }
+
+        override fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float) {
+            simulationListeners.forEachUpdated { it.interpolateSteps(simulationTimePrev, simulationTimeNext, simulationTimeLerp, weightNext) }
+            // todo
+        }
     }
 }
 
@@ -81,7 +88,7 @@ data class WorldDef(
     }
 }
 
-fun World(
+fun Physics2dWorld(
     gravity: Vec2f = WorldDefDefaults.gravity,
     restitutionThreshold: Float = WorldDefDefaults.restitutionThreshold,
     hitEventThreshold: Float = WorldDefDefaults.hitEventThreshold,

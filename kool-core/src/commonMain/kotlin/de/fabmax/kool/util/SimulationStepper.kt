@@ -23,15 +23,15 @@ interface SimulationStepper {
 }
 
 interface InterpolatableSimulation {
-    fun simulateStep(timeStep: Float)
-    fun captureStepResults(simulationTime: Double)
-    fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float)
+    fun simulateStep(timeStep: Float) { }
+    fun captureStepResults(simulationTime: Double) { }
+    fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float) { }
 }
 
 class AsyncSimulationStepper(
     val simulation: InterpolatableSimulation,
     val simulationCoroutineContext: CoroutineContext,
-    val singleTimeStep: Float = 1f / 60f,
+    val simulationTimeStep: Float = 1f / 60f,
 ) : SimulationStepper {
     override var desiredTimeFactor: Float = 1f
     override var isPaused: Boolean = false
@@ -61,9 +61,9 @@ class AsyncSimulationStepper(
         val expectedNextFrameTime = refTime + dt * deltaTVariance
         val nextDelta = expectedNextFrameTime - simulationTime
         if (nextDelta > 0f) {
-            val requiredSteps = ceil(nextDelta / singleTimeStep).toInt()
+            val requiredSteps = ceil(nextDelta / simulationTimeStep).toInt()
             simulationTimePrev = simulationTime
-            simulationTime += requiredSteps * singleTimeStep
+            simulationTime += requiredSteps * simulationTimeStep
             if (simulationTime < refTime) {
                 simulationTime = refTime
             }
@@ -72,7 +72,7 @@ class AsyncSimulationStepper(
                 deferredStep = async {
                     val cpuTime = measureTime {
                         repeat(requiredSteps) {
-                            simulation.simulateStep(singleTimeStep)
+                            simulation.simulateStep(simulationTimeStep)
                         }
                     }
                     val secsPerStep = (cpuTime.inWholeMicroseconds / 1e3).toFloat()

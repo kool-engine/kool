@@ -43,6 +43,7 @@ internal actual fun BodyId.getPose(pose: MutablePose2f) {
 }
 
 internal actual fun BodyId.setTargetTransform(target: Pose2f, duration: Float) {
+    checkIsPhysicsThread("setTargetTransform")
     scopedMem {
         val target = allocTransform(target)
         B2_Body.setTargetTransform(id, target, duration)
