@@ -55,7 +55,7 @@ object Demos {
         entry("phys-ragdoll", "Ragdolls") { RagdollDemo() }
         entry("phys-joints", "Chain Drive") { JointsDemo() }
         entry("physics", "Rigid Bodies") { CollisionDemo() }
-        entry("box2d-mixer", "2D Mixer") { MixerDemo() }
+        entry("mixer2d", "2D Mixer") { MixerDemo() }
     }
 
     val graphicsDemos = Category("Graphics", false, 0.25f, 0.45f).apply {

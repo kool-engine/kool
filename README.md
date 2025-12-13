@@ -25,6 +25,8 @@ cloning this repo and running `./gradlew :kool-demo:runDesktop`
   running over two gears. Uses a lot of multi shapes and revolute joints.
 - [Physics - Collision](https://kool-engine.github.io/live/demos/?demo=physics): The obligatory collision physics demo with
   various different shapes.
+- [2D Physics](https://kool-engine.github.io/live/demos/?demo=mixer2d): Simple 2D physics demo with quite many dynamic
+  bodies and two kinematic rotors.
 - [Bloom](https://kool-engine.github.io/live/demos/?demo=bloom): Decent looking bloom for (very) bright objects. **WebGPU only**
 - [Pathtracing](https://kool-engine.github.io/live/demos/?demo=pathtracing): Compute shader based implementation of the
   [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html) book. **WebGPU only**
@@ -153,7 +155,8 @@ the libs are resolved and added to the IntelliJ module classpath.
 - [Compute shader](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo/helloworld/HelloComputeParticles.kt) support
 - [Reversed-depth](https://developer.nvidia.com/content/depth-precision-visualized) rendering for vastly improved
   depth precision and range (more or less infinite)
-- Physics simulation (based on Nvidia PhysX 5.6, using [physx-jni](https://github.com/fabmax/physx-jni) on Java and [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) on javascript)
+- 3D Physics simulation (based on Nvidia PhysX 5.6, using [physx-jni](https://github.com/fabmax/physx-jni) on Java and [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) on javascript)
+- 2D Physics simulation (based on Box2D 3.1.1, using [box2d-jni](https://github.com/fabmax/box2d-jni) on Java and [kool-box2d-wasm](https://www.npmjs.com/package/kool-box2d-wasm) on javascript)
 - Kotlin DSL based shader language (translates into GLSL and WGSL)
 - Neat little integrated GUI framework. The API is heavily inspired by [Jetpack Compose](https://github.com/JetBrains/compose-jb) but the implementation is different, as it needs to run within the OpenGL context.
 - [MSDF](https://github.com/Chlumsky/msdf-atlas-gen) Font support for text rendering in arbitrary font sizes
