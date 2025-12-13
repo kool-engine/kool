@@ -44,9 +44,15 @@ class Physics2dWorld(
     }
 
     fun createBody(bodyDef: BodyDef): Body {
-        val body = Body(bodyDef, this)
+        val bodyId = createBody(bodyDef, worldId)
+        val body = Body(bodyDef, bodyId)
         bodies[body.bodyId] = body
         return body
+    }
+
+    fun removeBody(body: Body) {
+        bodies -= body.bodyId
+        body.destroy()
     }
 
     override fun doRelease() {

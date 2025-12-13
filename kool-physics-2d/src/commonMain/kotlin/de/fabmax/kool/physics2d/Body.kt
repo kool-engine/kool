@@ -1,8 +1,6 @@
 package de.fabmax.kool.physics2d
 
 import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.checkIsNotReleased
 
 data class BodyDef(
     val type: BodyType,
@@ -29,11 +27,11 @@ enum class BodyType {
     Dynamic,
 }
 
-class Body internal constructor(bodyDef: BodyDef, world: Physics2dWorld) : BaseReleasable() {
-    internal val bodyId = createBody(bodyDef, world.worldId)
+class Body internal constructor(bodyDef: BodyDef, internal val bodyId: BodyId) {
     private val shapes = mutableMapOf<ShapeId, Pair<Geometry, ShapeDef>>()
-
     val type: BodyType = bodyDef.type
+
+    var isValid = true; private set
 
     private val posePrev = MutablePose2f().set(bodyDef.position, bodyDef.rotation)
     private val poseNext = MutablePose2f().set(bodyDef.position, bodyDef.rotation)
@@ -42,8 +40,17 @@ class Body internal constructor(bodyDef: BodyDef, world: Physics2dWorld) : BaseR
     val position: Vec2f get() = poseLerp.position
     val rotation: Rotation get() = poseLerp.rotation
 
+    private fun checkIsValid() {
+        check(isValid) { "Body has been removed destroyed" }
+    }
+
+    internal fun destroy() {
+        isValid = false
+        bodyId.destroy()
+    }
+
     internal fun fetchPose() {
-        checkIsNotReleased()
+        checkIsValid()
         posePrev.set(poseNext)
         bodyId.getPose(poseNext)
     }
@@ -59,12 +66,9 @@ class Body internal constructor(bodyDef: BodyDef, world: Physics2dWorld) : BaseR
     }
 
     fun setTargetTransform(target: Pose2f, duration: Float) {
+        checkIsValid()
         check(type == BodyType.Kinematic) { "Can only set target transform for kinematic bodies" }
         bodyId.setTargetTransform(target, duration)
-    }
-
-    override fun doRelease() {
-        bodyId.destroy()
     }
 }
 
