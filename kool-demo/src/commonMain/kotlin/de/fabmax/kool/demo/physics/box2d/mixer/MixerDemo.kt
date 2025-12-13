@@ -1,25 +1,37 @@
 package de.fabmax.kool.demo.physics.box2d.mixer
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.DemoScene
-import de.fabmax.kool.math.AngleF
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.deg
-import de.fabmax.kool.math.randomF
+import de.fabmax.kool.demo.*
+import de.fabmax.kool.demo.menu.DemoMenu
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.physics2d.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
+import kotlin.math.log10
+import kotlin.math.pow
 
 class MixerDemo : DemoScene("Box2D Mixer Demo") {
+    private val world = Physics2dWorld()
+
+    private val simTimeFactor = mutableStateOf(1f).onChange { _, new -> world.simStepper.desiredTimeFactor = new }
+    private var leftMixerSpeed = 1f
+    private var rightMixerSpeed = 1f
+
+    private val physicsTimeTxt = mutableStateOf("0.00 ms")
+    private val activeActorsTxt = mutableStateOf("0")
+    private val timeFactorTxt = mutableStateOf("1.00 x")
+
     override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultOrbitCamera(0f, 0f).apply {
             maxZoom = 300.0
-            zoom = 150.0
-            setTranslation(0f, 20f, 0f)
+            zoom = 120.0
+            setTranslation(0f, 50f, 0f)
             panMethod = zPlanePan()
             leftDragMethod = OrbitInputTransform.DragMethod.PAN
             rightDragMethod = OrbitInputTransform.DragMethod.NONE
@@ -27,7 +39,6 @@ class MixerDemo : DemoScene("Box2D Mixer Demo") {
 
         val bodies = mutableListOf<Box>()
 
-        val world = Physics2dWorld()
         world.registerHandlers(this)
         bodies.add(world.makeStaticBox(0f, -4f, 100f, 4f))
         bodies.add(world.makeStaticBox(-99.5f, 50f, 0.5f, 50f))
@@ -70,17 +81,49 @@ class MixerDemo : DemoScene("Box2D Mixer Demo") {
 
         world.simulationListeners += object : InterpolatableSimulation {
             override fun simulateStep(timeStep: Float) {
-                mixer1.mix(timeStep)
-                mixer2.mix(timeStep)
+                mixer1.mix(timeStep, leftMixerSpeed)
+                mixer2.mix(timeStep, rightMixerSpeed)
                 world.removeOutOfRangeBodies(bodies)
+
+                physicsTimeTxt.set("${world.simStepper.cpuMillisPerStep.toString(2)} ms")
+                activeActorsTxt.set("${bodies.size}")
+                timeFactorTxt.set("${world.simStepper.actualTimeFactor.toString(2)} x")
             }
         }
-        onUpdate {
-            if (Time.frameCount % 30 == 0) {
-                val t = world.simStepper.cpuMillisPerStep
-                println("${bodies.size} bodies, step time: $t")
-            }
+    }
+
+    override fun createMenu(menu: DemoMenu, ctx: KoolContext): UiSurface = menuSurface {
+        MenuSlider2("Time factor".l, log10(simTimeFactor.use()), -1f, 1f, { 10f.pow(it).toString(2) }) {
+            simTimeFactor.set(10f.pow(it))
         }
+
+        leftMixerSpeed = MixerToggle("Left Rotor".l)
+        rightMixerSpeed = MixerToggle("Right Rotor".l)
+
+        Text("Statistics".l) { sectionTitleStyle() }
+        MenuRow {
+            Text("Active bodies".l) { labelStyle(Grow.Std) }
+            Text(activeActorsTxt.use()) { labelStyle() }
+        }
+        MenuRow {
+            Text("Physics step CPU time".l) { labelStyle(Grow.Std) }
+            Text(physicsTimeTxt.use()) { labelStyle() }
+        }
+        MenuRow {
+            Text("Actual time factor".l) { labelStyle(Grow.Std) }
+            Text(timeFactorTxt.use()) { labelStyle() }
+        }
+    }
+
+    private fun UiScope.MixerToggle(label: String): Float {
+        val mixerEnabled = remember { mutableStateOf(true) }
+        LabeledSwitch(label, mixerEnabled) {  }
+
+        val progressEased by animateFloatAsState(
+            targetValue = if (mixerEnabled.value) 1f else 0f,
+            animationSpec = tween(duration = 0.3f, easing = Easing.smooth)
+        )
+        return progressEased
     }
 
     private fun Physics2dWorld.removeOutOfRangeBodies(bodies: MutableList<Box>) {
@@ -88,7 +131,6 @@ class MixerDemo : DemoScene("Box2D Mixer Demo") {
         if (remove.isNotEmpty()) {
             bodies -= remove.toSet()
             remove.forEach {
-                logD { "Remove out-of-range body: ${it.body.position}" }
                 removeBody(it.body)
             }
         }
@@ -104,8 +146,8 @@ fun Physics2dWorld.makeMixer(center: Vec2f, rotation: AngleF = 0f.deg): Mixer {
 class Mixer(val box: Box, val center: Vec2f, var rotation: AngleF = 0f.deg) {
     var speed = 70f.deg
 
-    fun mix(dt: Float) {
-        rotation += speed * dt
+    fun mix(dt: Float, factor: Float) {
+        rotation += speed * dt * factor
         val target = Pose2f(center, rotation.toRotation())
         box.body.setTargetTransform(target, dt)
     }
