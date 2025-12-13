@@ -2,7 +2,7 @@ import de.fabmax.kool.KoolApplication
 import de.fabmax.kool.KoolConfigJs
 import de.fabmax.kool.demo.demo
 import de.fabmax.kool.physics.Physics
-import de.fabmax.kool.physics2d.loadBox2d
+import de.fabmax.kool.physics2d.Physics2d
 import de.fabmax.kool.pipeline.backend.BackendProvider
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGl
 import de.fabmax.kool.pipeline.backend.webgpu.RenderBackendWebGpu
@@ -27,8 +27,8 @@ fun main() = KoolApplication(
     )
 ) {
     // make sure PhysX is loaded and available before running any demo
-    Physics.loadAndAwaitPhysics()
-    loadBox2d()
+    Physics.loadPhysics()
+    Physics2d.loadPhysics2d()
 
     // uncomment to load assets locally instead of from remote
     //DemoLoader.setProperty("assets.base", ".")

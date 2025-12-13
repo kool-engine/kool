@@ -120,7 +120,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                 }
             }
 
-            physicsTimeTxt.set("${physicsWorld.simStepper.cpuMilliesPerStep.toString(2)} ms")
+            physicsTimeTxt.set("${physicsWorld.simStepper.cpuMillisPerStep.toString(2)} ms")
             activeActorsTxt.set("${physicsWorld.activeActors}")
             timeFactorTxt.set("${physicsWorld.simStepper.actualTimeFactor.toString(2)} x")
         }

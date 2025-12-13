@@ -28,7 +28,7 @@ enum class BodyType {
     Dynamic,
 }
 
-class Body internal constructor(bodyDef: BodyDef, world: World) : BaseReleasable() {
+class Body internal constructor(bodyDef: BodyDef, world: Physics2dWorld) : BaseReleasable() {
     internal val bodyId = createBody(bodyDef, world.worldId)
     private val shapes = mutableMapOf<ShapeId, Pair<Geometry, ShapeDef>>()
 

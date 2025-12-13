@@ -1,15 +1,20 @@
 package de.fabmax.kool.physics2d
 
 import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.Releasable
-import de.fabmax.kool.util.releaseWith
+import de.fabmax.kool.scene.OnRenderScene
+import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.*
 
-class World(worldDef: WorldDef) : BaseReleasable() {
+class Physics2dWorld(worldDef: WorldDef, private val substeps: Int = 4) : BaseReleasable(), InterpolatableSimulation {
     internal val worldId: WorldId
     private val taskManager: Releasable?
 
     private val bodies = mutableMapOf<BodyId, Body>()
+
+    val simStepper: SimulationStepper = AsyncSimulationStepper(this, Physics2d.system.physicsDispatcher)
+
+    private var registeredAtScene: Scene? = null
+    private val onRenderSceneHook = OnRenderScene { simStepper.stepPhysics() }
 
     init {
         val (id, taskMgr) = createWorld(worldDef)
@@ -18,16 +23,40 @@ class World(worldDef: WorldDef) : BaseReleasable() {
         taskManager?.releaseWith(this)
     }
 
+    fun registerHandlers(scene: Scene) {
+        unregisterHandlers()
+        registeredAtScene = scene
+        scene.onRenderScene += onRenderSceneHook
+    }
+
+    fun unregisterHandlers() {
+        registeredAtScene?.let { it.onRenderScene -= onRenderSceneHook }
+        registeredAtScene = null
+    }
+
     fun createBody(bodyDef: BodyDef): Body {
         val body = Body(bodyDef, this)
         bodies[body.bodyId] = body
         return body
     }
 
-    fun simulate(timeStep: Float, substeps: Int = 4) {
+    override fun simulateStep(timeStep: Float) {
         worldId.step(timeStep, substeps)
         // todo: interpolation and stuff
         bodies.values.forEach { it.fetchPose() }
+    }
+
+    override fun captureStepResults(simulationTime: Double) {
+        TODO("Not yet implemented")
+    }
+
+    override fun interpolateSteps(
+        simulationTimePrev: Double,
+        simulationTimeNext: Double,
+        simulationTimeLerp: Double,
+        weightNext: Float
+    ) {
+        TODO("Not yet implemented")
     }
 
     override fun doRelease() {
@@ -63,7 +92,7 @@ fun World(
     enableSleep: Boolean = WorldDefDefaults.enableSleep,
     enableContinuous: Boolean = WorldDefDefaults.enableContinuous,
     numThreads: Int = defaultNumThreads(),
-): World = World(
+): Physics2dWorld = Physics2dWorld(
     WorldDef(
         gravity = gravity,
         restitutionThreshold = restitutionThreshold,
@@ -78,7 +107,7 @@ fun World(
     )
 )
 
-fun World.createBody(
+fun Physics2dWorld.createBody(
     type: BodyType,
     position: Vec2f,
     rotation: Rotation = Rotation.IDENTITY,

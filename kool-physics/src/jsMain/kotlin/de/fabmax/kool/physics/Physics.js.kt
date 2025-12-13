@@ -42,7 +42,7 @@ object PhysicsImpl : PhysicsSystem {
     lateinit var cookingParams: PxCookingParams
         private set
 
-    override suspend fun loadAndAwaitPhysics() {
+    override suspend fun loadPhysics() {
         if (PhysXJsLoader.isLoaded) {
             return
         }

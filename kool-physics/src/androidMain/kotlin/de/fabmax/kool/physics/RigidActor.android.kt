@@ -130,12 +130,12 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
         poseB.time = simulationTime
     }
 
-    override fun interpolateTransform(captureTimeA: Double, captureTimeB: Double, frameTime: Double, weightB: Float) {
+    override fun interpolateTransform(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float) {
         if (!isActive) {
             return
         }
-        poseA.pose.position.mix(poseB.pose.position, weightB, lerpPos)
-        poseA.pose.rotation.mix(poseB.pose.rotation, weightB, lerpRot)
+        poseA.pose.position.mix(poseB.pose.position, weightNext, lerpPos)
+        poseA.pose.rotation.mix(poseB.pose.rotation, weightNext, lerpRot)
         transform.setCompositionOf(lerpPos, lerpRot)
     }
 

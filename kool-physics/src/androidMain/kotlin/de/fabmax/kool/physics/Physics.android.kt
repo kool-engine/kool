@@ -94,7 +94,7 @@ object PhysicsImpl : PhysicsSystem {
         logI { "PhysX loaded, version: ${pxVersionToString(version)}, using $numWorkers worker threads" }
     }
 
-    override suspend fun loadAndAwaitPhysics() {
+    override suspend fun loadPhysics() {
         // on JVM, there's nothing to do here
     }
 

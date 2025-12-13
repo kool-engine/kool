@@ -4,6 +4,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.vehicle.Vehicle
+import de.fabmax.kool.util.InterpolatableSimulation
 
 class TrackTimer(val vehicle: Vehicle, val track: Track, val world: VehicleWorld) {
 
@@ -86,12 +87,15 @@ class TrackTimer(val vehicle: Vehicle, val track: Track, val world: VehicleWorld
     }
 
     init {
-        world.physics.physicsStepListeners += object : PhysicsStepListener {
-            override fun onPhysicsUpdate(timeStep: Float) {
+        world.physics.physicsStepListeners += object : InterpolatableSimulation {
+            override fun simulateStep(timeStep: Float) {
                 if (timerState == TimerState.STARTED) {
                     trackTime += timeStep
                 }
             }
+
+            override fun captureStepResults(simulationTime: Double) { }
+            override fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float) { }
         }
     }
 

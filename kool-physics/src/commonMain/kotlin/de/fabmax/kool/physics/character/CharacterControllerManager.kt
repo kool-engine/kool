@@ -1,8 +1,8 @@
 package de.fabmax.kool.physics.character
 
-import de.fabmax.kool.physics.PhysicsStepListener
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.InterpolatableSimulation
 
 expect fun CharacterControllerManager(world: PhysicsWorld): CharacterControllerManager
 
@@ -11,22 +11,22 @@ abstract class CharacterControllerManager : BaseReleasable() {
     val controllers: List<CharacterController>
         get() = _controllers
 
-    protected val onUpdateListener = object : PhysicsStepListener {
-        override fun onPhysicsUpdate(timeStep: Float) {
+    protected val onUpdateListener = object : InterpolatableSimulation {
+        override fun simulateStep(timeStep: Float) {
             for (i in controllers.indices) {
-                controllers[i].onPhysicsUpdate(timeStep)
+                controllers[i].simulateStep(timeStep)
             }
         }
 
-        override fun onPhysicsCapture(simulationTime: Double) {
+        override fun captureStepResults(simulationTime: Double) {
             for (i in controllers.indices) {
-                controllers[i].onPhysicsCapture(simulationTime)
+                controllers[i].captureStepResults(simulationTime)
             }
         }
 
-        override fun onPhysicsInterpolate(captureTimeA: Double, captureTimeB: Double, frameTime: Double, weightB: Float) {
+        override fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float) {
             for (i in controllers.indices) {
-                controllers[i].onPhysicsInterpolate(captureTimeA, captureTimeB, frameTime, weightB)
+                controllers[i].interpolateSteps(simulationTimePrev, simulationTimeNext, simulationTimeLerp, weightNext)
             }
         }
     }

@@ -14,19 +14,19 @@ kotlin {
         }
 
         desktopMain.dependencies {
-            api(libs.physxjni)
+            api(libs.physx.jni)
             listOf("natives-linux", "natives-windows", "natives-macos", "natives-macos-arm64").forEach { platform ->
-                runtimeOnly("${libs.physxjni.get()}:$platform")
+                runtimeOnly("${libs.physx.jni.get()}:$platform")
             }
         }
 
         jsMain.dependencies {
-            api(npm(libs.physxjswebidl.get().name, libs.versions.physxjswebidl.get()))
+            api(npm(libs.physx.wasm.get().name, libs.versions.physx.wasm.get()))
 //            api(npm(File("$projectDir/npm/physx-js-webidl")))
         }
 
 //        androidMain.dependencies {
-//            api(libs.physxjniandroid)
+//            api(libs.physx.android)
 //        }
     }
 }

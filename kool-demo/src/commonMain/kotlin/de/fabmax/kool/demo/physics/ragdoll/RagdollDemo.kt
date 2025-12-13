@@ -166,7 +166,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         }
 
         onUpdate += {
-            physicsTimeTxt.set("${physicsWorld.simStepper.cpuMilliesPerStep.toString(2)} ms")
+            physicsTimeTxt.set("${physicsWorld.simStepper.cpuMillisPerStep.toString(2)} ms")
             timeFactorTxt.set("${physicsWorld.simStepper.actualTimeFactor.toString(2)} x")
         }
     }
@@ -497,7 +497,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         }
     }
 
-    private inner class ForceHelper : InputStack.PointerListener, PhysicsStepListener {
+    private inner class ForceHelper : InputStack.PointerListener, InterpolatableSimulation {
         val pickRay = RayF()
         val hitResult = HitResult()
         var hitActor: RigidBody? = null
@@ -546,10 +546,13 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
             }
         }
 
-        override fun onPhysicsUpdate(timeStep: Float) {
+        override fun simulateStep(timeStep: Float) {
             if (isActive) {
                 hitActor?.addForceAtPos(force, forceAppPosGlobal)
             }
         }
+
+        override fun captureStepResults(simulationTime: Double) { }
+        override fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float) { }
     }
 }
