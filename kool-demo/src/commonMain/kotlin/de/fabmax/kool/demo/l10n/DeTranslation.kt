@@ -11,6 +11,7 @@ internal fun MutableMap<String, String>.deTranslation() = putAll(listOf(
     "Ragdolls" to "Ragdolls",
     "Chain Drive" to "Kettenantrieb",
     "Rigid Bodies" to "Starrkörper",
+    "2D Mixer" to "2D Mixer",
 
     "Graphics" to "Grafik",
     "Ambient Occlusion" to "Ambient Occlusion",
@@ -204,6 +205,11 @@ internal fun MutableMap<String, String>.deTranslation() = putAll(listOf(
     "Draw joint infos" to "Gelenk Infos anzeigen",
     "Number of joints" to "Anzahl Gelenke",
     "Number of bodies" to "Anzahl Körper",
+
+    // Mixer demo
+    "Left Rotor" to "Linker Rotor",
+    "Right Rotor" to "Rechter Rotor",
+    "Active bodies" to "Simulierte Körper",
 
     // Path tracing demo
     "Focus:" to "Fokus:",

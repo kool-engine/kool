@@ -15,15 +15,13 @@ internal object PhysicsSystemJs : PhysicsSystem {
     override suspend fun loadPhysics2d() {
         Box2dWasmLoader.loadModule()
         isLoaded = true
+
+        val version = B2_Base.getVersion()
+        logI("Box2D") { "Box2D loaded: ${version.major}.${version.minor}.${version.revision}" }
     }
 
     override val physicsDispatcher: CoroutineDispatcher
         get() = Dispatchers.Default
-
-    init {
-        val version = B2_Base.getVersion()
-        logI("Box2D") { "Box2D loaded: ${version.major}.${version.minor}.${version.revision}" }
-    }
 
     internal fun isPhysicsThread(): Boolean = true
 }
