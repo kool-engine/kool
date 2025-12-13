@@ -8,7 +8,10 @@ import de.fabmax.kool.physics.articulations.Articulation
 import de.fabmax.kool.physics.articulations.ArticulationImpl
 import de.fabmax.kool.physics.geometry.CollisionGeometry
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Releasable
+import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.scopedMem
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import physx.PxTopLevelFunctions
@@ -63,8 +66,7 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         scene?.let { registerHandlers(it) }
     }
 
-    override fun simulateStep(timeStep: Float) {
-        physicsStepListeners.forEachUpdated { it.simulateStep(timeStep) }
+    override fun stepSimulation(timeStep: Float) {
         addAndRemoveActors()
         pxScene.simulate(timeStep)
         pxScene.fetchResults(true)

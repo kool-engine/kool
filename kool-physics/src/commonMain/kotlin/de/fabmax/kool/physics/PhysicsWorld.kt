@@ -11,12 +11,12 @@ import kotlinx.coroutines.launch
 
 expect fun PhysicsWorld(scene: Scene?, isContinuousCollisionDetection: Boolean = false) : PhysicsWorld
 
-abstract class PhysicsWorld : BaseReleasable(), InterpolatableSimulation {
+abstract class PhysicsWorld : BaseReleasable() {
     init {
         Physics.checkIsLoaded()
     }
 
-    val simStepper: SimulationStepper = AsyncSimulationStepper(this, Physics.physicsDispatcher)
+    val simStepper: SimulationStepper = AsyncSimulationStepper(SimStepCallbacks(), Physics.physicsDispatcher)
     val simulationTime: Double get() = simStepper.simulationTime
 
     val physicsStepListeners = BufferedList<InterpolatableSimulation>()
@@ -129,23 +129,32 @@ abstract class PhysicsWorld : BaseReleasable(), InterpolatableSimulation {
         triggerListeners.clear()
     }
 
-    override fun captureStepResults(simulationTime: Double) {
-        for (i in mutActors.indices) {
-            mutActors[i].capture(simulationTime)
-        }
-        physicsStepListeners.forEachUpdated { it.captureStepResults(simulationTime) }
-    }
-
-    override fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float) {
-        for (i in mutActors.indices) {
-            mutActors[i].interpolateTransform(simulationTimePrev, simulationTimeNext, simulationTimeLerp, weightNext)
-        }
-        physicsStepListeners.forEachUpdated { it.interpolateSteps(simulationTimePrev, simulationTimeNext, simulationTimeLerp, weightNext) }
-    }
+    protected abstract fun stepSimulation(timeStep: Float)
 
     protected class TriggerListenerContext {
         val listeners = mutableListOf<TriggerListener>()
         val actorEnterCounts = mutableMapOf<RigidActor, Int>()
+    }
+
+    private inner class SimStepCallbacks : InterpolatableSimulation {
+        override fun simulateStep(timeStep: Float) {
+            physicsStepListeners.forEachUpdated { it.simulateStep(timeStep) }
+            stepSimulation(timeStep)
+        }
+
+        override fun captureStepResults(simulationTime: Double) {
+            for (i in mutActors.indices) {
+                mutActors[i].capture(simulationTime)
+            }
+            physicsStepListeners.forEachUpdated { it.captureStepResults(simulationTime) }
+        }
+
+        override fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float) {
+            for (i in mutActors.indices) {
+                mutActors[i].interpolateTransform(simulationTimePrev, simulationTimeNext, simulationTimeLerp, weightNext)
+            }
+            physicsStepListeners.forEachUpdated { it.interpolateSteps(simulationTimePrev, simulationTimeNext, simulationTimeLerp, weightNext) }
+        }
     }
 }
 
