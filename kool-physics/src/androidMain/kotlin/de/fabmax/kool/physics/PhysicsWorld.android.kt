@@ -66,7 +66,7 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         scene?.let { registerHandlers(it) }
     }
 
-    override fun simulateStep(timeStep: Float) {
+    override fun stepSimulation(timeStep: Float) {
         addAndRemoveActors()
         pxScene.simulate(timeStep)
         pxScene.fetchResults(true)

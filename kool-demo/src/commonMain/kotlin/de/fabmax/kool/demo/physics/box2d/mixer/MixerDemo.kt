@@ -29,9 +29,9 @@ class MixerDemo : DemoScene("Box2D Mixer Demo") {
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultOrbitCamera(0f, 0f).apply {
-            maxZoom = 300.0
-            zoom = 120.0
-            setTranslation(0f, 50f, 0f)
+            maxZoom = 150.0
+            zoom = 75.0
+            setTranslation(0f, 25f, 0f)
             panMethod = zPlanePan()
             leftDragMethod = OrbitInputTransform.DragMethod.PAN
             rightDragMethod = OrbitInputTransform.DragMethod.NONE
@@ -40,12 +40,12 @@ class MixerDemo : DemoScene("Box2D Mixer Demo") {
         val bodies = mutableListOf<Box>()
 
         world.registerHandlers(this)
-        bodies.add(world.makeStaticBox(0f, -4f, 100f, 4f))
-        bodies.add(world.makeStaticBox(-99.5f, 50f, 0.5f, 50f))
-        bodies.add(world.makeStaticBox(99.5f, 50f, 0.5f, 50f))
+        bodies.add(world.makeStaticBox(0f, -2f, 50f, 2f))
+        bodies.add(world.makeStaticBox(-49.75f, 25f, 0.25f, 25f))
+        bodies.add(world.makeStaticBox(49.75f, 25f, 0.25f, 25f))
 
-        val mixer1 = world.makeMixer(Vec2f(-40f, 40f))
-        val mixer2 = world.makeMixer(Vec2f(40f, 40f), 90f.deg)
+        val mixer1 = world.makeMixer(Vec2f(-20f, 20f))
+        val mixer2 = world.makeMixer(Vec2f(20f, 20f), 45f.deg)
         mixer2.speed = -mixer1.speed
         bodies.add(mixer1.box)
         bodies.add(mixer2.box)
@@ -56,14 +56,14 @@ class MixerDemo : DemoScene("Box2D Mixer Demo") {
         val shapeDef = ShapeDef(density = 1f, material = SurfaceMaterial(friction = 0.3f))
         for (colX in -25 .. 25) {
             repeat(75) { i ->
-                val position = Vec2f(colX * 3f + randomF(-0.1f, 0.1f), 10f + 3 * i)
+                val position = Vec2f(colX * 1.5f + randomF(-0.05f, 0.05f), 5f + 1.5f * i)
                 val body = world.createBody(BodyType.Dynamic, position)
                 if ((colX + i) % 2 == 0) {
-                    body.attachShape(Geometry.Box(1f, 1f), shapeDef)
-                    bodies.add(Box(body, 1f, 1f, g1.getColor(i / 75f), isCircle = true))
+                    body.attachShape(Geometry.Box(0.5f, 0.5f), shapeDef)
+                    bodies.add(Box(body, 0.5f, 0.5f, g1.getColor(i / 75f), isCircle = false))
                 } else {
-                    body.attachShape(Geometry.Circle(1f), shapeDef)
-                    bodies.add(Box(body, 1f, 1f, g2.getColor(i / 75f), isCircle = true))
+                    body.attachShape(Geometry.Circle(0.5f), shapeDef)
+                    bodies.add(Box(body, 0.5f, 0.5f, g2.getColor(i / 75f), isCircle = true))
                 }
             }
         }
@@ -97,8 +97,8 @@ class MixerDemo : DemoScene("Box2D Mixer Demo") {
             simTimeFactor.set(10f.pow(it))
         }
 
-        leftMixerSpeed = MixerToggle("Left Rotor".l)
-        rightMixerSpeed = MixerToggle("Right Rotor".l)
+        leftMixerSpeed = RotorToggle("Left Rotor".l)
+        rightMixerSpeed = RotorToggle("Right Rotor".l)
 
         Text("Statistics".l) { sectionTitleStyle() }
         MenuRow {
@@ -115,15 +115,14 @@ class MixerDemo : DemoScene("Box2D Mixer Demo") {
         }
     }
 
-    private fun UiScope.MixerToggle(label: String): Float {
-        val mixerEnabled = remember { mutableStateOf(true) }
-        LabeledSwitch(label, mixerEnabled) {  }
-
-        val progressEased by animateFloatAsState(
-            targetValue = if (mixerEnabled.value) 1f else 0f,
-            animationSpec = tween(duration = 0.3f, easing = Easing.smooth)
+    private fun UiScope.RotorToggle(label: String): Float {
+        val rotorEnabled = remember { mutableStateOf(true) }
+        LabeledSwitch(label, rotorEnabled) {  }
+        val rotorSpeed by animateFloatAsState(
+            targetValue = if (rotorEnabled.value) 1f else 0f,
+            animationSpec = tween(duration = 0.5f, easing = Easing.smooth)
         )
-        return progressEased
+        return rotorSpeed
     }
 
     private fun Physics2dWorld.removeOutOfRangeBodies(bodies: MutableList<Box>) {
@@ -139,8 +138,8 @@ class MixerDemo : DemoScene("Box2D Mixer Demo") {
 
 fun Physics2dWorld.makeMixer(center: Vec2f, rotation: AngleF = 0f.deg): Mixer {
     val body = createBody(BodyType.Kinematic, center, rotation.toRotation())
-    body.attachShape(Geometry.Box(30f, 0.75f))
-    return Mixer(Box(body, 30f, 0.75f, MdColor.PINK, isCircle = false), center, rotation)
+    body.attachShape(Geometry.Box(15f, 0.4f))
+    return Mixer(Box(body, 15f, 0.4f, MdColor.PINK, isCircle = false), center, rotation)
 }
 
 class Mixer(val box: Box, val center: Vec2f, var rotation: AngleF = 0f.deg) {
