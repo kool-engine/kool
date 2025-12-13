@@ -25,20 +25,19 @@ class MixerDemo : DemoScene("Box2D Mixer Demo") {
             rightDragMethod = OrbitInputTransform.DragMethod.NONE
         }
 
-        val boxes = mutableListOf<Box>()
-        val circles = mutableListOf<Box>()
+        val bodies = mutableListOf<Box>()
 
         val world = Physics2dWorld()
         world.registerHandlers(this)
-        boxes.add(world.makeStaticBox(0f, -4f, 100f, 4f))
-        boxes.add(world.makeStaticBox(-99.5f, 50f, 0.5f, 50f))
-        boxes.add(world.makeStaticBox(99.5f, 50f, 0.5f, 50f))
+        bodies.add(world.makeStaticBox(0f, -4f, 100f, 4f))
+        bodies.add(world.makeStaticBox(-99.5f, 50f, 0.5f, 50f))
+        bodies.add(world.makeStaticBox(99.5f, 50f, 0.5f, 50f))
 
         val mixer1 = world.makeMixer(Vec2f(-40f, 40f))
         val mixer2 = world.makeMixer(Vec2f(40f, 40f), 90f.deg)
         mixer2.speed = -mixer1.speed
-        boxes.add(mixer1.box)
-        boxes.add(mixer2.box)
+        bodies.add(mixer1.box)
+        bodies.add(mixer2.box)
 
         val g1 = ColorGradient(MdColor.RED, MdColor.PURPLE, MdColor.INDIGO)
         val g2 = ColorGradient(MdColor.AMBER, MdColor.LIGHT_GREEN, MdColor.CYAN)
@@ -50,20 +49,20 @@ class MixerDemo : DemoScene("Box2D Mixer Demo") {
                 val body = world.createBody(BodyType.Dynamic, position)
                 if ((colX + i) % 2 == 0) {
                     body.attachShape(Geometry.Box(1f, 1f), shapeDef)
-                    boxes.add(Box(body, 1f, 1f, g1.getColor(i / 75f)))
+                    bodies.add(Box(body, 1f, 1f, g1.getColor(i / 75f), isCircle = true))
                 } else {
                     body.attachShape(Geometry.Circle(1f), shapeDef)
-                    circles.add(Box(body, 1f, 1f, g2.getColor(i / 75f)))
+                    bodies.add(Box(body, 1f, 1f, g2.getColor(i / 75f), isCircle = true))
                 }
             }
         }
 
-        addShapeMesh(boxes) {
+        addShapeMesh(bodies.filter { !it.isCircle }) {
             rect {
                 size.set(2f, 2f)
             }
         }
-        addShapeMesh(circles) {
+        addShapeMesh(bodies.filter { it.isCircle }) {
             circle {
                 radius = 1f
             }
@@ -73,12 +72,24 @@ class MixerDemo : DemoScene("Box2D Mixer Demo") {
             override fun simulateStep(timeStep: Float) {
                 mixer1.mix(timeStep)
                 mixer2.mix(timeStep)
+                world.removeOutOfRangeBodies(bodies)
             }
         }
         onUpdate {
             if (Time.frameCount % 30 == 0) {
                 val t = world.simStepper.cpuMillisPerStep
-                println("${boxes.size + circles.size} bodies, step time: $t")
+                println("${bodies.size} bodies, step time: $t")
+            }
+        }
+    }
+
+    private fun Physics2dWorld.removeOutOfRangeBodies(bodies: MutableList<Box>) {
+        val remove = bodies.filter { it.body.position.y < -500f }
+        if (remove.isNotEmpty()) {
+            bodies -= remove.toSet()
+            remove.forEach {
+                logD { "Remove out-of-range body: ${it.body.position}" }
+                removeBody(it.body)
             }
         }
     }
@@ -87,7 +98,7 @@ class MixerDemo : DemoScene("Box2D Mixer Demo") {
 fun Physics2dWorld.makeMixer(center: Vec2f, rotation: AngleF = 0f.deg): Mixer {
     val body = createBody(BodyType.Kinematic, center, rotation.toRotation())
     body.attachShape(Geometry.Box(30f, 0.75f))
-    return Mixer(Box(body, 30f, 0.75f, MdColor.PINK), center, rotation)
+    return Mixer(Box(body, 30f, 0.75f, MdColor.PINK, isCircle = false), center, rotation)
 }
 
 class Mixer(val box: Box, val center: Vec2f, var rotation: AngleF = 0f.deg) {
@@ -130,13 +141,15 @@ fun Scene.addShapeMesh(boxes: List<Box>, builder: MeshBuilder<ColorMeshLayout>.(
             instances.clear()
             instances.addInstances(boxes.size) { buffer ->
                 boxes.forEach { box ->
-                    val pos = box.body.position
-                    val rot = box.body.rotation
-                    buffer.put {
-                        set(it.size, box.halfWidth, box.halfHeight)
-                        set(it.pos, pos.x, pos.y)
-                        set(it.rot, rot.cos, rot.sin)
-                        set(it.color, box.color)
+                    if (box.body.isValid) {
+                        val pos = box.body.position
+                        val rot = box.body.rotation
+                        buffer.put {
+                            set(it.size, box.halfWidth, box.halfHeight)
+                            set(it.pos, pos.x, pos.y)
+                            set(it.rot, rot.cos, rot.sin)
+                            set(it.color, box.color)
+                        }
                     }
                 }
             }
@@ -147,7 +160,7 @@ fun Scene.addShapeMesh(boxes: List<Box>, builder: MeshBuilder<ColorMeshLayout>.(
 private fun Physics2dWorld.makeStaticBox(posX: Float, posY: Float, halfWidth: Float, halfHeight: Float): Box {
     val body = createBody(BodyType.Static, Vec2f(posX, posY))
     body.attachShape(Geometry.Box(halfWidth, halfHeight))
-    return Box(body, halfWidth, halfHeight, MdColor.GREY)
+    return Box(body, halfWidth, halfHeight, MdColor.GREY, isCircle = false)
 }
 
 object BoxInstance : Struct("BoxInstance", MemoryLayout.TightlyPacked) {
@@ -157,4 +170,4 @@ object BoxInstance : Struct("BoxInstance", MemoryLayout.TightlyPacked) {
     val rot = float2("rot")
 }
 
-data class Box(val body: Body, val halfWidth: Float, val halfHeight: Float, val color: Color)
+data class Box(val body: Body, val halfWidth: Float, val halfHeight: Float, val color: Color, val isCircle: Boolean)
