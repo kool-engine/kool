@@ -1,40 +1,48 @@
-package de.fabmax.kool.physics
+package de.fabmax.kool.util
 
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.util.Time
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 import kotlin.math.ceil
 import kotlin.time.measureTime
 
-interface PhysicsStepper {
+
+interface SimulationStepper {
     var desiredTimeFactor: Float
     var isPaused: Boolean
 
-    val physicsTime: Double
+    val simulationTime: Double
     val actualTimeFactor: Float
-    val cpuMilliesPerStep: Float
+    val cpuMillisPerStep: Float
 
     suspend fun stepPhysics()
 
     suspend fun waitForSimulation()
 }
 
-class AsyncPhysicsStepper(
-    val world: PhysicsWorld,
+interface InterpolatableSimulation {
+    fun simulateStep(timeStep: Float)
+    fun captureStepResults(simulationTime: Double)
+    fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float)
+}
+
+class AsyncSimulationStepper(
+    val simulation: InterpolatableSimulation,
+    val simulationCoroutineContext: CoroutineContext,
     val singleTimeStep: Float = 1f / 60f,
-) : PhysicsStepper {
+) : SimulationStepper {
     override var desiredTimeFactor: Float = 1f
     override var isPaused: Boolean = false
 
-    override var physicsTime: Double = 0.0; private set
+    override var simulationTime: Double = 0.0; private set
     override var actualTimeFactor: Float = 1f; private set
-    override var cpuMilliesPerStep: Float = 0f; private set
+    override var cpuMillisPerStep: Float = 0f; private set
 
     private var deferredStep: Deferred<Unit>? = null
     private var refTime = 0.0
-    private var prevCaptureTime = 0.0
+    private var simulationTimePrev = 0.0
 
     var maxSimulationDeltaT: Float = 0.1f
     var deltaTVariance: Float = 1.1f
@@ -45,31 +53,31 @@ class AsyncPhysicsStepper(
         val dt = if (isPaused) 0f else (Time.deltaT * desiredTimeFactor).coerceAtMost(maxSimulationDeltaT)
         refTime += dt
 
-        val deltaCapture = physicsTime - prevCaptureTime
-        val weightB = ((refTime - prevCaptureTime) / deltaCapture).toFloat().clamp(0f, 1f)
-        world.interpolateSimulation(prevCaptureTime, physicsTime, refTime, weightB)
+        val deltaCapture = simulationTime - simulationTimePrev
+        val weightNext = ((refTime - simulationTimePrev) / deltaCapture).toFloat().clamp(0f, 1f)
+        simulation.interpolateSteps(simulationTimePrev, simulationTime, refTime, weightNext)
         actualTimeFactor = actualTimeFactor * 0.8f + dt / Time.deltaT * 0.2f
 
         val expectedNextFrameTime = refTime + dt * deltaTVariance
-        val nextDelta = expectedNextFrameTime - physicsTime
+        val nextDelta = expectedNextFrameTime - simulationTime
         if (nextDelta > 0f) {
             val requiredSteps = ceil(nextDelta / singleTimeStep).toInt()
-            prevCaptureTime = physicsTime
-            physicsTime += requiredSteps * singleTimeStep
-            if (physicsTime < refTime) {
-                physicsTime = refTime
+            simulationTimePrev = simulationTime
+            simulationTime += requiredSteps * singleTimeStep
+            if (simulationTime < refTime) {
+                simulationTime = refTime
             }
 
-            withContext(Physics.physicsDispatcher) {
+            withContext(simulationCoroutineContext) {
                 deferredStep = async {
                     val cpuTime = measureTime {
                         repeat(requiredSteps) {
-                            world.stepSimulation(singleTimeStep)
+                            simulation.simulateStep(singleTimeStep)
                         }
                     }
                     val secsPerStep = (cpuTime.inWholeMicroseconds / 1e3).toFloat()
-                    cpuMilliesPerStep = cpuMilliesPerStep * 0.8f + secsPerStep * 0.2f
-                    world.captureSimulation(physicsTime)
+                    cpuMillisPerStep = cpuMillisPerStep * 0.8f + secsPerStep * 0.2f
+                    simulation.captureStepResults(simulationTime)
                 }
             }
         }

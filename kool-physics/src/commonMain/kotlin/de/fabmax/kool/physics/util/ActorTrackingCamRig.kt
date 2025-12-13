@@ -1,16 +1,16 @@
 package de.fabmax.kool.physics.util
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.physics.PhysicsStepListener
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.RigidBody
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.util.InterpolatableSimulation
 import kotlin.math.atan2
 
 class ActorTrackingCamRig(
     world: PhysicsWorld,
     var trackedActor: RigidBody? = null,
-) : Node("ActorTrackingCamRig"), PhysicsStepListener {
+) : Node("ActorTrackingCamRig"), InterpolatableSimulation {
     var localFrontDir = Vec3f.NEG_Z_AXIS
 
     var positionStiffness = 20f
@@ -38,7 +38,7 @@ class ActorTrackingCamRig(
         onRelease { world.physicsStepListeners -= this }
     }
 
-    override fun onPhysicsUpdate(timeStep: Float) {
+    override fun simulateStep(timeStep: Float) {
         val actor = trackedActor ?: return
 
         poseMat.setIdentity().compose(actor.pose.position, actor.pose.rotation)
@@ -53,16 +53,16 @@ class ActorTrackingCamRig(
         trackDirCurrent.add(trackDelta)
     }
 
-    override fun onPhysicsCapture(simulationTime: Double) {
+    override fun captureStepResults(simulationTime: Double) {
         capturePosA.set(capturePosB)
         captureDirA.set(captureDirB)
         capturePosB.set(trackPosCurrent)
         captureDirB.set(trackDirCurrent)
     }
 
-    override fun onPhysicsInterpolate(captureTimeA: Double, captureTimeB: Double, frameTime: Double, weightB: Float) {
-        capturePosA.mix(capturePosB, weightB, trackPosLerp)
-        captureDirA.mix(captureDirB, weightB, trackDirLerp)
+    override fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float) {
+        capturePosA.mix(capturePosB, weightNext, trackPosLerp)
+        captureDirA.mix(captureDirB, weightNext, trackDirLerp)
 
         transform.setIdentity()
         transform.translate(trackPosLerp)

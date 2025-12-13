@@ -113,7 +113,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
                 resetPhysics = false
                 makePhysicsScene()
             }
-            physicsTimeTxt.set("${physicsWorld.simStepper.cpuMilliesPerStep.toString(2)} ms")
+            physicsTimeTxt.set("${physicsWorld.simStepper.cpuMillisPerStep.toString(2)} ms")
             timeFactorTxt.set("${physicsWorld.simStepper.actualTimeFactor.toString(2)} x")
             numBodiesTxt.set("${physicsWorld.actors.size}")
             numJointsTxt.set("${joints.size}")

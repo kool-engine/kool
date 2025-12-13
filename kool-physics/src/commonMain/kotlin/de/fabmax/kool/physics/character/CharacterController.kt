@@ -5,12 +5,16 @@ import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.util.SyncedFloat
 import de.fabmax.kool.physics.util.SyncedVec3
 import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.InterpolatableSimulation
 import de.fabmax.kool.util.Time
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.min
 
-abstract class CharacterController(private val manager: CharacterControllerManager, val world: PhysicsWorld) : BaseReleasable(), PhysicsStepListener {
+abstract class CharacterController(private val manager: CharacterControllerManager, val world: PhysicsWorld) :
+    BaseReleasable(),
+    InterpolatableSimulation
+{
     abstract val actor: RigidDynamic
 
     internal val bufPosition = SyncedVec3(Vec3f.ZERO)
@@ -69,22 +73,22 @@ abstract class CharacterController(private val manager: CharacterControllerManag
         actor.characterControllerHitBehavior
     }
 
-    override fun onPhysicsUpdate(timeStep: Float) {
+    override fun simulateStep(timeStep: Float) {
         updateMovement(timeStep)
         actor.syncSimulationData()
     }
 
-    override fun onPhysicsCapture(simulationTime: Double) {
+    override fun captureStepResults(simulationTime: Double) {
         actor.capture(simulationTime)
         posA.set(posB)
         posB.set(position)
     }
 
-    override fun onPhysicsInterpolate(captureTimeA: Double, captureTimeB: Double, frameTime: Double, weightB: Float) {
-        actor.interpolateTransform(captureTimeA, captureTimeB, frameTime, weightB)
-        posA.mix(posB, weightB, _interpolatedPosition)
-        if (captureTimeB > captureTimeA) {
-            mutVelocity.set(posB).subtract(posA).mul(1f / (captureTimeB - captureTimeA).toFloat())
+    override fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float) {
+        actor.interpolateTransform(simulationTimePrev, simulationTimeNext, simulationTimeLerp, weightNext)
+        posA.mix(posB, weightNext, _interpolatedPosition)
+        if (simulationTimeNext > simulationTimePrev) {
+            mutVelocity.set(posB).subtract(posA).mul(1f / (simulationTimeNext - simulationTimePrev).toFloat())
         }
     }
 

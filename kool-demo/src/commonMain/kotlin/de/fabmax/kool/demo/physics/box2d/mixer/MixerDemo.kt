@@ -82,7 +82,7 @@ class MixerDemo : DemoScene("Box2D Mixer Demo") {
                 mixer2.mix(dt)
 
                 val t = measureTime {
-                    world.simulate(dt, 2)
+                    world.simulateStep(dt)
                 }
                 if (Time.frameCount % 30 == 0) {
                     println("${boxes.size + circles.size} bodies, step time: $t")
@@ -92,7 +92,7 @@ class MixerDemo : DemoScene("Box2D Mixer Demo") {
     }
 }
 
-fun World.makeMixer(center: Vec2f, rotation: AngleF = 0f.deg): Mixer {
+fun Physics2dWorld.makeMixer(center: Vec2f, rotation: AngleF = 0f.deg): Mixer {
     val body = createBody(BodyType.Kinematic, center, rotation.toRotation())
     body.attachShape(Geometry.Box(30f, 0.75f))
     return Mixer(Box(body, 30f, 0.75f, MdColor.PINK), center, rotation)
@@ -152,7 +152,7 @@ fun Scene.addShapeMesh(boxes: List<Box>, builder: MeshBuilder<ColorMeshLayout>.(
     }
 }
 
-private fun World.makeStaticBox(posX: Float, posY: Float, halfWidth: Float, halfHeight: Float): Box {
+private fun Physics2dWorld.makeStaticBox(posX: Float, posY: Float, halfWidth: Float, halfHeight: Float): Box {
     val body = createBody(BodyType.Static, Vec2f(posX, posY))
     body.attachShape(Geometry.Box(halfWidth, halfHeight))
     return Box(body, halfWidth, halfHeight, MdColor.GREY)

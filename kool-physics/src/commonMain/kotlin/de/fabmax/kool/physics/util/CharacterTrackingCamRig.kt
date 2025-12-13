@@ -4,20 +4,20 @@ import de.fabmax.kool.input.CursorMode
 import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.HitResult
-import de.fabmax.kool.physics.PhysicsStepListener
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.scene.MatrixTransformF
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Transform
 import de.fabmax.kool.scene.TrsTransformF
+import de.fabmax.kool.util.InterpolatableSimulation
 import de.fabmax.kool.util.Time
 import kotlin.math.*
 
 class CharacterTrackingCamRig(
     world: PhysicsWorld,
     enableCursorLock: Boolean = true
-) : Node("CharacterTrackingCamRig"), PhysicsStepListener {
+) : Node("CharacterTrackingCamRig"), InterpolatableSimulation {
 
     var isCursorLocked: Boolean
         get() = PointerInput.cursorMode == CursorMode.LOCKED
@@ -106,7 +106,7 @@ class CharacterTrackingCamRig(
         }
     }
 
-    override fun onPhysicsInterpolate(captureTimeA: Double, captureTimeB: Double, frameTime: Double, weightB: Float) {
+    override fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float) {
         trackedPose.transform(poseOrigin.set(Vec3f.ZERO))
         transform.setIdentity()
         transform.translate(poseOrigin)
@@ -115,4 +115,8 @@ class CharacterTrackingCamRig(
         transform.rotate((lookTheta.toDeg() - 90f).deg, Vec3f.X_AXIS)
         transform.scale(actualZoom)
     }
+
+    override fun captureStepResults(simulationTime: Double) { }
+
+    override fun simulateStep(timeStep: Float) { }
 }

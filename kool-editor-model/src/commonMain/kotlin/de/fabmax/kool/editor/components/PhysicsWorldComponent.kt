@@ -8,11 +8,15 @@ import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.spatial.BoundingBoxF
-import de.fabmax.kool.physics.*
+import de.fabmax.kool.physics.Material
+import de.fabmax.kool.physics.Physics
+import de.fabmax.kool.physics.PhysicsWorld
+import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.character.CharacterController
 import de.fabmax.kool.physics.character.CharacterControllerManager
 import de.fabmax.kool.physics.character.CharacterControllerProperties
 import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.util.InterpolatableSimulation
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logT
 import de.fabmax.kool.util.logW
@@ -157,17 +161,20 @@ class PhysicsWorldComponent(
     override suspend fun applyComponent() {
         super.applyComponent()
 
-        Physics.loadAndAwaitPhysics()
+        Physics.loadPhysics()
         physicsWorld = PhysicsWorld(null, data.isContinuousCollisionDetection).also { world ->
             world.gravity = gravity
             characterControllerManager = CharacterControllerManager(world)
 
-            world.physicsStepListeners += object : PhysicsStepListener {
-                override fun onPhysicsUpdate(timeStep: Float) {
+            world.physicsStepListeners += object : InterpolatableSimulation {
+                override fun simulateStep(timeStep: Float) {
                     if (isLimitedRange) {
                         world.applyWorldBounds()
                     }
                 }
+
+                override fun captureStepResults(simulationTime: Double) { }
+                override fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float) { }
             }
         }
     }

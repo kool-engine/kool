@@ -41,7 +41,7 @@ class CharacterControllerImpl(
         world.registerActorReference(actor)
     }
 
-    override fun onPhysicsUpdate(timeStep: Float) {
+    override fun simulateStep(timeStep: Float) {
         bufPosition.writeIfDirty {
             pxController.position = tmpPos.set(it).toPxExtendedVec3(bufPxPosition)
             posA.set(it)
@@ -55,7 +55,7 @@ class CharacterControllerImpl(
         bufHeight.read(pxController.height)
         bufRadius.read(pxController.radius)
         bufSlopeLimit.read(pxController.slopeLimit)
-        super.onPhysicsUpdate(timeStep)
+        super.simulateStep(timeStep)
     }
 
     override fun move(displacement: Vec3f, timeStep: Float) {

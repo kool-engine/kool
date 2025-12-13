@@ -49,7 +49,7 @@ interface RigidActor : Releasable {
 
     fun syncSimulationData()
     fun capture(simulationTime: Double)
-    fun interpolateTransform(captureTimeA: Double, captureTimeB: Double, frameTime: Double, weightB: Float)
+    fun interpolateTransform(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float)
 
     fun toGlobal(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
         return transform.transform(vec, w)

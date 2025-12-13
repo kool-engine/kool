@@ -3,13 +3,13 @@ package de.fabmax.kool.demo.physics.terrain
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.input.WalkAxes
 import de.fabmax.kool.math.*
-import de.fabmax.kool.physics.PhysicsStepListener
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.character.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.TransformF
 import de.fabmax.kool.scene.TrsTransformF
+import de.fabmax.kool.util.InterpolatableSimulation
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.max
@@ -18,7 +18,7 @@ class PlayerController(
     private val physicsObjects: PhysicsObjects,
     mainScene: Scene,
     ctx: KoolContext
-) : OnHitActorListener, HitActorBehaviorCallback, PhysicsStepListener {
+) : OnHitActorListener, HitActorBehaviorCallback, InterpolatableSimulation {
 
     val controller: CharacterController
     private val charManager: CharacterControllerManager = CharacterControllerManager(physicsObjects.world)
@@ -59,7 +59,7 @@ class PlayerController(
         axes.release()
     }
 
-    override fun onPhysicsUpdate(timeStep: Float) {
+    override fun simulateStep(timeStep: Float) {
         updateMovement()
         tractorGun.onPhysicsUpdate(timeStep)
 
@@ -72,7 +72,9 @@ class PlayerController(
         }
     }
 
-    override fun onPhysicsInterpolate(captureTimeA: Double, captureTimeB: Double, frameTime: Double, weightB: Float) {
+    override fun captureStepResults(simulationTime: Double) { }
+
+    override fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float) {
         playerTransform
             .setIdentity()
             .translate(position)

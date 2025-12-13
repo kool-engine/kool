@@ -7,6 +7,7 @@ import de.fabmax.kool.physics.vehicle.Vehicle.Companion.FRONT_RIGHT
 import de.fabmax.kool.physics.vehicle.Vehicle.Companion.OMEGA_TO_RPM
 import de.fabmax.kool.physics.vehicle.Vehicle.Companion.REAR_LEFT
 import de.fabmax.kool.physics.vehicle.Vehicle.Companion.REAR_RIGHT
+import de.fabmax.kool.util.InterpolatableSimulation
 import de.fabmax.kool.util.scopedMem
 import physx.*
 import physx.prototypes.PxVehicleTireForceParamsExt
@@ -25,7 +26,7 @@ class VehicleImpl(
     override val vehicleProps: VehicleProperties,
     val world: PhysicsWorld,
     pose: Mat4f
-) : RigidBodyImpl(), Vehicle, PhysicsStepListener {
+) : RigidBodyImpl(), Vehicle, InterpolatableSimulation {
     val vehicleSimulationContext: PxVehiclePhysXSimulationContext
     val pxVehicle: EngineDriveVehicle
 
@@ -121,7 +122,7 @@ class VehicleImpl(
         world.physicsStepListeners -= this
     }
 
-    override fun onPhysicsUpdate(timeStep: Float) {
+    override fun simulateStep(timeStep: Float) {
         val targetGear = pxVehicle.engineDriveState.gearboxState.targetGear
         val neutralGear = pxVehicle.engineDriveParams.gearBoxParams.neutralGear
         if (isReverse && targetGear != neutralGear - 1) {
@@ -186,6 +187,9 @@ class VehicleImpl(
         val nbSubsteps = if (linearSpeed.z < 5f) 3 else 1
         pxVehicle.componentSequence.setSubsteps(pxVehicle.componentSequenceSubstepGroupHandle, nbSubsteps.toByte())
     }
+
+    override fun captureStepResults(simulationTime: Double) { }
+    override fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float) { }
 
     private fun computeWheelCenterActorOffsets(vehicleProps: VehicleProperties): List<MutableVec3f> {
         val twF = vehicleProps.trackWidthFront * 0.5f

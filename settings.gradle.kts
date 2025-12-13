@@ -12,8 +12,8 @@ pluginManagement {
 dependencyResolutionManagement {
     @Suppress("UnstableApiUsage")
     repositories {
-        mavenLocal()
-        maven { url = uri("https://central.sonatype.com/repository/maven-snapshots/") }
+        //mavenLocal()
+        maven { url = uri("https://central.sonatype.com/repository/maven-snapshots") }
         google()
         mavenCentral()
     }
