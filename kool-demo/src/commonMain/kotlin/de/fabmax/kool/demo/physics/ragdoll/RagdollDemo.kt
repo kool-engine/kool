@@ -551,8 +551,5 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
                 hitActor?.addForceAtPos(force, forceAppPosGlobal)
             }
         }
-
-        override fun captureStepResults(simulationTime: Double) { }
-        override fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float) { }
     }
 }

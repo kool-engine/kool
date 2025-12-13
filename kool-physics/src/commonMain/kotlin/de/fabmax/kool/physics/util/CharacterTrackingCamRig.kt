@@ -115,8 +115,4 @@ class CharacterTrackingCamRig(
         transform.rotate((lookTheta.toDeg() - 90f).deg, Vec3f.X_AXIS)
         transform.scale(actualZoom)
     }
-
-    override fun captureStepResults(simulationTime: Double) { }
-
-    override fun simulateStep(timeStep: Float) { }
 }

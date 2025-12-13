@@ -152,8 +152,6 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
                         entity.onPhysicsUpdate(timeStep)
                     }
                 }
-                override fun captureStepResults(simulationTime: Double) { }
-                override fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float) { }
             }
         }
         lifecycle = EntityLifecycle.RUNNING

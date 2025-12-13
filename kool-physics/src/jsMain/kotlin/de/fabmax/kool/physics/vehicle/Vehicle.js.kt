@@ -188,9 +188,6 @@ class VehicleImpl(
         pxVehicle.componentSequence.setSubsteps(pxVehicle.componentSequenceSubstepGroupHandle, nbSubsteps.toByte())
     }
 
-    override fun captureStepResults(simulationTime: Double) { }
-    override fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float) { }
-
     private fun computeWheelCenterActorOffsets(vehicleProps: VehicleProperties): List<MutableVec3f> {
         val twF = vehicleProps.trackWidthFront * 0.5f
         val twR = vehicleProps.trackWidthRear * 0.5f

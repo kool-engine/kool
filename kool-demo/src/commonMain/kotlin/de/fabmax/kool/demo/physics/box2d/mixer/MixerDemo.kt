@@ -2,8 +2,6 @@ package de.fabmax.kool.demo.physics.box2d.mixer
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoScene
-import de.fabmax.kool.input.InputStack
-import de.fabmax.kool.input.UniversalKeyCode
 import de.fabmax.kool.math.AngleF
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.deg
@@ -15,7 +13,6 @@ import de.fabmax.kool.physics2d.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.*
-import kotlin.time.measureTime
 
 class MixerDemo : DemoScene("Box2D Mixer Demo") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -31,7 +28,8 @@ class MixerDemo : DemoScene("Box2D Mixer Demo") {
         val boxes = mutableListOf<Box>()
         val circles = mutableListOf<Box>()
 
-        val world = World()
+        val world = Physics2dWorld()
+        world.registerHandlers(this)
         boxes.add(world.makeStaticBox(0f, -4f, 100f, 4f))
         boxes.add(world.makeStaticBox(-99.5f, 50f, 0.5f, 50f))
         boxes.add(world.makeStaticBox(99.5f, 50f, 0.5f, 50f))
@@ -71,22 +69,16 @@ class MixerDemo : DemoScene("Box2D Mixer Demo") {
             }
         }
 
-        var isRunning = false
-        InputStack.defaultInputHandler.addKeyListener(UniversalKeyCode(' '), "box2d-run") {
-            isRunning = true
+        world.simulationListeners += object : InterpolatableSimulation {
+            override fun simulateStep(timeStep: Float) {
+                mixer1.mix(timeStep)
+                mixer2.mix(timeStep)
+            }
         }
         onUpdate {
-            if (isRunning) {
-                val dt = 1f / 120f
-                mixer1.mix(dt)
-                mixer2.mix(dt)
-
-                val t = measureTime {
-                    world.simulateStep(dt)
-                }
-                if (Time.frameCount % 30 == 0) {
-                    println("${boxes.size + circles.size} bodies, step time: $t")
-                }
+            if (Time.frameCount % 30 == 0) {
+                val t = world.simStepper.cpuMillisPerStep
+                println("${boxes.size + circles.size} bodies, step time: $t")
             }
         }
     }
@@ -104,7 +96,7 @@ class Mixer(val box: Box, val center: Vec2f, var rotation: AngleF = 0f.deg) {
     fun mix(dt: Float) {
         rotation += speed * dt
         val target = Pose2f(center, rotation.toRotation())
-        box.body.setTargetTransform(target, 1 / 120f)
+        box.body.setTargetTransform(target, dt)
     }
 }
 
