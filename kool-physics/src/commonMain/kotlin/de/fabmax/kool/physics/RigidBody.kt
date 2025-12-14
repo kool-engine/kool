@@ -20,7 +20,7 @@ interface RigidBody : RigidActor {
      * Updates this bodies inertia tensor based on the mass and attached shapes.
      *
      * Must be called before the body is added to the simulation / [PhysicsWorld] or from
-     * [PhysicsStepListener.onPhysicsUpdate] to make sure that the values don't change while the simulation
+     * a physics simulation callback to make sure that the values don't change while the simulation
      * is running.
      */
     fun updateInertiaFromShapesAndMass()
@@ -29,7 +29,7 @@ interface RigidBody : RigidActor {
      * Adds the given force to this body for the next simulation step.
      *
      * Must be called before the body is added to the simulation / [PhysicsWorld] or from
-     * [PhysicsStepListener.onPhysicsUpdate] to make sure that the values don't change while the simulation
+     * a physics simulation callback to make sure that the values don't change while the simulation
      * is running.
      */
     fun addForceAtPos(force: Vec3f, pos: Vec3f, isLocalForce: Boolean = false, isLocalPos: Boolean = false)
@@ -38,7 +38,7 @@ interface RigidBody : RigidActor {
      * Adds the given impulse to this body for the next simulation step.
      *
      * Must be called before the body is added to the simulation / [PhysicsWorld] or from
-     * [PhysicsStepListener.onPhysicsUpdate] to make sure that the values don't change while the simulation
+     * a physics simulation callback to make sure that the values don't change while the simulation
      * is running.
      */
     fun addImpulseAtPos(impulse: Vec3f, pos: Vec3f, isLocalImpulse: Boolean = false, isLocalPos: Boolean = false)
@@ -47,7 +47,7 @@ interface RigidBody : RigidActor {
      * Adds the given torque to this body for the next simulation step.
      *
      * Must be called before the body is added to the simulation / [PhysicsWorld] or from
-     * [PhysicsStepListener.onPhysicsUpdate] to make sure that the values don't change while the simulation
+     * a physics simulation callback to make sure that the values don't change while the simulation
      * is running.
      */
     fun addTorque(torque: Vec3f, isLocalTorque: Boolean = false)

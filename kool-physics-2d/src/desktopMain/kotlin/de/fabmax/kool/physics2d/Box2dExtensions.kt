@@ -1,6 +1,7 @@
 package de.fabmax.kool.physics2d
 
 import box2d.*
+import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
 import org.lwjgl.system.MemoryStack
 
@@ -45,3 +46,5 @@ fun MemoryStack.allocCircle(radius: Float) = b2Circle.createAt(this, MemoryStack
 fun MemoryStack.allocBodyDef() = b2BodyDef.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.allocShapeDef() = b2ShapeDef.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.allocWordDef() = b2WorldDef.createAt(this, MemoryStack::nmalloc)
+
+fun b2Vec2.toVec2f(result: MutableVec2f) = result.set(x, y)

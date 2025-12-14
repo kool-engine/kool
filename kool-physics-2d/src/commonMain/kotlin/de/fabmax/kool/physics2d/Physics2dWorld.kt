@@ -66,12 +66,12 @@ class Physics2dWorld(
         }
 
         override fun captureStepResults(simulationTime: Double) {
-            bodies.values.forEach { it.fetchPose() }
+            bodies.values.forEach { it.fetchData() }
             simulationListeners.forEachUpdated { it.captureStepResults(simulationTime) }
         }
 
         override fun interpolateSteps(simulationTimePrev: Double, simulationTimeNext: Double, simulationTimeLerp: Double, weightNext: Float) {
-            bodies.values.forEach { it.lerpPose(weightNext) }
+            bodies.values.forEach { it.lerpData(weightNext) }
             simulationListeners.forEachUpdated { it.interpolateSteps(simulationTimePrev, simulationTimeNext, simulationTimeLerp, weightNext) }
         }
     }

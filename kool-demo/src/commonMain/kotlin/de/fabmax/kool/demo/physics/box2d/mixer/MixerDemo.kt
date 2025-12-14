@@ -139,16 +139,12 @@ class MixerDemo : DemoScene("Box2D Mixer Demo") {
 fun Physics2dWorld.makeMixer(center: Vec2f, rotation: AngleF = 0f.deg): Mixer {
     val body = createBody(BodyType.Kinematic, center, rotation.toRotation())
     body.attachShape(Geometry.Box(15f, 0.4f))
-    return Mixer(Box(body, 15f, 0.4f, MdColor.PINK, isCircle = false), center, rotation)
+    return Mixer(Box(body, 15f, 0.4f, MdColor.PINK, isCircle = false))
 }
 
-class Mixer(val box: Box, val center: Vec2f, var rotation: AngleF = 0f.deg) {
-    var speed = 70f.deg
-
+class Mixer(val box: Box, var speed: AngleF = 90f.deg) {
     fun mix(dt: Float, factor: Float) {
-        rotation += speed * dt * factor
-        val target = Pose2f(center, rotation.toRotation())
-        box.body.setTargetTransform(target, dt)
+        box.body.setAngularVelocity(speed.rad * factor)
     }
 }
 

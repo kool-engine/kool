@@ -7,6 +7,7 @@ import box2d.b2ShapeDef
 import box2d.prototypes.B2_Body
 import box2d.prototypes.B2_Geometry
 import box2d.prototypes.B2_Shape
+import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.util.ScopedMemory
 import de.fabmax.kool.util.scopedMem
@@ -41,20 +42,6 @@ internal actual fun createBody(bodyDef: BodyDef, worldId: WorldId): BodyId = sco
 
 internal actual fun BodyId.destroy() = B2_Body.destroyBody(id)
 
-internal actual fun BodyId.getPose(pose: MutablePose2f) {
-    val pos = B2_Body.getPosition(id)
-    val rot = B2_Body.getRotation(id)
-    pose.position.set(pos.x, pos.y)
-    pose.rotation.set(rot.s, rot.c)
-}
-
-internal actual fun BodyId.setTargetTransform(target: Pose2f, duration: Float) {
-    scopedMem {
-        val target = allocTransform(target)
-        B2_Body.setTargetTransform(id, target, duration)
-    }
-}
-
 internal actual fun BodyId.addShape(geometry: Geometry, shapeDef: ShapeDef): ShapeId = scopedMem {
     val b2ShapeDef = allocShapeDef()
     B2_Shape.defaultShapeDef(b2ShapeDef)
@@ -81,6 +68,35 @@ internal actual fun BodyId.addShape(geometry: Geometry, shapeDef: ShapeDef): Sha
         }
     }
     ShapeId(shapeId)
+}
+
+internal actual fun BodyId.getPose(result: MutablePose2f) {
+    val pos = B2_Body.getPosition(id)
+    val rot = B2_Body.getRotation(id)
+    result.position.set(pos.x, pos.y)
+    result.rotation.set(rot.s, rot.c)
+}
+
+internal actual fun BodyId.setPose(pose: Pose2f) = scopedMem {
+    B2_Body.setTransform(id, allocVec2(pose.position), allocRotation(pose.rotation))
+}
+
+internal actual fun BodyId.getLinearVelocity(result: MutableVec2f): MutableVec2f =
+    B2_Body.getLinearVelocity(id).toVec2f(result)
+
+internal actual fun BodyId.setLinearVelocity(linearVelocity: Vec2f) = scopedMem {
+    B2_Body.setLinearVelocity(id, allocVec2(linearVelocity))
+}
+
+internal actual fun BodyId.getAngularVelocity(): Float = B2_Body.getAngularVelocity(id)
+
+internal actual fun BodyId.setAngularVelocity(angularVelocity: Float) = B2_Body.setAngularVelocity(id, angularVelocity)
+
+internal actual fun BodyId.setTargetTransform(target: Pose2f, duration: Float) {
+    scopedMem {
+        val target = allocTransform(target)
+        B2_Body.setTargetTransform(id, target, duration)
+    }
 }
 
 context(ms: ScopedMemory)

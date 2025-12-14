@@ -3,6 +3,7 @@ package de.fabmax.kool.physics2d
 import de.fabmax.kool.math.AngleF
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
+import kotlin.math.sqrt
 
 interface Rotation {
     val sin: Float
@@ -11,9 +12,9 @@ interface Rotation {
     fun toAngle(): AngleF = Box2dMath.rotationToAngle(this)
 
     fun mix(that: Rotation, weight: Float, result: MutableRotation): MutableRotation = result.set(
-        sin * (1f - weight) + that.sin * weight,
-        cos * (1f - weight) + that.cos * weight
-    )
+        (that.sin - sin) * weight + sin,
+        (that.cos - cos) * weight + cos
+    ).normalize()
 
     companion object {
         val IDENTITY = Rotation(0f, 1f)
@@ -46,6 +47,14 @@ data class MutableRotation(override var sin: Float, override var cos: Float) : R
 
     fun set(angle: AngleF): MutableRotation {
         Box2dMath.angleToRotation(angle, this)
+        return this
+    }
+
+    fun normalize(): MutableRotation {
+        val m = sqrt(sin * sin + cos * cos)
+        val i = if (m > 0f) 1f / m else 0f
+        sin *= i
+        cos *= i
         return this
     }
 }

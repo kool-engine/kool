@@ -1,6 +1,7 @@
 package de.fabmax.kool.physics2d
 
 import box2d.*
+import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.util.ScopedMemory
 
@@ -46,3 +47,5 @@ fun ScopedMemory.allocCircle(radius: Float) = autoDelete(b2Circle(), b2Circle::d
 fun ScopedMemory.allocBodyDef() = autoDelete(b2BodyDef(), b2BodyDef::destroy)
 fun ScopedMemory.allocShapeDef() = autoDelete(b2ShapeDef(), b2ShapeDef::destroy)
 fun ScopedMemory.allocWordDef() = autoDelete(b2WorldDef(), b2WorldDef::destroy)
+
+fun b2Vec2.toVec2f(result: MutableVec2f) = result.set(x, y)
