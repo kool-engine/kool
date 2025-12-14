@@ -38,7 +38,7 @@ open class AutoPopup(
     open fun show(pointerEvent: PointerEvent) = show(pointerEvent.screenPosition)
 
     open fun show(screenPosPx: Vec2f) {
-        this.screenPosPx.set(screenPosPx)
+        this.screenPosPx.set(Vec2f(screenPosPx))
         revokeHide = hideCnt
         isVisible.set(true)
         parentSurface?.requestFocus(this@AutoPopup)
