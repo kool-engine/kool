@@ -7,7 +7,7 @@ import de.fabmax.kool.modules.filesystem.getOrCreateFile
 
 class ProjectFiles(
     val fileSystem: WritableFileSystem,
-    val appMainClass: String = "de.fabmax.kool.app.App"
+    val appMainClass: String
 ) {
     val projectModelDir = fileSystem.getOrCreateDirectories("src/commonMain/koolProject")
     val assets = fileSystem.getOrCreateDirectories("src/commonMain/resources/assets")

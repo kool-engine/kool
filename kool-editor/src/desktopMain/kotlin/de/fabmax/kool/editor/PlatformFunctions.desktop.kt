@@ -128,11 +128,13 @@ actual object PlatformFunctions {
     }
 }
 
-fun KoolEditor(projectRoot: String, ctx: KoolContext): KoolEditor {
+fun KoolEditor(projectRoot: String, ctx: KoolContext): KoolEditor = KoolEditor(KoolEditorConfig(projectRoot), ctx)
+
+fun KoolEditor(koolEditorConfig: KoolEditorConfig, ctx: KoolContext): KoolEditor {
     return runBlocking {
-        val rootPath = Path(projectRoot)
+        val rootPath = Path(koolEditorConfig.projectRoot)
         if (rootPath.notExists()) {
-            logW { "Project root path does not exist, creating: $projectRoot" }
+            logW { "Project root path does not exist, creating: ${koolEditorConfig.projectRoot}" }
             rootPath.createDirectories()
         }
         val fs = PhysicalFileSystem(
@@ -149,7 +151,7 @@ fun KoolEditor(projectRoot: String, ctx: KoolContext): KoolEditor {
             ),
             isLaunchWatchService = true
         )
-        val projFiles = ProjectFiles(fs)
+        val projFiles = ProjectFiles(fs, koolEditorConfig.appMainClass)
         KoolEditor(projFiles, ctx)
     }
 }
