@@ -159,7 +159,7 @@ object PolyUtil {
         private fun nextEarTip(): PolyVertex? {
             var best: PolyVertex? = null
             verts.forEach { v ->
-                if (v.isOpen && v.isEar && (best == null || best!!.interiorAngle > v.interiorAngle)) {
+                if (v.isOpen && v.isEar && (best == null || best.interiorAngle > v.interiorAngle)) {
                     best = v
                 }
             }

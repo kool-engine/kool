@@ -30,6 +30,7 @@ kotlin {
                     .filter { it.name !in nonNativeLibs }
                     .forEach { lib -> runtimeOnly("$lib:$platform") }
             }
+            compileOnly(libs.jspecify.annotations)   // used / needed by lwjgl
         }
         desktopTest.dependencies {
             implementation(libs.kotlin.test.junit)

@@ -17,7 +17,7 @@ interface UiScope {
     val Int.dp: Dp get() = Dp(this.toFloat())
     val Float.dp: Dp get() = Dp(this)
 
-    fun <T: Any?> MutableStateValue<T>.use(): T = use(surface)
+    fun <T> MutableStateValue<T>.use(): T = use(surface)
     fun <T> MutableStateList<T>.use(): MutableStateList<T> = use(surface)
 
     fun <T: Any> AnimatedState<T>.progressAndUse(): T {
@@ -29,10 +29,10 @@ interface UiScope {
         compose()
     }
 
-    operator fun <T: Any?> MutableStateValue<T>.getValue(thisRef: Any?, property: KProperty<*>): T = use(surface)
-    operator fun <T: Any?> MutableStateValue<T>.setValue(thisRef: Any?, property: KProperty<*>, value: T) = set(value)
+    operator fun <T> MutableStateValue<T>.getValue(thisRef: Any?, property: KProperty<*>): T = use(surface)
+    operator fun <T> MutableStateValue<T>.setValue(thisRef: Any?, property: KProperty<*>, value: T) = set(value)
 
-    operator fun <T: Any?> MutableStateList<T>.getValue(thisRef: Any?, property: KProperty<*>): MutableStateList<T> = use(surface)
+    operator fun <T> MutableStateList<T>.getValue(thisRef: Any?, property: KProperty<*>): MutableStateList<T> = use(surface)
 }
 
 inline fun UiScope.Popup(
@@ -57,7 +57,7 @@ inline fun UiScope.Popup(
 }
 
 inline fun <reified T: Any> UiScope.remember(provider: () -> T): T = uiNode.weakMemory.weakMemory(provider)
-fun <T: Any?> UiScope.remember(initialState: T): MutableStateValue<T> = remember { mutableStateOf(initialState) }
-fun <T: Any?> UiScope.remember(initialState: T, onChange: (T, T) -> Unit) = remember { mutableStateOf(initialState).onChange(onChange) }
+fun <T> UiScope.remember(initialState: T): MutableStateValue<T> = remember { mutableStateOf(initialState) }
+fun <T> UiScope.remember(initialState: T, onChange: (T, T) -> Unit) = remember { mutableStateOf(initialState).onChange(onChange) }
 fun UiScope.rememberScrollState(): ScrollState = remember { ScrollState() }
 fun UiScope.rememberListState(): LazyListState = remember { LazyListState() }

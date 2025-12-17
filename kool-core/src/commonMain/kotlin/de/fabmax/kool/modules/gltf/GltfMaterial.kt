@@ -150,7 +150,7 @@ data class GltfMaterial(
                     }
                     textureProperty(roughnessTexture, 0, texName)
                 }
-                val occlusionFactor = this@GltfMaterial.occlusionTexture?.strength ?: 1f
+                val occlusionFactor = this@GltfMaterial.occlusionTexture.strength
                 if (occlusionFactor != 1f) {
                     constProperty(occlusionFactor, blendMode = PropertyBlockConfig.BlendMode.Multiply)
                 }

@@ -37,7 +37,7 @@ class WeakMemory {
                 nextEntry++
                 val newEntry = provider()
                 entries += newEntry
-                return newEntry
+                newEntry
             }
         }
     }

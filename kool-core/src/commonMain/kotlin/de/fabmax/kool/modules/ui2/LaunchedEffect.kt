@@ -5,7 +5,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 /**
- * Runs a coroutine when entering the composition and relaunches it when [key1] changes.
+ * Runs a coroutine when entering the composition and relaunches it when [keys] change.
  * Useful for triggering suspend operations (e.g. animations) in response to state updates.
  */
 fun UiScope.LaunchedEffect(vararg keys: Any?, block: suspend CoroutineScope.() -> Unit) {

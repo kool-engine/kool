@@ -30,6 +30,7 @@ kotlin-atomicfu = { group = "org.jetbrains.kotlinx", name = "atomicfu", version.
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit", version.ref = "kotlin" }
 jsvg = { group = "com.github.weisj", name = "jsvg", version.ref = "jsvg" }
+jspecify-annotations = { module = "org.jspecify:jspecify", version = "1.0.0" }
 androidsvg = { group = "com.caverock", name = "androidsvg-aar", version.ref = "androidsvg" }
 lwjgl-core = { group = "org.lwjgl", name = "lwjgl", version.ref = "lwjgl" }
 lwjgl-glfw = { group = "org.lwjgl", name = "lwjgl-glfw", version.ref = "lwjgl" }

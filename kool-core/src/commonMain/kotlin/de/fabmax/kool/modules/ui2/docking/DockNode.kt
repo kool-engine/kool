@@ -128,7 +128,7 @@ sealed class DockNode(
             relevantChild = relevantParent
             relevantParent = relevantParent.parent
         }
-        (relevantParent as DockNodeRow?)?.moveEdgeTo(relevantChild.index, screenX)
+        relevantParent?.moveEdgeTo(relevantChild.index, screenX)
     }
 
     fun moveRightEdgeTo(screenX: Float) {
@@ -139,7 +139,7 @@ sealed class DockNode(
             relevantChild = relevantParent
             relevantParent = relevantParent.parent
         }
-        (relevantParent as DockNodeRow?)?.moveEdgeTo(relevantChild.index + 1, screenX)
+        relevantParent?.moveEdgeTo(relevantChild.index + 1, screenX)
     }
 
     fun moveTopEdgeTo(screenY: Float) {
@@ -150,7 +150,7 @@ sealed class DockNode(
             relevantChild = relevantParent
             relevantParent = relevantParent.parent
         }
-        (relevantParent as DockNodeColumn?)?.moveEdgeTo(relevantChild.index, screenY)
+        relevantParent?.moveEdgeTo(relevantChild.index, screenY)
     }
 
     fun moveBottomEdgeTo(screenY: Float) {
@@ -161,7 +161,7 @@ sealed class DockNode(
             relevantChild = relevantParent
             relevantParent = relevantParent.parent
         }
-        (relevantParent as DockNodeColumn?)?.moveEdgeTo(relevantChild.index + 1, screenY)
+        relevantParent?.moveEdgeTo(relevantChild.index + 1, screenY)
     }
 
     fun <T: DockNode> countParentsOfType(nodeType: KClass<T>): Int {
