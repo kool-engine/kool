@@ -14,9 +14,6 @@ import de.fabmax.kool.util.l
 
 class DemoMenu(val demoLoader: DemoLoader) {
 
-    private val isExpandedState = mutableStateOf(false)
-    private val menuPositionAnimator = AnimatedFloatBidir(0.2f)
-
     private val drawerButton = DrawerButton(this)
     private val navDemoButton = NavDemoButton(this)
     private val navSettingsButton = NavSettingsButton(this)
@@ -26,13 +23,11 @@ class DemoMenu(val demoLoader: DemoLoader) {
 
     val content = mutableStateOf(MenuContent.Demos)
 
+    private val isExpandedState = mutableStateOf(false)
     var isExpanded: Boolean
         get() = isExpandedState.value
         set(value) {
-            if (value != isExpandedState.value) {
-                isExpandedState.set(value)
-                menuPositionAnimator.start(if (value) 1f else 0f)
-            }
+            isExpandedState.set(value)
         }
 
     val ui = UiScene("Demo Menu") {
@@ -46,8 +41,13 @@ class DemoMenu(val demoLoader: DemoLoader) {
                 .height(Grow.Std)
                 .background(background = null)
 
-            if (isExpandedState.use() || menuPositionAnimator.isActive) {
-                MenuContent()
+            val isExp = isExpandedState.use()
+            val expandAmount by animateFloatAsState(
+                targetValue = if (isExp) 1f else 0f,
+                animationSpec = tween(duration = 0.2f, easing = if (isExp) Easing.easeOutQuart else Easing.easeInQuart)
+            )
+            if (expandAmount > 0f) {
+                MenuContent(expandAmount)
 
                 surface.onEachFrame {
                     val ptr = PointerInput.primaryPointer
@@ -65,9 +65,8 @@ class DemoMenu(val demoLoader: DemoLoader) {
         }
     }
 
-    private fun UiScope.MenuContent() = Row {
-        val p = 1f - Easing.easeOutQuart(menuPositionAnimator.progressAndUse())
-        val position = UiSizes.menuWidth * -p
+    private fun UiScope.MenuContent(expandAmount: Float) = Row {
+        val position = UiSizes.menuWidth * -(1f - expandAmount)
         modifier
             .margin(start = position)
             .width(UiSizes.menuWidth)

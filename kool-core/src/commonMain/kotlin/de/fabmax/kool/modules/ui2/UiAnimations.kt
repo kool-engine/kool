@@ -23,7 +23,7 @@ fun UiScope.animateColorAsState(
     targetValue: Color,
     animationSpec: AnimationSpec<Color> = tween()
 ): MutableStateValue<Color> {
-    val animatable = remember { ColorAnimatable(targetValue) }
+    val animatable = remember { AnimatableColor(targetValue) }
     LaunchedEffect(targetValue) {
         animationSpec.animateTo(animatable, targetValue)
     }

@@ -10,7 +10,7 @@ import de.fabmax.kool.util.set
 class NavDemoButton(val menu: DemoMenu) : Composable {
 
     private val isHovered = mutableStateOf(false)
-    private val animator = AnimatedFloat(0.25f)
+    private val animator = FloatAnimator(0.25f)
 
     override fun UiScope.compose() = Box {
         modifier
@@ -22,7 +22,7 @@ class NavDemoButton(val menu: DemoMenu) : Composable {
             .onExit { isHovered.set(false) }
             .onClick {
                 menu.content.set(DemoMenu.MenuContent.Demos)
-                animator.start()
+                animator.start(1f, startFrom = 0f)
             }
 
         Tooltip("Available demos")
@@ -30,7 +30,7 @@ class NavDemoButton(val menu: DemoMenu) : Composable {
 
     private val buttonRenderer = UiRenderer { node ->
         node.apply {
-            val animationP = animator.progressAndUse()
+            val animationP = animator.updateUsing()
             val buttonColor = if (isHovered.use()) colors.primary else Color.WHITE
             val bgColor = when {
                 isHovered.value -> colors.primaryVariantAlpha(DemoMenu.navBarButtonHoveredAlpha)

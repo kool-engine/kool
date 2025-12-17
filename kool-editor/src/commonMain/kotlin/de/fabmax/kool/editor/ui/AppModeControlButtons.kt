@@ -16,24 +16,26 @@ fun UiScope.appModeControlButtons() {
     val btnExtent = btnSzOuter * 0.85f
 
     Box(width = btnExtent * 2 + btnSzOuter, height = btnSzCenter) {
+        modifier.alignX(AlignmentX.Center)
+
         val playStopAnimator = remember {
-            AnimatedFloatBidir(0.2f).apply {
+            ButtonAnimator().apply {
                 AppState.appModeState.onChange { _, new ->
                     if (new == AppMode.EDIT) {
-                        start(0f)
+                        set(0f)
                     } else if (new == AppMode.PLAY) {
-                        start(1f)
+                        set(1f)
                     }
                 }
             }
         }
         val playPauseAnimator = remember {
-            AnimatedFloatBidir(0.2f).apply {
+            ButtonAnimator().apply {
                 AppState.appModeState.onChange { _, new ->
                     if (new == AppMode.PLAY) {
-                        start(0f)
+                        set(0f)
                     } else if (new == AppMode.PAUSE) {
-                        start(1f)
+                        set(1f)
                     }
                 }
             }
@@ -43,10 +45,7 @@ fun UiScope.appModeControlButtons() {
         val resetButtonBg = remember { ResetButtonBg(playStopAnimator) }
         val pauseButtonBg = remember { PauseButtonBg(playStopAnimator, playPauseAnimator) }
 
-        modifier
-            .alignX(AlignmentX.Center)
-
-        val p = 1f - Easing.easeOutQuart(playStopAnimator.progressAndUse())
+        val p = 1f - Easing.easeOutQuart(playStopAnimator.value)
 
         // reset / rewind running app
         Button {
@@ -56,10 +55,10 @@ fun UiScope.appModeControlButtons() {
                 .margin(start = btnExtent * p)
                 .isClickFeedback(false)
                 .background(resetButtonBg)
-                .onEnter { resetButtonBg.hoverAnimator.start(1f) }
-                .onExit { resetButtonBg.hoverAnimator.start(0f) }
+                .onEnter { pauseButtonBg.hoverAnimator.start(1f) }
+                .onExit { pauseButtonBg.hoverAnimator.start(0f) }
                 .onClick {
-                    resetButtonBg.clickAnimator.start()
+                    resetButtonBg.clickAnimator.start(1f)
                     KoolEditor.instance.resetApp()
                 }
                 .onDrag { }
@@ -78,8 +77,7 @@ fun UiScope.appModeControlButtons() {
                 .onEnter { pauseButtonBg.hoverAnimator.start(1f) }
                 .onExit { pauseButtonBg.hoverAnimator.start(0f) }
                 .onClick {
-                    pauseButtonBg.clickAnimator.start()
-
+                    pauseButtonBg.clickAnimator.start(1f)
                     if (AppState.isPlayMode) {
                         val editor = KoolEditor.instance
                         if (AppState.appMode == AppMode.PLAY) {
@@ -107,7 +105,7 @@ fun UiScope.appModeControlButtons() {
                 .onEnter { playButtonBg.hoverAnimator.start(1f) }
                 .onExit { playButtonBg.hoverAnimator.start(0f) }
                 .onClick {
-                    playButtonBg.clickAnimator.start()
+                    playButtonBg.clickAnimator.start(1f)
                     if (AppState.isEditMode) {
                         KoolEditor.instance.startApp()
                     } else {
@@ -120,7 +118,7 @@ fun UiScope.appModeControlButtons() {
     }
 }
 
-private open class ModeButtonBg(val playStopAnimator: AnimatedFloatBidir, val accent: Color) : UiRenderer<UiNode> {
+private open class ModeButtonBg(val playStopAnimator: ButtonAnimator, val accent: Color) : UiRenderer<UiNode> {
     var fgColor = ColorGradient(
         KoolEditor.instance.ui.uiColors.value.onBackgroundAlpha(0.5f),
         KoolEditor.instance.ui.uiColors.value.onBackground.mix(accent, 0.9f)
@@ -129,16 +127,16 @@ private open class ModeButtonBg(val playStopAnimator: AnimatedFloatBidir, val ac
         UiColors.titleBg.mix(KoolEditor.instance.ui.uiColors.value.secondaryVariant, 0.5f),
         KoolEditor.instance.ui.uiColors.value.secondaryVariant.mix(accent, 0.1f)
     )
-    val hoverAnimator = AnimatedFloatBidir(0.15f, 0.3f)
-    val clickAnimator = AnimatedFloat(0.15f)
+    val hoverAnimator = FloatAnimator(0.2f)
+    val clickAnimator = FloatAnimator(0.15f) { set(0f) }
 
     open fun getBgColor(pHover: Float) = bgColor.getColor(pHover)
 
     override fun renderUi(node: UiNode) = node.run {
-        val r = widthPx * 0.5f
-        val pHover = Easing.smooth(hoverAnimator.progressAndUse())
-        val pClick = clickAnimator.progressAndUse()
+        val pHover = hoverAnimator.updateUsing()
+        val pClick = clickAnimator.updateUsing()
 
+        val r = widthPx * 0.5f
         getUiPrimitives().localCircle(widthPx * 0.5f, heightPx * 0.5f, r, getBgColor(pHover))
         buttonFg(pHover)
         if (clickAnimator.isActive) {
@@ -151,7 +149,7 @@ private open class ModeButtonBg(val playStopAnimator: AnimatedFloatBidir, val ac
     open fun UiNode.buttonFg(pHover: Float) { }
 }
 
-private class PlayButtonBg(playStopAnimator: AnimatedFloatBidir) : ModeButtonBg(playStopAnimator, MdColor.GREEN) {
+private class PlayButtonBg(playStopAnimator: ButtonAnimator) : ModeButtonBg(playStopAnimator, MdColor.GREEN) {
     private val playAccent = MdColor.PINK
     var bgColorPlay = ColorGradient(UiColors.titleBg.mix(playAccent, 0.3f), playAccent)
 
@@ -178,7 +176,7 @@ private class PlayButtonBg(playStopAnimator: AnimatedFloatBidir) : ModeButtonBg(
     }
 
     override fun getBgColor(pHover: Float): Color {
-        return when (playStopAnimator.value) {
+        return when (playStopAnimator.animationTarget.value) {
             0f -> {
                 // stopped
                 bgColor.getColor(pHover)
@@ -191,7 +189,7 @@ private class PlayButtonBg(playStopAnimator: AnimatedFloatBidir) : ModeButtonBg(
                 // animating
                 val bg1 = bgColor.getColor(pHover)
                 val bg2 = bgColorPlay.getColor(pHover)
-                bg1.mix(bg2, playStopAnimator.value)
+                bg1.mix(bg2, playStopAnimator.animationState.value)
             }
         }
     }
@@ -202,7 +200,7 @@ private class PlayButtonBg(playStopAnimator: AnimatedFloatBidir) : ModeButtonBg(
 
         getPlainBuilder().configured(fgColor.getColor(pHover)) {
             translate(round(widthPx * 0.5f), round(heightPx * 0.5f), 0f)
-            if (playStopAnimator.isForward) {
+            if (playStopAnimator.isForward.use()) {
                 rotate(90f.deg * pAnim, 0f, 0f, 1f)
             } else {
                 rotate((-90f).deg * pAnim, 0f, 0f, 1f)
@@ -223,7 +221,7 @@ private class PlayButtonBg(playStopAnimator: AnimatedFloatBidir) : ModeButtonBg(
     }
 }
 
-private class PauseButtonBg(playStopAnimator: AnimatedFloatBidir, val playPauseAnimator: AnimatedFloatBidir)
+private class PauseButtonBg(playStopAnimator: ButtonAnimator, val playPauseAnimator: ButtonAnimator)
     : ModeButtonBg(playStopAnimator, KoolEditor.instance.ui.uiColors.value.primary)
 {
     private val pPlay = listOf(
@@ -241,7 +239,7 @@ private class PauseButtonBg(playStopAnimator: AnimatedFloatBidir, val playPauseA
 
     override fun UiNode.buttonFg(pHover: Float) {
         val r = innerWidthPx * 0.35f
-        val pAnim = playPauseAnimator.progressAndUse()
+        val pAnim = playPauseAnimator.animationState.use()
         val fg = fgColor.getColor(pHover)
 
         getPlainBuilder().configured(MutableColor(fg).apply { a *= Easing.easeOutQuart(playStopAnimator.value) }) {
@@ -272,7 +270,7 @@ private class PauseButtonBg(playStopAnimator: AnimatedFloatBidir, val playPauseA
     }
 }
 
-private class ResetButtonBg(playStopAnimator: AnimatedFloatBidir)
+private class ResetButtonBg(playStopAnimator: ButtonAnimator)
     : ModeButtonBg(playStopAnimator, KoolEditor.instance.ui.uiColors.value.primary)
 {
     override fun UiNode.buttonFg(pHover: Float) {
@@ -289,6 +287,24 @@ private class ResetButtonBg(playStopAnimator: AnimatedFloatBidir)
             val i1 = vertex { it.position.set(-cos(120f.toRad()) * r, sin(120f.toRad()) * r, 0f) }
             val i2 = vertex { it.position.set(-cos(240f.toRad()) * r, sin(240f.toRad()) * r, 0f) }
             addTriIndices(i0, i1, i2)
+        }
+    }
+}
+
+private class ButtonAnimator {
+    val animationState: AnimatableFloat = AnimatableFloat(0f)
+    val animationTarget: MutableStateValue<Float> = mutableStateOf(0f)
+    val isForward: MutableStateValue<Boolean> = mutableStateOf(true)
+
+    context(ui: UiScope)
+    val value: Float get() = with(ui) { animationState.use() }
+
+    context(ui: UiScope)
+    fun set(target: Float) = with(ui) {
+        animationTarget.set(target)
+        isForward.set(target == 1f)
+        LaunchedEffect(target) {
+            tween<Float>(0.2f, Easing.linear).animateTo(animationState, target)
         }
     }
 }

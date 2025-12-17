@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Easing
 import de.fabmax.kool.util.Color
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -57,7 +58,7 @@ class ArrowNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), 
     override val isHovered: Boolean get() = isHoveredState.value
 
     private var isHoveredState = mutableStateOf(false)
-    private val rotationAnimator = AnimatedFloat(0.1f)
+    private val rotationAnimator = FloatAnimator(0.1f, Easing.linear)
     private var isFirst = true
     private var prevRotation = 0f
 
@@ -69,18 +70,18 @@ class ArrowNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), 
         setContentSize(measuredWidth, measuredHeight)
 
         if (isFirst) {
-            prevRotation = modifier.rotation
             isFirst = false
-        } else if (prevRotation != modifier.rotation && !rotationAnimator.isActive) {
-            rotationAnimator.start()
+            rotationAnimator.set(modifier.rotation)
+        } else if (prevRotation != modifier.rotation) {
+            rotationAnimator.start(modifier.rotation)
         }
+        prevRotation = modifier.rotation
     }
 
     override fun render(ctx: KoolContext) {
         super.render(ctx)
 
-        val p = rotationAnimator.progressAndUse()
-        val rot = modifier.rotation * p + prevRotation * (1f - p)
+        val rot = rotationAnimator.updateUsing()
         val color = if (isHoveredState.use()) modifier.arrowHoverColor else modifier.arrowColor
         getPlainBuilder().configured(color) {
             arrow(widthPx * 0.5f, heightPx * 0.5f, min(innerWidthPx, innerHeightPx), rot)

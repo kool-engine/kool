@@ -1,6 +1,5 @@
 package de.fabmax.kool.modules.ui2
 
-import de.fabmax.kool.util.Time
 import kotlinx.coroutines.CoroutineScope
 import kotlin.reflect.KProperty
 
@@ -19,11 +18,6 @@ interface UiScope {
 
     fun <T> MutableStateValue<T>.use(): T = use(surface)
     fun <T> MutableStateList<T>.use(): MutableStateList<T> = use(surface)
-
-    fun <T: Any> AnimatedState<T>.progressAndUse(): T {
-        progress(Time.deltaT)
-        return use(surface)
-    }
 
     operator fun Composable.invoke() {
         compose()

@@ -1,9 +1,9 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Easing
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Time
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -60,7 +60,7 @@ class ButtonNode(parent: UiNode?, surface: UiSurface) : TextNode(parent, surface
     override val isHovered: Boolean get() = isHoveredState.value
 
     private var isHoveredState = mutableStateOf(false)
-    private val clickAnimator = AnimatedFloat(0.3f)
+    private val clickAnimator = FloatAnimator(0.3f, Easing.linear) { set(0f) }
     private val clickPos = MutableVec2f()
 
     override fun render(ctx: KoolContext) {
@@ -78,9 +78,8 @@ class ButtonNode(parent: UiNode?, surface: UiSurface) : TextNode(parent, surface
         super.render(ctx)
 
         if (modifier.isClickFeedback) {
-            val p = clickAnimator.use()
+            val p = clickAnimator.updateUsing()
             if (clickAnimator.isActive) {
-                clickAnimator.progress(Time.deltaT)
                 getUiPrimitives().localCircle(
                     clickPos.x, clickPos.y,
                     p * 128.dp.px,
@@ -91,7 +90,7 @@ class ButtonNode(parent: UiNode?, surface: UiSurface) : TextNode(parent, surface
     }
 
     override fun onClick(ev: PointerEvent) {
-        clickAnimator.start()
+        clickAnimator.start(1f, startFrom = 0f)
         clickPos.set(ev.position)
     }
 

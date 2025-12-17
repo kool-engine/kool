@@ -61,6 +61,30 @@ inline fun Double.clamp(min: Double = 0.0, max: Double = 1.0): Double {
     }
 }
 
+/**
+ * Linearly interpolates between [this] and [that] by [weight]. Alias for [Float.mix].
+ * @see Float.mix
+ */
+fun Float.lerp(that: Float, weight: Float): Float = mix(that, weight)
+
+/**
+ * Linearly interpolates between [this] and [that] by [weight].
+ * @see Float.lerp
+ */
+fun Float.mix(that: Float, weight: Float): Float = this + (that - this) * weight
+
+/**
+ * Linearly interpolates between [this] and [that] by [weight]. Alias for [Double.mix].
+ * @see Double.mix
+ */
+fun Double.lerp(that: Double, weight: Double): Double = mix(that, weight)
+
+/**
+ * Linearly interpolates between [this] and [that] by [weight].
+ * @see Double.lerp
+ */
+fun Double.mix(that: Double, weight: Double): Double = this + (that - this) * weight
+
 fun Float.expDecay(target: Float, decay: Float, deltaT: Float = Time.deltaT): Float {
     return target + (this - target) * exp(-decay * deltaT)
 }

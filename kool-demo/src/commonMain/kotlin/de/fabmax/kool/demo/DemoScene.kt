@@ -195,7 +195,7 @@ abstract class DemoScene(val name: String, val mainScene: Scene = Scene(name)) {
                     .background(CircularBackground(minButtonBgColor))
                     .zLayer(UiSurface.LAYER_FLOATING)
 
-                Arrow(if (isMenuMinimized.use()) 90f else -90f) {
+                Arrow(if (isMenuMinimized.use()) -90f else 90f) {
                     modifier
                         .size(Grow.Std, Grow.Std)
                         .margin(sizes.smallGap * 0.7f)

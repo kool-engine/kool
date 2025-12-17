@@ -162,14 +162,11 @@ abstract class ToggleNode(
     abstract val buttonWidth: Dp
     abstract val buttonHeight: Dp
 
-    private val toggleAnimator = AnimatedFloat(0.1f)
+    private val toggleAnimator = FloatAnimator(0.1f)
     private var isFirst = true
     private var prevState = false
 
-    protected fun animationPos(): Float {
-        val ax = if (toggleAnimator.isActive) toggleAnimator.progressAndUse() else 1f
-        return if (modifier.toggleState) ax else 1f - ax
-    }
+    protected fun animationPos(): Float = toggleAnimator.updateUsing()
 
     protected fun center() = MutableVec2f( paddingStartPx + innerWidthPx * 0.5f, paddingTopPx + innerHeightPx * 0.5f)
 
@@ -187,8 +184,9 @@ abstract class ToggleNode(
 
         if (isFirst) {
             isFirst = false
+            toggleAnimator.set(if (modifier.toggleState) 1f else 0f)
         } else if (prevState != modifier.toggleState) {
-            toggleAnimator.start()
+            toggleAnimator.start(if (modifier.toggleState) 1f else 0f)
         }
         prevState = modifier.toggleState
     }

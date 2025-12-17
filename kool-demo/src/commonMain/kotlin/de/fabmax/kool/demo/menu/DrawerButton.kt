@@ -9,7 +9,7 @@ import de.fabmax.kool.util.Color
 class DrawerButton(val menu: DemoMenu) : Composable {
 
     private val isHovered = mutableStateOf(false)
-    private val animator = AnimatedFloat(0.25f)
+    private val animator = FloatAnimator(0.25f, initial = 1f)
 
     override fun UiScope.compose() = Box {
         modifier
@@ -21,7 +21,7 @@ class DrawerButton(val menu: DemoMenu) : Composable {
             .onExit { isHovered.set(false) }
             .onClick {
                 menu.isExpanded = !menu.isExpanded
-                animator.start()
+                animator.start(1f, startFrom = 0f)
             }
 
         Tooltip("Toggle demo menu")
@@ -30,7 +30,7 @@ class DrawerButton(val menu: DemoMenu) : Composable {
     private val buttonRenderer = UiRenderer { node ->
         node.apply {
             val buttonColor = if (isHovered.use()) colors.primary else Color.WHITE
-            val p = animator.progressAndUse()
+            val p = animator.updateUsing()
             val animationP = if (menu.isExpanded) p else 1f - p
 
             if (menu.isExpanded && isHovered.value) {
