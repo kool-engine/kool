@@ -214,13 +214,21 @@ open class Vec4f(open val x: Float, open val y: Float, open val z: Float, open v
 
     /**
      * Linearly interpolates the values of this and another vector and returns the result as an (optionally provided)
-     * [MutableVec4f]: result = that * weight + this * (1 - weight).
+     * [MutableVec4f]: `result = that * weight + this * (1 - weight)`. Alias for [mix].
+     * @see mix
+     */
+    fun lerp(that: Vec4f, weight: Float, result: MutableVec4f = MutableVec4f()) = mix(that, weight, result)
+
+    /**
+     * Linearly interpolates the values of this and another vector and returns the result as an (optionally provided)
+     * [MutableVec4f]: `result = that * weight + this * (1 - weight)`.
+     * @see lerp
      */
     fun mix(that: Vec4f, weight: Float, result: MutableVec4f = MutableVec4f()): MutableVec4f {
-        result.x = that.x * weight + x * (1f - weight)
-        result.y = that.y * weight + y * (1f - weight)
-        result.z = that.z * weight + z * (1f - weight)
-        result.w = that.w * weight + w * (1f - weight)
+        result.x = x + (that.x - x) * weight
+        result.y = y + (that.y - y) * weight
+        result.z = z + (that.z - z) * weight
+        result.w = w + (that.w - w) * weight
         return result
     }
 
@@ -566,13 +574,21 @@ open class Vec4d(open val x: Double, open val y: Double, open val z: Double, ope
 
     /**
      * Linearly interpolates the values of this and another vector and returns the result as an (optionally provided)
-     * [MutableVec4d]: result = that * weight + this * (1 - weight).
+     * [MutableVec4d]: `result = that * weight + this * (1 - weight)`. Alias for [mix].
+     * @see mix
+     */
+    fun lerp(that: Vec4d, weight: Double, result: MutableVec4d = MutableVec4d()) = mix(that, weight, result)
+
+    /**
+     * Linearly interpolates the values of this and another vector and returns the result as an (optionally provided)
+     * [MutableVec4d]: `result = that * weight + this * (1 - weight)`.
+     * @see lerp
      */
     fun mix(that: Vec4d, weight: Double, result: MutableVec4d = MutableVec4d()): MutableVec4d {
-        result.x = that.x * weight + x * (1.0 - weight)
-        result.y = that.y * weight + y * (1.0 - weight)
-        result.z = that.z * weight + z * (1.0 - weight)
-        result.w = that.w * weight + w * (1.0 - weight)
+        result.x = x + (that.x - x) * weight
+        result.y = y + (that.y - y) * weight
+        result.z = z + (that.z - z) * weight
+        result.w = w + (that.w - w) * weight
         return result
     }
 

@@ -190,11 +190,19 @@ open class Vec2f(open val x: Float, open val y: Float) {
 
     /**
      * Linearly interpolates the values of this and another vector and returns the result as an (optionally provided)
-     * [MutableVec2f]: result = that * weight + this * (1 - weight).
+     * [MutableVec2f]: `result = that * weight + this * (1 - weight)`. Alias for [mix].
+     * @see mix
+     */
+    fun lerp(that: Vec2f, weight: Float, result: MutableVec2f = MutableVec2f()) = mix(that, weight, result)
+
+    /**
+     * Linearly interpolates the values of this and another vector and returns the result as an (optionally provided)
+     * [MutableVec2f]: `result = that * weight + this * (1 - weight)`.
+     * @see lerp
      */
     fun mix(that: Vec2f, weight: Float, result: MutableVec2f = MutableVec2f()): MutableVec2f {
-        result.x = that.x * weight + x * (1f - weight)
-        result.y = that.y * weight + y * (1f - weight)
+        result.x = x + (that.x - x) * weight
+        result.y = y + (that.y - y) * weight
         return result
     }
 
@@ -520,11 +528,19 @@ open class Vec2d(open val x: Double, open val y: Double) {
 
     /**
      * Linearly interpolates the values of this and another vector and returns the result as an (optionally provided)
-     * [MutableVec2d]: result = that * weight + this * (1 - weight).
+     * [MutableVec2d]: `result = that * weight + this * (1 - weight)`. Alias for [mix].
+     * @see mix
+     */
+    fun lerp(that: Vec2d, weight: Double, result: MutableVec2d = MutableVec2d()) = mix(that, weight, result)
+
+    /**
+     * Linearly interpolates the values of this and another vector and returns the result as an (optionally provided)
+     * [MutableVec2d]: `result = that * weight + this * (1 - weight)`.
+     * @see lerp
      */
     fun mix(that: Vec2d, weight: Double, result: MutableVec2d = MutableVec2d()): MutableVec2d {
-        result.x = that.x * weight + x * (1.0 - weight)
-        result.y = that.y * weight + y * (1.0 - weight)
+        result.x = x + (that.x - x) * weight
+        result.y = y + (that.y - y) * weight
         return result
     }
 

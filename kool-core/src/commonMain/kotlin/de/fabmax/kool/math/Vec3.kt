@@ -217,12 +217,20 @@ open class Vec3f(open val x: Float, open val y: Float, open val z: Float) {
 
     /**
      * Linearly interpolates the values of this and another vector and returns the result as an (optionally provided)
-     * [MutableVec3f]: result = that * weight + this * (1 - weight).
+     * [MutableVec3f]: `result = that * weight + this * (1 - weight)`. Alias for [mix].
+     * @see mix
+     */
+    fun lerp(that: Vec3f, weight: Float, result: MutableVec3f = MutableVec3f()) = mix(that, weight, result)
+
+    /**
+     * Linearly interpolates the values of this and another vector and returns the result as an (optionally provided)
+     * [MutableVec3f]: `result = that * weight + this * (1 - weight)`.
+     * @see lerp
      */
     fun mix(that: Vec3f, weight: Float, result: MutableVec3f = MutableVec3f()): MutableVec3f {
-        result.x = that.x * weight + x * (1f - weight)
-        result.y = that.y * weight + y * (1f - weight)
-        result.z = that.z * weight + z * (1f - weight)
+        result.x = x + (that.x - x) * weight
+        result.y = y + (that.y - y) * weight
+        result.z = z + (that.z - z) * weight
         return result
     }
 
@@ -602,12 +610,20 @@ open class Vec3d(open val x: Double, open val y: Double, open val z: Double) {
 
     /**
      * Linearly interpolates the values of this and another vector and returns the result as an (optionally provided)
-     * [MutableVec3d]: result = that * weight + this * (1 - weight).
+     * [MutableVec3d]: `result = that * weight + this * (1 - weight)`. Alias for [mix].
+     * @see mix
+     */
+    fun lerp(that: Vec3d, weight: Double, result: MutableVec3d = MutableVec3d()) = mix(that, weight, result)
+
+    /**
+     * Linearly interpolates the values of this and another vector and returns the result as an (optionally provided)
+     * [MutableVec3d]: `result = that * weight + this * (1 - weight)`.
+     * @see lerp
      */
     fun mix(that: Vec3d, weight: Double, result: MutableVec3d = MutableVec3d()): MutableVec3d {
-        result.x = that.x * weight + x * (1.0 - weight)
-        result.y = that.y * weight + y * (1.0 - weight)
-        result.z = that.z * weight + z * (1.0 - weight)
+        result.x = x + (that.x - x) * weight
+        result.y = y + (that.y - y) * weight
+        result.z = z + (that.z - z) * weight
         return result
     }
 

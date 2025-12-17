@@ -111,7 +111,15 @@ open class QuatF(open val x: Float, open val y: Float, open val z: Float, open v
 
     /**
      * Linearly interpolates the values of this and another quaternion and returns the result as an (optionally
-     * provided) [MutableQuatF]: result = that * weight + this * (1 - weight).
+     * provided) [MutableQuatF]. Interpolation assumes unit quaternions describing rotations. Alias for [mix].
+     * @see mix
+     */
+    fun lerp(that: QuatF, weight: Float, result: MutableQuatF = MutableQuatF()) = mix(that, weight, result)
+
+    /**
+     * Linearly interpolates the values of this and another quaternion and returns the result as an (optionally
+     * provided) [MutableQuatF]. Interpolation assumes unit quaternions describing rotations.
+     * @see lerp
      */
     fun mix(that: QuatF, weight: Float, result: MutableQuatF = MutableQuatF()): MutableQuatF {
         val dot = x * that.x + y * that.y + z * that.z + w * that.w
@@ -505,7 +513,15 @@ open class QuatD(open val x: Double, open val y: Double, open val z: Double, ope
 
     /**
      * Linearly interpolates the values of this and another quaternion and returns the result as an (optionally
-     * provided) [MutableQuatD]: result = that * weight + this * (1 - weight).
+     * provided) [MutableQuatD]. Interpolation assumes unit quaternions describing rotations. Alias for [mix].
+     * @see mix
+     */
+    fun lerp(that: QuatD, weight: Double, result: MutableQuatD = MutableQuatD()) = mix(that, weight, result)
+
+    /**
+     * Linearly interpolates the values of this and another quaternion and returns the result as an (optionally
+     * provided) [MutableQuatD]. Interpolation assumes unit quaternions describing rotations.
+     * @see lerp
      */
     fun mix(that: QuatD, weight: Double, result: MutableQuatD = MutableQuatD()): MutableQuatD {
         val dot = x * that.x + y * that.y + z * that.z + w * that.w

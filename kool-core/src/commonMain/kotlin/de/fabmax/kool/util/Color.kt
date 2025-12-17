@@ -32,13 +32,21 @@ open class Color(open val r: Float, open val g: Float, open val b: Float, open v
 
     /**
      * Linearly interpolates this and another color and returns the result as an (optionally provided)
-     * [MutableColor]: result = that * weight + this * (1 - weight).
+     * [MutableColor]: `result = that * weight + this * (1 - weight)`. Alias for [mix].
+     * @see mix
+     */
+    fun lerp(that: Color, weight: Float, result: MutableColor = MutableColor()) = mix(that, weight, result)
+
+    /**
+     * Linearly interpolates this and another color and returns the result as an (optionally provided)
+     * [MutableColor]: `result = that * weight + this * (1 - weight)`.
+     * @see lerp
      */
     fun mix(that: Color, weight: Float, result: MutableColor = MutableColor()): MutableColor {
-        result.r = that.r * weight + r * (1f - weight)
-        result.g = that.g * weight + g * (1f - weight)
-        result.b = that.b * weight + b * (1f - weight)
-        result.a = that.a * weight + a * (1f - weight)
+        result.r = r + (that.r - r) * weight
+        result.g = g + (that.g - g) * weight
+        result.b = b + (that.b - b) * weight
+        result.a = a + (that.a - a) * weight
         return result
     }
 
