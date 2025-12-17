@@ -54,6 +54,7 @@ class DeferredSpotLights(val maxSpotAngle: AngleF) {
             .rotate(light.rotation)
         modelMat.transform(tmpLightDir.set(Vec3f.X_AXIS), 0f)
         modelMat.scale(light.radius)
+        set(SpotLightInstanceLayout.modelMat, modelMat)
 
         set(SpotLightInstanceLayout.lightPos,
             light.position.x,
