@@ -127,8 +127,8 @@ repositories {
     maven("https://oss.sonatype.org/content/repositories/snapshots")
 }
 dependencies {
-    implementation("de.fabmax.kool:kool-core:0.18.0")
-    implementation("de.fabmax.kool:kool-physics:0.18.0")
+    implementation("de.fabmax.kool:kool-core:0.19.0")
+    implementation("de.fabmax.kool:kool-physics:0.19.0")
 }
 ```
 
