@@ -1,11 +1,14 @@
 /*
  * Generated from WebIDL by webidl-util
  */
-@file:Suppress("UnsafeCastFromDynamic", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused", "INLINE_CLASS_IN_EXTERNAL_DECLARATION_WARNING", "NOTHING_TO_INLINE")
+@file:Suppress("UnsafeCastFromJsAny", "ClassName", "FunctionName", "UNUSED_PARAMETER", "unused", "INLINE_CLASS_IN_EXTERNAL_DECLARATION_WARNING", "NOTHING_TO_INLINE")
 
 package box2d
 
-external interface B2_Shape {
+import kotlin.js.JsAny
+import kotlin.js.js
+
+external interface B2_Shape : JsAny {
     /**
      * Native object address.
      */
@@ -64,7 +67,7 @@ external interface B2_Shape {
      * @param shapeId WebIDL type: unsigned long long
      * @return WebIDL type: [b2ShapeType] (enum)
      */
-    fun getType(shapeId: Long): b2ShapeType
+    fun getType(shapeId: Long): Int//b2ShapeType
 
     /**
      * @param shapeId WebIDL type: unsigned long long
@@ -88,13 +91,13 @@ external interface B2_Shape {
      * @param shapeId  WebIDL type: unsigned long long
      * @param userData WebIDL type: VoidPtr
      */
-    fun setUserData(shapeId: Long, userData: Any)
+    fun setUserData(shapeId: Long, userData: JsAny)
 
     /**
      * @param shapeId WebIDL type: unsigned long long
      * @return WebIDL type: VoidPtr
      */
-    fun getUserData(shapeId: Long): Any
+    fun getUserData(shapeId: Long): JsAny
 
     /**
      * @param shapeId        WebIDL type: unsigned long long
@@ -338,9 +341,9 @@ external interface B2_Shape {
 
 }
 
-fun B2_ShapeFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_Shape = js("_module.wrapPointer(ptr, _module.B2_Shape)")
+fun B2_ShapeFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_Shape = js("_module.wrapPointer(ptr, _module.B2_Shape)")
 
-external interface B2_Chain {
+external interface B2_Chain : JsAny {
     /**
      * Native object address.
      */
@@ -426,9 +429,9 @@ external interface B2_Chain {
 
 }
 
-fun B2_ChainFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_Chain = js("_module.wrapPointer(ptr, _module.B2_Chain)")
+fun B2_ChainFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_Chain = js("_module.wrapPointer(ptr, _module.B2_Chain)")
 
-external interface b2ShapeDef {
+external interface b2ShapeDef : JsAny {
     /**
      * Native object address.
      */
@@ -437,7 +440,7 @@ external interface b2ShapeDef {
     /**
      * WebIDL type: VoidPtr
      */
-    var userData: Any
+    var userData: JsAny
     /**
      * WebIDL type: [b2SurfaceMaterial] (Value)
      */
@@ -480,15 +483,15 @@ external interface b2ShapeDef {
     var updateBodyMass: Boolean
 }
 
-fun b2ShapeDef(_module: dynamic = Box2dWasmLoader.box2dWasm): b2ShapeDef = js("new _module.b2ShapeDef()")
+fun b2ShapeDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2ShapeDef = js("new _module.b2ShapeDef()")
 
-fun b2ShapeDefFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2ShapeDef = js("_module.wrapPointer(ptr, _module.b2ShapeDef)")
+fun b2ShapeDefFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2ShapeDef = js("_module.wrapPointer(ptr, _module.b2ShapeDef)")
 
 fun b2ShapeDef.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2ChainDef {
+external interface b2ChainDef : JsAny {
     /**
      * Native object address.
      */
@@ -497,7 +500,7 @@ external interface b2ChainDef {
     /**
      * WebIDL type: VoidPtr
      */
-    var userData: Any
+    var userData: JsAny
     /**
      * WebIDL type: [b2Vec2] (Const)
      */
@@ -532,15 +535,15 @@ external interface b2ChainDef {
     var internalValue: Int
 }
 
-fun b2ChainDef(_module: dynamic = Box2dWasmLoader.box2dWasm): b2ChainDef = js("new _module.b2ChainDef()")
+fun b2ChainDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2ChainDef = js("new _module.b2ChainDef()")
 
-fun b2ChainDefFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2ChainDef = js("_module.wrapPointer(ptr, _module.b2ChainDef)")
+fun b2ChainDefFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2ChainDef = js("_module.wrapPointer(ptr, _module.b2ChainDef)")
 
 fun b2ChainDef.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2Filter {
+external interface b2Filter : JsAny {
     /**
      * Native object address.
      */
@@ -560,15 +563,15 @@ external interface b2Filter {
     var maskBits: Long
 }
 
-fun b2Filter(_module: dynamic = Box2dWasmLoader.box2dWasm): b2Filter = js("new _module.b2Filter()")
+fun b2Filter(_module: JsAny = Box2dWasmLoader.box2dWasm): b2Filter = js("new _module.b2Filter()")
 
-fun b2FilterFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2Filter = js("_module.wrapPointer(ptr, _module.b2Filter)")
+fun b2FilterFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2Filter = js("_module.wrapPointer(ptr, _module.b2Filter)")
 
 fun b2Filter.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2QueryFilter {
+external interface b2QueryFilter : JsAny {
     /**
      * Native object address.
      */
@@ -584,15 +587,15 @@ external interface b2QueryFilter {
     var maskBits: Long
 }
 
-fun b2QueryFilter(_module: dynamic = Box2dWasmLoader.box2dWasm): b2QueryFilter = js("new _module.b2QueryFilter()")
+fun b2QueryFilter(_module: JsAny = Box2dWasmLoader.box2dWasm): b2QueryFilter = js("new _module.b2QueryFilter()")
 
-fun b2QueryFilterFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2QueryFilter = js("_module.wrapPointer(ptr, _module.b2QueryFilter)")
+fun b2QueryFilterFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2QueryFilter = js("_module.wrapPointer(ptr, _module.b2QueryFilter)")
 
 fun b2QueryFilter.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2SurfaceMaterial {
+external interface b2SurfaceMaterial : JsAny {
     /**
      * Native object address.
      */
@@ -624,15 +627,15 @@ external interface b2SurfaceMaterial {
     var userMaterialId: Int
 }
 
-fun b2SurfaceMaterial(_module: dynamic = Box2dWasmLoader.box2dWasm): b2SurfaceMaterial = js("new _module.b2SurfaceMaterial()")
+fun b2SurfaceMaterial(_module: JsAny = Box2dWasmLoader.box2dWasm): b2SurfaceMaterial = js("new _module.b2SurfaceMaterial()")
 
-fun b2SurfaceMaterialFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2SurfaceMaterial = js("_module.wrapPointer(ptr, _module.b2SurfaceMaterial)")
+fun b2SurfaceMaterialFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2SurfaceMaterial = js("_module.wrapPointer(ptr, _module.b2SurfaceMaterial)")
 
 fun b2SurfaceMaterial.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2ContactData {
+external interface b2ContactData : JsAny {
     /**
      * Native object address.
      */
@@ -652,15 +655,15 @@ external interface b2ContactData {
     var shapeIdB: b2ShapeId
 }
 
-fun b2ContactData(_module: dynamic = Box2dWasmLoader.box2dWasm): b2ContactData = js("new _module.b2ContactData()")
+fun b2ContactData(_module: JsAny = Box2dWasmLoader.box2dWasm): b2ContactData = js("new _module.b2ContactData()")
 
-fun b2ContactDataFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2ContactData = js("_module.wrapPointer(ptr, _module.b2ContactData)")
+fun b2ContactDataFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2ContactData = js("_module.wrapPointer(ptr, _module.b2ContactData)")
 
 fun b2ContactData.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface B2_Vec2 {
+external interface B2_Vec2 : JsAny {
     /**
      * Native object address.
      */
@@ -838,9 +841,9 @@ external interface B2_Vec2 {
 
 }
 
-fun B2_Vec2FromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_Vec2 = js("_module.wrapPointer(ptr, _module.B2_Vec2)")
+fun B2_Vec2FromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_Vec2 = js("_module.wrapPointer(ptr, _module.B2_Vec2)")
 
-external interface B2_Rot {
+external interface B2_Rot : JsAny {
     /**
      * Native object address.
      */
@@ -961,9 +964,9 @@ external interface B2_Rot {
 
 }
 
-fun B2_RotFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_Rot = js("_module.wrapPointer(ptr, _module.B2_Rot)")
+fun B2_RotFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_Rot = js("_module.wrapPointer(ptr, _module.B2_Rot)")
 
-external interface B2_Transform {
+external interface B2_Transform : JsAny {
     /**
      * Native object address.
      */
@@ -999,9 +1002,9 @@ external interface B2_Transform {
 
 }
 
-fun B2_TransformFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_Transform = js("_module.wrapPointer(ptr, _module.B2_Transform)")
+fun B2_TransformFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_Transform = js("_module.wrapPointer(ptr, _module.B2_Transform)")
 
-external interface B2_Mat22 {
+external interface B2_Mat22 : JsAny {
     /**
      * Native object address.
      */
@@ -1029,9 +1032,9 @@ external interface B2_Mat22 {
 
 }
 
-fun B2_Mat22FromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_Mat22 = js("_module.wrapPointer(ptr, _module.B2_Mat22)")
+fun B2_Mat22FromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_Mat22 = js("_module.wrapPointer(ptr, _module.B2_Mat22)")
 
-external interface B2_AABB {
+external interface B2_AABB : JsAny {
     /**
      * Native object address.
      */
@@ -1078,9 +1081,9 @@ external interface B2_AABB {
 
 }
 
-fun B2_AABBFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_AABB = js("_module.wrapPointer(ptr, _module.B2_AABB)")
+fun B2_AABBFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_AABB = js("_module.wrapPointer(ptr, _module.B2_AABB)")
 
-external interface B2_Plane {
+external interface B2_Plane : JsAny {
     /**
      * Native object address.
      */
@@ -1101,9 +1104,9 @@ external interface B2_Plane {
 
 }
 
-fun B2_PlaneFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_Plane = js("_module.wrapPointer(ptr, _module.B2_Plane)")
+fun B2_PlaneFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_Plane = js("_module.wrapPointer(ptr, _module.B2_Plane)")
 
-external interface B2_Math {
+external interface B2_Math : JsAny {
     /**
      * Native object address.
      */
@@ -1137,13 +1140,13 @@ external interface B2_Math {
 
 }
 
-fun B2_MathFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_Math = js("_module.wrapPointer(ptr, _module.B2_Math)")
+fun B2_MathFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_Math = js("_module.wrapPointer(ptr, _module.B2_Math)")
 
 var B2_Math.lengthUnitsPerMeter
     get() = getLengthUnitsPerMeter()
     set(value) { setLengthUnitsPerMeter(value) }
 
-external interface b2Vec2 {
+external interface b2Vec2 : JsAny {
     /**
      * Native object address.
      */
@@ -1159,15 +1162,15 @@ external interface b2Vec2 {
     var y: Float
 }
 
-fun b2Vec2(_module: dynamic = Box2dWasmLoader.box2dWasm): b2Vec2 = js("new _module.b2Vec2()")
+fun b2Vec2(_module: JsAny = Box2dWasmLoader.box2dWasm): b2Vec2 = js("new _module.b2Vec2()")
 
-fun b2Vec2FromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2Vec2 = js("_module.wrapPointer(ptr, _module.b2Vec2)")
+fun b2Vec2FromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2Vec2 = js("_module.wrapPointer(ptr, _module.b2Vec2)")
 
 fun b2Vec2.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2CosSin {
+external interface b2CosSin : JsAny {
     /**
      * Native object address.
      */
@@ -1183,15 +1186,15 @@ external interface b2CosSin {
     var sine: Float
 }
 
-fun b2CosSin(_module: dynamic = Box2dWasmLoader.box2dWasm): b2CosSin = js("new _module.b2CosSin()")
+fun b2CosSin(_module: JsAny = Box2dWasmLoader.box2dWasm): b2CosSin = js("new _module.b2CosSin()")
 
-fun b2CosSinFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2CosSin = js("_module.wrapPointer(ptr, _module.b2CosSin)")
+fun b2CosSinFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2CosSin = js("_module.wrapPointer(ptr, _module.b2CosSin)")
 
 fun b2CosSin.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2Rot {
+external interface b2Rot : JsAny {
     /**
      * Native object address.
      */
@@ -1207,15 +1210,15 @@ external interface b2Rot {
     var s: Float
 }
 
-fun b2Rot(_module: dynamic = Box2dWasmLoader.box2dWasm): b2Rot = js("new _module.b2Rot()")
+fun b2Rot(_module: JsAny = Box2dWasmLoader.box2dWasm): b2Rot = js("new _module.b2Rot()")
 
-fun b2RotFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2Rot = js("_module.wrapPointer(ptr, _module.b2Rot)")
+fun b2RotFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2Rot = js("_module.wrapPointer(ptr, _module.b2Rot)")
 
 fun b2Rot.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2Transform {
+external interface b2Transform : JsAny {
     /**
      * Native object address.
      */
@@ -1231,15 +1234,15 @@ external interface b2Transform {
     var q: b2Rot
 }
 
-fun b2Transform(_module: dynamic = Box2dWasmLoader.box2dWasm): b2Transform = js("new _module.b2Transform()")
+fun b2Transform(_module: JsAny = Box2dWasmLoader.box2dWasm): b2Transform = js("new _module.b2Transform()")
 
-fun b2TransformFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2Transform = js("_module.wrapPointer(ptr, _module.b2Transform)")
+fun b2TransformFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2Transform = js("_module.wrapPointer(ptr, _module.b2Transform)")
 
 fun b2Transform.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2Mat22 {
+external interface b2Mat22 : JsAny {
     /**
      * Native object address.
      */
@@ -1255,15 +1258,15 @@ external interface b2Mat22 {
     var cy: b2Vec2
 }
 
-fun b2Mat22(_module: dynamic = Box2dWasmLoader.box2dWasm): b2Mat22 = js("new _module.b2Mat22()")
+fun b2Mat22(_module: JsAny = Box2dWasmLoader.box2dWasm): b2Mat22 = js("new _module.b2Mat22()")
 
-fun b2Mat22FromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2Mat22 = js("_module.wrapPointer(ptr, _module.b2Mat22)")
+fun b2Mat22FromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2Mat22 = js("_module.wrapPointer(ptr, _module.b2Mat22)")
 
 fun b2Mat22.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2AABB {
+external interface b2AABB : JsAny {
     /**
      * Native object address.
      */
@@ -1279,15 +1282,15 @@ external interface b2AABB {
     var upperBound: b2Vec2
 }
 
-fun b2AABB(_module: dynamic = Box2dWasmLoader.box2dWasm): b2AABB = js("new _module.b2AABB()")
+fun b2AABB(_module: JsAny = Box2dWasmLoader.box2dWasm): b2AABB = js("new _module.b2AABB()")
 
-fun b2AABBFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2AABB = js("_module.wrapPointer(ptr, _module.b2AABB)")
+fun b2AABBFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2AABB = js("_module.wrapPointer(ptr, _module.b2AABB)")
 
 fun b2AABB.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2Plane {
+external interface b2Plane : JsAny {
     /**
      * Native object address.
      */
@@ -1303,15 +1306,15 @@ external interface b2Plane {
     var offset: Float
 }
 
-fun b2Plane(_module: dynamic = Box2dWasmLoader.box2dWasm): b2Plane = js("new _module.b2Plane()")
+fun b2Plane(_module: JsAny = Box2dWasmLoader.box2dWasm): b2Plane = js("new _module.b2Plane()")
 
-fun b2PlaneFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2Plane = js("_module.wrapPointer(ptr, _module.b2Plane)")
+fun b2PlaneFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2Plane = js("_module.wrapPointer(ptr, _module.b2Plane)")
 
 fun b2Plane.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface B2_World {
+external interface B2_World : JsAny {
     /**
      * Native object address.
      */
@@ -1584,13 +1587,13 @@ external interface B2_World {
      * @param worldId  WebIDL type: unsigned long long
      * @param userData WebIDL type: VoidPtr
      */
-    fun setUserData(worldId: Long, userData: Any)
+    fun setUserData(worldId: Long, userData: JsAny)
 
     /**
      * @param worldId WebIDL type: unsigned long long
      * @return WebIDL type: VoidPtr
      */
-    fun getUserData(worldId: Long): Any
+    fun getUserData(worldId: Long): JsAny
 
     /**
      * @param worldId WebIDL type: unsigned long long
@@ -1605,9 +1608,9 @@ external interface B2_World {
 
 }
 
-fun B2_WorldFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_World = js("_module.wrapPointer(ptr, _module.B2_World)")
+fun B2_WorldFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_World = js("_module.wrapPointer(ptr, _module.B2_World)")
 
-external interface TaskManager {
+external interface TaskManager : JsAny {
     /**
      * Native object address.
      */
@@ -1630,7 +1633,7 @@ external interface TaskManager {
 
 }
 
-fun TaskManagerFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): TaskManager = js("_module.wrapPointer(ptr, _module.TaskManager)")
+fun TaskManagerFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): TaskManager = js("_module.wrapPointer(ptr, _module.TaskManager)")
 
 fun TaskManager.destroy() {
     Box2dWasmLoader.destroy(this)
@@ -1653,9 +1656,9 @@ external interface TaskManagerImpl : TaskManager {
 
 }
 
-fun TaskManagerImpl(_module: dynamic = Box2dWasmLoader.box2dWasm): TaskManagerImpl = js("new _module.TaskManagerImpl()")
+fun TaskManagerImpl(_module: JsAny = Box2dWasmLoader.box2dWasm): TaskManagerImpl = js("new _module.TaskManagerImpl()")
 
-external interface b2BodyEvents {
+external interface b2BodyEvents : JsAny {
     /**
      * Native object address.
      */
@@ -1671,15 +1674,15 @@ external interface b2BodyEvents {
     var moveEvents: b2BodyMoveEvent
 }
 
-fun b2BodyEvents(_module: dynamic = Box2dWasmLoader.box2dWasm): b2BodyEvents = js("new _module.b2BodyEvents()")
+fun b2BodyEvents(_module: JsAny = Box2dWasmLoader.box2dWasm): b2BodyEvents = js("new _module.b2BodyEvents()")
 
-fun b2BodyEventsFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2BodyEvents = js("_module.wrapPointer(ptr, _module.b2BodyEvents)")
+fun b2BodyEventsFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2BodyEvents = js("_module.wrapPointer(ptr, _module.b2BodyEvents)")
 
 fun b2BodyEvents.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2BodyMoveEvent {
+external interface b2BodyMoveEvent : JsAny {
     /**
      * Native object address.
      */
@@ -1700,18 +1703,18 @@ external interface b2BodyMoveEvent {
     /**
      * WebIDL type: VoidPtr
      */
-    var userData: Any
+    var userData: JsAny
 }
 
-fun b2BodyMoveEvent(_module: dynamic = Box2dWasmLoader.box2dWasm): b2BodyMoveEvent = js("new _module.b2BodyMoveEvent()")
+fun b2BodyMoveEvent(_module: JsAny = Box2dWasmLoader.box2dWasm): b2BodyMoveEvent = js("new _module.b2BodyMoveEvent()")
 
-fun b2BodyMoveEventFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2BodyMoveEvent = js("_module.wrapPointer(ptr, _module.b2BodyMoveEvent)")
+fun b2BodyMoveEventFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2BodyMoveEvent = js("_module.wrapPointer(ptr, _module.b2BodyMoveEvent)")
 
 fun b2BodyMoveEvent.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2SensorEvents {
+external interface b2SensorEvents : JsAny {
     /**
      * Native object address.
      */
@@ -1735,15 +1738,15 @@ external interface b2SensorEvents {
     var endEvents: b2SensorEndTouchEvent
 }
 
-fun b2SensorEvents(_module: dynamic = Box2dWasmLoader.box2dWasm): b2SensorEvents = js("new _module.b2SensorEvents()")
+fun b2SensorEvents(_module: JsAny = Box2dWasmLoader.box2dWasm): b2SensorEvents = js("new _module.b2SensorEvents()")
 
-fun b2SensorEventsFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2SensorEvents = js("_module.wrapPointer(ptr, _module.b2SensorEvents)")
+fun b2SensorEventsFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2SensorEvents = js("_module.wrapPointer(ptr, _module.b2SensorEvents)")
 
 fun b2SensorEvents.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2SensorBeginTouchEvent {
+external interface b2SensorBeginTouchEvent : JsAny {
     /**
      * Native object address.
      */
@@ -1759,15 +1762,15 @@ external interface b2SensorBeginTouchEvent {
     var visitorShapeId: b2ShapeId
 }
 
-fun b2SensorBeginTouchEvent(_module: dynamic = Box2dWasmLoader.box2dWasm): b2SensorBeginTouchEvent = js("new _module.b2SensorBeginTouchEvent()")
+fun b2SensorBeginTouchEvent(_module: JsAny = Box2dWasmLoader.box2dWasm): b2SensorBeginTouchEvent = js("new _module.b2SensorBeginTouchEvent()")
 
-fun b2SensorBeginTouchEventFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2SensorBeginTouchEvent = js("_module.wrapPointer(ptr, _module.b2SensorBeginTouchEvent)")
+fun b2SensorBeginTouchEventFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2SensorBeginTouchEvent = js("_module.wrapPointer(ptr, _module.b2SensorBeginTouchEvent)")
 
 fun b2SensorBeginTouchEvent.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2SensorEndTouchEvent {
+external interface b2SensorEndTouchEvent : JsAny {
     /**
      * Native object address.
      */
@@ -1783,15 +1786,15 @@ external interface b2SensorEndTouchEvent {
     var visitorShapeId: b2ShapeId
 }
 
-fun b2SensorEndTouchEvent(_module: dynamic = Box2dWasmLoader.box2dWasm): b2SensorEndTouchEvent = js("new _module.b2SensorEndTouchEvent()")
+fun b2SensorEndTouchEvent(_module: JsAny = Box2dWasmLoader.box2dWasm): b2SensorEndTouchEvent = js("new _module.b2SensorEndTouchEvent()")
 
-fun b2SensorEndTouchEventFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2SensorEndTouchEvent = js("_module.wrapPointer(ptr, _module.b2SensorEndTouchEvent)")
+fun b2SensorEndTouchEventFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2SensorEndTouchEvent = js("_module.wrapPointer(ptr, _module.b2SensorEndTouchEvent)")
 
 fun b2SensorEndTouchEvent.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2ContactEvents {
+external interface b2ContactEvents : JsAny {
     /**
      * Native object address.
      */
@@ -1823,15 +1826,15 @@ external interface b2ContactEvents {
     var hitEvents: b2ContactHitEvent
 }
 
-fun b2ContactEvents(_module: dynamic = Box2dWasmLoader.box2dWasm): b2ContactEvents = js("new _module.b2ContactEvents()")
+fun b2ContactEvents(_module: JsAny = Box2dWasmLoader.box2dWasm): b2ContactEvents = js("new _module.b2ContactEvents()")
 
-fun b2ContactEventsFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2ContactEvents = js("_module.wrapPointer(ptr, _module.b2ContactEvents)")
+fun b2ContactEventsFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2ContactEvents = js("_module.wrapPointer(ptr, _module.b2ContactEvents)")
 
 fun b2ContactEvents.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2ContactBeginTouchEvent {
+external interface b2ContactBeginTouchEvent : JsAny {
     /**
      * Native object address.
      */
@@ -1851,15 +1854,15 @@ external interface b2ContactBeginTouchEvent {
     var shapeIdB: b2ShapeId
 }
 
-fun b2ContactBeginTouchEvent(_module: dynamic = Box2dWasmLoader.box2dWasm): b2ContactBeginTouchEvent = js("new _module.b2ContactBeginTouchEvent()")
+fun b2ContactBeginTouchEvent(_module: JsAny = Box2dWasmLoader.box2dWasm): b2ContactBeginTouchEvent = js("new _module.b2ContactBeginTouchEvent()")
 
-fun b2ContactBeginTouchEventFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2ContactBeginTouchEvent = js("_module.wrapPointer(ptr, _module.b2ContactBeginTouchEvent)")
+fun b2ContactBeginTouchEventFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2ContactBeginTouchEvent = js("_module.wrapPointer(ptr, _module.b2ContactBeginTouchEvent)")
 
 fun b2ContactBeginTouchEvent.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2ContactEndTouchEvent {
+external interface b2ContactEndTouchEvent : JsAny {
     /**
      * Native object address.
      */
@@ -1875,15 +1878,15 @@ external interface b2ContactEndTouchEvent {
     var shapeIdB: b2ShapeId
 }
 
-fun b2ContactEndTouchEvent(_module: dynamic = Box2dWasmLoader.box2dWasm): b2ContactEndTouchEvent = js("new _module.b2ContactEndTouchEvent()")
+fun b2ContactEndTouchEvent(_module: JsAny = Box2dWasmLoader.box2dWasm): b2ContactEndTouchEvent = js("new _module.b2ContactEndTouchEvent()")
 
-fun b2ContactEndTouchEventFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2ContactEndTouchEvent = js("_module.wrapPointer(ptr, _module.b2ContactEndTouchEvent)")
+fun b2ContactEndTouchEventFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2ContactEndTouchEvent = js("_module.wrapPointer(ptr, _module.b2ContactEndTouchEvent)")
 
 fun b2ContactEndTouchEvent.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2ContactHitEvent {
+external interface b2ContactHitEvent : JsAny {
     /**
      * Native object address.
      */
@@ -1911,15 +1914,15 @@ external interface b2ContactHitEvent {
     var shapeIdB: b2ShapeId
 }
 
-fun b2ContactHitEvent(_module: dynamic = Box2dWasmLoader.box2dWasm): b2ContactHitEvent = js("new _module.b2ContactHitEvent()")
+fun b2ContactHitEvent(_module: JsAny = Box2dWasmLoader.box2dWasm): b2ContactHitEvent = js("new _module.b2ContactHitEvent()")
 
-fun b2ContactHitEventFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2ContactHitEvent = js("_module.wrapPointer(ptr, _module.b2ContactHitEvent)")
+fun b2ContactHitEventFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2ContactHitEvent = js("_module.wrapPointer(ptr, _module.b2ContactHitEvent)")
 
 fun b2ContactHitEvent.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2Manifold {
+external interface b2Manifold : JsAny {
     /**
      * Native object address.
      */
@@ -1944,9 +1947,9 @@ external interface b2Manifold {
     var rollingImpulse: Float
 }
 
-fun b2Manifold(_module: dynamic = Box2dWasmLoader.box2dWasm): b2Manifold = js("new _module.b2Manifold()")
+fun b2Manifold(_module: JsAny = Box2dWasmLoader.box2dWasm): b2Manifold = js("new _module.b2Manifold()")
 
-fun b2ManifoldFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2Manifold = js("_module.wrapPointer(ptr, _module.b2Manifold)")
+fun b2ManifoldFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2Manifold = js("_module.wrapPointer(ptr, _module.b2Manifold)")
 
 fun b2Manifold.destroy() {
     Box2dWasmLoader.destroy(this)
@@ -1955,7 +1958,7 @@ fun b2Manifold.destroy() {
 inline fun b2Manifold.getPoints(index: Int) = get_points(index)
 inline fun b2Manifold.setPoints(index: Int, value: b2ManifoldPoint) = set_points(index, value)
 
-external interface b2ManifoldPoint {
+external interface b2ManifoldPoint : JsAny {
     /**
      * Native object address.
      */
@@ -2003,15 +2006,15 @@ external interface b2ManifoldPoint {
     var totalNormalImpulse: Float
 }
 
-fun b2ManifoldPoint(_module: dynamic = Box2dWasmLoader.box2dWasm): b2ManifoldPoint = js("new _module.b2ManifoldPoint()")
+fun b2ManifoldPoint(_module: JsAny = Box2dWasmLoader.box2dWasm): b2ManifoldPoint = js("new _module.b2ManifoldPoint()")
 
-fun b2ManifoldPointFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2ManifoldPoint = js("_module.wrapPointer(ptr, _module.b2ManifoldPoint)")
+fun b2ManifoldPointFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2ManifoldPoint = js("_module.wrapPointer(ptr, _module.b2ManifoldPoint)")
 
 fun b2ManifoldPoint.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2RayResult {
+external interface b2RayResult : JsAny {
     /**
      * Native object address.
      */
@@ -2047,15 +2050,15 @@ external interface b2RayResult {
     var shapeId: b2ShapeId
 }
 
-fun b2RayResult(_module: dynamic = Box2dWasmLoader.box2dWasm): b2RayResult = js("new _module.b2RayResult()")
+fun b2RayResult(_module: JsAny = Box2dWasmLoader.box2dWasm): b2RayResult = js("new _module.b2RayResult()")
 
-fun b2RayResultFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2RayResult = js("_module.wrapPointer(ptr, _module.b2RayResult)")
+fun b2RayResultFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2RayResult = js("_module.wrapPointer(ptr, _module.b2RayResult)")
 
 fun b2RayResult.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2TreeStats {
+external interface b2TreeStats : JsAny {
     /**
      * Native object address.
      */
@@ -2071,15 +2074,15 @@ external interface b2TreeStats {
     var nodeVisits: Int
 }
 
-fun b2TreeStats(_module: dynamic = Box2dWasmLoader.box2dWasm): b2TreeStats = js("new _module.b2TreeStats()")
+fun b2TreeStats(_module: JsAny = Box2dWasmLoader.box2dWasm): b2TreeStats = js("new _module.b2TreeStats()")
 
-fun b2TreeStatsFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2TreeStats = js("_module.wrapPointer(ptr, _module.b2TreeStats)")
+fun b2TreeStatsFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2TreeStats = js("_module.wrapPointer(ptr, _module.b2TreeStats)")
 
 fun b2TreeStats.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2ExplosionDef {
+external interface b2ExplosionDef : JsAny {
     /**
      * Native object address.
      */
@@ -2107,15 +2110,15 @@ external interface b2ExplosionDef {
     var radius: Float
 }
 
-fun b2ExplosionDef(_module: dynamic = Box2dWasmLoader.box2dWasm): b2ExplosionDef = js("new _module.b2ExplosionDef()")
+fun b2ExplosionDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2ExplosionDef = js("new _module.b2ExplosionDef()")
 
-fun b2ExplosionDefFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2ExplosionDef = js("_module.wrapPointer(ptr, _module.b2ExplosionDef)")
+fun b2ExplosionDefFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2ExplosionDef = js("_module.wrapPointer(ptr, _module.b2ExplosionDef)")
 
 fun b2ExplosionDef.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2WorldDef {
+external interface b2WorldDef : JsAny {
     /**
      * Native object address.
      */
@@ -2160,18 +2163,18 @@ external interface b2WorldDef {
     /**
      * WebIDL type: VoidPtr
      */
-    var userData: Any
+    var userData: JsAny
 }
 
-fun b2WorldDef(_module: dynamic = Box2dWasmLoader.box2dWasm): b2WorldDef = js("new _module.b2WorldDef()")
+fun b2WorldDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2WorldDef = js("new _module.b2WorldDef()")
 
-fun b2WorldDefFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2WorldDef = js("_module.wrapPointer(ptr, _module.b2WorldDef)")
+fun b2WorldDefFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2WorldDef = js("_module.wrapPointer(ptr, _module.b2WorldDef)")
 
 fun b2WorldDef.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2DebugDraw {
+external interface b2DebugDraw : JsAny {
     /**
      * Native object address.
      */
@@ -2239,73 +2242,73 @@ external interface b2DebugDraw {
     var drawIslands: Boolean
 }
 
-fun b2DebugDraw(_module: dynamic = Box2dWasmLoader.box2dWasm): b2DebugDraw = js("new _module.b2DebugDraw()")
+fun b2DebugDraw(_module: JsAny = Box2dWasmLoader.box2dWasm): b2DebugDraw = js("new _module.b2DebugDraw()")
 
-fun b2DebugDrawFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2DebugDraw = js("_module.wrapPointer(ptr, _module.b2DebugDraw)")
+fun b2DebugDrawFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2DebugDraw = js("_module.wrapPointer(ptr, _module.b2DebugDraw)")
 
 fun b2DebugDraw.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2DebugDrawCallbacks
+external interface b2DebugDrawCallbacks : JsAny
 
-fun b2DebugDrawCallbacksFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2DebugDrawCallbacks = js("_module.wrapPointer(ptr, _module.b2DebugDrawCallbacks)")
+fun b2DebugDrawCallbacksFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2DebugDrawCallbacks = js("_module.wrapPointer(ptr, _module.b2DebugDrawCallbacks)")
 
 fun b2DebugDrawCallbacks.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2CustomFilterFcnI
+external interface b2CustomFilterFcnI : JsAny
 
-fun b2CustomFilterFcnIFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2CustomFilterFcnI = js("_module.wrapPointer(ptr, _module.b2CustomFilterFcnI)")
+fun b2CustomFilterFcnIFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2CustomFilterFcnI = js("_module.wrapPointer(ptr, _module.b2CustomFilterFcnI)")
 
 fun b2CustomFilterFcnI.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2PreSolveFcnI
+external interface b2PreSolveFcnI : JsAny
 
-fun b2PreSolveFcnIFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2PreSolveFcnI = js("_module.wrapPointer(ptr, _module.b2PreSolveFcnI)")
+fun b2PreSolveFcnIFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2PreSolveFcnI = js("_module.wrapPointer(ptr, _module.b2PreSolveFcnI)")
 
 fun b2PreSolveFcnI.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2FrictionCallbackI
+external interface b2FrictionCallbackI : JsAny
 
-fun b2FrictionCallbackIFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2FrictionCallbackI = js("_module.wrapPointer(ptr, _module.b2FrictionCallbackI)")
+fun b2FrictionCallbackIFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2FrictionCallbackI = js("_module.wrapPointer(ptr, _module.b2FrictionCallbackI)")
 
 fun b2FrictionCallbackI.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2RestitutionCallbackI
+external interface b2RestitutionCallbackI : JsAny
 
-fun b2RestitutionCallbackIFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2RestitutionCallbackI = js("_module.wrapPointer(ptr, _module.b2RestitutionCallbackI)")
+fun b2RestitutionCallbackIFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2RestitutionCallbackI = js("_module.wrapPointer(ptr, _module.b2RestitutionCallbackI)")
 
 fun b2RestitutionCallbackI.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2OverlapResultFcnI
+external interface b2OverlapResultFcnI : JsAny
 
-fun b2OverlapResultFcnIFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2OverlapResultFcnI = js("_module.wrapPointer(ptr, _module.b2OverlapResultFcnI)")
+fun b2OverlapResultFcnIFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2OverlapResultFcnI = js("_module.wrapPointer(ptr, _module.b2OverlapResultFcnI)")
 
 fun b2OverlapResultFcnI.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2CastResultFcnI
+external interface b2CastResultFcnI : JsAny
 
-fun b2CastResultFcnIFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2CastResultFcnI = js("_module.wrapPointer(ptr, _module.b2CastResultFcnI)")
+fun b2CastResultFcnIFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2CastResultFcnI = js("_module.wrapPointer(ptr, _module.b2CastResultFcnI)")
 
 fun b2CastResultFcnI.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2PlaneResultFcnI
+external interface b2PlaneResultFcnI : JsAny
 
-fun b2PlaneResultFcnIFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2PlaneResultFcnI = js("_module.wrapPointer(ptr, _module.b2PlaneResultFcnI)")
+fun b2PlaneResultFcnIFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2PlaneResultFcnI = js("_module.wrapPointer(ptr, _module.b2PlaneResultFcnI)")
 
 fun b2PlaneResultFcnI.destroy() {
     Box2dWasmLoader.destroy(this)
@@ -2378,7 +2381,7 @@ external interface b2DebugDrawCallbacksImpl : b2DebugDrawCallbacks {
 
 }
 
-fun b2DebugDrawCallbacksImpl(_module: dynamic = Box2dWasmLoader.box2dWasm): b2DebugDrawCallbacksImpl = js("new _module.b2DebugDrawCallbacksImpl()")
+fun b2DebugDrawCallbacksImpl(_module: JsAny = Box2dWasmLoader.box2dWasm): b2DebugDrawCallbacksImpl = js("new _module.b2DebugDrawCallbacksImpl()")
 
 external interface b2CustomFilterFcnImpl : b2CustomFilterFcnI {
     /**
@@ -2390,7 +2393,7 @@ external interface b2CustomFilterFcnImpl : b2CustomFilterFcnI {
 
 }
 
-fun b2CustomFilterFcnImpl(_module: dynamic = Box2dWasmLoader.box2dWasm): b2CustomFilterFcnImpl = js("new _module.b2CustomFilterFcnImpl()")
+fun b2CustomFilterFcnImpl(_module: JsAny = Box2dWasmLoader.box2dWasm): b2CustomFilterFcnImpl = js("new _module.b2CustomFilterFcnImpl()")
 
 external interface b2PreSolveFcnImpl : b2PreSolveFcnI {
     /**
@@ -2403,7 +2406,7 @@ external interface b2PreSolveFcnImpl : b2PreSolveFcnI {
 
 }
 
-fun b2PreSolveFcnImpl(_module: dynamic = Box2dWasmLoader.box2dWasm): b2PreSolveFcnImpl = js("new _module.b2PreSolveFcnImpl()")
+fun b2PreSolveFcnImpl(_module: JsAny = Box2dWasmLoader.box2dWasm): b2PreSolveFcnImpl = js("new _module.b2PreSolveFcnImpl()")
 
 external interface b2FrictionCallbackImpl : b2FrictionCallbackI {
     /**
@@ -2417,7 +2420,7 @@ external interface b2FrictionCallbackImpl : b2FrictionCallbackI {
 
 }
 
-fun b2FrictionCallbackImpl(_module: dynamic = Box2dWasmLoader.box2dWasm): b2FrictionCallbackImpl = js("new _module.b2FrictionCallbackImpl()")
+fun b2FrictionCallbackImpl(_module: JsAny = Box2dWasmLoader.box2dWasm): b2FrictionCallbackImpl = js("new _module.b2FrictionCallbackImpl()")
 
 external interface b2RestitutionCallbackImpl : b2RestitutionCallbackI {
     /**
@@ -2431,7 +2434,7 @@ external interface b2RestitutionCallbackImpl : b2RestitutionCallbackI {
 
 }
 
-fun b2RestitutionCallbackImpl(_module: dynamic = Box2dWasmLoader.box2dWasm): b2RestitutionCallbackImpl = js("new _module.b2RestitutionCallbackImpl()")
+fun b2RestitutionCallbackImpl(_module: JsAny = Box2dWasmLoader.box2dWasm): b2RestitutionCallbackImpl = js("new _module.b2RestitutionCallbackImpl()")
 
 external interface b2OverlapResultFcnImpl : b2OverlapResultFcnI {
     /**
@@ -2442,7 +2445,7 @@ external interface b2OverlapResultFcnImpl : b2OverlapResultFcnI {
 
 }
 
-fun b2OverlapResultFcnImpl(_module: dynamic = Box2dWasmLoader.box2dWasm): b2OverlapResultFcnImpl = js("new _module.b2OverlapResultFcnImpl()")
+fun b2OverlapResultFcnImpl(_module: JsAny = Box2dWasmLoader.box2dWasm): b2OverlapResultFcnImpl = js("new _module.b2OverlapResultFcnImpl()")
 
 external interface b2CastResultFcnImpl : b2CastResultFcnI {
     /**
@@ -2456,7 +2459,7 @@ external interface b2CastResultFcnImpl : b2CastResultFcnI {
 
 }
 
-fun b2CastResultFcnImpl(_module: dynamic = Box2dWasmLoader.box2dWasm): b2CastResultFcnImpl = js("new _module.b2CastResultFcnImpl()")
+fun b2CastResultFcnImpl(_module: JsAny = Box2dWasmLoader.box2dWasm): b2CastResultFcnImpl = js("new _module.b2CastResultFcnImpl()")
 
 external interface b2PlaneResultFcnImpl : b2PlaneResultFcnI {
     /**
@@ -2468,9 +2471,9 @@ external interface b2PlaneResultFcnImpl : b2PlaneResultFcnI {
 
 }
 
-fun b2PlaneResultFcnImpl(_module: dynamic = Box2dWasmLoader.box2dWasm): b2PlaneResultFcnImpl = js("new _module.b2PlaneResultFcnImpl()")
+fun b2PlaneResultFcnImpl(_module: JsAny = Box2dWasmLoader.box2dWasm): b2PlaneResultFcnImpl = js("new _module.b2PlaneResultFcnImpl()")
 
-external interface b2Counters {
+external interface b2Counters : JsAny {
     /**
      * Native object address.
      */
@@ -2523,9 +2526,9 @@ external interface b2Counters {
     fun set_colorCounts(index: Int, value: Int)
 }
 
-fun b2Counters(_module: dynamic = Box2dWasmLoader.box2dWasm): b2Counters = js("new _module.b2Counters()")
+fun b2Counters(_module: JsAny = Box2dWasmLoader.box2dWasm): b2Counters = js("new _module.b2Counters()")
 
-fun b2CountersFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2Counters = js("_module.wrapPointer(ptr, _module.b2Counters)")
+fun b2CountersFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2Counters = js("_module.wrapPointer(ptr, _module.b2Counters)")
 
 fun b2Counters.destroy() {
     Box2dWasmLoader.destroy(this)
@@ -2534,7 +2537,7 @@ fun b2Counters.destroy() {
 inline fun b2Counters.getColorCounts(index: Int) = get_colorCounts(index)
 inline fun b2Counters.setColorCounts(index: Int, value: Int) = set_colorCounts(index, value)
 
-external interface b2Profile {
+external interface b2Profile : JsAny {
     /**
      * Native object address.
      */
@@ -2630,15 +2633,15 @@ external interface b2Profile {
     var sensors: Float
 }
 
-fun b2Profile(_module: dynamic = Box2dWasmLoader.box2dWasm): b2Profile = js("new _module.b2Profile()")
+fun b2Profile(_module: JsAny = Box2dWasmLoader.box2dWasm): b2Profile = js("new _module.b2Profile()")
 
-fun b2ProfileFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2Profile = js("_module.wrapPointer(ptr, _module.b2Profile)")
+fun b2ProfileFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2Profile = js("_module.wrapPointer(ptr, _module.b2Profile)")
 
 fun b2Profile.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface B2_Base {
+external interface B2_Base : JsAny {
     /**
      * Native object address.
      */
@@ -2716,14 +2719,14 @@ external interface B2_Base {
 
 }
 
-fun B2_BaseFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_Base = js("_module.wrapPointer(ptr, _module.B2_Base)")
+fun B2_BaseFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_Base = js("_module.wrapPointer(ptr, _module.B2_Base)")
 
 val B2_Base.version
     get() = getVersion()
 val B2_Base.byteCount
     get() = getByteCount()
 
-external interface b2Version {
+external interface b2Version : JsAny {
     /**
      * Native object address.
      */
@@ -2743,13 +2746,13 @@ external interface b2Version {
     var revision: Int
 }
 
-fun b2VersionFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2Version = js("_module.wrapPointer(ptr, _module.b2Version)")
+fun b2VersionFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2Version = js("_module.wrapPointer(ptr, _module.b2Version)")
 
 fun b2Version.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2WorldId {
+external interface b2WorldId : JsAny {
     /**
      * Native object address.
      */
@@ -2765,15 +2768,15 @@ external interface b2WorldId {
     var index1: Short
 }
 
-fun b2WorldId(_module: dynamic = Box2dWasmLoader.box2dWasm): b2WorldId = js("new _module.b2WorldId()")
+fun b2WorldId(_module: JsAny = Box2dWasmLoader.box2dWasm): b2WorldId = js("new _module.b2WorldId()")
 
-fun b2WorldIdFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2WorldId = js("_module.wrapPointer(ptr, _module.b2WorldId)")
+fun b2WorldIdFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2WorldId = js("_module.wrapPointer(ptr, _module.b2WorldId)")
 
 fun b2WorldId.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2BodyId {
+external interface b2BodyId : JsAny {
     /**
      * Native object address.
      */
@@ -2793,15 +2796,15 @@ external interface b2BodyId {
     var world0: Short
 }
 
-fun b2BodyId(_module: dynamic = Box2dWasmLoader.box2dWasm): b2BodyId = js("new _module.b2BodyId()")
+fun b2BodyId(_module: JsAny = Box2dWasmLoader.box2dWasm): b2BodyId = js("new _module.b2BodyId()")
 
-fun b2BodyIdFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2BodyId = js("_module.wrapPointer(ptr, _module.b2BodyId)")
+fun b2BodyIdFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2BodyId = js("_module.wrapPointer(ptr, _module.b2BodyId)")
 
 fun b2BodyId.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2ShapeId {
+external interface b2ShapeId : JsAny {
     /**
      * Native object address.
      */
@@ -2821,15 +2824,15 @@ external interface b2ShapeId {
     var world0: Short
 }
 
-fun b2ShapeId(_module: dynamic = Box2dWasmLoader.box2dWasm): b2ShapeId = js("new _module.b2ShapeId()")
+fun b2ShapeId(_module: JsAny = Box2dWasmLoader.box2dWasm): b2ShapeId = js("new _module.b2ShapeId()")
 
-fun b2ShapeIdFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2ShapeId = js("_module.wrapPointer(ptr, _module.b2ShapeId)")
+fun b2ShapeIdFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2ShapeId = js("_module.wrapPointer(ptr, _module.b2ShapeId)")
 
 fun b2ShapeId.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2ChainId {
+external interface b2ChainId : JsAny {
     /**
      * Native object address.
      */
@@ -2849,15 +2852,15 @@ external interface b2ChainId {
     var world0: Short
 }
 
-fun b2ChainId(_module: dynamic = Box2dWasmLoader.box2dWasm): b2ChainId = js("new _module.b2ChainId()")
+fun b2ChainId(_module: JsAny = Box2dWasmLoader.box2dWasm): b2ChainId = js("new _module.b2ChainId()")
 
-fun b2ChainIdFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2ChainId = js("_module.wrapPointer(ptr, _module.b2ChainId)")
+fun b2ChainIdFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2ChainId = js("_module.wrapPointer(ptr, _module.b2ChainId)")
 
 fun b2ChainId.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2JointId {
+external interface b2JointId : JsAny {
     /**
      * Native object address.
      */
@@ -2877,15 +2880,15 @@ external interface b2JointId {
     var world0: Short
 }
 
-fun b2JointId(_module: dynamic = Box2dWasmLoader.box2dWasm): b2JointId = js("new _module.b2JointId()")
+fun b2JointId(_module: JsAny = Box2dWasmLoader.box2dWasm): b2JointId = js("new _module.b2JointId()")
 
-fun b2JointIdFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2JointId = js("_module.wrapPointer(ptr, _module.b2JointId)")
+fun b2JointIdFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2JointId = js("_module.wrapPointer(ptr, _module.b2JointId)")
 
 fun b2JointId.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2ShapeIdArray {
+external interface b2ShapeIdArray : JsAny {
     /**
      * Native object address.
      */
@@ -2913,15 +2916,15 @@ external interface b2ShapeIdArray {
 /**
  * @param length WebIDL type: unsigned long
  */
-fun b2ShapeIdArray(length: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2ShapeIdArray = js("new _module.b2ShapeIdArray(length)")
+fun b2ShapeIdArray(length: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2ShapeIdArray = js("new _module.b2ShapeIdArray(length)")
 
-fun b2ShapeIdArrayFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2ShapeIdArray = js("_module.wrapPointer(ptr, _module.b2ShapeIdArray)")
+fun b2ShapeIdArrayFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2ShapeIdArray = js("_module.wrapPointer(ptr, _module.b2ShapeIdArray)")
 
 fun b2ShapeIdArray.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2JointIdArray {
+external interface b2JointIdArray : JsAny {
     /**
      * Native object address.
      */
@@ -2949,15 +2952,15 @@ external interface b2JointIdArray {
 /**
  * @param length WebIDL type: unsigned long
  */
-fun b2JointIdArray(length: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2JointIdArray = js("new _module.b2JointIdArray(length)")
+fun b2JointIdArray(length: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2JointIdArray = js("new _module.b2JointIdArray(length)")
 
-fun b2JointIdArrayFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2JointIdArray = js("_module.wrapPointer(ptr, _module.b2JointIdArray)")
+fun b2JointIdArrayFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2JointIdArray = js("_module.wrapPointer(ptr, _module.b2JointIdArray)")
 
 fun b2JointIdArray.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2ContactDataArray {
+external interface b2ContactDataArray : JsAny {
     /**
      * Native object address.
      */
@@ -2985,15 +2988,15 @@ external interface b2ContactDataArray {
 /**
  * @param length WebIDL type: unsigned long
  */
-fun b2ContactDataArray(length: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2ContactDataArray = js("new _module.b2ContactDataArray(length)")
+fun b2ContactDataArray(length: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2ContactDataArray = js("new _module.b2ContactDataArray(length)")
 
-fun b2ContactDataArrayFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2ContactDataArray = js("_module.wrapPointer(ptr, _module.b2ContactDataArray)")
+fun b2ContactDataArrayFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2ContactDataArray = js("_module.wrapPointer(ptr, _module.b2ContactDataArray)")
 
 fun b2ContactDataArray.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2CollisionPlaneArray {
+external interface b2CollisionPlaneArray : JsAny {
     /**
      * Native object address.
      */
@@ -3021,15 +3024,15 @@ external interface b2CollisionPlaneArray {
 /**
  * @param length WebIDL type: unsigned long
  */
-fun b2CollisionPlaneArray(length: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2CollisionPlaneArray = js("new _module.b2CollisionPlaneArray(length)")
+fun b2CollisionPlaneArray(length: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2CollisionPlaneArray = js("new _module.b2CollisionPlaneArray(length)")
 
-fun b2CollisionPlaneArrayFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2CollisionPlaneArray = js("_module.wrapPointer(ptr, _module.b2CollisionPlaneArray)")
+fun b2CollisionPlaneArrayFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2CollisionPlaneArray = js("_module.wrapPointer(ptr, _module.b2CollisionPlaneArray)")
 
 fun b2CollisionPlaneArray.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2Vec2Array {
+external interface b2Vec2Array : JsAny {
     /**
      * Native object address.
      */
@@ -3057,15 +3060,15 @@ external interface b2Vec2Array {
 /**
  * @param length WebIDL type: unsigned long
  */
-fun b2Vec2Array(length: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2Vec2Array = js("new _module.b2Vec2Array(length)")
+fun b2Vec2Array(length: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2Vec2Array = js("new _module.b2Vec2Array(length)")
 
-fun b2Vec2ArrayFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2Vec2Array = js("_module.wrapPointer(ptr, _module.b2Vec2Array)")
+fun b2Vec2ArrayFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2Vec2Array = js("_module.wrapPointer(ptr, _module.b2Vec2Array)")
 
 fun b2Vec2Array.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface B2_Body {
+external interface B2_Body : JsAny {
     /**
      * Native object address.
      */
@@ -3098,13 +3101,13 @@ external interface B2_Body {
      * @param bodyId WebIDL type: unsigned long long
      * @return WebIDL type: [b2BodyType] (enum)
      */
-    fun getType(bodyId: Long): b2BodyType
+    fun getType(bodyId: Long): Int//b2BodyType
 
     /**
      * @param bodyId WebIDL type: unsigned long long
      * @param type   WebIDL type: [b2BodyType] (enum)
      */
-    fun setType(bodyId: Long, type: b2BodyType)
+    fun setType(bodyId: Long, type: Int/*b2BodyType*/)
 
     /**
      * @param bodyId WebIDL type: unsigned long long
@@ -3480,19 +3483,19 @@ external interface B2_Body {
      * @param bodyId   WebIDL type: unsigned long long
      * @param userData WebIDL type: VoidPtr
      */
-    fun setUserData(bodyId: Long, userData: Any)
+    fun setUserData(bodyId: Long, userData: JsAny)
 
     /**
      * @param bodyId WebIDL type: unsigned long long
      * @return WebIDL type: VoidPtr
      */
-    fun getUserData(bodyId: Long): Any
+    fun getUserData(bodyId: Long): JsAny
 
 }
 
-fun B2_BodyFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_Body = js("_module.wrapPointer(ptr, _module.B2_Body)")
+fun B2_BodyFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_Body = js("_module.wrapPointer(ptr, _module.B2_Body)")
 
-external interface b2BodyDef {
+external interface b2BodyDef : JsAny {
     /**
      * Native object address.
      */
@@ -3501,7 +3504,7 @@ external interface b2BodyDef {
     /**
      * WebIDL type: [b2BodyType] (enum)
      */
-    var type: b2BodyType
+    var type: Int//b2BodyType
     /**
      * WebIDL type: [b2Vec2] (Value)
      */
@@ -3541,7 +3544,7 @@ external interface b2BodyDef {
     /**
      * WebIDL type: VoidPtr
      */
-    var userData: Any
+    var userData: JsAny
     /**
      * WebIDL type: boolean
      */
@@ -3568,15 +3571,15 @@ external interface b2BodyDef {
     var allowFastRotation: Boolean
 }
 
-fun b2BodyDef(_module: dynamic = Box2dWasmLoader.box2dWasm): b2BodyDef = js("new _module.b2BodyDef()")
+fun b2BodyDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2BodyDef = js("new _module.b2BodyDef()")
 
-fun b2BodyDefFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2BodyDef = js("_module.wrapPointer(ptr, _module.b2BodyDef)")
+fun b2BodyDefFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2BodyDef = js("_module.wrapPointer(ptr, _module.b2BodyDef)")
 
 fun b2BodyDef.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface B2_CharacterMover {
+external interface B2_CharacterMover : JsAny {
     /**
      * Native object address.
      */
@@ -3598,9 +3601,9 @@ external interface B2_CharacterMover {
 
 }
 
-fun B2_CharacterMoverFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_CharacterMover = js("_module.wrapPointer(ptr, _module.B2_CharacterMover)")
+fun B2_CharacterMoverFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_CharacterMover = js("_module.wrapPointer(ptr, _module.B2_CharacterMover)")
 
-external interface b2PlaneResult {
+external interface b2PlaneResult : JsAny {
     /**
      * Native object address.
      */
@@ -3616,15 +3619,15 @@ external interface b2PlaneResult {
     var plane: b2Plane
 }
 
-fun b2PlaneResult(_module: dynamic = Box2dWasmLoader.box2dWasm): b2PlaneResult = js("new _module.b2PlaneResult()")
+fun b2PlaneResult(_module: JsAny = Box2dWasmLoader.box2dWasm): b2PlaneResult = js("new _module.b2PlaneResult()")
 
-fun b2PlaneResultFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2PlaneResult = js("_module.wrapPointer(ptr, _module.b2PlaneResult)")
+fun b2PlaneResultFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2PlaneResult = js("_module.wrapPointer(ptr, _module.b2PlaneResult)")
 
 fun b2PlaneResult.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2CollisionPlane {
+external interface b2CollisionPlane : JsAny {
     /**
      * Native object address.
      */
@@ -3648,15 +3651,15 @@ external interface b2CollisionPlane {
     var pushLimit: Float
 }
 
-fun b2CollisionPlane(_module: dynamic = Box2dWasmLoader.box2dWasm): b2CollisionPlane = js("new _module.b2CollisionPlane()")
+fun b2CollisionPlane(_module: JsAny = Box2dWasmLoader.box2dWasm): b2CollisionPlane = js("new _module.b2CollisionPlane()")
 
-fun b2CollisionPlaneFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2CollisionPlane = js("_module.wrapPointer(ptr, _module.b2CollisionPlane)")
+fun b2CollisionPlaneFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2CollisionPlane = js("_module.wrapPointer(ptr, _module.b2CollisionPlane)")
 
 fun b2CollisionPlane.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2PlaneSolverResult {
+external interface b2PlaneSolverResult : JsAny {
     /**
      * Native object address.
      */
@@ -3672,15 +3675,15 @@ external interface b2PlaneSolverResult {
     var translation: b2Vec2
 }
 
-fun b2PlaneSolverResult(_module: dynamic = Box2dWasmLoader.box2dWasm): b2PlaneSolverResult = js("new _module.b2PlaneSolverResult()")
+fun b2PlaneSolverResult(_module: JsAny = Box2dWasmLoader.box2dWasm): b2PlaneSolverResult = js("new _module.b2PlaneSolverResult()")
 
-fun b2PlaneSolverResultFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2PlaneSolverResult = js("_module.wrapPointer(ptr, _module.b2PlaneSolverResult)")
+fun b2PlaneSolverResultFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2PlaneSolverResult = js("_module.wrapPointer(ptr, _module.b2PlaneSolverResult)")
 
 fun b2PlaneSolverResult.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface B2_Joint {
+external interface B2_Joint : JsAny {
     /**
      * Native object address.
      */
@@ -3701,7 +3704,7 @@ external interface B2_Joint {
      * @param jointId WebIDL type: unsigned long long
      * @return WebIDL type: [b2JointType] (enum)
      */
-    fun getType(jointId: Long): b2JointType
+    fun getType(jointId: Long): Int//b2JointType
 
     /**
      * @param jointId WebIDL type: unsigned long long
@@ -3843,9 +3846,9 @@ external interface B2_Joint {
 
 }
 
-fun B2_JointFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_Joint = js("_module.wrapPointer(ptr, _module.B2_Joint)")
+fun B2_JointFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_Joint = js("_module.wrapPointer(ptr, _module.B2_Joint)")
 
-external interface B2_DistanceJoint {
+external interface B2_DistanceJoint : JsAny {
     /**
      * Native object address.
      */
@@ -3992,9 +3995,9 @@ external interface B2_DistanceJoint {
 
 }
 
-fun B2_DistanceJointFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_DistanceJoint = js("_module.wrapPointer(ptr, _module.B2_DistanceJoint)")
+fun B2_DistanceJointFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_DistanceJoint = js("_module.wrapPointer(ptr, _module.B2_DistanceJoint)")
 
-external interface b2DistanceJointDef {
+external interface b2DistanceJointDef : JsAny {
     /**
      * Native object address.
      */
@@ -4067,18 +4070,18 @@ external interface b2DistanceJointDef {
     /**
      * WebIDL type: VoidPtr
      */
-    var userData: Any
+    var userData: JsAny
 }
 
-fun b2DistanceJointDef(_module: dynamic = Box2dWasmLoader.box2dWasm): b2DistanceJointDef = js("new _module.b2DistanceJointDef()")
+fun b2DistanceJointDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2DistanceJointDef = js("new _module.b2DistanceJointDef()")
 
-fun b2DistanceJointDefFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2DistanceJointDef = js("_module.wrapPointer(ptr, _module.b2DistanceJointDef)")
+fun b2DistanceJointDefFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2DistanceJointDef = js("_module.wrapPointer(ptr, _module.b2DistanceJointDef)")
 
 fun b2DistanceJointDef.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface B2_FilterJoint {
+external interface B2_FilterJoint : JsAny {
     /**
      * Native object address.
      */
@@ -4098,9 +4101,9 @@ external interface B2_FilterJoint {
 
 }
 
-fun B2_FilterJointFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_FilterJoint = js("_module.wrapPointer(ptr, _module.B2_FilterJoint)")
+fun B2_FilterJointFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_FilterJoint = js("_module.wrapPointer(ptr, _module.B2_FilterJoint)")
 
-external interface b2FilterJointDef {
+external interface b2FilterJointDef : JsAny {
     /**
      * Native object address.
      */
@@ -4117,18 +4120,18 @@ external interface b2FilterJointDef {
     /**
      * WebIDL type: VoidPtr
      */
-    var userData: Any
+    var userData: JsAny
 }
 
-fun b2FilterJointDef(_module: dynamic = Box2dWasmLoader.box2dWasm): b2FilterJointDef = js("new _module.b2FilterJointDef()")
+fun b2FilterJointDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2FilterJointDef = js("new _module.b2FilterJointDef()")
 
-fun b2FilterJointDefFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2FilterJointDef = js("_module.wrapPointer(ptr, _module.b2FilterJointDef)")
+fun b2FilterJointDefFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2FilterJointDef = js("_module.wrapPointer(ptr, _module.b2FilterJointDef)")
 
 fun b2FilterJointDef.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface B2_MotorJoint {
+external interface B2_MotorJoint : JsAny {
     /**
      * Native object address.
      */
@@ -4208,9 +4211,9 @@ external interface B2_MotorJoint {
 
 }
 
-fun B2_MotorJointFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_MotorJoint = js("_module.wrapPointer(ptr, _module.B2_MotorJoint)")
+fun B2_MotorJointFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_MotorJoint = js("_module.wrapPointer(ptr, _module.B2_MotorJoint)")
 
-external interface b2MotorJointDef {
+external interface b2MotorJointDef : JsAny {
     /**
      * Native object address.
      */
@@ -4255,18 +4258,18 @@ external interface b2MotorJointDef {
     /**
      * WebIDL type: VoidPtr
      */
-    var userData: Any
+    var userData: JsAny
 }
 
-fun b2MotorJointDef(_module: dynamic = Box2dWasmLoader.box2dWasm): b2MotorJointDef = js("new _module.b2MotorJointDef()")
+fun b2MotorJointDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2MotorJointDef = js("new _module.b2MotorJointDef()")
 
-fun b2MotorJointDefFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2MotorJointDef = js("_module.wrapPointer(ptr, _module.b2MotorJointDef)")
+fun b2MotorJointDefFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2MotorJointDef = js("_module.wrapPointer(ptr, _module.b2MotorJointDef)")
 
 fun b2MotorJointDef.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface B2_MouseJoint {
+external interface B2_MouseJoint : JsAny {
     /**
      * Native object address.
      */
@@ -4334,9 +4337,9 @@ external interface B2_MouseJoint {
 
 }
 
-fun B2_MouseJointFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_MouseJoint = js("_module.wrapPointer(ptr, _module.B2_MouseJoint)")
+fun B2_MouseJointFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_MouseJoint = js("_module.wrapPointer(ptr, _module.B2_MouseJoint)")
 
-external interface b2MouseJointDef {
+external interface b2MouseJointDef : JsAny {
     /**
      * Native object address.
      */
@@ -4377,18 +4380,18 @@ external interface b2MouseJointDef {
     /**
      * WebIDL type: VoidPtr
      */
-    var userData: Any
+    var userData: JsAny
 }
 
-fun b2MouseJointDef(_module: dynamic = Box2dWasmLoader.box2dWasm): b2MouseJointDef = js("new _module.b2MouseJointDef()")
+fun b2MouseJointDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2MouseJointDef = js("new _module.b2MouseJointDef()")
 
-fun b2MouseJointDefFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2MouseJointDef = js("_module.wrapPointer(ptr, _module.b2MouseJointDef)")
+fun b2MouseJointDefFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2MouseJointDef = js("_module.wrapPointer(ptr, _module.b2MouseJointDef)")
 
 fun b2MouseJointDef.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface B2_PrismaticJoint {
+external interface B2_PrismaticJoint : JsAny {
     /**
      * Native object address.
      */
@@ -4541,9 +4544,9 @@ external interface B2_PrismaticJoint {
 
 }
 
-fun B2_PrismaticJointFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_PrismaticJoint = js("_module.wrapPointer(ptr, _module.B2_PrismaticJoint)")
+fun B2_PrismaticJointFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_PrismaticJoint = js("_module.wrapPointer(ptr, _module.B2_PrismaticJoint)")
 
-external interface b2PrismaticJointDef {
+external interface b2PrismaticJointDef : JsAny {
     /**
      * Native object address.
      */
@@ -4620,18 +4623,18 @@ external interface b2PrismaticJointDef {
     /**
      * WebIDL type: VoidPtr
      */
-    var userData: Any
+    var userData: JsAny
 }
 
-fun b2PrismaticJointDef(_module: dynamic = Box2dWasmLoader.box2dWasm): b2PrismaticJointDef = js("new _module.b2PrismaticJointDef()")
+fun b2PrismaticJointDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2PrismaticJointDef = js("new _module.b2PrismaticJointDef()")
 
-fun b2PrismaticJointDefFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2PrismaticJointDef = js("_module.wrapPointer(ptr, _module.b2PrismaticJointDef)")
+fun b2PrismaticJointDefFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2PrismaticJointDef = js("_module.wrapPointer(ptr, _module.b2PrismaticJointDef)")
 
 fun b2PrismaticJointDef.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface B2_RevoluteJoint {
+external interface B2_RevoluteJoint : JsAny {
     /**
      * Native object address.
      */
@@ -4778,9 +4781,9 @@ external interface B2_RevoluteJoint {
 
 }
 
-fun B2_RevoluteJointFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_RevoluteJoint = js("_module.wrapPointer(ptr, _module.B2_RevoluteJoint)")
+fun B2_RevoluteJointFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_RevoluteJoint = js("_module.wrapPointer(ptr, _module.B2_RevoluteJoint)")
 
-external interface b2RevoluteJointDef {
+external interface b2RevoluteJointDef : JsAny {
     /**
      * Native object address.
      */
@@ -4857,18 +4860,18 @@ external interface b2RevoluteJointDef {
     /**
      * WebIDL type: VoidPtr
      */
-    var userData: Any
+    var userData: JsAny
 }
 
-fun b2RevoluteJointDef(_module: dynamic = Box2dWasmLoader.box2dWasm): b2RevoluteJointDef = js("new _module.b2RevoluteJointDef()")
+fun b2RevoluteJointDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2RevoluteJointDef = js("new _module.b2RevoluteJointDef()")
 
-fun b2RevoluteJointDefFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2RevoluteJointDef = js("_module.wrapPointer(ptr, _module.b2RevoluteJointDef)")
+fun b2RevoluteJointDefFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2RevoluteJointDef = js("_module.wrapPointer(ptr, _module.b2RevoluteJointDef)")
 
 fun b2RevoluteJointDef.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface B2_WeldJoint {
+external interface B2_WeldJoint : JsAny {
     /**
      * Native object address.
      */
@@ -4936,9 +4939,9 @@ external interface B2_WeldJoint {
 
 }
 
-fun B2_WeldJointFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_WeldJoint = js("_module.wrapPointer(ptr, _module.B2_WeldJoint)")
+fun B2_WeldJointFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_WeldJoint = js("_module.wrapPointer(ptr, _module.B2_WeldJoint)")
 
-external interface b2WeldJointDef {
+external interface b2WeldJointDef : JsAny {
     /**
      * Native object address.
      */
@@ -4991,18 +4994,18 @@ external interface b2WeldJointDef {
     /**
      * WebIDL type: VoidPtr
      */
-    var userData: Any
+    var userData: JsAny
 }
 
-fun b2WeldJointDef(_module: dynamic = Box2dWasmLoader.box2dWasm): b2WeldJointDef = js("new _module.b2WeldJointDef()")
+fun b2WeldJointDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2WeldJointDef = js("new _module.b2WeldJointDef()")
 
-fun b2WeldJointDefFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2WeldJointDef = js("_module.wrapPointer(ptr, _module.b2WeldJointDef)")
+fun b2WeldJointDefFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2WeldJointDef = js("_module.wrapPointer(ptr, _module.b2WeldJointDef)")
 
 fun b2WeldJointDef.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface B2_WheelJoint {
+external interface B2_WheelJoint : JsAny {
     /**
      * Native object address.
      */
@@ -5131,9 +5134,9 @@ external interface B2_WheelJoint {
 
 }
 
-fun B2_WheelJointFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_WheelJoint = js("_module.wrapPointer(ptr, _module.B2_WheelJoint)")
+fun B2_WheelJointFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_WheelJoint = js("_module.wrapPointer(ptr, _module.B2_WheelJoint)")
 
-external interface b2WheelJointDef {
+external interface b2WheelJointDef : JsAny {
     /**
      * Native object address.
      */
@@ -5206,18 +5209,18 @@ external interface b2WheelJointDef {
     /**
      * WebIDL type: VoidPtr
      */
-    var userData: Any
+    var userData: JsAny
 }
 
-fun b2WheelJointDef(_module: dynamic = Box2dWasmLoader.box2dWasm): b2WheelJointDef = js("new _module.b2WheelJointDef()")
+fun b2WheelJointDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2WheelJointDef = js("new _module.b2WheelJointDef()")
 
-fun b2WheelJointDefFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2WheelJointDef = js("_module.wrapPointer(ptr, _module.b2WheelJointDef)")
+fun b2WheelJointDefFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2WheelJointDef = js("_module.wrapPointer(ptr, _module.b2WheelJointDef)")
 
 fun b2WheelJointDef.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface B2_Geometry {
+external interface B2_Geometry : JsAny {
     /**
      * Native object address.
      */
@@ -5446,9 +5449,9 @@ external interface B2_Geometry {
 
 }
 
-fun B2_GeometryFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): B2_Geometry = js("_module.wrapPointer(ptr, _module.B2_Geometry)")
+fun B2_GeometryFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_Geometry = js("_module.wrapPointer(ptr, _module.B2_Geometry)")
 
-external interface b2MassData {
+external interface b2MassData : JsAny {
     /**
      * Native object address.
      */
@@ -5468,15 +5471,15 @@ external interface b2MassData {
     var rotationalInertia: Float
 }
 
-fun b2MassData(_module: dynamic = Box2dWasmLoader.box2dWasm): b2MassData = js("new _module.b2MassData()")
+fun b2MassData(_module: JsAny = Box2dWasmLoader.box2dWasm): b2MassData = js("new _module.b2MassData()")
 
-fun b2MassDataFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2MassData = js("_module.wrapPointer(ptr, _module.b2MassData)")
+fun b2MassDataFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2MassData = js("_module.wrapPointer(ptr, _module.b2MassData)")
 
 fun b2MassData.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2Circle {
+external interface b2Circle : JsAny {
     /**
      * Native object address.
      */
@@ -5492,15 +5495,15 @@ external interface b2Circle {
     var radius: Float
 }
 
-fun b2Circle(_module: dynamic = Box2dWasmLoader.box2dWasm): b2Circle = js("new _module.b2Circle()")
+fun b2Circle(_module: JsAny = Box2dWasmLoader.box2dWasm): b2Circle = js("new _module.b2Circle()")
 
-fun b2CircleFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2Circle = js("_module.wrapPointer(ptr, _module.b2Circle)")
+fun b2CircleFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2Circle = js("_module.wrapPointer(ptr, _module.b2Circle)")
 
 fun b2Circle.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2Capsule {
+external interface b2Capsule : JsAny {
     /**
      * Native object address.
      */
@@ -5520,15 +5523,15 @@ external interface b2Capsule {
     var radius: Float
 }
 
-fun b2Capsule(_module: dynamic = Box2dWasmLoader.box2dWasm): b2Capsule = js("new _module.b2Capsule()")
+fun b2Capsule(_module: JsAny = Box2dWasmLoader.box2dWasm): b2Capsule = js("new _module.b2Capsule()")
 
-fun b2CapsuleFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2Capsule = js("_module.wrapPointer(ptr, _module.b2Capsule)")
+fun b2CapsuleFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2Capsule = js("_module.wrapPointer(ptr, _module.b2Capsule)")
 
 fun b2Capsule.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2Polygon {
+external interface b2Polygon : JsAny {
     /**
      * Native object address.
      */
@@ -5558,9 +5561,9 @@ external interface b2Polygon {
     var count: Int
 }
 
-fun b2Polygon(_module: dynamic = Box2dWasmLoader.box2dWasm): b2Polygon = js("new _module.b2Polygon()")
+fun b2Polygon(_module: JsAny = Box2dWasmLoader.box2dWasm): b2Polygon = js("new _module.b2Polygon()")
 
-fun b2PolygonFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2Polygon = js("_module.wrapPointer(ptr, _module.b2Polygon)")
+fun b2PolygonFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2Polygon = js("_module.wrapPointer(ptr, _module.b2Polygon)")
 
 fun b2Polygon.destroy() {
     Box2dWasmLoader.destroy(this)
@@ -5571,7 +5574,7 @@ inline fun b2Polygon.setVertices(index: Int, value: b2Vec2) = set_vertices(index
 inline fun b2Polygon.getNormals(index: Int) = get_normals(index)
 inline fun b2Polygon.setNormals(index: Int, value: b2Vec2) = set_normals(index, value)
 
-external interface b2Segment {
+external interface b2Segment : JsAny {
     /**
      * Native object address.
      */
@@ -5587,15 +5590,15 @@ external interface b2Segment {
     var point2: b2Vec2
 }
 
-fun b2Segment(_module: dynamic = Box2dWasmLoader.box2dWasm): b2Segment = js("new _module.b2Segment()")
+fun b2Segment(_module: JsAny = Box2dWasmLoader.box2dWasm): b2Segment = js("new _module.b2Segment()")
 
-fun b2SegmentFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2Segment = js("_module.wrapPointer(ptr, _module.b2Segment)")
+fun b2SegmentFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2Segment = js("_module.wrapPointer(ptr, _module.b2Segment)")
 
 fun b2Segment.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2ChainSegment {
+external interface b2ChainSegment : JsAny {
     /**
      * Native object address.
      */
@@ -5619,15 +5622,15 @@ external interface b2ChainSegment {
     var segment: b2Segment
 }
 
-fun b2ChainSegment(_module: dynamic = Box2dWasmLoader.box2dWasm): b2ChainSegment = js("new _module.b2ChainSegment()")
+fun b2ChainSegment(_module: JsAny = Box2dWasmLoader.box2dWasm): b2ChainSegment = js("new _module.b2ChainSegment()")
 
-fun b2ChainSegmentFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2ChainSegment = js("_module.wrapPointer(ptr, _module.b2ChainSegment)")
+fun b2ChainSegmentFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2ChainSegment = js("_module.wrapPointer(ptr, _module.b2ChainSegment)")
 
 fun b2ChainSegment.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2Hull {
+external interface b2Hull : JsAny {
     /**
      * Native object address.
      */
@@ -5644,9 +5647,9 @@ external interface b2Hull {
     fun set_points(index: Int, value: b2Vec2)
 }
 
-fun b2Hull(_module: dynamic = Box2dWasmLoader.box2dWasm): b2Hull = js("new _module.b2Hull()")
+fun b2Hull(_module: JsAny = Box2dWasmLoader.box2dWasm): b2Hull = js("new _module.b2Hull()")
 
-fun b2HullFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2Hull = js("_module.wrapPointer(ptr, _module.b2Hull)")
+fun b2HullFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2Hull = js("_module.wrapPointer(ptr, _module.b2Hull)")
 
 fun b2Hull.destroy() {
     Box2dWasmLoader.destroy(this)
@@ -5655,7 +5658,7 @@ fun b2Hull.destroy() {
 inline fun b2Hull.getPoints(index: Int) = get_points(index)
 inline fun b2Hull.setPoints(index: Int, value: b2Vec2) = set_points(index, value)
 
-external interface b2ShapeProxy {
+external interface b2ShapeProxy : JsAny {
     /**
      * Native object address.
      */
@@ -5676,9 +5679,9 @@ external interface b2ShapeProxy {
     var radius: Float
 }
 
-fun b2ShapeProxy(_module: dynamic = Box2dWasmLoader.box2dWasm): b2ShapeProxy = js("new _module.b2ShapeProxy()")
+fun b2ShapeProxy(_module: JsAny = Box2dWasmLoader.box2dWasm): b2ShapeProxy = js("new _module.b2ShapeProxy()")
 
-fun b2ShapeProxyFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2ShapeProxy = js("_module.wrapPointer(ptr, _module.b2ShapeProxy)")
+fun b2ShapeProxyFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2ShapeProxy = js("_module.wrapPointer(ptr, _module.b2ShapeProxy)")
 
 fun b2ShapeProxy.destroy() {
     Box2dWasmLoader.destroy(this)
@@ -5687,7 +5690,7 @@ fun b2ShapeProxy.destroy() {
 inline fun b2ShapeProxy.getPoints(index: Int) = get_points(index)
 inline fun b2ShapeProxy.setPoints(index: Int, value: b2Vec2) = set_points(index, value)
 
-external interface b2RayCastInput {
+external interface b2RayCastInput : JsAny {
     /**
      * Native object address.
      */
@@ -5707,15 +5710,15 @@ external interface b2RayCastInput {
     var translation: b2Vec2
 }
 
-fun b2RayCastInput(_module: dynamic = Box2dWasmLoader.box2dWasm): b2RayCastInput = js("new _module.b2RayCastInput()")
+fun b2RayCastInput(_module: JsAny = Box2dWasmLoader.box2dWasm): b2RayCastInput = js("new _module.b2RayCastInput()")
 
-fun b2RayCastInputFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2RayCastInput = js("_module.wrapPointer(ptr, _module.b2RayCastInput)")
+fun b2RayCastInputFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2RayCastInput = js("_module.wrapPointer(ptr, _module.b2RayCastInput)")
 
 fun b2RayCastInput.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2ShapeCastInput {
+external interface b2ShapeCastInput : JsAny {
     /**
      * Native object address.
      */
@@ -5739,15 +5742,15 @@ external interface b2ShapeCastInput {
     var translation: b2Vec2
 }
 
-fun b2ShapeCastInput(_module: dynamic = Box2dWasmLoader.box2dWasm): b2ShapeCastInput = js("new _module.b2ShapeCastInput()")
+fun b2ShapeCastInput(_module: JsAny = Box2dWasmLoader.box2dWasm): b2ShapeCastInput = js("new _module.b2ShapeCastInput()")
 
-fun b2ShapeCastInputFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2ShapeCastInput = js("_module.wrapPointer(ptr, _module.b2ShapeCastInput)")
+fun b2ShapeCastInputFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2ShapeCastInput = js("_module.wrapPointer(ptr, _module.b2ShapeCastInput)")
 
 fun b2ShapeCastInput.destroy() {
     Box2dWasmLoader.destroy(this)
 }
 
-external interface b2CastOutput {
+external interface b2CastOutput : JsAny {
     /**
      * Native object address.
      */
@@ -5775,9 +5778,9 @@ external interface b2CastOutput {
     var point: b2Vec2
 }
 
-fun b2CastOutput(_module: dynamic = Box2dWasmLoader.box2dWasm): b2CastOutput = js("new _module.b2CastOutput()")
+fun b2CastOutput(_module: JsAny = Box2dWasmLoader.box2dWasm): b2CastOutput = js("new _module.b2CastOutput()")
 
-fun b2CastOutputFromPointer(ptr: Int, _module: dynamic = Box2dWasmLoader.box2dWasm): b2CastOutput = js("_module.wrapPointer(ptr, _module.b2CastOutput)")
+fun b2CastOutputFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2CastOutput = js("_module.wrapPointer(ptr, _module.b2CastOutput)")
 
 fun b2CastOutput.destroy() {
     Box2dWasmLoader.destroy(this)
@@ -5785,32 +5788,50 @@ fun b2CastOutput.destroy() {
 
 value class b2ShapeType private constructor(val value: Int) {
     companion object {
-        val b2_circleShape: b2ShapeType = b2ShapeType(Box2dWasmLoader.box2dWasm._emscripten_enum_b2ShapeType_b2_circleShape())
-        val b2_capsuleShape: b2ShapeType = b2ShapeType(Box2dWasmLoader.box2dWasm._emscripten_enum_b2ShapeType_b2_capsuleShape())
-        val b2_segmentShape: b2ShapeType = b2ShapeType(Box2dWasmLoader.box2dWasm._emscripten_enum_b2ShapeType_b2_segmentShape())
-        val b2_polygonShape: b2ShapeType = b2ShapeType(Box2dWasmLoader.box2dWasm._emscripten_enum_b2ShapeType_b2_polygonShape())
-        val b2_chainSegmentShape: b2ShapeType = b2ShapeType(Box2dWasmLoader.box2dWasm._emscripten_enum_b2ShapeType_b2_chainSegmentShape())
+        val b2_circleShape: b2ShapeType = b2ShapeType(b2ShapeType_b2_circleShape(Box2dWasmLoader.box2dWasm))
+        val b2_capsuleShape: b2ShapeType = b2ShapeType(b2ShapeType_b2_capsuleShape(Box2dWasmLoader.box2dWasm))
+        val b2_segmentShape: b2ShapeType = b2ShapeType(b2ShapeType_b2_segmentShape(Box2dWasmLoader.box2dWasm))
+        val b2_polygonShape: b2ShapeType = b2ShapeType(b2ShapeType_b2_polygonShape(Box2dWasmLoader.box2dWasm))
+        val b2_chainSegmentShape: b2ShapeType = b2ShapeType(b2ShapeType_b2_chainSegmentShape(Box2dWasmLoader.box2dWasm))
     }
 }
 
 value class b2BodyType private constructor(val value: Int) {
     companion object {
-        val b2_staticBody: b2BodyType = b2BodyType(Box2dWasmLoader.box2dWasm._emscripten_enum_b2BodyType_b2_staticBody())
-        val b2_kinematicBody: b2BodyType = b2BodyType(Box2dWasmLoader.box2dWasm._emscripten_enum_b2BodyType_b2_kinematicBody())
-        val b2_dynamicBody: b2BodyType = b2BodyType(Box2dWasmLoader.box2dWasm._emscripten_enum_b2BodyType_b2_dynamicBody())
+        val b2_staticBody: b2BodyType = b2BodyType(b2BodyType_b2_staticBody(Box2dWasmLoader.box2dWasm))
+        val b2_kinematicBody: b2BodyType = b2BodyType(b2BodyType_b2_kinematicBody(Box2dWasmLoader.box2dWasm))
+        val b2_dynamicBody: b2BodyType = b2BodyType(b2BodyType_b2_dynamicBody(Box2dWasmLoader.box2dWasm))
     }
 }
 
 value class b2JointType private constructor(val value: Int) {
     companion object {
-        val b2_distanceJoint: b2JointType = b2JointType(Box2dWasmLoader.box2dWasm._emscripten_enum_b2JointType_b2_distanceJoint())
-        val b2_filterJoint: b2JointType = b2JointType(Box2dWasmLoader.box2dWasm._emscripten_enum_b2JointType_b2_filterJoint())
-        val b2_motorJoint: b2JointType = b2JointType(Box2dWasmLoader.box2dWasm._emscripten_enum_b2JointType_b2_motorJoint())
-        val b2_mouseJoint: b2JointType = b2JointType(Box2dWasmLoader.box2dWasm._emscripten_enum_b2JointType_b2_mouseJoint())
-        val b2_prismaticJoint: b2JointType = b2JointType(Box2dWasmLoader.box2dWasm._emscripten_enum_b2JointType_b2_prismaticJoint())
-        val b2_revoluteJoint: b2JointType = b2JointType(Box2dWasmLoader.box2dWasm._emscripten_enum_b2JointType_b2_revoluteJoint())
-        val b2_weldJoint: b2JointType = b2JointType(Box2dWasmLoader.box2dWasm._emscripten_enum_b2JointType_b2_weldJoint())
-        val b2_wheelJoint: b2JointType = b2JointType(Box2dWasmLoader.box2dWasm._emscripten_enum_b2JointType_b2_wheelJoint())
+        val b2_distanceJoint: b2JointType = b2JointType(b2JointType_b2_distanceJoint(Box2dWasmLoader.box2dWasm))
+        val b2_filterJoint: b2JointType = b2JointType(b2JointType_b2_filterJoint(Box2dWasmLoader.box2dWasm))
+        val b2_motorJoint: b2JointType = b2JointType(b2JointType_b2_motorJoint(Box2dWasmLoader.box2dWasm))
+        val b2_mouseJoint: b2JointType = b2JointType(b2JointType_b2_mouseJoint(Box2dWasmLoader.box2dWasm))
+        val b2_prismaticJoint: b2JointType = b2JointType(b2JointType_b2_prismaticJoint(Box2dWasmLoader.box2dWasm))
+        val b2_revoluteJoint: b2JointType = b2JointType(b2JointType_b2_revoluteJoint(Box2dWasmLoader.box2dWasm))
+        val b2_weldJoint: b2JointType = b2JointType(b2JointType_b2_weldJoint(Box2dWasmLoader.box2dWasm))
+        val b2_wheelJoint: b2JointType = b2JointType(b2JointType_b2_wheelJoint(Box2dWasmLoader.box2dWasm))
     }
 }
 
+private fun b2ShapeType_b2_circleShape(module: JsAny): Int = js("module._emscripten_enum_b2ShapeType_b2_circleShape()")
+private fun b2ShapeType_b2_capsuleShape(module: JsAny?): Int = js("module._emscripten_enum_b2ShapeType_b2_capsuleShape()")
+private fun b2ShapeType_b2_segmentShape(module: JsAny?): Int = js("module._emscripten_enum_b2ShapeType_b2_segmentShape()")
+private fun b2ShapeType_b2_polygonShape(module: JsAny?): Int = js("module._emscripten_enum_b2ShapeType_b2_polygonShape()")
+private fun b2ShapeType_b2_chainSegmentShape(module: JsAny?): Int = js("module._emscripten_enum_b2ShapeType_b2_chainSegmentShape()")
+
+private fun b2BodyType_b2_staticBody(module: JsAny): Int = js("module._emscripten_enum_b2BodyType_b2_staticBody()")
+private fun b2BodyType_b2_kinematicBody(module: JsAny): Int = js("module._emscripten_enum_b2BodyType_b2_kinematicBody()")
+private fun b2BodyType_b2_dynamicBody(module: JsAny): Int = js("module._emscripten_enum_b2BodyType_b2_dynamicBody()")
+
+private fun b2JointType_b2_distanceJoint(module: JsAny): Int = js("module._emscripten_enum_b2JointType_b2_distanceJoint()")
+private fun b2JointType_b2_filterJoint(module: JsAny): Int = js("module._emscripten_enum_b2JointType_b2_filterJoint()")
+private fun b2JointType_b2_motorJoint(module: JsAny): Int = js("module._emscripten_enum_b2JointType_b2_motorJoint()")
+private fun b2JointType_b2_mouseJoint(module: JsAny): Int = js("module._emscripten_enum_b2JointType_b2_mouseJoint()")
+private fun b2JointType_b2_prismaticJoint(module: JsAny): Int = js("module._emscripten_enum_b2JointType_b2_prismaticJoint()")
+private fun b2JointType_b2_revoluteJoint(module: JsAny): Int = js("module._emscripten_enum_b2JointType_b2_revoluteJoint()")
+private fun b2JointType_b2_weldJoint(module: JsAny): Int = js("module._emscripten_enum_b2JointType_b2_weldJoint()")
+private fun b2JointType_b2_wheelJoint(module: JsAny): Int = js("module._emscripten_enum_b2JointType_b2_wheelJoint()")
