@@ -1,12 +1,14 @@
-@file:OptIn(ExperimentalKotlinGradlePluginApi::class)
+@file:OptIn(ExperimentalKotlinGradlePluginApi::class, ExperimentalWasmDsl::class)
 
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     id("org.jetbrains.kotlin.multiplatform")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jetbrains.kotlin.plugin.atomicfu")
     id("org.jetbrains.dokka")
+    id("org.jetbrains.kotlin.plugin.js-plain-objects")
 }
 
 kotlin {
@@ -19,10 +21,15 @@ kotlin {
             target.set("es2015")
         }
     }
+    wasmJs {
+        binaries.library()
+        browser()
+    }
 
     compilerOptions {
         freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
         freeCompilerArgs.add("-Xcontext-parameters")
+        freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
     sourceSets.all {
@@ -33,9 +40,22 @@ kotlin {
             optIn("kotlin.ExperimentalStdlibApi")
         }
     }
-
-    compilerOptions {
-        freeCompilerArgs.add("-Xexpect-actual-classes")
+    sourceSets {
+        jsMain {
+            languageSettings {
+                optIn("kotlin.js.ExperimentalWasmJsInterop")
+            }
+        }
+        webMain {
+            languageSettings {
+                optIn("kotlin.js.ExperimentalWasmJsInterop")
+            }
+        }
+        wasmJsMain {
+            languageSettings {
+                optIn("kotlin.js.ExperimentalWasmJsInterop")
+            }
+        }
     }
 }
 

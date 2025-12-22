@@ -25,6 +25,10 @@ kotlin {
 //            api(npm(File("$projectDir/npm/physx-js-webidl")))
         }
 
+        webMain.dependencies {
+            api(npm(libs.physx.wasm.get().name, libs.versions.physx.wasm.get()))
+        }
+
 //        androidMain.dependencies {
 //            api(libs.physx.android)
 //        }

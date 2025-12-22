@@ -6,6 +6,7 @@ kotlin-serialization = "1.9.0"
 kotlin-datetime = "0.7.1-0.6.x-compat"
 kotlin-atomicfu = "0.29.0"
 kotlin-dokka = "2.1.0"
+kotlinx-browser = "0.5.0"
 lwjgl = "3.3.6"
 jsvg = "2.0.0"
 androidsvg = "1.4"
@@ -29,6 +30,7 @@ kotlin-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", 
 kotlin-atomicfu = { group = "org.jetbrains.kotlinx", name = "atomicfu", version.ref = "kotlin-atomicfu" }
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit", version.ref = "kotlin" }
+kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version.ref = "kotlinx-browser" }
 jsvg = { group = "com.github.weisj", name = "jsvg", version.ref = "jsvg" }
 jspecify-annotations = { module = "org.jspecify:jspecify", version = "1.0.0" }
 androidsvg = { group = "com.caverock", name = "androidsvg-aar", version.ref = "androidsvg" }
@@ -62,6 +64,7 @@ jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "jna" }
 plugindep-kotlin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 plugindep-kotlin-serialization = { group = "org.jetbrains.kotlin", name = "kotlin-serialization", version.ref = "kotlin" }
 plugindep-kotlin-atomicfu = { group = "org.jetbrains.kotlin", name = "atomicfu", version.ref = "kotlin" }
+plugindep-kotlin-jsplainobjs = { module = "org.jetbrains.kotlin.plugin.js-plain-objects:org.jetbrains.kotlin.plugin.js-plain-objects.gradle.plugin", version.ref = "kotlin" }
 plugindep-dokka = { group = "org.jetbrains.dokka", name = "dokka-gradle-plugin", version.ref = "kotlin-dokka" }
 plugindep-android-library = { group = "com.android.library", name = "com.android.library.gradle.plugin", version.ref = "agp" }
 plugindep-maven-publish = { group = "com.vanniktech", name = "gradle-maven-publish-plugin", version = "0.35.0" }

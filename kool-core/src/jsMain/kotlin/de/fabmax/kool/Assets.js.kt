@@ -14,6 +14,7 @@ import de.fabmax.kool.util.Uint8BufferImpl
 import kotlinx.browser.document
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.await
+import kotlinx.js.JsPlainObject
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
 import org.w3c.dom.Image
@@ -142,17 +143,20 @@ external fun createImageBitmap(image: Image, options: ImageBitmapOptions = defin
 
 external fun fetch(resource: String): Promise<Response>
 
-external interface ImageBitmapOptions
-
-fun ImageBitmapOptions(resize: Vec2i? = null, resizeQuality: String = "high"): ImageBitmapOptions {
-    val o = js("({})")
-    o["premultiplyAlpha"] = "none"
-    if (resize != null) {
-        o["resizeWidth"] = resize.x
-        o["resizeHeight"] = resize.y
-        o["resizeQuality"] = resizeQuality
+fun ImageBitmapOptions(resize: Vec2i? = null): ImageBitmapOptions {
+    return if (resize != null) {
+        ImageBitmapOptions(premultiplyAlpha = "none", resizeWidth = resize.x, resizeHeight = resize.y, resizeQuality = "high")
+    } else {
+        ImageBitmapOptions(premultiplyAlpha = "none")
     }
-    return o
+}
+
+@JsPlainObject
+external interface ImageBitmapOptions {
+    val premultiplyAlpha: String
+    val resizeWidth: Int?
+    val resizeHeight: Int?
+    val resizeQuality: String?
 }
 
 external interface Response {

@@ -16,10 +16,6 @@ import kotlin.math.ceil
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
-/**
- * @author fabmax
- */
-
 class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
 
     private val canvas = document.createElement("canvas") as HTMLCanvasElement
@@ -191,6 +187,5 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
 
 external class FontFace(family: String, source: String) {
     val family: String
-
     fun load(): Promise<FontFace>
 }
