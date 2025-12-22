@@ -4,7 +4,6 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(22)
     sourceSets {
         commonMain.dependencies {
             api(project(":kool-core"))
