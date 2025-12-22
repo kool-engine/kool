@@ -1,18 +1,14 @@
-/*
- * Generated from WebIDL by webidl-util
- */
-
 package box2d
 
 import kotlinx.coroutines.await
 import kotlin.js.Promise
 
 @JsModule("kool-box2d-wasm")
-private external val Box2D: () -> Promise<dynamic>
+private external val Box2D: () -> Promise<JsAny>
 
 internal actual object Box2dWasmLoader {
-    private lateinit var box2dWasmModule: JsAny
-    internal actual val box2dWasm: JsAny get() = box2dWasmModule
+    private var box2dWasmModule: JsAny? = null
+    internal actual val box2dWasm: JsAny get() = requireNotNull(box2dWasmModule) { "Module 'kool-box2d-wasm' is not loaded" }
     private val box2dWasmPromise = Box2D()
     private var isLoaded: Boolean = false
 
