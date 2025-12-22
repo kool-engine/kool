@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '22'
+          java-version: '25'
 
       - name: Enable Android target
         run: ./gradlew enableAndroidPlatform
