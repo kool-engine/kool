@@ -4,16 +4,12 @@ import de.fabmax.kool.JsImpl
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
 import de.fabmax.kool.math.MutableVec2d
-import de.fabmax.kool.platform.JsContext
-import de.fabmax.kool.platform.Touch
-import de.fabmax.kool.platform.TouchEvent
-import de.fabmax.kool.platform.navigator
+import de.fabmax.kool.platform.*
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logT
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.HTMLCanvasElement
-import org.w3c.dom.events.Event
 import org.w3c.dom.events.KeyboardEvent
 import org.w3c.dom.events.MouseEvent
 
@@ -73,7 +69,7 @@ internal object PlatformInputJs : PlatformInput {
 
         navigator.getGamepads()?.forEach {
             if (it != null) {
-                ControllerInput.addController(ControllerJs(it))
+                ControllerInput.addController(ControllerWeb(it))
             }
         }
 
@@ -176,7 +172,7 @@ internal object PlatformInputJs : PlatformInput {
     private fun installGamepadHandlers() {
         window.addEventListener("gamepadconnected", { ev ->
             val gamepad = (ev as GamepadEvent).gamepad
-            ControllerInput.addController(ControllerJs(gamepad))
+            ControllerInput.addController(ControllerWeb(gamepad))
         })
         window.addEventListener("gamepaddisconnected", { ev ->
             val gamepad = (ev as GamepadEvent).gamepad
@@ -351,24 +347,4 @@ internal object PlatformInputJs : PlatformInput {
             }
         }
     }
-}
-
-external class GamepadEvent : Event {
-    val gamepad: Gamepad
-}
-
-external interface Gamepad {
-    val axes: DoubleArray
-    val buttons: Array<GamepadButton>
-    val connected: Boolean
-    val id: String
-    val index: Int
-    val mapping: String
-    val timestamp: Double
-}
-
-external interface GamepadButton {
-    val pressed: Boolean
-    val touched: Boolean
-    val value: Double
 }

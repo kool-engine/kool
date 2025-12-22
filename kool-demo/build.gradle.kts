@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalWasmDsl::class)
+
 import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalDistributionDsl
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
@@ -26,6 +29,17 @@ kotlin {
         }
     }
     jvmToolchain(25)
+
+    wasmJs {
+        outputModuleName = "kool-demo-wasm"
+        binaries.executable()
+        browser {
+            @OptIn(ExperimentalDistributionDsl::class)
+            distribution {
+                outputDirectory.set(File("${rootDir}/dist/kool-demo-wasm"))
+            }
+        }
+    }
 
     js {
         binaries.executable()

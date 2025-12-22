@@ -22,7 +22,7 @@ kotlin {
             ).forEach { platform -> runtimeOnly("${libs.box2d.jni.get()}:$platform") }
         }
 
-        jsMain.dependencies {
+        webMain.dependencies {
             implementation(npm(libs.box2d.wasm.get().name, libs.versions.box2d.wasm.get()))
             //implementation(npm(File("$projectDir/npm/kool-box2d-wasm")))
         }
