@@ -1,12 +1,13 @@
+@file:Suppress("REDUNDANT_CALL_OF_CONVERSION_METHOD", "EXTENSION_SHADOWED_BY_MEMBER")
+
 package de.fabmax.kool
 
+import de.fabmax.kool.pipeline.backend.webgpu.JsValueEnum
 import org.khronos.webgl.Float32Array
 import org.khronos.webgl.Uint32Array
 import org.khronos.webgl.get
 import org.khronos.webgl.set
 import kotlin.js.*
-
-fun JsNumber?.toFloat(default: Float = 0f) = this?.toDouble()?.toFloat() ?: default
 
 fun IntArray.toUint32Array(): Uint32Array = Uint32Array(size).also {
     for (i in indices) {
@@ -81,3 +82,45 @@ external interface AudioNode : JsAny {
 }
 
 external interface AudioDestinationNode : AudioNode, JsAny
+
+fun JsNumber?.toFloat(default: Float = 0f) = this?.toDouble()?.toFloat() ?: default
+
+fun Long.toJsNumber() = toDouble().toJsNumber()
+
+fun JsNumber.toLong() = toDouble().toLong()
+
+fun DoubleArray.toJsArray(): JsArray<JsNumber> {
+    val array = JsArray<JsNumber>()
+    forEachIndexed { index, number -> array[index] = number.toJsNumber() }
+    return array
+}
+
+fun FloatArray.toJsArray(): JsArray<JsNumber> {
+    val array = JsArray<JsNumber>()
+    forEachIndexed { index, number -> array[index] = number.toDouble().toJsNumber() }
+    return array
+}
+
+fun IntArray.toJsArray(): JsArray<JsNumber> {
+    val array = JsArray<JsNumber>()
+    forEachIndexed { index, number -> array[index] = number.toJsNumber() }
+    return array
+}
+
+fun List<String>.toJsArray(): JsArray<JsString> {
+    val array = JsArray<JsString>()
+    forEachIndexed { index, string -> array[index] = string.toJsString() }
+    return array
+}
+
+fun List<JsValueEnum>.toJsArray(): JsArray<JsString> {
+    val array = JsArray<JsString>()
+    forEachIndexed { index, enum -> array[index] = enum.value.toJsString() }
+    return array
+}
+
+fun <T: JsAny> jsArrayOf(vararg elements: T): JsArray<T> {
+    val array = JsArray<T>()
+    for (i in elements.indices) { array[i] = elements[i] }
+    return array
+}

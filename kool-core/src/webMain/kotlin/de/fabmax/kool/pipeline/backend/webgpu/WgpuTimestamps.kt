@@ -1,15 +1,17 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
+import de.fabmax.kool.toJsNumber
 import de.fabmax.kool.util.Releasable
 import org.khronos.webgl.Uint32Array
 import org.khronos.webgl.get
+import kotlin.js.toJsNumber
 import kotlin.math.max
 
 class WgpuTimestamps(val size: Int, val backend: RenderBackendWebGpu) {
 
     private var querySet: GPUQuerySet? = null
-    private val resolveBuffer = backend.device.createBuffer(GPUBufferDescriptor(size * 8L, GPUBufferUsage.QUERY_RESOLVE or GPUBufferUsage.COPY_SRC))
-    private val readBuffer = backend.device.createBuffer(GPUBufferDescriptor(size * 8L, GPUBufferUsage.MAP_READ or GPUBufferUsage.COPY_DST))
+    private val resolveBuffer = backend.device.createBuffer(GPUBufferDescriptor((size * 8L).toJsNumber(), GPUBufferUsage.QUERY_RESOLVE or GPUBufferUsage.COPY_SRC))
+    private val readBuffer = backend.device.createBuffer(GPUBufferDescriptor((size * 8L).toJsNumber(), GPUBufferUsage.MAP_READ or GPUBufferUsage.COPY_DST))
 
     private var isInFlight = false
     private var isMapping = false
@@ -52,8 +54,8 @@ class WgpuTimestamps(val size: Int, val backend: RenderBackendWebGpu) {
         val querySet = getQuerySet() ?: return
         if (!isInFlight && activeQueries > 0) {
             isInFlight = true
-            encoder.resolveQuerySet(querySet, 0, lastActive + 1, resolveBuffer, 0L)
-            encoder.copyBufferToBuffer(resolveBuffer, 0L, readBuffer, 0L, size * 8L)
+            encoder.resolveQuerySet(querySet, 0, lastActive + 1, resolveBuffer, 0.toJsNumber())
+            encoder.copyBufferToBuffer(resolveBuffer, 0.toJsNumber(), readBuffer, 0.toJsNumber(), (size * 8L).toJsNumber())
         }
     }
 
@@ -73,6 +75,7 @@ class WgpuTimestamps(val size: Int, val backend: RenderBackendWebGpu) {
                 readBuffer.unmap()
                 isInFlight = false
                 isMapping = false
+                it
             }
         }
     }

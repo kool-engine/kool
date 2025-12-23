@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
+import de.fabmax.kool.jsArrayOf
 import de.fabmax.kool.pipeline.*
 
 interface PassEncoderState {
@@ -85,7 +86,7 @@ class RenderPassEncoderState(val backend: RenderBackendWebGpu): PassEncoderState
         }
         val cmdBuffer = encoder.finish()
         _encoder = null
-        backend.device.queue.submit(arrayOf(cmdBuffer))
+        backend.device.queue.submit(jsArrayOf(cmdBuffer))
     }
 
     fun beginRenderPass(

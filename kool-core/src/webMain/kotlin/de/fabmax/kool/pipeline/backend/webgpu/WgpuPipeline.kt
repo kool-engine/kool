@@ -60,7 +60,7 @@ sealed class WgpuPipeline(
 
             device.createBindGroupLayout(
                 label = "${pipeline.name}-bindGroupLayout[${group.scope}]",
-                entries = layoutEntries.toTypedArray()
+                entries = layoutEntries
             )
         }
     }
@@ -68,7 +68,7 @@ sealed class WgpuPipeline(
     private fun createPipelineLayout(): GPUPipelineLayout {
         return device.createPipelineLayout(GPUPipelineLayoutDescriptor(
             label = "${pipeline.name}-bindGroupLayout",
-            bindGroupLayouts = bindGroupLayouts.toTypedArray()
+            bindGroupLayouts = bindGroupLayouts
         ))
     }
 

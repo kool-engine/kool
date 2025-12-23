@@ -4,7 +4,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.geometry.PrimitiveType
 
 fun GPUCommandEncoder.beginRenderPass(
-    colorAttachments: Array<GPURenderPassColorAttachment>,
+    colorAttachments: List<GPURenderPassColorAttachment>,
     depthStencilAttachment: GPURenderPassDepthStencilAttachment? = null,
     timestampWrites: GPURenderPassTimestampWrites? = null,
     label: String = ""
@@ -12,12 +12,12 @@ fun GPUCommandEncoder.beginRenderPass(
 
 fun GPUDevice.createBindGroup(
     layout: GPUBindGroupLayout,
-    entries: Array<GPUBindGroupEntry>,
+    entries: List<GPUBindGroupEntry>,
     label: String = ""
 ) = createBindGroup(GPUBindGroupDescriptor(layout, entries, label))
 
 fun GPUDevice.createBindGroupLayout(
-    entries: Array<GPUBindGroupLayoutEntry>,
+    entries: List<GPUBindGroupLayoutEntry>,
     label: String = ""
 ) = createBindGroupLayout(GPUBindGroupLayoutDescriptor(
     entries = entries,

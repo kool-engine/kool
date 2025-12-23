@@ -1,10 +1,10 @@
 package de.fabmax.kool.input
 
+import de.fabmax.kool.Gamepad
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.WasmImpl
 import de.fabmax.kool.configWasm
 import de.fabmax.kool.math.MutableVec2d
-import de.fabmax.kool.platform.GamepadEvent
 import de.fabmax.kool.platform.WasmContext
 import de.fabmax.kool.platform.navigator
 import de.fabmax.kool.util.logD
@@ -14,6 +14,7 @@ import kotlinx.browser.window
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.Touch
 import org.w3c.dom.TouchEvent
+import org.w3c.dom.events.Event
 import org.w3c.dom.events.KeyboardEvent
 import org.w3c.dom.events.MouseEvent
 
@@ -348,6 +349,10 @@ internal object PlatformInputWasm : PlatformInput {
             }
         }
     }
+}
+
+external class GamepadEvent : Event, JsAny {
+    val gamepad: Gamepad
 }
 
 private fun getMovementX(ev: MouseEvent): JsNumber = js("ev.movementX")

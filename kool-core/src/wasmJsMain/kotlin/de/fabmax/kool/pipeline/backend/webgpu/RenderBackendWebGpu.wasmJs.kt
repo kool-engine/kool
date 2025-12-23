@@ -13,7 +13,7 @@ import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.gl.pxSize
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.pipeline.backend.wgsl.WgslGenerator
-import de.fabmax.kool.platform.JsContext
+import de.fabmax.kool.platform.WasmContext
 import de.fabmax.kool.platform.navigator
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
@@ -24,91 +24,90 @@ import org.w3c.dom.HTMLCanvasElement
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
-    override val name: String = "WebGPU"
-    override val apiName: String = "WebGPU"
-    override val deviceName: String = "WebGPU"
-    override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.WEB_GPU
-    override lateinit var features: BackendFeatures; private set
+actual class RenderBackendWebGpu(val ctx: WasmContext) : RenderBackend {
+    override actual val name: String = "WebGPU"
+    override actual val apiName: String = "WebGPU"
+    override actual val deviceName: String = "WebGPU"
+    override actual val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.WEB_GPU
+    private lateinit var _features: BackendFeatures
+    override actual val features: BackendFeatures get() = _features
+
+    actual val numSamples: Int = KoolSystem.configWasm.numSamples
+    actual val framebufferSize: Vec2i get() = ctx.window.framebufferSize
 
     private val canvas: HTMLCanvasElement get() = ctx.window.canvas
-    lateinit var adapter: GPUAdapter
-        private set
-    lateinit var device: GPUDevice
-        private set
-    lateinit var canvasContext: GPUCanvasContext
-        private set
+    private var _adapter: GPUAdapter? = null
+    private var _device: GPUDevice? = null
+    private var _canvasContext: GPUCanvasContext? = null
     private var _canvasFormat: GPUTextureFormat? = null
-    val canvasFormat: GPUTextureFormat
-        get() = _canvasFormat!!
+    actual val adapter: GPUAdapter get() = requireNotNull(_adapter)
+    actual val device: GPUDevice get() = requireNotNull(_device)
+    actual val canvasContext: GPUCanvasContext get() = requireNotNull(_canvasContext)
+    actual val canvasFormat: GPUTextureFormat get() = _canvasFormat!!
 
-    internal lateinit var textureLoader: WgpuTextureLoader
-        private set
+    private var _textureLoader: WgpuTextureLoader? = null
+    internal actual val textureLoader: WgpuTextureLoader get() = requireNotNull(_textureLoader)
 
-    var isTimestampQuerySupported = false
-        private set
-    internal val timestampQuery: WgpuTimestamps by lazy { WgpuTimestamps(128, this) }
+    private var _isTimestampQuerySupported = false
+    actual val isTimestampQuerySupported: Boolean get() = _isTimestampQuerySupported
 
-    val pipelineManager = WgpuPipelineManager(this)
+    internal actual val timestampQuery: WgpuTimestamps by lazy { WgpuTimestamps(128, this) }
+
+    actual val pipelineManager = WgpuPipelineManager(this)
     private val screenPass = WgpuScreenPass(this)
 
     private var renderSize = Vec2i(canvas.width, canvas.height)
 
     private val gpuReadbacks = mutableListOf<GpuReadback>()
 
-    override val frameGpuTime: Duration = 0.0.seconds
+    override actual val frameGpuTime: Duration = 0.0.seconds
 
-    override val isAsyncRendering: Boolean = false
+    override actual val isAsyncRendering: Boolean = false
 
-    val clearHelper: ClearHelper by lazy { ClearHelper(this) }
+    actual val clearHelper: ClearHelper by lazy { ClearHelper(this) }
     private val passEncoderState = RenderPassEncoderState(this)
 
     init {
-        check(isSupported()) {
-            val txt = "WebGPU not supported on this browser."
-            js("alert(txt)")
-            txt
-        }
+        check(isSupported()) { "WebGPU not supported on this browser." }
     }
 
     internal suspend fun createWebGpuContext(): Boolean {
-        val powerPref = when (KoolSystem.configJs.powerPreference) {
+        val powerPref = when (KoolSystem.configWasm.powerPreference) {
             PowerPreference.HighPerformance -> GPUPowerPreference.highPerformance
             PowerPreference.LowPower -> GPUPowerPreference.lowPower
         }
-        val selectedAdapter = navigator.gpu.requestAdapter(GPURequestAdapterOptions(powerPref)).await()
-            ?: navigator.gpu.requestAdapter().await()
+        val selectedAdapter = navigator.gpu.requestAdapter(GPURequestAdapterOptions(powerPref)).await<GPUAdapter?>()
+            ?: navigator.gpu.requestAdapter().await<GPUAdapter?>()
         if (selectedAdapter == null) {
             logE { "No appropriate GPUAdapter found." }
             return false
         }
-        adapter = selectedAdapter
+        _adapter = selectedAdapter
 
-        val availableFeatures = mutableSetOf<String>()
-        adapter.features.forEach { s: String -> availableFeatures.add(s) }
-        logD { "Available GPUAdapter features:" }
-        availableFeatures.forEach { logD { it } }
+//        val availableFeatures = adapter.features.toList()
+//        logD { "Available GPUAdapter features:" }
+//        availableFeatures.forEach { logD { it } }
 
         val requiredFeatures = mutableListOf<String>()
-        if ("timestamp-query" in availableFeatures) {
+//        if ("timestamp-query" in availableFeatures) {
             logI { "Enabling WebGPU timestamp-query feature" }
             requiredFeatures.add("timestamp-query")
-            isTimestampQuerySupported = true
-        }
-        if ("rg11b10ufloat-renderable" in availableFeatures) {
+            _isTimestampQuerySupported = true
+//        }
+//        if ("rg11b10ufloat-renderable" in availableFeatures) {
             logI { "Enabling rg11b10ufloat-renderable feature" }
             requiredFeatures.add("rg11b10ufloat-renderable")
-        }
+//        }
 
         try {
-            val deviceDesc = GPUDeviceDescriptor(requiredFeatures.toTypedArray())
-            device = adapter.requestDevice(deviceDesc).await()
+            val deviceDesc = GPUDeviceDescriptor(requiredFeatures)
+            _device = adapter.requestDevice(deviceDesc).await()
         } catch (e: Exception) {
             logE { "requestDevice() failed: $e" }
             return false
         }
 
-        features = BackendFeatures(
+        _features = BackendFeatures(
             computeShaders = true,
             cubeMapArrays = true,
             reversedDepth = true,
@@ -128,17 +127,17 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
             maxComputeInvocationsPerWorkgroup = device.limits.maxComputeInvocationsPerWorkgroup,
         )
 
-        canvasContext = canvas.getContext("webgpu") as GPUCanvasContext
-        _canvasFormat = navigator.gpu.getPreferredCanvasFormat()
+        _canvasContext = canvas.getContext("webgpu") as GPUCanvasContext
+        _canvasFormat = GPUTextureFormat.forValue(navigator.gpu.getPreferredCanvasFormat())
         canvasContext.configure(
             GPUCanvasConfiguration(device, canvasFormat)
         )
-        textureLoader = WgpuTextureLoader(this)
+        _textureLoader = WgpuTextureLoader(this)
         logI { "WebGPU context created" }
         return true
     }
 
-    override fun renderFrame(frameData: FrameData, ctx: KoolContext) {
+    actual override fun renderFrame(frameData: FrameData, ctx: KoolContext) {
         BackendStats.resetPerFrameCounts()
 
         if (ctx.window.framebufferSize != renderSize) {
@@ -206,11 +205,11 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
         (impl as WgpuComputePass).dispatch(passEncoderState.encoder)
     }
 
-    override fun cleanup(ctx: KoolContext) {
+    actual override fun cleanup(ctx: KoolContext) {
         // do nothing for now
     }
 
-    override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode {
+    actual override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode {
         val output = WgslGenerator.generateProgram(shader.program, pipeline)
         return WebGpuShaderCode(
             vertexSrc = output.vertexSrc,
@@ -220,7 +219,7 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
         )
     }
 
-    override fun generateKslComputeShader(shader: KslComputeShader, pipeline: ComputePipeline): ComputeShaderCode {
+    actual override fun generateKslComputeShader(shader: KslComputeShader, pipeline: ComputePipeline): ComputeShaderCode {
         val output = WgslGenerator.generateComputeProgram(shader.program, pipeline)
         return WebGpuComputeShaderCode(
             computeSrc = output.computeSrc,
@@ -228,25 +227,25 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
         )
     }
 
-    override fun createOffscreenPass2d(parentPass: OffscreenPass2d): OffscreenPass2dImpl {
+    actual override fun createOffscreenPass2d(parentPass: OffscreenPass2d): OffscreenPass2dImpl {
         return WgpuOffscreenPass2d(parentPass, this)
     }
 
-    override fun createOffscreenPassCube(parentPass: OffscreenPassCube): OffscreenPassCubeImpl {
+    actual override fun createOffscreenPassCube(parentPass: OffscreenPassCube): OffscreenPassCubeImpl {
         return WgpuOffscreenPassCube(parentPass, this)
     }
 
-    override fun createComputePass(parentPass: ComputePass): ComputePassImpl {
+    actual override fun createComputePass(parentPass: ComputePass): ComputePassImpl {
         return WgpuComputePass(parentPass, this)
     }
 
-    override fun <T: ImageData> uploadTextureData(tex: Texture<T>) = textureLoader.loadTexture(tex)
+    actual override fun <T: ImageData> uploadTextureData(tex: Texture<T>) = textureLoader.loadTexture(tex)
 
-    override fun downloadBuffer(buffer: GpuBuffer, deferred: CompletableDeferred<Unit>, resultBuffer: Buffer) {
+    actual override fun downloadBuffer(buffer: GpuBuffer, deferred: CompletableDeferred<Unit>, resultBuffer: Buffer) {
         gpuReadbacks += ReadbackStorageBuffer(buffer, deferred, resultBuffer)
     }
 
-    override fun downloadTextureData(texture: Texture<*>, deferred: CompletableDeferred<ImageData>) {
+    actual override fun downloadTextureData(texture: Texture<*>, deferred: CompletableDeferred<ImageData>) {
         gpuReadbacks += ReadbackTexture(texture, deferred)
     }
 
@@ -260,11 +259,11 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
                 val mapBuffer = device.createBuffer(
                     GPUBufferDescriptor(
                         label = "storage-buffer-readback",
-                        size = size,
+                        size = size.toJsNumber(),
                         usage = GPUBufferUsage.MAP_READ or GPUBufferUsage.COPY_DST
                     )
                 )
-                encoder.copyBufferToBuffer(gpuBuf.buffer, 0L, mapBuffer, 0L, size)
+                encoder.copyBufferToBuffer(gpuBuf.buffer, 0.toJsNumber(), mapBuffer, 0.toJsNumber(), size.toJsNumber())
                 readback.mapBuffer = mapBuffer
             }
         }
@@ -279,7 +278,7 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
                 val mapBuffer = device.createBuffer(
                     GPUBufferDescriptor(
                         label = "texture-readback",
-                        size = size,
+                        size = size.toJsNumber(),
                         usage = GPUBufferUsage.MAP_READ or GPUBufferUsage.COPY_DST
                     )
                 )
@@ -290,7 +289,7 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
                         bytesPerRow = format.pxSize * gpuTex.width,
                         rowsPerImage = gpuTex.height
                     ),
-                    copySize = intArrayOf(gpuTex.width, gpuTex.height, gpuTex.depth)
+                    copySize = intArrayOf(gpuTex.width, gpuTex.height, gpuTex.depth).toJsArray()
                 )
                 readback.mapBuffer = mapBuffer
             }
@@ -305,6 +304,7 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
                 mapBuffer.unmap()
                 mapBuffer.destroy()
                 readback.deferred.complete(Unit)
+                it
             }
         }
 
@@ -323,6 +323,7 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
                     is Texture3d -> readback.deferred.complete(BufferedImageData3d(dst, gpuTex.width, gpuTex.height, gpuTex.depth, format))
                     else -> readback.deferred.completeExceptionally(IllegalArgumentException("Unsupported texture type"))
                 }
+                it
             }
         }
 
@@ -340,11 +341,11 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
         }
     }
 
-    fun createBuffer(descriptor: GPUBufferDescriptor, info: String?): GpuBufferWgpu {
-        return GpuBufferWgpu(device.createBuffer(descriptor), descriptor.size, info)
+    actual fun createBuffer(descriptor: GPUBufferDescriptor, info: String?): GpuBufferWgpu {
+        return GpuBufferWgpu(device.createBuffer(descriptor), descriptor.size.toLong(), info)
     }
 
-    fun createTexture(descriptor: GPUTextureDescriptor): WgpuTextureResource {
+    actual fun createTexture(descriptor: GPUTextureDescriptor): WgpuTextureResource {
         return WgpuTextureResource(descriptor, device.createTexture(descriptor))
     }
 
@@ -358,29 +359,12 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
         var mapBuffer: GPUBuffer? = null
     }
 
-    data class WebGpuShaderCode(
-        val vertexSrc: String,
-        val vertexEntryPoint: String,
-        val fragmentSrc: String,
-        val fragmentEntryPoint: String
-    ): ShaderCode {
-        override val hash = LongHash {
-            this += vertexSrc.hashCode().toLong() shl 32 or fragmentSrc.hashCode().toLong()
-        }
-    }
-
-    data class WebGpuComputeShaderCode(val computeSrc: String, val computeEntryPoint: String): ComputeShaderCode {
-        override val hash = LongHash {
-            this += computeSrc
-        }
-    }
-
     companion object : BackendProvider {
         override val displayName: String = "WebGPU"
 
         override suspend fun createBackend(ctx: KoolContext): Result<RenderBackend> {
             return if (isSupported()) {
-                val backend = RenderBackendWebGpu(ctx as JsContext)
+                val backend = RenderBackendWebGpu(ctx as WasmContext)
                 if (backend.createWebGpuContext()) {
                     Result.success(backend)
                 } else {
@@ -392,7 +376,9 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
         }
 
         fun isSupported(): Boolean {
-            return !js("!navigator.gpu") as Boolean
+            return !isNoWgpuSupport()
         }
     }
 }
+
+private fun isNoWgpuSupport(): Boolean = js("!navigator.gpu")

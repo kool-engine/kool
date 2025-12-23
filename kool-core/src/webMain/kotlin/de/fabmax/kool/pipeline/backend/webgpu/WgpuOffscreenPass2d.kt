@@ -4,13 +4,12 @@ import de.fabmax.kool.PassData
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.logT
 import de.fabmax.kool.util.releaseDelayed
 
-class WgpuOffscreenPassCube(
-    val parentPass: OffscreenPassCube,
+class WgpuOffscreenPass2d(
+    val parentPass: OffscreenPass2d,
     backend: RenderBackendWebGpu
-) : WgpuRenderPass(GPUTextureFormat.depth32float, parentPass.numSamples, backend), OffscreenPassCubeImpl {
+) : WgpuRenderPass(GPUTextureFormat.depth32float, parentPass.numSamples, backend), OffscreenPass2dImpl {
 
     override val colorTargetFormats = parentPass.colorAttachments.map { it.texture.format.wgpu }
     private var attachments: Attachments? = null
@@ -47,7 +46,7 @@ class WgpuOffscreenPassCube(
     }
 
     private fun doResize(newSize: Vec2i) {
-        logT { "Resize offscreen cube pass ${parentPass.name} to ${newSize.x} x ${newSize.y}" }
+        logD { "Resize offscreen 2d pass ${parentPass.name} to ${newSize.x} x ${newSize.y}" }
         val wasCopySource = attachments?.isCopySrc == true
         attachments?.releaseDelayed(1)
         attachments = createAttachments(wasCopySource, newSize)
@@ -65,11 +64,11 @@ class WgpuOffscreenPassCube(
         val attachments = checkNotNull(this.attachments)
         if (frameCopy.isCopyColor) {
             for (i in frameCopy.colorCopy.indices) {
-                attachments.copyColorToTexture(i, frameCopy.colorCopy[i] as TextureCube, encoder)
+                attachments.copyColorToTexture(i, frameCopy.colorCopy[i] as Texture2d, encoder)
             }
         }
         if (frameCopy.isCopyDepth) {
-            attachments.copyDepthToTexture(frameCopy.depthCopyCube, encoder)
+            attachments.copyDepthToTexture(frameCopy.depthCopy2d, encoder)
         }
     }
 
@@ -81,8 +80,7 @@ class WgpuOffscreenPassCube(
         val attachments = checkNotNull(this.attachments)
         val renderPass = passEncoderState.renderPass
         val mipLevel = passEncoderState.mipLevel
-        val layer = passEncoderState.layer
-        val views = attachments.getColorViews(mipLevel, layer)
+        val views = attachments.getColorViews(mipLevel)
         val colors = views.mapIndexed { i, colorView ->
             val colorLoadOp = when {
                 forceLoad -> GPULoadOp.load
@@ -97,10 +95,9 @@ class WgpuOffscreenPassCube(
                 view = colorView,
                 loadOp = colorLoadOp,
                 clearValue = clearColor,
-                resolveTarget = if (isMultiSampled) attachments.getResolveColorView(i, mipLevel, layer) else null,
+                resolveTarget = if (isMultiSampled) attachments.getResolveColorView(i, mipLevel) else null,
             )
-        }.toTypedArray()
-
+        }
         val depthLoadOp = when {
             forceLoad -> GPULoadOp.load
             renderPass.depthAttachment?.clearDepth == ClearDepthLoad -> GPULoadOp.load
@@ -136,7 +133,7 @@ class WgpuOffscreenPassCube(
         val attachments = Attachments(
             colorFormats = colorTargetFormats,
             depthFormat = if (parentPass.hasDepth) GPUTextureFormat.depth32float else null,
-            layers = 6,
+            layers = 1,
             isCopySrc = isCopySource || isGenMipMaps,
             parentPass = parentPass,
             size = size,

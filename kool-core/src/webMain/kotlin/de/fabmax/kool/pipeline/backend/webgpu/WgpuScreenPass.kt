@@ -1,8 +1,6 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.PassData
-import de.fabmax.kool.configJs
 import de.fabmax.kool.pipeline.ClearColorFill
 import de.fabmax.kool.pipeline.ClearColorLoad
 import de.fabmax.kool.pipeline.ClearDepthLoad
@@ -10,7 +8,7 @@ import de.fabmax.kool.pipeline.FrameCopy
 import de.fabmax.kool.util.releaseDelayed
 
 class WgpuScreenPass(backend: RenderBackendWebGpu) :
-    WgpuRenderPass(GPUTextureFormat.depth32float, KoolSystem.configJs.numSamples, backend)
+    WgpuRenderPass(GPUTextureFormat.depth32float, backend.numSamples, backend)
 {
     private val canvasContext: GPUCanvasContext
         get() = backend.canvasContext
@@ -30,7 +28,7 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
 
     fun renderScene(passData: PassData, passEncoderState: RenderPassEncoderState) {
         if (depthAttachment == null || colorTexture == null) {
-            updateRenderTextures(backend.ctx.window.framebufferSize.x, backend.ctx.window.framebufferSize.y)
+            updateRenderTextures(backend.framebufferSize.x, backend.framebufferSize.y)
         }
         render(passData, passEncoderState)
     }
@@ -87,7 +85,7 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
         if (numSamples > 1 && colorDstWgpu != null) {
             // run an empty render pass, which resolves the multi-sampled color texture into the target capture texture
             val passEncoder = encoder.beginRenderPass(
-                colorAttachments = arrayOf(GPURenderPassColorAttachment(
+                colorAttachments = listOf(GPURenderPassColorAttachment(
                     view = colorTextureView!!,
                     resolveTarget = colorDstWgpu.gpuTexture.createView(),
                 )),
@@ -125,7 +123,7 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
             else -> GPULoadOp.clear
         }
 
-        val colors = arrayOf(
+        val colors = listOf(
             GPURenderPassColorAttachment(
                 view = colorTextureView!!,
                 loadOp = colorLoadOp,

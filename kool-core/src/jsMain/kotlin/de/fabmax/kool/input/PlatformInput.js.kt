@@ -1,15 +1,20 @@
 package de.fabmax.kool.input
 
+import de.fabmax.kool.Gamepad
 import de.fabmax.kool.JsImpl
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
 import de.fabmax.kool.math.MutableVec2d
-import de.fabmax.kool.platform.*
+import de.fabmax.kool.platform.JsContext
+import de.fabmax.kool.platform.Touch
+import de.fabmax.kool.platform.TouchEvent
+import de.fabmax.kool.platform.navigator
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logT
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.HTMLCanvasElement
+import org.w3c.dom.events.Event
 import org.w3c.dom.events.KeyboardEvent
 import org.w3c.dom.events.MouseEvent
 
@@ -347,4 +352,8 @@ internal object PlatformInputJs : PlatformInput {
             }
         }
     }
+}
+
+external class GamepadEvent : Event, JsAny {
+    val gamepad: Gamepad
 }

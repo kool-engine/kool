@@ -71,11 +71,11 @@ class WgpuDrawPipeline(
         val renderPass = passEncoderState.renderPass
         val gpuRenderPass = passEncoderState.gpuRenderPass
 
-        val shaderCode = drawPipeline.shaderCode as RenderBackendWebGpu.WebGpuShaderCode
+        val shaderCode = drawPipeline.shaderCode as WebGpuShaderCode
         val vertexState = GPUVertexState(
             module = vertexShaderModule,
             entryPoint = shaderCode.vertexEntryPoint,
-            buffers = createVertexBufferLayout().toTypedArray()
+            buffers = createVertexBufferLayout()
         )
 
         val blendMode = when (drawPipeline.pipelineConfig.blendMode) {
@@ -105,7 +105,7 @@ class WgpuDrawPipeline(
         val fragmentState = GPUFragmentState(
             module = fragmentShaderModule,
             entryPoint = shaderCode.fragmentEntryPoint,
-            targets = gpuRenderPass.colorTargetFormats.map { GPUColorTargetState(it, blendMode) }.toTypedArray()
+            targets = gpuRenderPass.colorTargetFormats.map { GPUColorTargetState(it, blendMode) }
         )
 
         val depthOp = when {
@@ -183,13 +183,13 @@ class WgpuDrawPipeline(
     }
 
     private fun bindVertexBuffers(passEncoder: GPURenderPassEncoder, cmd: DrawCommand): Boolean {
-        val gpuGeom = cmd.vertexData.gpuGeometry as WgpuGeometry? ?: return false
+        val gpuGeom = cmd.vertexData.gpuGeometry as? WgpuGeometry? ?: return false
         val gpuInsts = cmd.instanceData?.gpuInstances as WgpuInstances?
 
         var slot = 0
         gpuInsts?.instanceBuffer?.let { passEncoder.setVertexBuffer(slot++, it) }
         gpuGeom.vertexBuffer?.let { passEncoder.setVertexBuffer(slot, it) }
-        passEncoder.setIndexBuffer(gpuGeom.indexBuffer, GPUIndexFormat.uint32)
+        passEncoder.setIndexBuffer(gpuGeom.indexBuffer, GPUIndexFormat.uint32.value)
         return true
     }
 }
