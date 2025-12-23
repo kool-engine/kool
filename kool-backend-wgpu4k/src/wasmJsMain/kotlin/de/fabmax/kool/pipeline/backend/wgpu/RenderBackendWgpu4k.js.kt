@@ -1,0 +1,65 @@
+package de.fabmax.kool.pipeline.backend.wgpu
+
+import de.fabmax.kool.FrameData
+import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.configWasm
+import de.fabmax.kool.platform.WasmContext
+import de.fabmax.kool.util.ApplicationScope
+import io.ygdrasil.webgpu.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.launch
+import org.w3c.dom.HTMLCanvasElement
+
+internal actual fun isRenderBackendWgpu4kSupported(): Boolean = true //!(js("!navigator.gpu") as Boolean)
+
+internal actual suspend fun createRenderBackendWgpu4k(ctx: KoolContext): RenderBackendWgpu4k {
+    ctx as WasmContext
+    val backend = WasmRenderBackendWgpu4kWebGpu(ctx, ctx.window.canvas)
+    backend.initContext()
+    with(backend) {
+        surface.configure(
+            SurfaceConfiguration(
+                device,
+                surface.format,
+                viewFormats = setOf(surface.format)
+            )
+        )
+    }
+    return backend
+}
+
+private fun getSurface(canvas: HTMLCanvasElement): WgpuSurface {
+    val canvasSurface = canvas.unsafeCast<io.ygdrasil.webgpu.HTMLCanvasElement>().getCanvasSurface()
+    return WgpuSurface(canvasSurface)
+}
+
+private suspend fun getAdapter(): Adapter {
+    val adapterDescriptor = createJsObject<WGPURequestAdapterOptions>().apply {
+        powerPreference = KoolSystem.configWasm.powerPreference.value
+    }
+    val selectedAdapter: WGPUAdapter? = navigator.gpu?.requestAdapter(adapterDescriptor)?.wait()
+            ?: navigator.gpu?.requestAdapter()?.wait()
+    checkNotNull(selectedAdapter) { "No appropriate GPUAdapter found." }
+
+    val adapter = Adapter(selectedAdapter)
+    return adapter
+}
+
+@OptIn(DelicateCoroutinesApi::class)
+internal class WasmRenderBackendWgpu4kWebGpu(ctx: KoolContext, canvas: HTMLCanvasElement) :
+    RenderBackendWgpu4k(
+        ctx,
+        getSurface(canvas),
+        KoolSystem.configWasm.numSamples,
+        { getAdapter() }
+    )
+{
+    override val isAsyncRendering: Boolean = false
+
+    override fun renderFrame(frameData: FrameData, ctx: KoolContext) {
+        ApplicationScope.launch {
+            renderFrameSuspending(frameData, ctx)
+        }
+    }
+}
