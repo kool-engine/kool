@@ -2,10 +2,7 @@ package de.fabmax.kool.physics.articulations
 
 import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.math.toRad
-import de.fabmax.kool.physics.createPxArticulationDrive
-import de.fabmax.kool.physics.createPxArticulationLimit
-import de.fabmax.kool.physics.createPxTransform
-import de.fabmax.kool.physics.toPxTransform
+import de.fabmax.kool.physics.*
 import de.fabmax.kool.util.scopedMem
 import physxandroid.physics.*
 
@@ -99,7 +96,7 @@ class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) :
     ) {
         scopedMem {
             val drive = createPxArticulationDrive()
-            drive.driveType = driveType.pxVal
+            drive.driveTypeEnum = driveType.pxVal
             drive.stiffness = stiffness
             drive.damping = damping
             pxJoint.setDriveParams(axis.pxVal, drive)

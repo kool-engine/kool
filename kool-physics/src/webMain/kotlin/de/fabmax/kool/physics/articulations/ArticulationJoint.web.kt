@@ -2,9 +2,15 @@ package de.fabmax.kool.physics.articulations
 
 import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.math.toRad
-import de.fabmax.kool.physics.*
+import de.fabmax.kool.physics.createPxArticulationDrive
+import de.fabmax.kool.physics.createPxArticulationLimit
+import de.fabmax.kool.physics.createPxTransform
+import de.fabmax.kool.physics.toPxTransform
 import de.fabmax.kool.util.scopedMem
-import physx.physics.*
+import physx.*
+
+// GENERATED CODE BELOW:
+// Transformed from desktop source
 
 class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) : ArticulationJoint {
 
@@ -115,7 +121,7 @@ class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) :
             PxArticulationJointTypeEnum.eREVOLUTE -> ArticulationJointType.REVOLUTE
             PxArticulationJointTypeEnum.eSPHERICAL -> ArticulationJointType.SPHERICAL
             PxArticulationJointTypeEnum.eUNDEFINED -> throw IllegalStateException("Invalid joint type: $this")
-            //@js: else -> throw IllegalStateException("Invalid joint type: $this")
+            else -> throw IllegalStateException("Invalid joint type: $this")
         }
 
         private val ArticulationJointType.pxVal: PxArticulationJointTypeEnum get() = when (this) {

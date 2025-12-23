@@ -1,35 +1,19 @@
-@file:Suppress("UnsafeCastFromDynamic", "FunctionName")
-
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.ScopedMemory
-import physxandroid.NativeObject
-import physxandroid.character.*
-import physxandroid.common.*
-import physxandroid.cooking.PxConvexFlags
-import physxandroid.cooking.PxConvexMeshDesc
-import physxandroid.cooking.PxTriangleMeshDesc
-import physxandroid.extensions.*
-import physxandroid.geometry.*
-import physxandroid.physics.*
-import physxandroid.support.PxArray_PxShapePtr
-import physxandroid.support.PxArray_PxVec3
-import physxandroid.vehicle2.*
+import physx.*
 
-val NativeObject.ptr: Long get() = address
-
-@Suppress("RemoveRedundantQualifierName")
 object SIZEOF {
-    val PxVec3 = physxandroid.common.PxVec3.SIZEOF
-    val PxHeightFieldSample = physxandroid.geometry.PxHeightFieldSample.SIZEOF
+    val PxVec3 = 12
+    val PxHeightFieldSample = 4
 }
 
 object WrapPointer {
-    fun PxCapsuleController(ptr: Long) = PxCapsuleController.wrapPointer(ptr)
-    fun PxRigidDynamic(ptr: Long) = PxRigidDynamic.wrapPointer(ptr)
+    fun PxCapsuleController(ptr: Int) = PxCapsuleControllerFromPointer(ptr)
+    fun PxRigidDynamic(ptr: Int) = PxRigidDynamicFromPointer(ptr)
 }
 
 fun PxBounds3.toBoundingBox(result: BoundingBoxF): BoundingBoxF {
@@ -46,8 +30,8 @@ fun BoundingBoxF.toPxBounds3(result: PxBounds3): PxBounds3 {
     return result
 }
 
-fun PxTransform() = PxTransform(PxIDENTITYEnum.PxIdentity)
-fun PxTransform.toMat4f(result: MutableMat4f): MutableMat4f {
+fun PxTransform() = PxTransform(PxIDENTITYEnum.PxIdentity.value)
+fun PxTransform.toMat4f(result: MutableMat4f): Mat4f {
     result.setIdentity().rotate(q.toQuatF())
     result[0, 3] = p.x
     result[1, 3] = p.y
@@ -107,7 +91,6 @@ fun PxExtendedVec3.toVec3d(result: MutableVec3d = MutableVec3d()) = result.set(x
 fun PxExtendedVec3.set(v: Vec3d): PxExtendedVec3 { x = v.x; y = v.y; z = v.z; return this }
 fun Vec3d.toPxExtendedVec3(result: PxExtendedVec3) = result.set(this)
 
-@Suppress("FunctionName")
 fun List<Vec3f>.toPxArray_PxVec3(): PxArray_PxVec3 {
     val vector = PxArray_PxVec3(size)
     forEachIndexed { i, v -> v.toPxVec3(vector.get(i)) }
@@ -125,6 +108,14 @@ fun FilterData.toPxFilterData(target: PxFilterData): PxFilterData {
     target.word3 = word3
     return target
 }
+
+var PxRigidDynamic.linearVelocity: PxVec3
+    get() = getLinearVelocity()
+    set(value) { setLinearVelocity(value) }
+var PxRigidDynamic.angularVelocity: PxVec3
+    get() = getAngularVelocity()
+    set(value) { setAngularVelocity(value) }
+
 
 fun ScopedMemory.createPxArray_PxShapePtr(size: Int) = autoDelete(PxArray_PxShapePtr(size), PxArray_PxShapePtr::destroy)
 fun ScopedMemory.createPxArticulationDrive() = autoDelete(PxArticulationDrive(), PxArticulationDrive::destroy)
@@ -144,7 +135,7 @@ fun ScopedMemory.createPxVec3(x: Float, y: Float, z: Float) = autoDelete(PxVec3(
 fun ScopedMemory.createPxQuat() = autoDelete(PxQuat(), PxQuat::destroy)
 fun ScopedMemory.createPxQuat(x: Float, y: Float, z: Float, w: Float) = autoDelete(PxQuat(x, y, z, w), PxQuat::destroy)
 
-fun ScopedMemory.createPxTransform() = autoDelete(PxTransform(PxIDENTITYEnum.PxIdentity), PxTransform::destroy)
+fun ScopedMemory.createPxTransform() = autoDelete(PxTransform(PxIDENTITYEnum.PxIdentity.value), PxTransform::destroy)
 fun ScopedMemory.createPxTransform(p: PxVec3, q: PxQuat) = autoDelete(PxTransform(p, q), PxTransform::destroy)
 fun ScopedMemory.createPxTransform(p: Vec3f, q: QuatF) = autoDelete(PxTransform(p.toPxVec3(createPxVec3()), q.toPxQuat(createPxQuat())), PxTransform::destroy)
 
@@ -176,19 +167,4 @@ fun ScopedMemory.createPxJointLimitPyramid(yLimitAngleMin: Float, yLimitAngleMax
 fun ScopedMemory.createPxJointLimitCone(yLimitAngle: AngleF, zLimitAngle: AngleF) =
     autoDelete(PxJointLimitCone(yLimitAngle.rad, zLimitAngle.rad), PxJointLimitCone::destroy)
 
-var PxVehicleFrame.lngAxisEnum: PxVehicleAxesEnum by PxVehicleFrame::lngAxis
-var PxVehicleFrame.latAxisEnum: PxVehicleAxesEnum by PxVehicleFrame::latAxis
-var PxVehicleFrame.vrtAxisEnum: PxVehicleAxesEnum by PxVehicleFrame::vrtAxis
-
-var PxTriggerPair.statusEnum: PxPairFlagEnum by PxTriggerPair::status
-
-var PxArticulationDrive.driveTypeEnum: PxArticulationDriveTypeEnum by PxArticulationDrive::driveType
-
-var PxCapsuleControllerDesc.climbingModeEnum: PxCapsuleClimbingModeEnum by PxCapsuleControllerDesc::climbingMode
-var PxCapsuleControllerDesc.nonWalkableModeEnum: PxControllerNonWalkableModeEnum by PxCapsuleControllerDesc::nonWalkableMode
-
-var PxHeightFieldDesc.formatEnum: PxHeightFieldFormatEnum by PxHeightFieldDesc::format
-
-var PxVehiclePhysXSimulationContext.physxActorUpdateModeEnum: PxVehiclePhysXActorUpdateModeEnum by PxVehiclePhysXSimulationContext::physxActorUpdateMode
-var PxVehicleSuspensionStateCalculationParams.suspensionJounceCalculationTypeEnum: PxVehicleSuspensionJounceCalculationTypeEnum by PxVehicleSuspensionStateCalculationParams::suspensionJounceCalculationType
-var PxVehicleClutchParams.accuracyModeEnum: PxVehicleClutchAccuracyModeEnum by PxVehicleClutchParams::accuracyMode
+fun PxUserControllerHitReportImpl.destroy() { }

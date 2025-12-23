@@ -9,15 +9,14 @@ import de.fabmax.kool.physics.vehicle.Vehicle.Companion.REAR_LEFT
 import de.fabmax.kool.physics.vehicle.Vehicle.Companion.REAR_RIGHT
 import de.fabmax.kool.util.InterpolatableSimulation
 import de.fabmax.kool.util.scopedMem
-import physx.common.PxVec3
-import physx.geometry.PxBoxGeometry
-import physx.physics.PxPairFlagEnum
-import physx.physics.PxQueryFlagEnum
-import physx.physics.PxShapeFlagEnum
-import physx.support.PxArray_PxReal
-import physx.vehicle2.*
+import physx.*
+import physx.prototypes.PxVehicleTireForceParamsExt
+import physx.prototypes.PxVehicleTopLevelFunctions
 import kotlin.math.abs
 import kotlin.math.max
+
+// GENERATED CODE BELOW:
+// Transformed from desktop source
 
 actual fun Vehicle(vehicleProps: VehicleProperties, world: PhysicsWorld, pose: Mat4f): Vehicle {
     return VehicleImpl(vehicleProps, world, pose)

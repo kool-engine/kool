@@ -14,11 +14,11 @@ import de.fabmax.kool.util.logW
 import de.fabmax.kool.util.scopedMem
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
-import physx.PxTopLevelFunctions
-import physx.common.PxVec3
-import physx.physics.*
-import physx.support.PxArray_PxContactPairPoint
-import physx.support.SupportFunctions
+import physx.*
+import physx.prototypes.NativeArrayHelpers
+import physx.prototypes.PxTopLevelFunctions
+import physx.prototypes.SupportFunctions
+import kotlin.js.unsafeCast
 
 actual fun PhysicsWorld(scene: Scene?, isContinuousCollisionDetection: Boolean) : PhysicsWorld {
     return PhysicsWorldImpl(scene, isContinuousCollisionDetection)
@@ -41,7 +41,7 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
     override val activeActors: Int
         get() = mutActiveActors
 
-    private val pxActors = mutableMapOf<Long, RigidActor>()
+    private val pxActors = mutableMapOf<Int, RigidActor>()
     private val addActors = mutableSetOf<RigidActor>()
     private val removeActors = mutableMapOf<RigidActor, Boolean>()
     private val addArticulations = mutableSetOf<Articulation>()
@@ -56,7 +56,7 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
             sceneDesc.gravity = bufPxGravity
             sceneDesc.cpuDispatcher = PhysicsImpl.defaultCpuDispatcher
             sceneDesc.filterShader = PxTopLevelFunctions.DefaultFilterShader()
-            sceneDesc.simulationEventCallback = SimEventCallback()
+            sceneDesc.simulationEventCallback = simEventCallback()
             sceneDesc.flags.raise(PxSceneFlagEnum.eENABLE_ACTIVE_ACTORS)
             if (isContinuousCollisionDetection) {
                 sceneDesc.flags.raise(PxSceneFlagEnum.eENABLE_CCD)
@@ -251,7 +251,7 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
             return
         }
         if (this is RigidDynamic && !isKinematic) {
-            (pxActor as PxRigidBody).setRigidBodyFlag(PxRigidBodyFlagEnum.eENABLE_CCD, true)
+            pxActor.unsafeCast<PxRigidBody>().setRigidBodyFlag(PxRigidBodyFlagEnum.eENABLE_CCD, true)
         }
         simulationFilterData = FilterData {
             set(simulationFilterData)
@@ -259,12 +259,17 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         }
     }
 
-    private inner class SimEventCallback : PxSimulationEventCallbackImpl() {
+    private fun simEventCallback() = PxSimulationEventCallbackImpl().apply {
         val contacts = PxArray_PxContactPairPoint(64)
 
-        override fun onTrigger(pairs: PxTriggerPair, count: Int) {
+        onConstraintBreak = { _, _ -> }
+        onWake = { _, _ -> }
+        onSleep = { _, _ -> }
+
+        onTrigger = { pairs: Int, count: Int ->
+            val pairsWrapped = PxTriggerPairFromPointer(pairs)
             for (i in 0 until count) {
-                val pair = PxTriggerPair.arrayGet(pairs.address, i)
+                val pair = NativeArrayHelpers.getTriggerPairAt(pairsWrapped, i)
                 val isEnter = pair.statusEnum == PxPairFlagEnum.eNOTIFY_TOUCH_FOUND
                 val trigger = pxActors[pair.triggerActor.ptr]
                 val actor = pxActors[pair.otherActor.ptr]
@@ -290,7 +295,9 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
             }
         }
 
-        override fun onContact(pairHeader: PxContactPairHeader, pairs: PxContactPair, nbPairs: Int) {
+        onContact = { ph: Int, pairs: Int, nbPairs: Int ->
+            val pairsWrapped = PxContactPairFromPointer(pairs)
+            val pairHeader = PxContactPairHeaderFromPointer(ph)
             val actorA = pxActors[pairHeader.getActors(0).ptr]
             val actorB = pxActors[pairHeader.getActors(1).ptr]
 
@@ -298,7 +305,7 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
                 logW { "onContact: actor reference not found" }
             } else {
                 for (i in 0 until nbPairs) {
-                    val pair = PxContactPair.arrayGet(pairs.address, i)
+                    val pair = NativeArrayHelpers.getContactPairAt(pairsWrapped, i)
                     val evts = pair.events
 
                     if (evts.isSet(PxPairFlagEnum.eNOTIFY_TOUCH_FOUND)) {

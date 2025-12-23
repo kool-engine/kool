@@ -3,13 +3,13 @@ package de.fabmax.kool.physics.geometry
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.util.Heightmap
 import de.fabmax.kool.util.scopedMem
-import physx.PxTopLevelFunctions
-import physx.geometry.PxHeightField
-import physx.geometry.PxHeightFieldFormatEnum
-import physx.geometry.PxHeightFieldGeometry
-import physx.support.PxArray_PxHeightFieldSample
+import physx.*
+import physx.prototypes.PxTopLevelFunctions
 import kotlin.math.max
 import kotlin.math.roundToInt
+
+// GENERATED CODE BELOW:
+// Transformed from desktop source
 
 actual fun HeightField(heightMap: Heightmap, rowScale: Float, columnScale: Float): HeightField {
     return HeightFieldImpl(heightMap, rowScale, columnScale)
