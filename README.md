@@ -87,19 +87,25 @@ More editor related documentation is available in [the editor docs](https://kool
 
 ## Platform Support
 
-| Platform    | Backend     | Implementation Status                                  |
-|-------------|-------------|--------------------------------------------------------|
-| Desktop JVM | OpenGL      | :white_check_mark: Fully working                       |
-| Desktop JVM | Vulkan      | :white_check_mark: Fully working                       |
-| Desktop JVM | WebGPU      | :sparkles: Mostly working (using the `wgpu4k` backend) |
-| Browser     | WebGL 2     | :white_check_mark: Fully working                       |
-| Browser     | WebGPU      | :white_check_mark: Fully working                       |
-| Android     | OpenGL ES 3 | :white_check_mark: Fully working                       |
+| Platform            | Backend     | Implementation Status                                  |
+|---------------------|-------------|--------------------------------------------------------|
+| Desktop (JVM)       | Vulkan      | :white_check_mark: Fully working                       |
+| Desktop (JVM)       | OpenGL      | :white_check_mark: Fully working                       |
+| Desktop (JVM)       | WebGPU      | :sparkles: Mostly working (using the `wgpu4k` backend) |
+| Browser (JS + WASM) | WebGPU      | :white_check_mark: Fully working                       |
+| Browser (JS + WASM) | WebGL 2     | :white_check_mark: Fully working                       |
+| Android             | OpenGL ES 3 | :white_check_mark: Fully working                       |
 
-**Supported desktop platforms are:**
+### Supported desktop platforms
 - Windows (x64): Vulkan, WebGPU and OpenGL
 - Linux (x64): Vulkan, WebGPU and OpenGL
 - macOS (ARM + x64): Vulkan and WebGPU (no OpenGL)
+
+### JS vs. WASM Performance
+
+Kool supports plain JavaScript as well as WebAssembly (WASM) as browser targets. However, the WASM backend seems to be
+suffering from the many required JS-interop upcalls to various Web APIs. Therefore, in most cases, the WASM backend is
+actually slower than the JS backend, and plain JS stays the recommended target for now.
 
 ### Java Version
 
