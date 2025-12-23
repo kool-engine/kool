@@ -38,7 +38,7 @@ webidl {
     modelName = "Box2dWasm"
 
     generateKotlinJsInterfaces {
-        outputDirectory = file("${projectDir}/src/jsMain/kotlin/box2d")
+        outputDirectory = file("${projectDir}/src/webMain/kotlin/box2d")
         packagePrefix = "box2d"
         moduleName = "kool-box2d-wasm"
         modulePromiseName = "Box2D"

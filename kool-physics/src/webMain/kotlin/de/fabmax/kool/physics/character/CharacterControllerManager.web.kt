@@ -2,11 +2,8 @@ package de.fabmax.kool.physics.character
 
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.util.scopedMem
-import physxandroid.PxTopLevelFunctions
-import physxandroid.character.PxCapsuleClimbingModeEnum
-import physxandroid.character.PxCapsuleControllerDesc
-import physxandroid.character.PxControllerManager
-import physxandroid.character.PxControllerNonWalkableModeEnum
+import physx.*
+import physx.prototypes.PxTopLevelFunctions
 import kotlin.math.cos
 
 // GENERATED CODE BELOW:

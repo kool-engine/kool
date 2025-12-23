@@ -82,9 +82,9 @@ object PhysicsImpl : PhysicsSystem {
         // init vehicle simulation framework
         PxVehicleTopLevelFunctions.InitVehicleExtension(foundation)
         vehicleFrame = PxVehicleFrame().apply {
-            lngAxis = PxVehicleAxesEnum.ePosZ
-            latAxis = PxVehicleAxesEnum.ePosX
-            vrtAxis = PxVehicleAxesEnum.ePosY
+            lngAxisEnum = PxVehicleAxesEnum.ePosZ
+            latAxisEnum = PxVehicleAxesEnum.ePosX
+            vrtAxisEnum = PxVehicleAxesEnum.ePosY
         }
 
         // try to choose a sensible number of worker threads:

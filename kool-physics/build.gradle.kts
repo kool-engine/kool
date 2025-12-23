@@ -40,7 +40,7 @@ webidl {
     modelName = "PhysXJs"
 
     generateKotlinJsInterfaces {
-        outputDirectory = file("${projectDir}/src/jsMain/kotlin/physx")
+        outputDirectory = file("${projectDir}/src/webMain/kotlin/physx")
         packagePrefix = "physx"
         moduleName = "physx-js-webidl"
         modulePromiseName = "PhysX"
@@ -48,19 +48,19 @@ webidl {
 }
 
 tasks.register("transformDesktopToOtherPlatforms") {
-    dependsOn("transformDesktopToJs", "transformDesktopToAndroid")
+    dependsOn("transformDesktopToWeb", "transformDesktopToAndroid")
     group = "generate"
 }
 
-tasks.register<TransformTask>("transformDesktopToJs") {
+tasks.register<TransformTask>("transformDesktopToWeb") {
     group = "generate"
     target = "js"
 
     val srcs = collectPhysicsFilesToTransform()
     val dsts = srcs.map {
         it.path
-            .replace("desktopMain", "jsMain")
-            .replace(".desktop.kt", ".js.kt")
+            .replace("desktopMain", "webMain")
+            .replace(".desktop.kt", ".web.kt")
     }
     srcFiles = files(srcs)
     dstFiles = files(dsts)

@@ -1,9 +1,6 @@
 package de.fabmax.kool.physics2d
 
-import box2d.b2BodyDef
-import box2d.b2BodyType
-import box2d.b2Polygon
-import box2d.b2ShapeDef
+import box2d.*
 import box2d.prototypes.B2_Body
 import box2d.prototypes.B2_Geometry
 import box2d.prototypes.B2_Shape
@@ -16,10 +13,10 @@ internal actual fun createBody(bodyDef: BodyDef, worldId: WorldId): BodyId = sco
     val b2BodyDef = allocBodyDef()
     B2_Body.defaultBodyDef(b2BodyDef)
 
-    b2BodyDef.type = when (bodyDef.type) {
-        BodyType.Static -> b2BodyType.b2_staticBody.value
-        BodyType.Kinematic -> b2BodyType.b2_kinematicBody.value
-        BodyType.Dynamic -> b2BodyType.b2_dynamicBody.value
+    b2BodyDef.typeEnum = when (bodyDef.type) {
+        BodyType.Static -> b2BodyType.b2_staticBody
+        BodyType.Kinematic -> b2BodyType.b2_kinematicBody
+        BodyType.Dynamic -> b2BodyType.b2_dynamicBody
     }
     b2BodyDef.position = allocVec2(bodyDef.position)
     b2BodyDef.rotation = allocRotation(bodyDef.rotation)
