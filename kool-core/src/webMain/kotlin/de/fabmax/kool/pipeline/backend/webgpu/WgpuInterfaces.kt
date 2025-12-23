@@ -13,9 +13,13 @@ external class GPU : JsAny {
 }
 
 external class GPUAdapter : JsAny {
-    val features: JsArray<JsString>
+    val features: GPUSupportedFeatures
     val limits: GPUSupportedLimits
     fun requestDevice(descriptor: GPUDeviceDescriptor = definedExternally): Promise<GPUDevice>
+}
+
+external interface GPUSupportedFeatures : JsAny {
+    fun forEach(block: (JsString) -> Unit)
 }
 
 external class GPUBindGroupLayout : JsAny

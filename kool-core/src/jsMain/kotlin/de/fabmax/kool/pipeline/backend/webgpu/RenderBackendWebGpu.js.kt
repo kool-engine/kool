@@ -84,20 +84,21 @@ actual class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
         }
         _adapter = selectedAdapter
 
-//        val availableFeatures = adapter.features.toList()
-//        logD { "Available GPUAdapter features:" }
-//        availableFeatures.forEach { logD { it } }
+        val availableFeatures = mutableListOf<String>()
+        adapter.features.forEach { availableFeatures.add(it) }
+        logD { "Available GPUAdapter features:" }
+        availableFeatures.forEach { logD { "- $it" } }
 
         val requiredFeatures = mutableListOf<String>()
-//        if ("timestamp-query" in availableFeatures) {
+        if ("timestamp-query" in availableFeatures) {
             logI { "Enabling WebGPU timestamp-query feature" }
             requiredFeatures.add("timestamp-query")
             _isTimestampQuerySupported = true
-//        }
-//        if ("rg11b10ufloat-renderable" in availableFeatures) {
+        }
+        if ("rg11b10ufloat-renderable" in availableFeatures) {
             logI { "Enabling rg11b10ufloat-renderable feature" }
             requiredFeatures.add("rg11b10ufloat-renderable")
-//        }
+        }
 
         try {
             val deviceDesc = GPUDeviceDescriptor(requiredFeatures)
