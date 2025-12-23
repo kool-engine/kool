@@ -1,10 +1,12 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
+import de.fabmax.kool.jsArrayOf
 import de.fabmax.kool.math.float32ToFloat16
 import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.gl.pxSize
 import de.fabmax.kool.platform.ImageTextureData
+import de.fabmax.kool.toJsArray
 import de.fabmax.kool.util.Float32BufferImpl
 import de.fabmax.kool.util.Uint16BufferImpl
 import de.fabmax.kool.util.Uint8BufferImpl
@@ -13,6 +15,7 @@ import org.khronos.webgl.ArrayBufferView
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
 import org.khronos.webgl.set
+import kotlin.js.*
 
 internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
     private val loadedTextures = mutableMapOf<String, WgpuTextureResource>()
@@ -166,7 +169,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             encoder.copyTextureToTexture(
                 source = GPUImageCopyTexture(src, mipLevel = mipLevel),
                 destination = GPUImageCopyTexture(dst, mipLevel = mipLevel),
-                copySize = intArrayOf(width shr mipLevel, height shr mipLevel, arrayLayers)
+                copySize = intArrayOf(width shr mipLevel, height shr mipLevel, arrayLayers).toJsArray()
             )
         }
     }
@@ -222,14 +225,14 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
                     data = src.arrayBufferView,
                     destination = GPUImageCopyTexture(dst, origin = dstOrigin),
                     dataLayout = src.gpuImageDataLayout,
-                    size = size
+                    size = size.toJsArray()
                 )
             }
             is ImageTextureData -> {
                 device.queue.copyExternalImageToTexture(
                     source = GPUImageCopyExternalImage(src.data),
                     destination = GPUImageCopyTextureTagged(dst, origin = dstOrigin),
-                    copySize = size
+                    copySize = size.toJsArray()
                 )
             }
             else -> error("Invalid src data type: $src")
@@ -354,9 +357,9 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         """.trimIndent())
 
         private val sampler = device.createSampler(minFilter = GPUFilterMode.linear)
-        private val pipelines = mutableMapOf<GPUTextureFormat, GPURenderPipeline>()
+        private val pipelines = mutableMapOf<String, GPURenderPipeline>()
 
-        private fun getRenderPipeline(format: GPUTextureFormat): GPURenderPipeline = pipelines.getOrPut(format) {
+        private fun getRenderPipeline(format: String): GPURenderPipeline = pipelines.getOrPut(format) {
             device.createRenderPipeline(
                 GPURenderPipelineDescriptor(
                     vertex = GPUVertexState(
@@ -366,10 +369,10 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
                     fragment = GPUFragmentState(
                         module = shaderModule,
                         entryPoint = "fragmentMain",
-                        targets = arrayOf(GPUColorTargetState(format))
+                        targets = listOf(GPUColorTargetState(format))
                     ),
                     primitive = GPUPrimitiveState(topology = GPUPrimitiveTopology.triangleStrip),
-                    layout = GPUAutoLayoutMode.auto
+                    layout = GPUAutoLayoutMode.auto.value.toJsString()
                 )
             )
         }
@@ -377,26 +380,27 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         fun generateMipLevels(texDesc: GPUTextureDescriptor, texture: GPUTexture) {
             val cmdEncoder = device.createCommandEncoder()
             generateMipLevels(texDesc, texture, cmdEncoder)
-            device.queue.submit(arrayOf(cmdEncoder.finish()))
+            device.queue.submit(jsArrayOf(cmdEncoder.finish()))
         }
 
         fun generateMipLevels(texDesc: GPUTextureDescriptor, texture: GPUTexture, cmdEncoder: GPUCommandEncoder) {
             val pipeline = getRenderPipeline(texDesc.format)
-            val layers = if (texDesc.size.size == 3) texDesc.size[2] else 1
+            @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
+            val layers = if (texDesc.size.length == 3) texDesc.size.unsafeCast<JsArray<JsAny>>()[2]!!.unsafeCast<JsNumber>().toInt() else 1
 
             for (layer in 0 until layers) {
                 var srcView = texture.createView(baseMipLevel = 0, mipLevelCount = 1, baseArrayLayer = layer, arrayLayerCount = 1, dimension = GPUTextureViewDimension.view2d)
                 for (i in 1 until texDesc.mipLevelCount) {
                     val dstView = texture.createView(baseMipLevel = i, mipLevelCount = 1, baseArrayLayer = layer, arrayLayerCount = 1, dimension = GPUTextureViewDimension.view2d)
                     val passEncoder = cmdEncoder.beginRenderPass(
-                        colorAttachments = arrayOf(GPURenderPassColorAttachment(
+                        colorAttachments = listOf(GPURenderPassColorAttachment(
                             view = dstView,
                             storeOp = GPUStoreOp.store
                         ))
                     )
                     val bindGroup = device.createBindGroup(
                         layout = pipeline.getBindGroupLayout(0),
-                        entries = arrayOf(
+                        entries = listOf(
                             GPUBindGroupEntry(
                                 binding = 0,
                                 resource = sampler
@@ -446,9 +450,9 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             }
         """.trimIndent())
 
-        private val pipelines = mutableMapOf<GPUTextureFormat, GPURenderPipeline>()
+        private val pipelines = mutableMapOf<String, GPURenderPipeline>()
 
-        private fun getRenderPipeline(format: GPUTextureFormat): GPURenderPipeline = pipelines.getOrPut(format) {
+        private fun getRenderPipeline(format: String): GPURenderPipeline = pipelines.getOrPut(format) {
             device.createRenderPipeline(
                 GPURenderPipelineDescriptor(
                     vertex = GPUVertexState(
@@ -458,15 +462,15 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
                     fragment = GPUFragmentState(
                         module = shaderModule,
                         entryPoint = "fragmentMain",
-                        targets = arrayOf()
+                        targets = listOf()
                     ),
                     depthStencil = GPUDepthStencilState(
-                        format = format,
+                        format = GPUTextureFormat.forValue(format),
                         depthWriteEnabled = true,
                         depthCompare = GPUCompareFunction.always
                     ),
                     primitive = GPUPrimitiveState(topology = GPUPrimitiveTopology.triangleStrip),
-                    layout = GPUAutoLayoutMode.auto
+                    layout = GPUAutoLayoutMode.auto.value.toJsString()
                 )
             )
         }
@@ -477,7 +481,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             val srcView = src.createView(baseMipLevel = mipLevel, mipLevelCount = 1, baseArrayLayer = layer, arrayLayerCount = 1)
             val dstView = dst.createView(baseMipLevel = mipLevel, mipLevelCount = 1, baseArrayLayer = layer, arrayLayerCount = 1)
             val passEncoder = cmdEncoder.beginRenderPass(
-                colorAttachments = emptyArray(),
+                colorAttachments = emptyList(),
                 depthStencilAttachment = GPURenderPassDepthStencilAttachment(
                     view = dstView,
                     depthLoadOp = GPULoadOp.clear,
@@ -486,7 +490,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             )
             val bindGroup = device.createBindGroup(
                 layout = pipeline.getBindGroupLayout(0),
-                entries = arrayOf(
+                entries = listOf(
                     GPUBindGroupEntry(
                         binding = 0,
                         resource = srcView

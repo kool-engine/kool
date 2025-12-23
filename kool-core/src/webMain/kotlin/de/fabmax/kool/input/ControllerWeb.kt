@@ -1,3 +1,5 @@
+@file:Suppress("UNNECESSARY_SAFE_CALL")
+
 package de.fabmax.kool.input
 
 import de.fabmax.kool.Gamepad
@@ -61,7 +63,6 @@ class ControllerWeb(private var gamepad: Gamepad) : Controller(gamepad.index) {
             setAxisState(ControllerAxis.RIGHT_Y, gamepad.axes[STD_AX_RIGHT_Y].toFloat())
             setAxisState(ControllerAxis.TRIGGER_LEFT, gamepad.buttons[STD_BTN_TRIGGER_LEFT]?.value?.toFloat() ?: 0f)
             setAxisState(ControllerAxis.TRIGGER_RIGHT, gamepad.buttons[STD_BTN_TRIGGER_RIGHT]?.value?.toFloat() ?: 0f)
-
         } else {
             for (i in 0 until min(buttonStates.size, gamepad.buttons.length)) {
                 buttonStates[i] = gamepad.buttons[i]?.pressed ?: false

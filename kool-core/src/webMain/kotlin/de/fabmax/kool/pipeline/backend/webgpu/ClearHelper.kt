@@ -5,6 +5,7 @@ import de.fabmax.kool.pipeline.ClearDepthFill
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.Float32BufferImpl
+import kotlin.js.toJsNumber
 
 class ClearHelper(val backend: RenderBackendWebGpu) {
     private val clearPipelines = mutableMapOf<WgpuRenderPass, ClearPipeline>()
@@ -25,19 +26,19 @@ class ClearHelper(val backend: RenderBackendWebGpu) {
         val clearValuesBuffer: GpuBufferWgpu = backend.createBuffer(
             GPUBufferDescriptor(
                 label = "clearHelper-clearValues",
-                size = 32,
+                size = 32.toJsNumber(),
                 usage = GPUBufferUsage.UNIFORM or GPUBufferUsage.COPY_DST
             ),
             "clearHelper-clearValues"
         )
-        val bindGroupLayout = backend.device.createBindGroupLayout(arrayOf(
+        val bindGroupLayout = backend.device.createBindGroupLayout(listOf(
             GPUBindGroupLayoutEntryBuffer(
                 binding = 0,
                 visibility = GPUShaderStage.VERTEX or GPUShaderStage.FRAGMENT,
                 buffer = GPUBufferBindingLayout()
             )
         ))
-        val bindGroup: GPUBindGroup = backend.device.createBindGroup(bindGroupLayout, arrayOf(
+        val bindGroup: GPUBindGroup = backend.device.createBindGroup(bindGroupLayout, listOf(
             GPUBindGroupEntry(0, GPUBufferBinding(clearValuesBuffer.buffer))
         ))
 
@@ -60,7 +61,7 @@ class ClearHelper(val backend: RenderBackendWebGpu) {
                 clearValues.clear()
                 clearColor?.putTo(clearValues)
                 clearValues[4] = clearDepth
-                backend.device.queue.writeBuffer(clearValuesBuffer.buffer, 0, clearValues.buffer, 0)
+                backend.device.queue.writeBuffer(clearValuesBuffer.buffer, 0.toJsNumber(), clearValues.buffer, 0.toJsNumber())
             }
 
             val clearPipeline = when {
@@ -89,7 +90,7 @@ class ClearHelper(val backend: RenderBackendWebGpu) {
                     fragment = GPUFragmentState(
                         module = shaderModule,
                         entryPoint = "fragmentMain",
-                        targets = arrayOf(
+                        targets = listOf(
                             GPUColorTargetState(colorFormat, GPUBlendState(
                                 color = GPUBlendComponent(srcFactor = colorSrcFactor, dstFactor = colorDstFactor),
                                 alpha = GPUBlendComponent(srcFactor = colorSrcFactor, dstFactor = colorDstFactor),
@@ -106,7 +107,7 @@ class ClearHelper(val backend: RenderBackendWebGpu) {
                     primitive = GPUPrimitiveState(topology = GPUPrimitiveTopology.triangleStrip),
                     layout = backend.device.createPipelineLayout(GPUPipelineLayoutDescriptor(
                         label = "clear-pipeline-layout",
-                        bindGroupLayouts = arrayOf(bindGroupLayout)
+                        bindGroupLayouts = listOf(bindGroupLayout)
                     )),
                     multisample = GPUMultisampleState(gpuRenderPass.numSamples)
                 )

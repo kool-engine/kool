@@ -2,7 +2,9 @@ package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.pipeline.GpuBufferImpl
 import de.fabmax.kool.pipeline.backend.stats.BufferInfo
+import de.fabmax.kool.toJsNumber
 import de.fabmax.kool.util.*
+import kotlin.js.toJsNumber
 
 class GpuBufferWgpu(val buffer: GPUBuffer, size: Long, info: String?) :
     BaseReleasable(), GpuBufferImpl
@@ -35,10 +37,10 @@ internal class WgpuGrowingBuffer(
         checkSize(data.limit * 4L)
         device.queue.writeBuffer(
             buffer = buffer.buffer,
-            bufferOffset = 0L,
+            bufferOffset = 0.toJsNumber(),
             data = (data as Float32BufferImpl).buffer,
-            dataOffset = 0L,
-            size = data.limit.toLong()
+            dataOffset = 0.toJsNumber(),
+            size = data.limit.toJsNumber()
         )
     }
 
@@ -46,10 +48,10 @@ internal class WgpuGrowingBuffer(
         checkSize(data.limit * 4L)
         device.queue.writeBuffer(
             buffer = buffer.buffer,
-            bufferOffset = 0L,
+            bufferOffset = 0.toJsNumber(),
             data = (data as Int32BufferImpl).buffer,
-            dataOffset = 0L,
-            size = data.limit.toLong()
+            dataOffset = 0.toJsNumber(),
+            size = data.limit.toJsNumber()
         )
     }
 
@@ -57,10 +59,10 @@ internal class WgpuGrowingBuffer(
         checkSize(data.limit * 4L)
         device.queue.writeBuffer(
             buffer = buffer.buffer,
-            bufferOffset = 0L,
+            bufferOffset = 0.toJsNumber(),
             data = (data as MixedBufferImpl).buffer,
-            dataOffset = 0L,
-            size = data.limit.toLong()
+            dataOffset = 0.toJsNumber(),
+            size = data.limit.toJsNumber()
         )
     }
 
@@ -76,7 +78,7 @@ internal class WgpuGrowingBuffer(
     private fun makeBuffer(size: Long) = backend.createBuffer(
         GPUBufferDescriptor(
             label = label,
-            size = size,
+            size = size.toJsNumber(),
             usage = usage
         ),
         label

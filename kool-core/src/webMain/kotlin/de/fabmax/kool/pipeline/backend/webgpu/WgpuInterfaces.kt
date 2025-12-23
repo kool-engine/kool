@@ -5,40 +5,40 @@ package de.fabmax.kool.pipeline.backend.webgpu
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.ArrayBufferView
 import org.w3c.dom.RenderingContext
-import kotlin.js.Promise
+import kotlin.js.*
 
-external class GPU {
-    fun getPreferredCanvasFormat(): GPUTextureFormat
+external class GPU : JsAny {
+    fun getPreferredCanvasFormat(): String //GPUTextureFormat
     fun requestAdapter(options: GPURequestAdapterOptions = definedExternally): Promise<GPUAdapter?>
 }
 
-external class GPUAdapter {
-    val features: dynamic
+external class GPUAdapter : JsAny {
+    val features: JsArray<JsString>
     val limits: GPUSupportedLimits
     fun requestDevice(descriptor: GPUDeviceDescriptor = definedExternally): Promise<GPUDevice>
 }
 
-external class GPUBindGroupLayout
+external class GPUBindGroupLayout : JsAny
 
-external class GPUBindGroup
+external class GPUBindGroup : JsAny
 
-external interface GPUBindingResource
+external interface GPUBindingResource : JsAny
 
-external class GPUBuffer {
+external class GPUBuffer : JsAny {
     val label: String
-    val size: dynamic
-    fun getMappedRange(offset: Long = definedExternally, size: Long = definedExternally): ArrayBuffer
-    fun mapAsync(mode: Int, offset: Long = definedExternally, size: Long = definedExternally): Promise<Unit>
+    val size: JsNumber
+    fun getMappedRange(offset: JsNumber = definedExternally, size: JsNumber = definedExternally): ArrayBuffer
+    fun mapAsync(mode: Int, offset: JsNumber = definedExternally, size: JsNumber = definedExternally): Promise<*>
     fun unmap()
     fun destroy()
 }
 
-external object GPUMapMode {
+external object GPUMapMode : JsAny {
     val READ: Int
     val WRITE: Int
 }
 
-external object GPUBufferUsage {
+external object GPUBufferUsage : JsAny {
     val MAP_READ: Int
     val MAP_WRITE: Int
     val COPY_SRC: Int
@@ -51,35 +51,35 @@ external object GPUBufferUsage {
     val QUERY_RESOLVE: Int
 }
 
-external class GPUCanvasContext : RenderingContext {
+external class GPUCanvasContext : RenderingContext, JsAny {
     fun configure(configuration: GPUCanvasConfiguration)
     fun unconfigure()
     fun getCurrentTexture(): GPUTexture
 }
 
-external class GPUCommandBuffer
+external class GPUCommandBuffer : JsAny
 
-external class GPUCommandEncoder {
+external class GPUCommandEncoder : JsAny {
     fun beginComputePass(descriptor: GPUComputePassDescriptor = definedExternally): GPUComputePassEncoder
     fun beginRenderPass(descriptor: GPURenderPassDescriptor): GPURenderPassEncoder
-    fun copyBufferToBuffer(source: GPUBuffer, sourceOffset: Long, destination: GPUBuffer, destinationOffset: Long, size: Long)
-    fun copyTextureToBuffer(source: GPUImageCopyTexture, destination: GPUImageCopyBuffer, copySize: IntArray)
-    fun copyTextureToTexture(source: GPUImageCopyTexture, destination: GPUImageCopyTexture, copySize: IntArray)
+    fun copyBufferToBuffer(source: GPUBuffer, sourceOffset: JsNumber, destination: GPUBuffer, destinationOffset: JsNumber, size: JsNumber)
+    fun copyTextureToBuffer(source: GPUImageCopyTexture, destination: GPUImageCopyBuffer, copySize: JsArray<JsNumber>)
+    fun copyTextureToTexture(source: GPUImageCopyTexture, destination: GPUImageCopyTexture, copySize: JsArray<JsNumber>)
     //fun writeTimestamp(querySet: GPUQuerySet, queryIndex: Int)
-    fun resolveQuerySet(querySet: GPUQuerySet, firstQuery: Int, queryCount: Int, destination: GPUBuffer, destinationOffset: Long)
+    fun resolveQuerySet(querySet: GPUQuerySet, firstQuery: Int, queryCount: Int, destination: GPUBuffer, destinationOffset: JsNumber)
     fun finish(): GPUCommandBuffer
 }
 
-external class GPUCompilationInfo {
-    val messages: Array<GPUCompilationMessage>
+external class GPUCompilationInfo : JsAny {
+    val messages: JsArray<GPUCompilationMessage>
 }
 
-external class GPUCompilationMessage {
+external class GPUCompilationMessage : JsAny {
     val type: String
     val message: String
 }
 
-external class GPUDevice {
+external interface GPUDevice : JsAny {
     val limits: GPUSupportedLimits
     val queue: GPUQueue
 
@@ -98,57 +98,57 @@ external class GPUDevice {
 
 external class GPUExternalTexture : GPUBindingResource
 
-external interface GPUPipelineLayout
+external interface GPUPipelineLayout : JsAny
 
-external class GPUQueue {
-    fun submit(commandBuffers: Array<GPUCommandBuffer>)
-    fun writeBuffer(buffer: GPUBuffer, bufferOffset: Long, data: ArrayBufferView, dataOffset: Long = definedExternally, size: Long = definedExternally)
-    fun writeTexture(destination: GPUImageCopyTexture, data: ArrayBufferView, dataLayout: GPUImageDataLayout, size: IntArray)
-    fun copyExternalImageToTexture(source: GPUImageCopyExternalImage, destination: GPUImageCopyTextureTagged, copySize: IntArray)
+external class GPUQueue : JsAny {
+    fun submit(commandBuffers: JsArray<GPUCommandBuffer>)
+    fun writeBuffer(buffer: GPUBuffer, bufferOffset: JsNumber, data: ArrayBufferView, dataOffset: JsNumber = definedExternally, size: JsNumber = definedExternally)
+    fun writeTexture(destination: GPUImageCopyTexture, data: ArrayBufferView, dataLayout: GPUImageDataLayout, size: JsArray<JsNumber>)
+    fun copyExternalImageToTexture(source: GPUImageCopyExternalImage, destination: GPUImageCopyTextureTagged, copySize: JsArray<JsNumber>)
 }
 
-external class GPUComputePassEncoder {
+external class GPUComputePassEncoder : JsAny {
     fun setPipeline(pipeline: GPUComputePipeline)
-    fun setBindGroup(index: Int, bindGroup: GPUBindGroup, dynamicOffsets: Array<Int> = definedExternally)
+    fun setBindGroup(index: Int, bindGroup: GPUBindGroup)
     fun dispatchWorkgroups(workgroupCountX: Int, workgroupCountY: Int, workgroupCountZ: Int)
     fun end()
 }
 
-external class GPURenderPassEncoder {
+external class GPURenderPassEncoder : JsAny {
     fun setPipeline(pipeline: GPURenderPipeline)
-    fun setIndexBuffer(buffer: GPUBuffer, indexFormat: GPUIndexFormat, offset: Long = definedExternally, size: Long = definedExternally)
-    fun setVertexBuffer(slot: Int, buffer: GPUBuffer, offset: Long = definedExternally, size: Long = definedExternally)
+    fun setIndexBuffer(buffer: GPUBuffer, indexFormat: String /*GPUIndexFormat*/, offset: JsNumber = definedExternally, size: JsNumber = definedExternally)
+    fun setVertexBuffer(slot: Int, buffer: GPUBuffer, offset: JsNumber = definedExternally, size: JsNumber = definedExternally)
     fun draw(vertexCount: Int, instanceCount: Int = definedExternally, firstVertex: Int = definedExternally, firstInstance: Int = definedExternally)
     fun drawIndexed(indexCount: Int, instanceCount: Int = definedExternally, firstIndex: Int = definedExternally, baseVertex: Int = definedExternally, firstInstance: Int = definedExternally)
-    fun setBindGroup(index: Int, bindGroup: GPUBindGroup, dynamicOffsets: Array<Int> = definedExternally)
+    fun setBindGroup(index: Int, bindGroup: GPUBindGroup)
     fun setViewport(x: Float, y: Float, width: Float, height: Float, minDepth: Float, maxDepth: Float)
     fun setScissorRect(x: Int, y: Int, width: Int, height: Int)
     fun end()
 }
 
-external class GPUComputePipeline {
+external class GPUComputePipeline : JsAny {
     fun getBindGroupLayout(index: Int): GPUBindGroupLayout
 }
 
-external class GPUQuerySet
+external class GPUQuerySet : JsAny
 
-external class GPURenderPipeline {
+external class GPURenderPipeline : JsAny {
     fun getBindGroupLayout(index: Int): GPUBindGroupLayout
 }
 
 external class GPUSampler : GPUBindingResource
 
-external class GPUShaderModule {
+external class GPUShaderModule : JsAny {
     fun getCompilationInfo(): Promise<GPUCompilationInfo>
 }
 
-external object GPUShaderStage {
+external object GPUShaderStage : JsAny {
     val COMPUTE: Int
     val FRAGMENT: Int
     val VERTEX: Int
 }
 
-external class GPUSupportedLimits {
+external interface GPUSupportedLimits : JsAny {
     val maxTextureDimension1D: Int
     val maxTextureDimension2D: Int
     val maxTextureDimension3D: Int
@@ -183,20 +183,20 @@ external class GPUSupportedLimits {
     val maxComputeWorkgroupsPerDimension: Int
 }
 
-external class GPUTexture {
+external class GPUTexture : JsAny {
     val label: String
     val width: Int
     val height: Int
     val depthOrArrayLayers: Int
     val mipLevelCount: Int
     val sampleCount: Int
-    val format: GPUTextureFormat
+    val format: String //GPUTextureFormat
     fun createView(): GPUTextureView
     fun createView(descriptor: GPUTextureViewDescriptor): GPUTextureView
     fun destroy()
 }
 
-external object GPUTextureUsage {
+external object GPUTextureUsage : JsAny {
     val COPY_SRC: Int
     val COPY_DST: Int
     val TEXTURE_BINDING: Int

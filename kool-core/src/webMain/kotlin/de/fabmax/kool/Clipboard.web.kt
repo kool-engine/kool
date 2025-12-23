@@ -1,3 +1,5 @@
+@file:Suppress("REDUNDANT_CALL_OF_CONVERSION_METHOD")
+
 package de.fabmax.kool
 
 import kotlinx.browser.window

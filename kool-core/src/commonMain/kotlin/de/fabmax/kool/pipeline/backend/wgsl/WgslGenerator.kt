@@ -840,6 +840,7 @@ class WgslGenerator private constructor(
                 KslStateType.VertexOutput -> "vertexOutput."
                 KslStateType.FragmentInput -> "fragmentInput."
                 KslStateType.FragmentOutput -> "fragmentOutput."
+                KslStateType.ComputeInput if state.stateName == KslComputeStage.NAME_IN_WORK_GROUP_SIZE -> ""
                 KslStateType.ComputeInput -> "computeInput."
                 KslStateType.Other -> ""
             }

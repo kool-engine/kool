@@ -135,9 +135,14 @@ object PlatformAssetsImpl : PlatformAssets {
     }
 }
 
-fun ImageBitmapOptions(size: Vec2i?) = size?.let { ImageBitmapOptions(it.x, it.y) } ?: DefaultImageBitmapOptions()
-private fun ImageBitmapOptions(width: Int, height: Int): ImageBitmapOptions = js("({premultiplyAlpha: 'none', resizeWidth: width, resizeHeight: height, resizeQuality: 'high'})")
-private fun DefaultImageBitmapOptions(): ImageBitmapOptions = js("({premultiplyAlpha: 'none'})")
+fun ImageBitmapOptions(size: Vec2i?) = ImageBitmapOptions(size?.x, size?.y)
+private fun ImageBitmapOptions(width: Int?, height: Int?): ImageBitmapOptions =
+    js("""({
+        premultiplyAlpha: 'none',
+        resizeWidth: (width != null ? width : undefined),
+        resizeHeight: (height != null ? height : undefined),
+        resizeQuality: (width != null ? 'high' : undefined)
+    })""")
 
 external fun encodeURIComponent(string: String): String
 

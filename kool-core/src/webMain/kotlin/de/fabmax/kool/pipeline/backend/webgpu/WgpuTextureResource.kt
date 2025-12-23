@@ -19,15 +19,15 @@ class WgpuTextureResource(
 
     private val GPUTextureDescriptor.bytesPerPx: Int get() {
         val channels = when {
-            "rgba" in format.enumValue -> 4
-            "rg" in format.enumValue -> 2
-            "r" in format.enumValue -> 1
+            "rgba" in format -> 4
+            "rg" in format -> 2
+            "r" in format -> 1
             else -> 1
         }
         return when {
-            "8" in format.enumValue -> 1 * channels
-            "16" in format.enumValue -> 2 * channels
-            "32" in format.enumValue -> 4 * channels
+            "8" in format -> 1 * channels
+            "16" in format -> 2 * channels
+            "32" in format -> 4 * channels
             else -> 4
         }
     }

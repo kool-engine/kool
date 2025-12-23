@@ -3,7 +3,9 @@ package de.fabmax.kool.pipeline.backend.webgpu
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.GpuBindGroupData
 import de.fabmax.kool.pipeline.backend.wgsl.WgslLocations
+import de.fabmax.kool.toJsNumber
 import de.fabmax.kool.util.*
+import kotlin.js.toJsNumber
 
 class WgpuBindGroupData(
     private val data: BindGroupData,
@@ -51,7 +53,7 @@ class WgpuBindGroupData(
             if (ubo.modCount != ubo.binding.modCount.count || recreatedBindGroup) {
                 device.queue.writeBuffer(
                     buffer = ubo.gpuBuffer.buffer,
-                    bufferOffset = 0L,
+                    bufferOffset = 0L.toJsNumber(),
                     data = (ubo.binding.buffer.buffer as MixedBufferImpl).buffer
                 )
             }
@@ -71,7 +73,7 @@ class WgpuBindGroupData(
                 }
                 device.queue.writeBuffer(
                     buffer = storage.gpuBuffer.buffer,
-                    bufferOffset = 0L,
+                    bufferOffset = 0.toJsNumber(),
                     data = hostBuffer
                 )
             }
@@ -115,7 +117,7 @@ class WgpuBindGroupData(
         bindGroup = backend.device.createBindGroup(
             label = "bindGroup[${data.layout.scope}]",
             layout = gpuLayout,
-            entries = bindGroupEntries.toTypedArray()
+            entries = bindGroupEntries
         )
     }
 
@@ -125,7 +127,7 @@ class WgpuBindGroupData(
         val gpuBuffer = backend.createBuffer(
             GPUBufferDescriptor(
                 label = "bindGroup[${data.layout.scope}]-ubo-${name}",
-                size = struct.structSize.toLong(),
+                size = struct.structSize.toJsNumber(),
                 usage = GPUBufferUsage.UNIFORM or GPUBufferUsage.COPY_DST
             ),
             "scene: ${pass.parentScene?.name}, render-pass: ${pass.name}"
@@ -142,7 +144,7 @@ class WgpuBindGroupData(
             gpuBuffer = backend.createBuffer(
                 GPUBufferDescriptor(
                     label = "bindGroup[${data.layout.scope}]-storage-${name}",
-                    size = storage.size * storage.type.byteSize.toLong(),
+                    size = (storage.size * storage.type.byteSize).toJsNumber(),
                     usage = GPUBufferUsage.STORAGE or GPUBufferUsage.COPY_SRC or GPUBufferUsage.COPY_DST
                 ),
                 "scene: ${pass.parentScene?.name}, render-pass: ${pass.name}"

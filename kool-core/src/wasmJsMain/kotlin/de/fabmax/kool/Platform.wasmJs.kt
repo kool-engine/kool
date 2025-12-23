@@ -18,7 +18,7 @@ actual fun Double.toString(precision: Int): String {
             if (p < 0) {
                 "$s.${"0".repeat(precision)}"
             } else {
-                val r = s.length - p + 1
+                val r = s.length - (p + 1)
                 if (r < precision) {
                     s + "0".repeat(precision - r)
                 } else {
