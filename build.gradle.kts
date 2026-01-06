@@ -4,6 +4,7 @@ plugins {
     id("kool.androidlib-conventions") apply false
     id("kool.lib-conventions") apply false
     id("kool.publish-conventions") apply false
+    alias(libs.plugins.compose.compiler) apply false
 }
 
 allprojects {

@@ -46,6 +46,7 @@ open class UiModifier(val surface: UiSurface) {
     val onDragStart: MutableList<(PointerEvent) -> Unit> by listProperty()
     val onDrag: MutableList<(PointerEvent) -> Unit> by listProperty()
     val onDragEnd: MutableList<(PointerEvent) -> Unit> by listProperty()
+    val onRender: MutableList<UiNode.() -> Unit> by listProperty()
 
     protected fun <T> property(defaultVal: T): PropertyHolder<T> {
         val holder = PropertyHolder { defaultVal }

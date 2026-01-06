@@ -1,5 +1,7 @@
 [versions]
 agp = "8.12.3"
+compose = "1.9.3"
+compose-mini = "0.0.1"
 kotlin = "2.3.0"
 kotlin-coroutines = "1.10.2"
 kotlin-serialization = "1.9.0"
@@ -51,8 +53,11 @@ physx-wasm = { group = "npm", name = "physx-js-webidl", version.ref = "physx-was
 box2d-jni = { group = "de.fabmax.box2d-jni", name = "box2d-jni", version.ref = "box2d-jni" }
 box2d-android = { group = "de.fabmax.box2d-jni", name = "box2d-jni-android", version.ref = "box2d-jni" }
 box2d-wasm = { group = "npm", name = "kool-box2d-wasm", version.ref = "box2d-wasm" }
-
-# wgpu backend
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
+compose-mini-runtime = { group = "me.dvyy.compose.mini", name = "runtime", version.ref = "compose-mini"}
+compose-mini-modifier = { group = "me.dvyy.compose.mini", name = "modifier", version.ref = "compose-mini" }
+compose-mini-modifier-composed = { group = "me.dvyy.compose.mini", name = "modifier-composed", version.ref = "compose-mini"}
+# wgpu backcend
 wgpu4k = { module = "io.ygdrasil:wgpu4k", version.ref = "wgpu4k" }
 webgpu-descriptors = { module = "io.ygdrasil:webgpu-ktypes-descriptors", version.ref = "webgpu-ktypes" }
 rococoa = { module = "io.ygdrasil:rococoa", version.ref = "rococoa" }
@@ -71,6 +76,9 @@ plugindep-maven-publish = { group = "com.vanniktech", name = "gradle-maven-publi
 
 [plugins]
 webidl = { id = "de.fabmax.webidl-util", version = "0.10.5" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose" }
+
 
 [bundles]
 lwjgl = ["lwjgl-core", "lwjgl-glfw", "lwjgl-jemalloc", "lwjgl-opengl", "lwjgl-vulkan", "lwjgl-vma", "lwjgl-shaderc", "lwjgl-nfd", "lwjgl-stb", "lwjgl-jawt", "lwjgl-msdfgen"]

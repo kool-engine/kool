@@ -49,3 +49,5 @@ value class Dp(val value: Float): Dimension, Comparable<Dp> {
         }
     }
 }
+
+val Number.dp: Dp get() = Dp(this.toFloat())

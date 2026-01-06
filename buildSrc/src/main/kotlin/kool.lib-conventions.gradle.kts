@@ -38,6 +38,7 @@ kotlin {
             optIn("kotlin.contracts.ExperimentalContracts")
             optIn("kotlin.io.encoding.ExperimentalEncodingApi")
             optIn("kotlin.ExperimentalStdlibApi")
+            optIn("de.fabmax.kool.InternalKoolAPI")
         }
     }
     sourceSets {
