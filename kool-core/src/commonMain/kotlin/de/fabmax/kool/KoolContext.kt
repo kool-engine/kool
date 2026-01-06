@@ -1,5 +1,6 @@
 package de.fabmax.kool
 
+import androidx.compose.runtime.snapshots.Snapshot
 import de.fabmax.kool.input.Input
 import de.fabmax.kool.pipeline.ComputePass
 import de.fabmax.kool.pipeline.GpuPass
@@ -11,6 +12,8 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.KoolDispatchers
 import de.fabmax.kool.util.Time
+import kotlinx.atomicfu.atomic
+import me.dvyy.compose.mini.runtime.nanoTime
 
 /**
  * @author fabmax
@@ -25,6 +28,11 @@ abstract class KoolContext {
 
     private var prevFrameTime = Time.precisionTime
 
+    private val applyScheduled = atomic(false)
+    private val snapshotHandle = Snapshot.registerGlobalWriteObserver {
+        applyScheduled.compareAndSet(expect = false, update = true)
+    }
+
     val onRender = BufferedList<(KoolContext) -> Unit>()
     val onShutdown = BufferedList<(KoolContext) -> Unit>()
 
@@ -38,6 +46,10 @@ abstract class KoolContext {
         BrdfLutPass(backgroundScene)
             .also { pass -> addBackgroundRenderPass(pass) }.copyColor()
             .also { brdf -> onShutdown += { brdf.release() } }
+    }
+
+    init {
+        onShutdown += { snapshotHandle.dispose() }
     }
 
     abstract fun openUrl(url: String, sameWindow: Boolean = true)
@@ -73,7 +85,14 @@ abstract class KoolContext {
 
         Input.poll(this)
 
+        // Apply any mutable state changes from user input
+        if (applyScheduled.compareAndSet(expect = true, update = false)) {
+            Snapshot.sendApplyNotifications()
+        }
+
         KoolDispatchers.Frontend.executeDispatchedTasks()
+        Time.frameClock.sendFrame(nanoTime()) // Let recomposer update UI nodes
+
         onRender.update()
         for (i in onRender.indices) {
             onRender[i](this)

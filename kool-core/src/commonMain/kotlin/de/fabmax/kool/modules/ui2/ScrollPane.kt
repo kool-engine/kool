@@ -181,7 +181,7 @@ open class ScrollPaneNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, 
         var currentScrollY = state.yScrollDp.use()
         var desiredScrollX = state.xScrollDpDesired.use()
         var desiredScrollY = state.yScrollDpDesired.use()
-
+        val parent = parent
         if (parent != null) {
             state.viewWidthDp.set(parent.widthPx / UiScale.measuredScale)
             state.viewHeightDp.set(parent.heightPx / UiScale.measuredScale)

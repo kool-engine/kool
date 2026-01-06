@@ -13,6 +13,8 @@ kotlin {
             api(libs.kotlin.coroutines)
             implementation(libs.kotlin.serialization.json)
             implementation(libs.kotlin.atomicfu)
+            implementation(libs.compose.mini.runtime) // nanoTime implementation
+            implementation(libs.compose.runtime)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

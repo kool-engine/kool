@@ -1,5 +1,6 @@
 package de.fabmax.kool.util
 
+import androidx.compose.runtime.BroadcastFrameClock
 import de.fabmax.kool.util.Time.frameCount
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -45,6 +46,16 @@ object Time {
      * be around 0.1 milliseconds.
      */
     val precisionTime: Double get() = systemClock.now()
+
+
+    /**
+     * Frame clock from Jetpack compose runtime.
+     * Frames are emitted after polling user input and dispatching any queued frontend scope tasks.
+     *
+     * Any blocks waiting for a new frame will run immediately when the frame is emitted, then switch
+     * to their parent context to return the result.
+     */
+    val frameClock = BroadcastFrameClock()
 
     internal fun update(dt: Double) {
         gameTime += dt
