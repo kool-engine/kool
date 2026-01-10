@@ -1,14 +1,15 @@
 package de.fabmax.kool.util
 
 import androidx.compose.runtime.BroadcastFrameClock
+import de.fabmax.kool.InternalKoolAPI
 import de.fabmax.kool.util.Time.frameCount
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlin.time.Clock
 
 object Time {
-    private val systemClock = SystemClock()
     /**
      * Time since previous frame in seconds.
      */
@@ -45,8 +46,15 @@ object Time {
      * measure time intervals. Precision depends on platform, on JVM it should be around nanoseconds, on JS it should
      * be around 0.1 milliseconds.
      */
-    val precisionTime: Double get() = systemClock.now()
+    val precisionTime: Double get() = nanoTime / 1_000_000_000.0
 
+    /**
+     * Current system clock time in nanoseconds.
+     */
+    val nanoTime: Long get() {
+        val now = Clock.System.now()
+        return now.epochSeconds * 1_000_000_000L + now.nanosecondsOfSecond
+    }
 
     /**
      * Frame clock from Jetpack compose runtime.
@@ -55,7 +63,8 @@ object Time {
      * Any blocks waiting for a new frame will run immediately when the frame is emitted, then switch
      * to their parent context to return the result.
      */
-    val frameClock = BroadcastFrameClock()
+    @InternalKoolAPI
+    val composeFrameClock = BroadcastFrameClock()
 
     internal fun update(dt: Double) {
         gameTime += dt
@@ -65,10 +74,4 @@ object Time {
         for (i in frameTimes.indices) { sum += frameTimes[i] }
         fps = (frameTimes.size / sum) * 0.1 + fps * 0.9
     }
-}
-
-internal expect fun SystemClock(): SystemClock
-
-internal interface SystemClock {
-    fun now(): Double
 }
