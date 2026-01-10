@@ -13,7 +13,6 @@ import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.KoolDispatchers
 import de.fabmax.kool.util.Time
 import kotlinx.atomicfu.atomic
-import me.dvyy.compose.mini.runtime.nanoTime
 
 /**
  * @author fabmax
@@ -91,7 +90,7 @@ abstract class KoolContext {
         }
 
         KoolDispatchers.Frontend.executeDispatchedTasks()
-        Time.frameClock.sendFrame(nanoTime()) // Let recomposer update UI nodes
+        Time.composeFrameClock.sendFrame(Time.nanoTime) // Let recomposer update UI nodes
 
         onRender.update()
         for (i in onRender.indices) {
