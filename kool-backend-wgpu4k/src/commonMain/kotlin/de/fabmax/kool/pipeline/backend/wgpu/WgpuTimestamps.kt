@@ -10,13 +10,13 @@ class WgpuTimestamps(val size: Int, val backend: RenderBackendWgpu4k) {
     private val resolveBuffer = backend.device.createBuffer(
         BufferDescriptor(
             (size * 8L).toULong(),
-            setOf(GPUBufferUsage.QueryResolve, GPUBufferUsage.CopySrc)
+            GPUBufferUsage.QueryResolve or GPUBufferUsage.CopySrc
         )
     )
     private val readBuffer = backend.device.createBuffer(
         BufferDescriptor(
             (size * 8L).toULong(),
-            setOf(GPUBufferUsage.MapRead,GPUBufferUsage.CopyDst)
+            GPUBufferUsage.MapRead or GPUBufferUsage.CopyDst
         )
     )
 
@@ -70,7 +70,7 @@ class WgpuTimestamps(val size: Int, val backend: RenderBackendWgpu4k) {
     suspend fun readTimestamps() {
         if (isInFlight && !isMapping) {
             isMapping = true
-            readBuffer.mapAsync(setOf(GPUMapMode.Read)).onSuccess {
+            readBuffer.mapAsync(GPUMapMode.Read).onSuccess {
                 val decoded = readBuffer.getMappedRange()
                     .asUIntArray()
                 for (i in 0..lastActive) {

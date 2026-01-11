@@ -41,7 +41,7 @@ internal class WgpuTextureLoader(val backend: GPUBackend) {
 
     private fun loadTexture1d(tex: Texture1d, data: ImageData1d): WgpuTextureResource {
         val size = Extent3D(data.width.toUInt())
-        val usage = setOf(GPUTextureUsage.CopyDst, GPUTextureUsage.TextureBinding)
+        val usage = GPUTextureUsage.CopyDst or GPUTextureUsage.TextureBinding
         if (tex.mipMapping.isMipMapped) {
             logW { "generateMipMaps requested for Texture1d ${tex.name}: not supported on WebGPU" }
         }
@@ -60,7 +60,7 @@ internal class WgpuTextureLoader(val backend: GPUBackend) {
 
     private fun loadTexture2d(tex: Texture2d, data: ImageData2d): WgpuTextureResource {
         val size = Extent3D(data.width.toUInt(), data.height.toUInt())
-        val usage = setOf(GPUTextureUsage.CopyDst, GPUTextureUsage.TextureBinding, GPUTextureUsage.RenderAttachment)
+        val usage = GPUTextureUsage.CopyDst or GPUTextureUsage.TextureBinding or GPUTextureUsage.RenderAttachment
         val levels = tex.mipMapping.numLevels(data.width, data.height)
         val texDesc = TextureDescriptor(
             size = size,
@@ -79,7 +79,7 @@ internal class WgpuTextureLoader(val backend: GPUBackend) {
 
     private fun loadTexture3d(tex: Texture3d, data: ImageData3d): WgpuTextureResource {
         val size = Extent3D(data.width.toUInt(), data.height.toUInt(), data.depth.toUInt())
-        val usage = setOf(GPUTextureUsage.CopyDst, GPUTextureUsage.TextureBinding)
+        val usage = GPUTextureUsage.CopyDst or GPUTextureUsage.TextureBinding
         if (tex.mipMapping.isMipMapped) {
             logW { "generateMipMaps requested for Texture3d ${tex.name}: not yet implemented on WebGPU" }
         }
@@ -97,7 +97,7 @@ internal class WgpuTextureLoader(val backend: GPUBackend) {
     }
 
     private fun loadTextureCube(tex: TextureCube, data: ImageDataCube): WgpuTextureResource {
-        val usage = setOf(GPUTextureUsage.CopyDst, GPUTextureUsage.TextureBinding, GPUTextureUsage.RenderAttachment)
+        val usage = GPUTextureUsage.CopyDst or GPUTextureUsage.TextureBinding or GPUTextureUsage.RenderAttachment
         val levels = tex.mipMapping.numLevels(data.width, data.height)
         val texDesc = TextureDescriptor(
             size = Extent3D(data.width.toUInt(), data.height.toUInt(), 6u),
@@ -116,7 +116,7 @@ internal class WgpuTextureLoader(val backend: GPUBackend) {
 
     private  fun loadTexture2dArray(tex: Texture2dArray, data: ImageData3d): WgpuTextureResource {
         val size = Extent3D(data.width.toUInt(), data.height.toUInt(), data.depth.toUInt())
-        val usage = setOf(GPUTextureUsage.CopyDst, GPUTextureUsage.TextureBinding, GPUTextureUsage.RenderAttachment)
+        val usage = GPUTextureUsage.CopyDst or GPUTextureUsage.TextureBinding or GPUTextureUsage.RenderAttachment
         val levels = tex.mipMapping.numLevels(data.width, data.height)
         val texDesc = TextureDescriptor(
             size = size,
@@ -134,7 +134,7 @@ internal class WgpuTextureLoader(val backend: GPUBackend) {
     }
 
     private  fun loadTextureCubeArray(tex: TextureCubeArray, data: ImageDataCubeArray): WgpuTextureResource {
-        val usage = setOf(GPUTextureUsage.CopyDst, GPUTextureUsage.TextureBinding, GPUTextureUsage.RenderAttachment)
+        val usage = GPUTextureUsage.CopyDst or GPUTextureUsage.TextureBinding or GPUTextureUsage.RenderAttachment
         val levels = tex.mipMapping.numLevels(data.width, data.height)
         val texDesc = TextureDescriptor(
             size = Extent3D(data.width.toUInt(), data.height.toUInt(), 6u * data.slices.toUInt()),
@@ -214,10 +214,10 @@ internal class WgpuTextureLoader(val backend: GPUBackend) {
     }
 
     internal fun createStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int) {
-        val usage = setOf(GPUTextureUsage.StorageBinding,
-                GPUTextureUsage.CopySrc,
-                GPUTextureUsage.CopyDst,
-                GPUTextureUsage.TextureBinding)
+        val usage = GPUTextureUsage.StorageBinding or
+                GPUTextureUsage.CopySrc or
+                GPUTextureUsage.CopyDst or
+                GPUTextureUsage.TextureBinding
         val dimension = when (storageTexture) {
             is StorageTexture1d -> GPUTextureDimension.OneD
             is StorageTexture2d -> GPUTextureDimension.TwoD

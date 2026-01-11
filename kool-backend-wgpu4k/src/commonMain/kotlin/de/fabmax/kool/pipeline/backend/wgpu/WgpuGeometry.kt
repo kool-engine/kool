@@ -21,7 +21,7 @@ class WgpuGeometry(val mesh: Mesh<*>, val vertexData: IndexedVertexList<*>, val 
     private var updateModCount = -1
 
     init {
-        createdIndexBuffer = WgpuGrowingBuffer(backend, "${mesh.name} index data", 4L * vertexData.numIndices, setOf(GPUBufferUsage.Index, GPUBufferUsage.CopyDst))
+        createdIndexBuffer = WgpuGrowingBuffer(backend, "${mesh.name} index data", 4L * vertexData.numIndices, GPUBufferUsage.Index or GPUBufferUsage.CopyDst)
         createdVertexBuffer = if (vertexData.layout.structSize == 0) null else {
             WgpuGrowingBuffer(backend, "${mesh.name} vertex data", vertexData.layout.structSize * vertexData.numVertices.toLong())
         }

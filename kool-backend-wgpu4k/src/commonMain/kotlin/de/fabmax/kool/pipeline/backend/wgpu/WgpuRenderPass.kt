@@ -210,14 +210,14 @@ abstract class WgpuRenderPass(
 
         private fun createImage(width: Int, height: Int, samples: Int, format: GPUTextureFormat): WgpuTextureResource {
             val usage = when (isCopySrc) {
-                true -> setOf(GPUTextureUsage.TextureBinding, GPUTextureUsage.RenderAttachment, GPUTextureUsage.CopySrc)
-                else -> setOf(GPUTextureUsage.TextureBinding, GPUTextureUsage.RenderAttachment)
+                true -> GPUTextureUsage.TextureBinding or GPUTextureUsage.RenderAttachment or GPUTextureUsage.CopySrc
+                else -> GPUTextureUsage.TextureBinding or GPUTextureUsage.RenderAttachment
             }
 
             return createImageWithUsage(width, height, samples, format, usage)
         }
 
-        private fun createImageWithUsage(width: Int, height: Int, samples: Int, format: GPUTextureFormat, usage: GPUTextureUsageFlags): WgpuTextureResource {
+        private fun createImageWithUsage(width: Int, height: Int, samples: Int, format: GPUTextureFormat, usage: GPUTextureUsage): WgpuTextureResource {
             val descriptor = TextureDescriptor(
                 label = parentPass.name,
                 size = Extent3D(width.toUInt(), height.toUInt(), layers.toUInt()),
@@ -285,7 +285,7 @@ abstract class WgpuRenderPass(
                     height = size.y,
                     samples = 1,
                     format = format,
-                    usage = setOf(GPUTextureUsage.CopyDst, GPUTextureUsage.TextureBinding, GPUTextureUsage.RenderAttachment),
+                    usage = GPUTextureUsage.CopyDst or GPUTextureUsage.TextureBinding or GPUTextureUsage.RenderAttachment,
                 )
                 target.gpuTexture = copyDst
             }

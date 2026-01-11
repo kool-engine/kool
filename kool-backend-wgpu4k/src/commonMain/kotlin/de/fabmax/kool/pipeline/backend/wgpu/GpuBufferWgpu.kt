@@ -29,7 +29,7 @@ internal class WgpuGrowingBuffer(
     val backend: GPUBackend,
     val label: String,
     size: Long,
-    val usage: Set<GPUBufferUsage> = setOf(GPUBufferUsage.Vertex, GPUBufferUsage.CopyDst)
+    val usage: GPUBufferUsage = GPUBufferUsage.Vertex or GPUBufferUsage.CopyDst
 ) : BaseReleasable() {
     private val device: GPUDevice get() = backend.device
 

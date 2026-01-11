@@ -247,7 +247,7 @@ abstract class RenderBackendWgpu4k(
                     BufferDescriptor(
                         label = "storage-buffer-readback",
                         size = size.toULong(),
-                        usage = setOf(GPUBufferUsage.MapRead, GPUBufferUsage.CopyDst)
+                        usage = GPUBufferUsage.MapRead or GPUBufferUsage.CopyDst
                     )
                 )
                 encoder.copyBufferToBuffer(gpuBuf.buffer, 0uL, mapBuffer, 0uL, size.toULong())
@@ -266,7 +266,7 @@ abstract class RenderBackendWgpu4k(
                     BufferDescriptor(
                         label = "texture-readback",
                         size = size.toULong(),
-                        usage = setOf(GPUBufferUsage.MapRead, GPUBufferUsage.CopyDst)
+                        usage = GPUBufferUsage.MapRead or GPUBufferUsage.CopyDst
                     )
                 )
                 encoder.copyTextureToBuffer(
@@ -286,7 +286,7 @@ abstract class RenderBackendWgpu4k(
     private suspend fun mapReadbacks() {
         gpuReadbacks.filterIsInstance<ReadbackStorageBuffer>().filter { it.mapBuffer != null }.forEach { readback ->
             val mapBuffer = readback.mapBuffer!!
-            mapBuffer.mapAsync(setOf(GPUMapMode.Read)).onSuccess {
+            mapBuffer.mapAsync(GPUMapMode.Read).onSuccess {
                 mapBuffer.getMappedRange()
                     .writeInto(readback.resultBuffer)
                 mapBuffer.unmap()
@@ -297,7 +297,7 @@ abstract class RenderBackendWgpu4k(
 
         gpuReadbacks.filterIsInstance<ReadbackTexture>().filter { it.mapBuffer != null }.forEach { readback ->
             val mapBuffer = readback.mapBuffer!!
-            mapBuffer.mapAsync(setOf(GPUMapMode.Read)).onSuccess {
+            mapBuffer.mapAsync(GPUMapMode.Read).onSuccess {
                 val gpuTex = readback.texture.gpuTexture as WgpuTextureResource
                 val format = readback.texture.format
                 val dst = ImageData.createBuffer(format, gpuTex.width, gpuTex.height, gpuTex.depth)

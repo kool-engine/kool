@@ -26,14 +26,14 @@ class ClearHelper(val backend: RenderBackendWgpu4k) {
             BufferDescriptor(
                 label = "clearHelper-clearValues",
                 size = 32u,
-                usage = setOf(GPUBufferUsage.Uniform, GPUBufferUsage.CopyDst)
+                usage = GPUBufferUsage.Uniform or GPUBufferUsage.CopyDst
             ),
             "clearHelper-clearValues"
         )
         val bindGroupLayout = backend.device.createBindGroupLayout(listOf(
             BindGroupLayoutEntry(
                 binding = 0u,
-                visibility = setOf(GPUShaderStage.Vertex, GPUShaderStage.Fragment),
+                visibility = GPUShaderStage.Vertex or GPUShaderStage.Fragment,
                 buffer = BufferBindingLayout()
             )
         ))

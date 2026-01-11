@@ -56,7 +56,7 @@ class WgpuScreenPass(backend: RenderBackendWgpu4k, numSamples: Int) :
                     label = colorDst.name,
                     size = Extent3D(width, height),
                     format = backend.canvasFormat,
-                    usage = setOf(GPUTextureUsage.CopyDst, GPUTextureUsage.TextureBinding, GPUTextureUsage.RenderAttachment),
+                    usage = GPUTextureUsage.CopyDst or GPUTextureUsage.TextureBinding or GPUTextureUsage.RenderAttachment,
                 )
                 val texResource = backend.createTexture(descriptor)
                 copyDstC = texResource
@@ -74,7 +74,7 @@ class WgpuScreenPass(backend: RenderBackendWgpu4k, numSamples: Int) :
                     label = dst.name,
                     size = Extent3D(width, height),
                     format = depthFormat!!,
-                    usage = setOf(GPUTextureUsage.CopyDst, GPUTextureUsage.TextureBinding, GPUTextureUsage.RenderAttachment),
+                    usage = GPUTextureUsage.CopyDst or GPUTextureUsage.TextureBinding or GPUTextureUsage.RenderAttachment,
                 )
                 val texResource = backend.createTexture(descriptor)
                 copyDstD = texResource
@@ -153,7 +153,7 @@ class WgpuScreenPass(backend: RenderBackendWgpu4k, numSamples: Int) :
         val colorDescriptor = TextureDescriptor(
             size = Extent3D(width, height),
             format = backend.canvasFormat,
-            usage = setOf(GPUTextureUsage.RenderAttachment, GPUTextureUsage.TextureBinding),
+            usage = GPUTextureUsage.RenderAttachment or GPUTextureUsage.TextureBinding,
             sampleCount = numSamples.toUInt()
         )
         colorTexture = device.createTexture(colorDescriptor).also {
@@ -163,7 +163,7 @@ class WgpuScreenPass(backend: RenderBackendWgpu4k, numSamples: Int) :
         val depthDescriptor = TextureDescriptor(
             size = Extent3D(width, height),
             format = depthFormat!!,
-            usage = setOf(GPUTextureUsage.RenderAttachment, GPUTextureUsage.TextureBinding),
+            usage = GPUTextureUsage.RenderAttachment or GPUTextureUsage.TextureBinding,
             sampleCount = numSamples.toUInt()
         )
         depthAttachment = device.createTexture(depthDescriptor).also {

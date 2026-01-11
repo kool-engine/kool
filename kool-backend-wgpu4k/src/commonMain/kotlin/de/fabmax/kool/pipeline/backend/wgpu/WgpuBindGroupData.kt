@@ -124,7 +124,7 @@ class WgpuBindGroupData(
             BufferDescriptor(
                 label = "bindGroup[${data.layout.scope}]-ubo-${name}",
                 size = struct.structSize.toULong(),
-                usage = setOf(GPUBufferUsage.Uniform, GPUBufferUsage.CopyDst)
+                usage = GPUBufferUsage.Uniform or GPUBufferUsage.CopyDst
             ),
             "scene: ${pass.parentScene?.name}, render-pass: ${pass.name}"
         )
@@ -141,7 +141,7 @@ class WgpuBindGroupData(
                 BufferDescriptor(
                     label = "bindGroup[${data.layout.scope}]-storage-${name}",
                     size = (storage.size * storage.type.byteSize).toULong(),
-                    usage = setOf(GPUBufferUsage.Storage, GPUBufferUsage.CopySrc, GPUBufferUsage.CopyDst)
+                    usage = GPUBufferUsage.Storage or GPUBufferUsage.CopySrc or GPUBufferUsage.CopyDst
                 ),
                 "scene: ${pass.parentScene?.name}, render-pass: ${pass.name}"
             )

@@ -33,8 +33,8 @@ sealed class WgpuPipeline(
         return layouts.map { group ->
             val layoutEntries = buildList {
                 group.bindings.forEach { binding ->
-                    val visibility = binding.stages.fold(emptySet<GPUShaderStage>()) { acc, stage ->
-                        acc + when (stage) {
+                    val visibility = binding.stages.fold(GPUShaderStage.None) { acc, stage ->
+                        acc or when (stage) {
                             ShaderStage.VERTEX_SHADER -> GPUShaderStage.Vertex
                             ShaderStage.FRAGMENT_SHADER -> GPUShaderStage.Fragment
                             ShaderStage.COMPUTE_SHADER -> GPUShaderStage.Compute
@@ -77,13 +77,13 @@ sealed class WgpuPipeline(
         )
     }
 
-    private fun makeLayoutEntryBuffer(location: WgslLocations.Location, visibility: GPUShaderStageFlags) = BindGroupLayoutEntry(
+    private fun makeLayoutEntryBuffer(location: WgslLocations.Location, visibility: GPUShaderStage) = BindGroupLayoutEntry(
         binding = location.binding.toUInt(),
         visibility = visibility,
         buffer = BufferBindingLayout(type = GPUBufferBindingType.Uniform)
     )
 
-    private fun makeLayoutEntryStorageBuffer(location: WgslLocations.Location, visibility: GPUShaderStageFlags, binding: StorageBufferLayout): GPUBindGroupLayoutEntry {
+    private fun makeLayoutEntryStorageBuffer(location: WgslLocations.Location, visibility: GPUShaderStage, binding: StorageBufferLayout): GPUBindGroupLayoutEntry {
         val type = if (binding.accessType == StorageAccessType.READ_ONLY) {
             GPUBufferBindingType.ReadOnlyStorage
         } else {
@@ -99,7 +99,7 @@ sealed class WgpuPipeline(
     private fun makeLayoutEntriesTexture(
         binding: TextureLayout,
         location: WgslLocations.Location,
-        visibility: GPUShaderStageFlags,
+        visibility: GPUShaderStage,
         dimension: GPUTextureViewDimension
     ): List<GPUBindGroupLayoutEntry> {
         val texSampleType = binding.sampleType.wgpu
@@ -127,7 +127,7 @@ sealed class WgpuPipeline(
     private fun makeLayoutStorageTexture(
         binding: StorageTextureLayout,
         location: WgslLocations.Location,
-        visibility: GPUShaderStageFlags
+        visibility: GPUShaderStage
     ): GPUBindGroupLayoutEntry {
         val dimension = when (binding) {
             is StorageTexture1dLayout -> GPUTextureViewDimension.OneD
