@@ -19,7 +19,7 @@ box2d-wasm = "1.0.0"
 
 # wgpu backend
 wgpu4k = "0.1.1"
-webgpu-ktypes = "0.0.8"
+webgpu-ktypes = "0.0.9"
 rococoa = "0.0.1"
 jna = "5.18.1"
 
