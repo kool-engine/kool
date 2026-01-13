@@ -143,7 +143,7 @@ open class Node(name: String? = null) : BaseReleasable() {
 
         bounds.batchUpdate {
             clear()
-            for (i in mutChildren.indices) {
+            for (i in mutChildren.lastIndex downTo 0) {
                 val child = mutChildren[i]
                 child.update(updateEvent)
                 child.addBoundsToParentBounds(bounds)
