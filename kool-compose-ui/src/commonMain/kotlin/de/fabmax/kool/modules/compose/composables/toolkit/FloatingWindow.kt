@@ -34,7 +34,7 @@ fun FloatingWindow(
 ) {
     var x by remember { mutableStateOf(startOffset.x.dp) }
     var y by remember { mutableStateOf(startOffset.y.dp) }
-    Popup(offset = Vec2f(x.px, y.px), layerOffset = layer, relativeToParent = false) {
+    Popup(offset = Vec2f(x.value, y.value), layerOffset = layer, relativeToParent = false) {
         val colors = LocalColors.current
         val sizes = LocalSizes.current
         Column(

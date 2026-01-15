@@ -11,6 +11,7 @@ import de.fabmax.kool.modules.compose.modifiers.onMeasured
 import de.fabmax.kool.modules.compose.modifiers.onPositioned
 import de.fabmax.kool.modules.ui2.AlignmentX
 import de.fabmax.kool.modules.ui2.AlignmentY
+import de.fabmax.kool.modules.ui2.Dp
 import de.fabmax.kool.modules.ui2.UiNode
 import de.fabmax.kool.modules.ui2.UiSurface
 import de.fabmax.kool.modules.ui2.dp
@@ -48,12 +49,11 @@ fun Popup(
 ) {
     var parentPosition by remember { mutableStateOf(Vec2f.ZERO) }
     // Hide for first frame since parent position lags behind one frame
-    // TODO update position on same frame, possible to do with a custom layout?
     var positioned by remember { mutableStateOf(false) }
 
     // Empty box for getting the position of the parent node
     if (relativeToParent && !positioned) Box(Modifier.onPositioned {
-        parentPosition = Vec2f(it.leftPx, it.bottomPx)
+        parentPosition = Vec2f(Dp.fromPx(it.leftPx).value, Dp.fromPx(it.bottomPx).value)
         positioned = true
     }) {}
 
