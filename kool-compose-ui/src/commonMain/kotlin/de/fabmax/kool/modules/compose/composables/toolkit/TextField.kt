@@ -19,8 +19,6 @@ fun TextField(
     value: String,
     onValueChange: (String) -> Unit,
     font: Font = LocalSizes.current.normalText,
-    //TODO remove in favor of a modifier
-    onFocusChange: (Boolean) -> Unit = {},
     onSubmit: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {

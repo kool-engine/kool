@@ -37,7 +37,6 @@ inline fun <T : UiNode> Layout(
                     if (modifier is UiModifierWrapper) modifier.applyTo(this.modifier)
                     uiModifier
                 }
-                //TODO update modifier system to be able to set this value directly
             }
             set(zLayer) {
                 this.modifier.zLayer = zLayer
