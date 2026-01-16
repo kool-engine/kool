@@ -20,6 +20,7 @@ fun rememberScrollState() = remember { ScrollState() }
 @Composable
 fun ScrollArea(
     modifier: Modifier = Modifier,
+    scrollPaneModifier: Modifier = Modifier,
     isScrollableHorizontal: Boolean = true,
     isScrollableVertical: Boolean = true,
     showVerticalScrollbar: Boolean = true,
@@ -40,7 +41,7 @@ fun ScrollArea(
             }
     ) {
         val scrollState by rememberUpdatedState(scrollState)
-        ScrollPane(scrollState, modifier = Modifier.fillMaxSize()) {
+        ScrollPane(scrollState, modifier = scrollPaneModifier) {
             content()
         }
 
