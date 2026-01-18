@@ -41,6 +41,7 @@ fun Popup(
     offset: Vec2f = Vec2f.ZERO,
     layerOffset: Int = UiSurface.LAYER_POPUP,
     relativeToParent: Boolean = true,
+    coerceToViewportBounds: Boolean = false,
     alignmentX: AlignmentX = AlignmentX.Start,
     alignmentY: AlignmentY = AlignmentY.Top,
     modifier: Modifier = Modifier,
@@ -60,10 +61,14 @@ fun Popup(
     if (!relativeToParent || positioned) Popup(layerOffset) {
         var uiNode: UiNode? by remember { mutableStateOf(null) }
         val surface = LocalUiSurface.current
+        val width = surface.viewport.widthPx - (uiNode?.widthPx ?: 0f)
+        val height = surface.viewport.heightPx - (uiNode?.heightPx ?: 0f)
+        val start = (offset.x.dp + parentPosition.x.dp)
+        val top = (offset.y.dp + parentPosition.y.dp)
         Box(
             modifier.margin(
-                start = offset.x.dp + parentPosition.x.dp,
-                top = offset.y.dp + parentPosition.y.dp,
+                start = if (coerceToViewportBounds) start.coerceIn(0.dp..Dp.fromPx(width)) else start,
+                top = if (coerceToViewportBounds) top.coerceIn(0.dp, Dp.fromPx(height)) else top,
                 end = 0.dp,
                 bottom = 0.dp
             ).align(alignmentX, alignmentY)
