@@ -36,13 +36,13 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
         val desc = PxCapsuleControllerDesc()
         desc.height = charProperties.height
         desc.radius = charProperties.radius
-        desc.climbingMode = PxCapsuleClimbingModeEnum.eEASY
+        desc.climbingModeEnum = PxCapsuleClimbingModeEnum.eEASY
         desc.slopeLimit = cos(charProperties.slopeLimit.rad)
         desc.material = Physics.defaultMaterial.pxMaterial
         desc.contactOffset = charProperties.contactOffset
         desc.reportCallback = hitCallback.callback
         desc.behaviorCallback = behaviorCallback.callback
-        desc.nonWalkableMode = when (charProperties.nonWalkableMode) {
+        desc.nonWalkableModeEnum = when (charProperties.nonWalkableMode) {
             NonWalkableMode.PREVENT_CLIMBING -> PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING
             NonWalkableMode.PREVENT_CLIMBING_AND_FORCE_SLIDING -> PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING_AND_FORCE_SLIDING
         }

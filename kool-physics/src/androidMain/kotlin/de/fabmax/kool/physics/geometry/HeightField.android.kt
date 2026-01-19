@@ -56,7 +56,7 @@ class HeightFieldImpl(
             }
 
             val desc = createPxHeightFieldDesc()
-            desc.format = PxHeightFieldFormatEnum.eS16_TM
+            desc.formatEnum = PxHeightFieldFormatEnum.eS16_TM
             desc.nbRows = rows
             desc.nbColumns = cols
             desc.samples.data = samples.begin()

@@ -1,7 +1,7 @@
 # kool - A Vulkan / WebGPU / OpenGL graphics engine written in Kotlin
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/kool-engine/kool/blob/master/LICENSE)
 [![Maven Central](https://img.shields.io/maven-central/v/de.fabmax.kool/kool-core.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/de.fabmax.kool/kool-core)
-![Build](https://github.com/kool-engine/kool/workflows/Build/badge.svg)
+![Build](https://github.com/kool-engine/kool/actions/workflows/build.yml/badge.svg?branch=main)
 
 A multi-platform Vulkan / WebGPU / OpenGL game engine that works on Desktop Java, Android and browsers.
 
@@ -87,19 +87,25 @@ More editor related documentation is available in [the editor docs](https://kool
 
 ## Platform Support
 
-| Platform    | Backend     | Implementation Status                                  |
-|-------------|-------------|--------------------------------------------------------|
-| Desktop JVM | OpenGL      | :white_check_mark: Fully working                       |
-| Desktop JVM | Vulkan      | :white_check_mark: Fully working                       |
-| Desktop JVM | WebGPU      | :sparkles: Mostly working (using the `wgpu4k` backend) |
-| Browser     | WebGL 2     | :white_check_mark: Fully working                       |
-| Browser     | WebGPU      | :white_check_mark: Fully working                       |
-| Android     | OpenGL ES 3 | :white_check_mark: Fully working                       |
+| Platform            | Backend     | Implementation Status                                  |
+|---------------------|-------------|--------------------------------------------------------|
+| Desktop (JVM)       | Vulkan      | :white_check_mark: Fully working                       |
+| Desktop (JVM)       | OpenGL      | :white_check_mark: Fully working                       |
+| Desktop (JVM)       | WebGPU      | :sparkles: Mostly working (using the `wgpu4k` backend) |
+| Browser (JS + WASM) | WebGPU      | :white_check_mark: Fully working                       |
+| Browser (JS + WASM) | WebGL 2     | :white_check_mark: Fully working                       |
+| Android             | OpenGL ES 3 | :white_check_mark: Fully working                       |
 
-**Supported desktop platforms are:**
+### Supported desktop platforms
 - Windows (x64): Vulkan, WebGPU and OpenGL
 - Linux (x64): Vulkan, WebGPU and OpenGL
 - macOS (ARM + x64): Vulkan and WebGPU (no OpenGL)
+
+### JS vs. WASM Performance
+
+Kool supports plain JavaScript as well as WebAssembly (WASM) as browser targets. However, the WASM backend seems to be
+suffering from the many required JS-interop upcalls to various Web APIs. Therefore, in most cases, the WASM backend is
+actually slower than the JS backend, and plain JS stays the recommended target for now.
 
 ### Java Version
 

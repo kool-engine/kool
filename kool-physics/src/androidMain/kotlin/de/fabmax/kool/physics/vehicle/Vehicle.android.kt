@@ -89,13 +89,13 @@ class VehicleImpl(
     init {
         vehicleSimulationContext = PxVehiclePhysXSimulationContext().apply {
             setToDefault()
-            frame.lngAxis = PxVehicleAxesEnum.ePosZ
-            frame.latAxis = PxVehicleAxesEnum.ePosX
-            frame.vrtAxis = PxVehicleAxesEnum.ePosY
+            frame.lngAxisEnum = PxVehicleAxesEnum.ePosZ
+            frame.latAxisEnum = PxVehicleAxesEnum.ePosX
+            frame.vrtAxisEnum = PxVehicleAxesEnum.ePosY
             scale.scale = 1f
             world.gravity.toPxVec3(gravity)
             physxScene = (world as PhysicsWorldImpl).pxScene
-            physxActorUpdateMode = PxVehiclePhysXActorUpdateModeEnum.eAPPLY_VELOCITY
+            physxActorUpdateModeEnum = PxVehiclePhysXActorUpdateModeEnum.eAPPLY_VELOCITY
             physxUnitCylinderSweepMesh = PhysicsImpl.unitCylinder
         }
         pxVehicle = createVehicle(vehicleProps)
@@ -270,9 +270,9 @@ class VehicleImpl(
             }
 
             baseParams.frame.apply {
-                latAxis = PxVehicleAxesEnum.ePosX
-                lngAxis = PxVehicleAxesEnum.ePosZ
-                vrtAxis = PxVehicleAxesEnum.ePosY
+                latAxisEnum = PxVehicleAxesEnum.ePosX
+                lngAxisEnum = PxVehicleAxesEnum.ePosZ
+                vrtAxisEnum = PxVehicleAxesEnum.ePosY
             }
             baseParams.scale.scale = 1f
 
@@ -350,7 +350,7 @@ class VehicleImpl(
 
             // Set up the suspensions
             // Compute the mass supported by each suspension spring.
-            baseParams.suspensionStateCalculationParams.suspensionJounceCalculationType =
+            baseParams.suspensionStateCalculationParams.suspensionJounceCalculationTypeEnum =
                 PxVehicleSuspensionJounceCalculationTypeEnum.eSWEEP
             baseParams.suspensionStateCalculationParams.limitSuspensionExpansionVelocity = false
 
@@ -471,7 +471,7 @@ class VehicleImpl(
 
         engineDriveParams.clutchCommandResponseParams.maxResponse = vehicleProps.clutchStrength
         engineDriveParams.clutchParams.apply {
-            accuracyMode = PxVehicleClutchAccuracyModeEnum.eBEST_POSSIBLE
+            accuracyModeEnum = PxVehicleClutchAccuracyModeEnum.eBEST_POSSIBLE
             estimateIterations = 5
         }
 

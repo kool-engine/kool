@@ -78,10 +78,6 @@ object GlfwWindowSubsystem : WindowSubsystem {
             System.setProperty("java.awt.headless", "true")
         }
 
-        if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND)) {
-            glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND)
-        }
-
         GLFWErrorCallback.createPrint(System.err).set()
         check(glfwInit()) { "Unable to initialize GLFW" }
 

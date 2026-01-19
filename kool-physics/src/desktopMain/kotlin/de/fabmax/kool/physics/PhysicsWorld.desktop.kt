@@ -265,7 +265,7 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         override fun onTrigger(pairs: PxTriggerPair, count: Int) {
             for (i in 0 until count) {
                 val pair = PxTriggerPair.arrayGet(pairs.address, i)
-                val isEnter = pair.status == PxPairFlagEnum.eNOTIFY_TOUCH_FOUND
+                val isEnter = pair.statusEnum == PxPairFlagEnum.eNOTIFY_TOUCH_FOUND
                 val trigger = pxActors[pair.triggerActor.ptr]
                 val actor = pxActors[pair.otherActor.ptr]
                 if (trigger != null && actor != null) {

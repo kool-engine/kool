@@ -180,7 +180,7 @@ object MsdfFontGenerator {
 
     private fun MemoryStack.loadCharShape(font: Long, codePoint: Int): ShapeData? {
         val shapeBuffer = callocPointer(1)
-        val glyphResult = msdf_ft_font_load_glyph(font, codePoint, MSDF_FONT_SCALING_EM_NORMALIZED, shapeBuffer)
+        val glyphResult = msdf_ft_font_load_glyph(font, codePoint, MSDF_FONT_SCALING_EM_NORMALIZED, null, shapeBuffer)
         if (glyphResult != MSDF_SUCCESS) {
             logW { "Codepoint $codePoint / '${codePoint.toChar()}' not included in font" }
             return null

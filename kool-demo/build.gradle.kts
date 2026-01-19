@@ -1,11 +1,16 @@
+@file:OptIn(ExperimentalWasmDsl::class)
+
 import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalDistributionDsl
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
     id("org.jetbrains.kotlin.multiplatform")
     id("org.jetbrains.kotlin.plugin.serialization")
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.jetbrainsCompose)
 }
 
 kotlin {
@@ -22,6 +27,18 @@ kotlin {
                     }
                 }
                 applicationDistribution.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+            }
+        }
+    }
+    jvmToolchain(25)
+
+    wasmJs {
+        outputModuleName = "kool-demo-wasm"
+        binaries.executable()
+        browser {
+            @OptIn(ExperimentalDistributionDsl::class)
+            distribution {
+                outputDirectory.set(File("${rootDir}/dist/kool-demo-wasm"))
             }
         }
     }
@@ -52,6 +69,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(project(":kool-core"))
+            implementation(project(":kool-compose-ui"))
             implementation(project(":kool-backend-wgpu4k"))
             implementation(project(":kool-physics"))
             implementation(project(":kool-physics-2d"))

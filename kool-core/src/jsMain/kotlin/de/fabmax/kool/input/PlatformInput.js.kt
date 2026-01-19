@@ -1,5 +1,6 @@
 package de.fabmax.kool.input
 
+import de.fabmax.kool.Gamepad
 import de.fabmax.kool.JsImpl
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
@@ -73,7 +74,7 @@ internal object PlatformInputJs : PlatformInput {
 
         navigator.getGamepads()?.forEach {
             if (it != null) {
-                ControllerInput.addController(ControllerJs(it))
+                ControllerInput.addController(ControllerWeb(it))
             }
         }
 
@@ -176,7 +177,7 @@ internal object PlatformInputJs : PlatformInput {
     private fun installGamepadHandlers() {
         window.addEventListener("gamepadconnected", { ev ->
             val gamepad = (ev as GamepadEvent).gamepad
-            ControllerInput.addController(ControllerJs(gamepad))
+            ControllerInput.addController(ControllerWeb(gamepad))
         })
         window.addEventListener("gamepaddisconnected", { ev ->
             val gamepad = (ev as GamepadEvent).gamepad
@@ -353,22 +354,6 @@ internal object PlatformInputJs : PlatformInput {
     }
 }
 
-external class GamepadEvent : Event {
+external class GamepadEvent : Event, JsAny {
     val gamepad: Gamepad
-}
-
-external interface Gamepad {
-    val axes: DoubleArray
-    val buttons: Array<GamepadButton>
-    val connected: Boolean
-    val id: String
-    val index: Int
-    val mapping: String
-    val timestamp: Double
-}
-
-external interface GamepadButton {
-    val pressed: Boolean
-    val touched: Boolean
-    val value: Double
 }

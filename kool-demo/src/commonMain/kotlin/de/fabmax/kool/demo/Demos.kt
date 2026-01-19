@@ -88,6 +88,7 @@ object Demos {
         entry("hellocompute", "Hello Compute Texture", NeedsComputeShaders) { HelloComputeTexture() }
         entry("helloparticles", "Hello Compute Particles", NeedsComputeShaders) { HelloComputeParticles() }
         entry("hello-ui", "Hello UI") { HelloUi() }
+        entry("compose", "Hello Composable UI") { HelloComposableUI() }
         entry("manybodies", "Many Bodies") { ManyBodiesDemo() }
         entry("manyvehicles", "Many Vehicles") { ManyVehiclesDemo() }
         entry("ksl-test", "Ksl Shading Test") { KslShaderTest() }

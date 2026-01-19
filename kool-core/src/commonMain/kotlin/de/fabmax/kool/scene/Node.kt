@@ -27,6 +27,7 @@ open class Node(name: String? = null) : BaseReleasable() {
     val tags = Tags()
 
     protected val mutChildren = mutableListOf<Node>()
+    private val cachedChildren = mutableListOf<Node>()
     val children: List<Node> get() = mutChildren
 
     /**
@@ -143,8 +144,10 @@ open class Node(name: String? = null) : BaseReleasable() {
 
         bounds.batchUpdate {
             clear()
-            for (i in mutChildren.indices) {
-                val child = mutChildren[i]
+            cachedChildren.clear()
+            cachedChildren.addAll(mutChildren)
+            for (i in cachedChildren.indices) {
+                val child = cachedChildren[i]
                 child.update(updateEvent)
                 child.addBoundsToParentBounds(bounds)
             }

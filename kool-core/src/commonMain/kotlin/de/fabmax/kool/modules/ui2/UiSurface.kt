@@ -16,11 +16,17 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.util.*
 
+/**
+ * @property clearViewportOnUpdateUi
+ * Whether the viewport node should have defaults applied when updating UI.
+ * Set to false if managing UI nodes externally (ex. via Compose.)
+ */
 open class UiSurface(
     val parentScene: Scene,
     colors: Colors = Colors.darkColors(),
     sizes: Sizes = Sizes.medium,
-    name: String = "uiSurface"
+    name: String = "uiSurface",
+    val clearViewportOnUpdateUi: Boolean = true,
 ) : Node(name) {
 
     constructor(
@@ -155,7 +161,7 @@ open class UiSurface(
         perfPrep = pt.takeMs().also { pt.reset() }
 
         viewport.setBounds(0f, 0f, viewportWidth.use(this), viewportHeight.use(this))
-        viewport.applyDefaults()
+        if (clearViewportOnUpdateUi) viewport.applyDefaults()
         composeContent()
         perfCompose = pt.takeMs().also { pt.reset() }
 

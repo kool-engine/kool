@@ -1,0 +1,90 @@
+package de.fabmax.kool.pipeline.backend.webgpu
+
+import de.fabmax.kool.pipeline.GpuBufferImpl
+import de.fabmax.kool.pipeline.backend.stats.BufferInfo
+import de.fabmax.kool.toJsNumber
+import de.fabmax.kool.util.*
+import kotlin.js.toJsNumber
+
+class GpuBufferWgpu(val buffer: GPUBuffer, size: Long, info: String?) :
+    BaseReleasable(), GpuBufferImpl
+{
+
+    private val bufferInfo = BufferInfo(buffer.label, info ?: "<none>").apply {
+        allocated(size)
+    }
+
+    override fun doRelease() {
+        buffer.destroy()
+        bufferInfo.deleted()
+    }
+}
+
+internal class WgpuGrowingBuffer(
+    val backend: RenderBackendWebGpu,
+    val label: String,
+    size: Long,
+    val usage: Int = GPUBufferUsage.VERTEX or GPUBufferUsage.COPY_DST
+) : BaseReleasable() {
+    private val device: GPUDevice get() = backend.device
+
+    var size: Long = size
+        private set
+    var buffer: GpuBufferWgpu = makeBuffer(size)
+        private set
+
+    fun writeData(data: Float32Buffer) {
+        checkSize(data.limit * 4L)
+        device.queue.writeBuffer(
+            buffer = buffer.buffer,
+            bufferOffset = 0.toJsNumber(),
+            data = (data as Float32BufferImpl).buffer,
+            dataOffset = 0.toJsNumber(),
+            size = data.limit.toJsNumber()
+        )
+    }
+
+    fun writeData(data: Int32Buffer) {
+        checkSize(data.limit * 4L)
+        device.queue.writeBuffer(
+            buffer = buffer.buffer,
+            bufferOffset = 0.toJsNumber(),
+            data = (data as Int32BufferImpl).buffer,
+            dataOffset = 0.toJsNumber(),
+            size = data.limit.toJsNumber()
+        )
+    }
+
+    fun writeData(data: MixedBuffer) {
+        checkSize(data.limit * 4L)
+        device.queue.writeBuffer(
+            buffer = buffer.buffer,
+            bufferOffset = 0.toJsNumber(),
+            data = (data as MixedBufferImpl).buffer,
+            dataOffset = 0.toJsNumber(),
+            size = data.limit.toJsNumber()
+        )
+    }
+
+    private fun checkSize(required: Long) {
+        if (required > size) {
+            buffer.release()
+            size = required
+            buffer.release()
+            buffer = makeBuffer(required)
+        }
+    }
+
+    private fun makeBuffer(size: Long) = backend.createBuffer(
+        GPUBufferDescriptor(
+            label = label,
+            size = size.toJsNumber(),
+            usage = usage
+        ),
+        label
+    )
+
+    override fun doRelease() {
+        buffer.release()
+    }
+}

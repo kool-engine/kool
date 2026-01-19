@@ -1,12 +1,15 @@
 [versions]
 agp = "8.12.3"
-kotlin = "2.2.21"
+compose = "1.9.3"
+compose-mini = "0.0.1"
+kotlin = "2.3.0"
 kotlin-coroutines = "1.10.2"
 kotlin-serialization = "1.9.0"
 kotlin-datetime = "0.7.1-0.6.x-compat"
 kotlin-atomicfu = "0.29.0"
 kotlin-dokka = "2.1.0"
-lwjgl = "3.3.6"
+kotlinx-browser = "0.5.0"
+lwjgl = "3.4.0"
 jsvg = "2.0.0"
 androidsvg = "1.4"
 physx-jni = "2.7.1"
@@ -29,6 +32,7 @@ kotlin-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", 
 kotlin-atomicfu = { group = "org.jetbrains.kotlinx", name = "atomicfu", version.ref = "kotlin-atomicfu" }
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit", version.ref = "kotlin" }
+kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version.ref = "kotlinx-browser" }
 jsvg = { group = "com.github.weisj", name = "jsvg", version.ref = "jsvg" }
 jspecify-annotations = { module = "org.jspecify:jspecify", version = "1.0.0" }
 androidsvg = { group = "com.caverock", name = "androidsvg-aar", version.ref = "androidsvg" }
@@ -49,8 +53,11 @@ physx-wasm = { group = "npm", name = "physx-js-webidl", version.ref = "physx-was
 box2d-jni = { group = "de.fabmax.box2d-jni", name = "box2d-jni", version.ref = "box2d-jni" }
 box2d-android = { group = "de.fabmax.box2d-jni", name = "box2d-jni-android", version.ref = "box2d-jni" }
 box2d-wasm = { group = "npm", name = "kool-box2d-wasm", version.ref = "box2d-wasm" }
-
-# wgpu backend
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
+compose-mini-runtime = { group = "me.dvyy.compose.mini", name = "runtime", version.ref = "compose-mini"}
+compose-mini-modifier = { group = "me.dvyy.compose.mini", name = "modifier", version.ref = "compose-mini" }
+compose-mini-modifier-composed = { group = "me.dvyy.compose.mini", name = "modifier-composed", version.ref = "compose-mini"}
+# wgpu backcend
 wgpu4k = { module = "io.ygdrasil:wgpu4k", version.ref = "wgpu4k" }
 webgpu-descriptors = { module = "io.ygdrasil:webgpu-ktypes-descriptors", version.ref = "webgpu-ktypes" }
 rococoa = { module = "io.ygdrasil:rococoa", version.ref = "rococoa" }
@@ -62,12 +69,16 @@ jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "jna" }
 plugindep-kotlin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 plugindep-kotlin-serialization = { group = "org.jetbrains.kotlin", name = "kotlin-serialization", version.ref = "kotlin" }
 plugindep-kotlin-atomicfu = { group = "org.jetbrains.kotlin", name = "atomicfu", version.ref = "kotlin" }
+plugindep-kotlin-jsplainobjs = { module = "org.jetbrains.kotlin.plugin.js-plain-objects:org.jetbrains.kotlin.plugin.js-plain-objects.gradle.plugin", version.ref = "kotlin" }
 plugindep-dokka = { group = "org.jetbrains.dokka", name = "dokka-gradle-plugin", version.ref = "kotlin-dokka" }
 plugindep-android-library = { group = "com.android.library", name = "com.android.library.gradle.plugin", version.ref = "agp" }
 plugindep-maven-publish = { group = "com.vanniktech", name = "gradle-maven-publish-plugin", version = "0.35.0" }
 
 [plugins]
 webidl = { id = "de.fabmax.webidl-util", version = "0.10.5" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose" }
+
 
 [bundles]
 lwjgl = ["lwjgl-core", "lwjgl-glfw", "lwjgl-jemalloc", "lwjgl-opengl", "lwjgl-vulkan", "lwjgl-vma", "lwjgl-shaderc", "lwjgl-nfd", "lwjgl-stb", "lwjgl-jawt", "lwjgl-msdfgen"]

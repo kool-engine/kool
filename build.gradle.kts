@@ -4,11 +4,12 @@ plugins {
     id("kool.androidlib-conventions") apply false
     id("kool.lib-conventions") apply false
     id("kool.publish-conventions") apply false
+    alias(libs.plugins.compose.compiler) apply false
 }
 
 allprojects {
     group = "de.fabmax.kool"
-    version = "0.19.0"
+    version = "0.20.0-SNAPSHOT"
 }
 
 tasks.register<UnCommentTask>("disableAndroidPlatform") {

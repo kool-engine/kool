@@ -7,8 +7,7 @@ import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.ScopedMemory
 import physxandroid.NativeObject
-import physxandroid.character.PxCapsuleController
-import physxandroid.character.PxExtendedVec3
+import physxandroid.character.*
 import physxandroid.common.*
 import physxandroid.cooking.PxConvexFlags
 import physxandroid.cooking.PxConvexMeshDesc
@@ -18,6 +17,7 @@ import physxandroid.geometry.*
 import physxandroid.physics.*
 import physxandroid.support.PxArray_PxShapePtr
 import physxandroid.support.PxArray_PxVec3
+import physxandroid.vehicle2.*
 
 val NativeObject.ptr: Long get() = address
 
@@ -175,3 +175,20 @@ fun ScopedMemory.createPxJointLimitPyramid(yLimitAngleMin: Float, yLimitAngleMax
     autoDelete(PxJointLimitPyramid(yLimitAngleMin, yLimitAngleMax, zLimitAngleMin, zLimitAngleMax, spring), PxJointLimitPyramid::destroy)
 fun ScopedMemory.createPxJointLimitCone(yLimitAngle: AngleF, zLimitAngle: AngleF) =
     autoDelete(PxJointLimitCone(yLimitAngle.rad, zLimitAngle.rad), PxJointLimitCone::destroy)
+
+var PxVehicleFrame.lngAxisEnum: PxVehicleAxesEnum by PxVehicleFrame::lngAxis
+var PxVehicleFrame.latAxisEnum: PxVehicleAxesEnum by PxVehicleFrame::latAxis
+var PxVehicleFrame.vrtAxisEnum: PxVehicleAxesEnum by PxVehicleFrame::vrtAxis
+
+var PxTriggerPair.statusEnum: PxPairFlagEnum by PxTriggerPair::status
+
+var PxArticulationDrive.driveTypeEnum: PxArticulationDriveTypeEnum by PxArticulationDrive::driveType
+
+var PxCapsuleControllerDesc.climbingModeEnum: PxCapsuleClimbingModeEnum by PxCapsuleControllerDesc::climbingMode
+var PxCapsuleControllerDesc.nonWalkableModeEnum: PxControllerNonWalkableModeEnum by PxCapsuleControllerDesc::nonWalkableMode
+
+var PxHeightFieldDesc.formatEnum: PxHeightFieldFormatEnum by PxHeightFieldDesc::format
+
+var PxVehiclePhysXSimulationContext.physxActorUpdateModeEnum: PxVehiclePhysXActorUpdateModeEnum by PxVehiclePhysXSimulationContext::physxActorUpdateMode
+var PxVehicleSuspensionStateCalculationParams.suspensionJounceCalculationTypeEnum: PxVehicleSuspensionJounceCalculationTypeEnum by PxVehicleSuspensionStateCalculationParams::suspensionJounceCalculationType
+var PxVehicleClutchParams.accuracyModeEnum: PxVehicleClutchAccuracyModeEnum by PxVehicleClutchParams::accuracyMode
