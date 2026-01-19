@@ -1,5 +1,5 @@
 [versions]
-agp = "8.12.3"
+agp = "8.13.0"
 compose = "1.9.3"
 compose-mini = "0.0.1"
 kotlin = "2.3.0"
@@ -72,7 +72,7 @@ plugindep-kotlin-atomicfu = { group = "org.jetbrains.kotlin", name = "atomicfu",
 plugindep-kotlin-jsplainobjs = { module = "org.jetbrains.kotlin.plugin.js-plain-objects:org.jetbrains.kotlin.plugin.js-plain-objects.gradle.plugin", version.ref = "kotlin" }
 plugindep-dokka = { group = "org.jetbrains.dokka", name = "dokka-gradle-plugin", version.ref = "kotlin-dokka" }
 plugindep-android-library = { group = "com.android.library", name = "com.android.library.gradle.plugin", version.ref = "agp" }
-plugindep-maven-publish = { group = "com.vanniktech", name = "gradle-maven-publish-plugin", version = "0.35.0" }
+plugindep-maven-publish = { group = "com.vanniktech", name = "gradle-maven-publish-plugin", version = "0.36.0" }
 
 [plugins]
 webidl = { id = "de.fabmax.webidl-util", version = "0.10.5" }
