@@ -5,11 +5,8 @@ import de.fabmax.kool.scene.animation.Animation
 import de.fabmax.kool.scene.animation.Skin
 
 class Model(name: String? = null) : Node(name) {
-
     val nodes = mutableMapOf<String, Node>()
     val meshes = mutableMapOf<String, Mesh<*>>()
-    val textures = mutableMapOf<String, Texture2d>()
-
     val animations = mutableListOf<Animation>()
     val skins = mutableListOf<Skin>()
 
@@ -59,10 +56,5 @@ class Model(name: String? = null) : Node(name) {
                 println("$indent    ${it.name}")
             }
         }
-    }
-
-    override fun doRelease() {
-        super.doRelease()
-        textures.values.forEach { it.release() }
     }
 }
