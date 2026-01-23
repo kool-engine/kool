@@ -524,8 +524,13 @@ class ModelTemplate(val scene: GltfScene, val gltfFile: GltfFile) : BaseReleasab
                     }
 
                     val instances = cfg.instanceLayout?.let { MeshInstanceList(it) }
-                    val mesh =
-                        Mesh(geometry, instances = instances, morphWeights = morphWeights, skin = meshSkin, name = name)
+                    val mesh = Mesh(
+                        geometry = geometry,
+                        instances = instances,
+                        morphWeights = morphWeights,
+                        skin = meshSkin,
+                        name = name
+                    ).apply { releaseGeometry = false }
                     mesh.isFrustumChecked = isFrustumChecked
 
                     nodeGrp += mesh
