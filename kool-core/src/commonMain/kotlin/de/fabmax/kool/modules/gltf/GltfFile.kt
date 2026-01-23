@@ -141,15 +141,30 @@ data class GltfFile(
 ) {
 
     @Deprecated(
-        "Use template method instead",
-        replaceWith = ReplaceWith("makeModelTemplate(scene).makeModel(modelCfg)")
+        message = "Use makeModelTemplate if creating multiple Models or makeSingleModel if creating a single Model from this GltfFile",
+        ReplaceWith("makeSingleModel(scene, modelCfg)")
     )
     fun makeModel(modelCfg: GltfLoadConfig = GltfLoadConfig(), scene: Int = this.scene): Model {
-        return makeModelTemplate(scene).makeModel(modelCfg)
+        return makeSingleModel(scene, modelCfg)
     }
 
+    /**
+     * Create a model template from this GltfFile. If you only need a single instances use [makeModel] instead.
+     * @see GltfFile.makeModel
+     */
     fun makeModelTemplate(scene: Int = this.scene): ModelTemplate {
         return ModelTemplate(scenes[scene], this)
+    }
+
+    /**
+     * Create a single model from this GltfFile. If you want to create multiple instances use [makeModelTemplate] instead.
+     * @see GltfFile.makeModelTemplate
+     */
+    fun makeSingleModel(scene: Int = this.scene, modelCfg: GltfLoadConfig = GltfLoadConfig()): Model {
+        val template = makeModelTemplate(scene)
+        return template.makeModel(modelCfg).apply {
+            addDependingReleasable(template)
+        }
     }
 
     internal fun updateReferences() {
