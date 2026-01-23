@@ -53,25 +53,20 @@ import kotlin.collections.plusAssign
 import kotlin.collections.set
 import kotlin.math.min
 
+/**
+ * Template that enables creation of multiple [Models][Model] with shared geometry and shader data.
+ * Releasing this template releases the shared data, breaking any Models still in use.
+ */
 class ModelTemplate(val scene: GltfScene, val gltfFile: GltfFile) : BaseReleasable() {
     val name = scene.name ?: "model_scene"
-    val textures = mutableMapOf<String, Texture2d>()
+    private val textures = mutableMapOf<String, Texture2d>()
+    private val geometryCache: MutableMap<String, IndexedVertexList<*>> = mutableMapOf()
+    private val shaderCache: MutableMap<String, Pair<KslShader, DepthShader.Config?>> = mutableMapOf()
 
     override fun doRelease() {
         textures.values.forEach { it.release() }
         geometryCache.values.forEach { it.release() }
     }
-
-    val geometryCache: MutableMap<String, IndexedVertexList<*>> = mutableMapOf()
-    fun getMeshGeometry(name: String, create: () -> IndexedVertexList<*>): IndexedVertexList<*> =
-        geometryCache.getOrPut(name, create)
-
-    val shaderCache: MutableMap<String, Pair<KslShader, DepthShader.Config?>> = mutableMapOf()
-    fun getShaders(
-        name: String,
-        create: () -> Pair<KslShader, DepthShader.Config?>
-    ): Pair<KslShader, DepthShader.Config?> =
-        shaderCache.getOrPut(name, create)
 
     fun makeModel(cfg: GltfLoadConfig = GltfLoadConfig()): Model {
         return ModelGenerator().makeModel(cfg)
@@ -89,7 +84,7 @@ class ModelTemplate(val scene: GltfScene, val gltfFile: GltfFile) : BaseReleasab
         val nodes get() = gltfFile.nodes
 
         fun makeModel(cfg: GltfLoadConfig): Model {
-            val model = Model(scene.name ?: "model_scene")
+            val model = Model(name)
             scene.nodeRefs.forEach { nd -> model += nd.makeNode(model, cfg) }
 
             if (cfg.loadAnimations) makeTrsAnimations()
@@ -508,7 +503,7 @@ class ModelTemplate(val scene: GltfScene, val gltfFile: GltfFile) : BaseReleasab
         ) {
             meshRef?.primitives?.forEachIndexed { index, prim ->
                 val name = "${meshRef?.name ?: "${nodeGrp.name}.mesh"}_$index"
-                val geometry = getMeshGeometry(name) { prim.toGeometry(cfg, accessors) }
+                val geometry = geometryCache.getOrPut(name) { prim.toGeometry(cfg, accessors) }
                 if (!geometry.isEmpty()) {
                     var isFrustumChecked = true
                     var meshSkin: Skin? = null
@@ -546,7 +541,7 @@ class ModelTemplate(val scene: GltfScene, val gltfFile: GltfFile) : BaseReleasab
                     meshMaterials[mesh] = prim.materialRef
 
                     if (cfg.applyMaterials) {
-                        val (shader, depthShader) = getShaders(name) {
+                        val (shader, depthShader) = shaderCache.getOrPut(name) {
                             makeKslMaterial(prim, mesh, cfg)
                         }
                         mesh.shader = shader
