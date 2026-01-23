@@ -277,7 +277,7 @@ open class Mesh<Layout: Struct>(
      */
     override fun doRelease() {
         super.doRelease()
-        geometry.release()
+        // geometry.release()
         drawGeometry.release()
         instances?.release()
         drawInstances?.release()
@@ -303,6 +303,7 @@ open class Mesh<Layout: Struct>(
         }
 
         // update bounds and ray test if geometry has changed
+        geometry.checkIsNotReleased()
         if (geometry.modCount.isDirty(geometryUpdateModCount)) {
             geometryUpdateModCount = geometry.modCount.count
             rayTest.onMeshDataChanged(this)
@@ -323,6 +324,7 @@ open class Mesh<Layout: Struct>(
             geom = geometry
             insts = instances
         }
+        geom.checkIsNotReleased()
         cmd.setup(this, geom, insts, pipeline, drawGroupId)
     }
 
@@ -330,6 +332,7 @@ open class Mesh<Layout: Struct>(
         meshPipelineData.captureBuffer()
         if (isAsyncRendering) {
             if (drawGeometry.modCount.isDirty(geometry.modCount)) {
+                geometry.checkIsNotReleased()
                 drawGeometry.set(geometry)
             }
             if (instances != null && instances.modCount.isDirty(drawInstances!!.modCount)) {
