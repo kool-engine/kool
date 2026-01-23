@@ -2,20 +2,11 @@ package de.fabmax.kool.modules.gltf
 
 import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.Assets
-import de.fabmax.kool.math.*
-import de.fabmax.kool.modules.ksl.KslPbrShader
-import de.fabmax.kool.modules.ksl.KslShader
-import de.fabmax.kool.pipeline.BlendMode
-import de.fabmax.kool.pipeline.deferred.DeferredKslPbrShader
-import de.fabmax.kool.pipeline.shading.AlphaMode
-import de.fabmax.kool.pipeline.shading.DepthShader
-import de.fabmax.kool.scene.*
-import de.fabmax.kool.scene.animation.*
-import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.Model
+import de.fabmax.kool.scene.ModelTemplate
 import de.fabmax.kool.util.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlin.math.min
 
 suspend fun GltfFile(data: Uint8Buffer, filePath: String, assetLoader: AssetLoader = Assets.defaultLoader): Result<GltfFile> {
     return try {
