@@ -17,11 +17,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.math.min
 
-suspend fun GltfFile(
-    data: Uint8Buffer,
-    filePath: String,
-    assetLoader: AssetLoader = Assets.defaultLoader
-): Result<GltfFile> {
+suspend fun GltfFile(data: Uint8Buffer, filePath: String, assetLoader: AssetLoader = Assets.defaultLoader): Result<GltfFile> {
     return try {
         val gltfData = if (filePath.lowercase().endsWith(".gz")) data.inflate() else data
         val gltfFile = when (val type = filePath.lowercase().removeSuffix(".gz").substringAfterLast('.')) {
@@ -34,20 +30,12 @@ suspend fun GltfFile(
         gltfFile.let { m ->
             m.buffers.filter { it.uri != null }.forEach {
                 val uri = it.uri!!
-                val bufferUri = if (uri.startsWith("data:", true)) {
-                    uri
-                } else {
-                    "$modelBasePath/$uri"
-                }
+                val bufferUri = if (uri.startsWith("data:", true)) { uri } else { "$modelBasePath/$uri" }
                 it.data = assetLoader.loadBlob(bufferUri).getOrThrow()
             }
             m.images.filter { it.uri != null }.forEach {
                 val uri = it.uri!!
-                val imageUri = if (uri.startsWith("data:", true)) {
-                    uri
-                } else {
-                    "$modelBasePath/$uri"
-                }
+                val imageUri = if (uri.startsWith("data:", true)) { uri } else { "$modelBasePath/$uri" }
                 it.uri = imageUri
             }
             m.updateReferences()
@@ -88,7 +76,7 @@ private fun loadGlb(data: Uint8Buffer): GltfFile {
         chunkLen = str.readUInt()
         chunkType = str.readUInt()
         if (chunkType == GltfFile.GLB_CHUNK_MAGIC_BIN) {
-            model.buffers[iChunk - 1].data = str.readData(chunkLen)
+            model.buffers[iChunk-1].data = str.readData(chunkLen)
 
         } else {
             logW("loadGlb") { "Unexpected chunk type for chunk $iChunk: $chunkType (should be ${GltfFile.GLB_CHUNK_MAGIC_BIN} / ' BIN')" }
