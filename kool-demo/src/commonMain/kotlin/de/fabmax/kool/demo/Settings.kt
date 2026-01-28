@@ -27,6 +27,7 @@ object Settings {
     val isFullscreen = MutableStateSettings("koolDemo.isFullscreen", false) { it.toBoolean() }
     val showHiddenDemos = MutableStateSettings("koolDemo.showHiddenDemos", false) { it.toBoolean() }
     val showDebugOverlay = MutableStateSettings("koolDemo.showDebugOverlay", true) { it.toBoolean() }
+    val showInputVisualization = MutableStateSettings("koolDemo.showInputVisualization", false) { it.toBoolean() }
     val showMenuOnStartup = MutableStateSettings("koolDemo.showMenuOnStartup", true) { it.toBoolean() }
     val renderScale = MutableStateSettings("koolDemo.renderScale", 100) { it.toInt() }
 

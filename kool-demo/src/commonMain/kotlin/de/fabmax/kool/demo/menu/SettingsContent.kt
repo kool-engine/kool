@@ -69,6 +69,7 @@ class SettingsContent(val menu: DemoMenu) : Composable {
         }
         LabeledSwitch("Menu initially expanded".l, Settings.showMenuOnStartup)
         LabeledSwitch("Debug overlay".l, Settings.showDebugOverlay)
+        LabeledSwitch("Show Input Visualization", Settings.showInputVisualization)
         LabeledSwitch("Fullscreen".l, Settings.isFullscreen)
         LabeledSwitch("Hidden demos".l, Settings.showHiddenDemos)
 
