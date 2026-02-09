@@ -39,8 +39,9 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
 
         vertexAttrBinder = vertexBinding?.let { binding ->
             val attrs = binding.vertexAttributes.map { attr ->
+                val type = if (attr.type.isInt) gl.INT else gl.FLOAT
                 val location = mappedAttribLocations[attr]!!
-                AttributeBinderItem(location, attr.type.channels, attr.bufferOffset / 4, gl.FLOAT)
+                AttributeBinderItem(location, attr.type.channels, attr.bufferOffset / 4, type)
             }
             AttributeBinder(attrs, binding.strideBytes)
         }
