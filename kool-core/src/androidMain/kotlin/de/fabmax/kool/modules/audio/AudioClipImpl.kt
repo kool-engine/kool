@@ -100,7 +100,7 @@ class AudioClipImpl(private val clipUri: Uri, private val context: Context) : Au
     }
 
     private val errorListener = MediaPlayer.OnErrorListener { mp, what, extra ->
-        val cause =  when (extra) {
+        val cause = when (extra) {
             MediaPlayer.MEDIA_ERROR_IO -> "MEDIA_ERROR_IO"
             MediaPlayer.MEDIA_ERROR_MALFORMED -> "MEDIA_ERROR_MALFORMED"
             MediaPlayer.MEDIA_ERROR_UNSUPPORTED -> "MEDIA_ERROR_UNSUPPORTED"
@@ -145,6 +145,7 @@ class AudioClipImpl(private val clipUri: Uri, private val context: Context) : Au
 
         init {
             mediaPlayer.setOnErrorListener(errorListener)
+            mediaPlayer.setOnCompletionListener { clipState = ClipState.STOPPED }
             volume = this@AudioClipImpl.volume * this@AudioClipImpl.masterVolume
         }
 
@@ -159,6 +160,7 @@ class AudioClipImpl(private val clipUri: Uri, private val context: Context) : Au
 
         fun stop() {
             mediaPlayer.stop()
+            clipState = ClipState.STOPPED
         }
     }
 }
