@@ -1,11 +1,11 @@
 package de.fabmax.kool.modules.audio
 
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.Uint8BufferImpl
-import de.fabmax.kool.util.scopedMem
-import de.fabmax.kool.util.toBuffer
+import de.fabmax.kool.util.*
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import org.lwjgl.stb.STBVorbis
+import org.lwjgl.stb.STBVorbisInfo
 import org.lwjgl.system.MemoryUtil
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -13,7 +13,6 @@ import java.io.OutputStream
 import javax.sound.sampled.*
 import kotlin.math.log10
 import kotlin.math.pow
-
 
 class AudioClipImpl(private val audioData: ByteArray, private val format: String) : AudioClip {
 
@@ -82,6 +81,8 @@ class AudioClipImpl(private val audioData: ByteArray, private val format: String
     companion object {
         const val MIN_PLAY_INTERVAL_MS = 150f
         const val MAX_CLIP_POOL_SIZE = 5
+
+        private val VORBIS_LOCK = SynchronizedObject()
     }
 
     private enum class ClipState {
@@ -160,7 +161,11 @@ class AudioClipImpl(private val audioData: ByteArray, private val format: String
             } catch (e: Exception) {
                 // no jvm builtin codec
                 when (format) {
-                    "ogg" -> loadVorbis(data)
+                    "ogg" -> {
+                        synchronized(VORBIS_LOCK) {
+                            loadVorbis(data)
+                        }
+                    }
                     else -> error("Failed loading audio clip, format: $format (try .wav or .ogg)")
                 }
             }
@@ -169,10 +174,22 @@ class AudioClipImpl(private val audioData: ByteArray, private val format: String
         private fun loadVorbis(data: ByteArray): AudioInputStream {
             return scopedMem {
                 (data.toBuffer() as Uint8BufferImpl).useRaw { raw ->
-                    val channels = callocInt(1)
-                    val sampleRate = callocInt(1)
-                    val samples = STBVorbis.stb_vorbis_decode_memory(raw, channels, sampleRate)
-                    checkNotNull(samples) { "Failed decoding ogg vorbis file" }
+                    val error = callocInt(1)
+                    val handle = STBVorbis.stb_vorbis_open_memory(raw, error, null)
+                    check(handle != 0L) { "Failed opening ogg vorbis file" }
+                    val info = STBVorbisInfo.calloc(this)
+                    STBVorbis.stb_vorbis_get_info(handle, info)
+                    val channels = info.channels()
+                    val sampleRate = info.sample_rate()
+                    val numSamples = STBVorbis.stb_vorbis_stream_length_in_samples(handle)
+                    check(channels > 0 && numSamples > 0 && sampleRate > 0) { "Invalid vorbis file info: channels: $channels, samples: $numSamples, sampleRate: $sampleRate" }
+
+                    val samples = MemoryUtil.memAllocShort(numSamples * channels)
+                    val decodedSamples = STBVorbis.stb_vorbis_get_samples_short_interleaved(handle, channels, samples)
+                    if (decodedSamples != numSamples) {
+                        logW { "Unexpected number of samples decoded: expected $numSamples, got $decodedSamples" }
+                    }
+                    STBVorbis.stb_vorbis_close(handle)
 
                     val pcmBytes = ByteArrayOutputStream()
                     pcmBytes.use {
@@ -184,12 +201,12 @@ class AudioClipImpl(private val audioData: ByteArray, private val format: String
                         it.writeInt(16)
                         // format code: PCM
                         it.writeShort(1)
-                        it.writeShort(channels.get(0))
-                        it.writeInt(sampleRate.get(0))
+                        it.writeShort(channels)
+                        it.writeInt(sampleRate)
                         // bytes/s -> sample-rate * block align
-                        it.writeInt(sampleRate.get(0) * channels.get(0) * 2)
+                        it.writeInt(sampleRate * channels * 2)
                         // block align: channels * bytes/sample
-                        it.writeShort(channels.get(0) * 2)
+                        it.writeShort(channels * 2)
                         // bits / sample
                         it.writeShort(16)
                         it.write("data".toByteArray())
