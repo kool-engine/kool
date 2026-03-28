@@ -27,274 +27,275 @@ abstract class Struct(val name: String, val layout: MemoryLayout) {
     }
 
     companion object {
+        // fixme: member builder functions should be protected, but fails with kotlin 2.3.20
         @JvmStatic
-        protected fun <T: Struct> T.float1(name: String = "f1_${members.size}"): Float1Member<T> {
+        /*protected*/ fun <T: Struct> T.float1(name: String = "f1_${members.size}"): Float1Member<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float1, 1)
             lastPos = offset + size
             return Float1Member(name, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.float2(name: String = "f2_${members.size}"): Float2Member<T> {
+        /*protected*/ fun <T: Struct> T.float2(name: String = "f2_${members.size}"): Float2Member<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float2, 1)
             lastPos = offset + size
             return Float2Member(name, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.float3(name: String = "f3_${members.size}"): Float3Member<T> {
+        /*protected*/ fun <T: Struct> T.float3(name: String = "f3_${members.size}"): Float3Member<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float3, 1)
             lastPos = offset + size
             return Float3Member(name, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.float4(name: String = "f4_${members.size}"): Float4Member<T> {
+        /*protected*/ fun <T: Struct> T.float4(name: String = "f4_${members.size}"): Float4Member<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float4, 1)
             lastPos = offset + size
             return Float4Member(name, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.int1(name: String = "i1_${members.size}"): Int1Member<T> {
+        /*protected*/ fun <T: Struct> T.int1(name: String = "i1_${members.size}"): Int1Member<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int1, 1)
             lastPos = offset + size
             return Int1Member(name, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.int2(name: String = "i2_${members.size}"): Int2Member<T> {
+        /*protected*/ fun <T: Struct> T.int2(name: String = "i2_${members.size}"): Int2Member<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int2, 1)
             lastPos = offset + size
             return Int2Member(name, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.int3(name: String = "i3_${members.size}"): Int3Member<T> {
+        /*protected*/ fun <T: Struct> T.int3(name: String = "i3_${members.size}"): Int3Member<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int3, 1)
             lastPos = offset + size
             return Int3Member(name, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.int4(name: String = "i4_${members.size}"): Int4Member<T> {
+        /*protected*/ fun <T: Struct> T.int4(name: String = "i4_${members.size}"): Int4Member<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int4, 1)
             lastPos = offset + size
             return Int4Member(name, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.uint1(name: String = "u1_${members.size}"): Uint1Member<T> {
+        /*protected*/ fun <T: Struct> T.uint1(name: String = "u1_${members.size}"): Uint1Member<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint1, 1)
             lastPos = offset + size
             return Uint1Member(name, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.uint2(name: String = "u2_${members.size}"): Uint2Member<T> {
+        /*protected*/ fun <T: Struct> T.uint2(name: String = "u2_${members.size}"): Uint2Member<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint2, 1)
             lastPos = offset + size
             return Uint2Member(name, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.uint3(name: String = "u3_${members.size}"): Uint3Member<T> {
+        /*protected*/ fun <T: Struct> T.uint3(name: String = "u3_${members.size}"): Uint3Member<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint3, 1)
             lastPos = offset + size
             return Uint3Member(name, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.uint4(name: String = "u4_${members.size}"): Uint4Member<T> {
+        /*protected*/ fun <T: Struct> T.uint4(name: String = "u4_${members.size}"): Uint4Member<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint4, 1)
             lastPos = offset + size
             return Uint4Member(name, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.bool1(name: String = "b1_${members.size}"): Bool1Member<T> {
+        /*protected*/ fun <T: Struct> T.bool1(name: String = "b1_${members.size}"): Bool1Member<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool1, 1)
             lastPos = offset + size
             return Bool1Member(name, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.bool2(name: String = "b2_${members.size}"): Bool2Member<T> {
+        /*protected*/ fun <T: Struct> T.bool2(name: String = "b2_${members.size}"): Bool2Member<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool2, 1)
             lastPos = offset + size
             return Bool2Member(name, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.bool3(name: String = "b3_${members.size}"): Bool3Member<T> {
+        /*protected*/ fun <T: Struct> T.bool3(name: String = "b3_${members.size}"): Bool3Member<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool3, 1)
             lastPos = offset + size
             return Bool3Member(name, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.bool4(name: String = "b4_${members.size}"): Bool4Member<T> {
+        /*protected*/ fun <T: Struct> T.bool4(name: String = "b4_${members.size}"): Bool4Member<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool4, 1)
             lastPos = offset + size
             return Bool4Member(name, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.mat2(name: String = "m2_${members.size}"): Mat2Member<T> {
+        /*protected*/ fun <T: Struct> T.mat2(name: String = "m2_${members.size}"): Mat2Member<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat2, 1)
             lastPos = offset + size
             return Mat2Member(name, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.mat3(name: String = "m3_${members.size}"): Mat3Member<T> {
+        /*protected*/ fun <T: Struct> T.mat3(name: String = "m3_${members.size}"): Mat3Member<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat3, 1)
             lastPos = offset + size
             return Mat3Member(name, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.mat4(name: String = "m4_${members.size}"): Mat4Member<T> {
+        /*protected*/ fun <T: Struct> T.mat4(name: String = "m4_${members.size}"): Mat4Member<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat4, 1)
             lastPos = offset + size
             return Mat4Member(name, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.float1Array(arraySize: Int, name: String = "f1arr_${members.size}"): Float1ArrayMember<T> {
+        /*protected*/ fun <T: Struct> T.float1Array(arraySize: Int, name: String = "f1arr_${members.size}"): Float1ArrayMember<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float1, arraySize)
             lastPos = offset + size
             return Float1ArrayMember(name, arraySize, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.float2Array(arraySize: Int, name: String = "f2arr_${members.size}"): Float2ArrayMember<T> {
+        /*protected*/ fun <T: Struct> T.float2Array(arraySize: Int, name: String = "f2arr_${members.size}"): Float2ArrayMember<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float2, arraySize)
             lastPos = offset + size
             return Float2ArrayMember(name, arraySize, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.float3Array(arraySize: Int, name: String = "f3arr_${members.size}"): Float3ArrayMember<T> {
+        /*protected*/ fun <T: Struct> T.float3Array(arraySize: Int, name: String = "f3arr_${members.size}"): Float3ArrayMember<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float3, arraySize)
             lastPos = offset + size
             return Float3ArrayMember(name, arraySize, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.float4Array(arraySize: Int, name: String = "f4arr_${members.size}"): Float4ArrayMember<T> {
+        /*protected*/ fun <T: Struct> T.float4Array(arraySize: Int, name: String = "f4arr_${members.size}"): Float4ArrayMember<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float4, arraySize)
             lastPos = offset + size
             return Float4ArrayMember(name, arraySize, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.int1Array(arraySize: Int, name: String = "i1arr_${members.size}"): Int1ArrayMember<T> {
+        /*protected*/ fun <T: Struct> T.int1Array(arraySize: Int, name: String = "i1arr_${members.size}"): Int1ArrayMember<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int1, arraySize)
             lastPos = offset + size
             return Int1ArrayMember(name, arraySize, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.int2Array(arraySize: Int, name: String = "i2arr_${members.size}"): Int2ArrayMember<T> {
+        /*protected*/ fun <T: Struct> T.int2Array(arraySize: Int, name: String = "i2arr_${members.size}"): Int2ArrayMember<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int2, arraySize)
             lastPos = offset + size
             return Int2ArrayMember(name, arraySize, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.int3Array(arraySize: Int, name: String = "i3arr_${members.size}"): Int3ArrayMember<T> {
+        /*protected*/ fun <T: Struct> T.int3Array(arraySize: Int, name: String = "i3arr_${members.size}"): Int3ArrayMember<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int3, arraySize)
             lastPos = offset + size
             return Int3ArrayMember(name, arraySize, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.int4Array(arraySize: Int, name: String = "i4arr_${members.size}"): Int4ArrayMember<T> {
+        /*protected*/ fun <T: Struct> T.int4Array(arraySize: Int, name: String = "i4arr_${members.size}"): Int4ArrayMember<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int4, arraySize)
             lastPos = offset + size
             return Int4ArrayMember(name, arraySize, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.uint1Array(arraySize: Int, name: String = "u1arr_${members.size}"): Uint1ArrayMember<T> {
+        /*protected*/ fun <T: Struct> T.uint1Array(arraySize: Int, name: String = "u1arr_${members.size}"): Uint1ArrayMember<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint1, arraySize)
             lastPos = offset + size
             return Uint1ArrayMember(name, arraySize, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.uint2Array(arraySize: Int, name: String = "u2arr_${members.size}"): Uint2ArrayMember<T> {
+        /*protected*/ fun <T: Struct> T.uint2Array(arraySize: Int, name: String = "u2arr_${members.size}"): Uint2ArrayMember<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint2, arraySize)
             lastPos = offset + size
             return Uint2ArrayMember(name, arraySize, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.uint3Array(arraySize: Int, name: String = "u3arr_${members.size}"): Uint3ArrayMember<T> {
+        /*protected*/ fun <T: Struct> T.uint3Array(arraySize: Int, name: String = "u3arr_${members.size}"): Uint3ArrayMember<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint3, arraySize)
             lastPos = offset + size
             return Uint3ArrayMember(name, arraySize, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.uint4Array(arraySize: Int, name: String = "u4arr_${members.size}"): Uint4ArrayMember<T> {
+        /*protected*/ fun <T: Struct> T.uint4Array(arraySize: Int, name: String = "u4arr_${members.size}"): Uint4ArrayMember<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint4, arraySize)
             lastPos = offset + size
             return Uint4ArrayMember(name, arraySize, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.bool1Array(arraySize: Int, name: String = "b1arr_${members.size}"): Bool1ArrayMember<T> {
+        /*protected*/ fun <T: Struct> T.bool1Array(arraySize: Int, name: String = "b1arr_${members.size}"): Bool1ArrayMember<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool1, arraySize)
             lastPos = offset + size
             return Bool1ArrayMember(name, arraySize, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.bool2Array(arraySize: Int, name: String = "b2arr_${members.size}"): Bool2ArrayMember<T> {
+        /*protected*/ fun <T: Struct> T.bool2Array(arraySize: Int, name: String = "b2arr_${members.size}"): Bool2ArrayMember<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool2, arraySize)
             lastPos = offset + size
             return Bool2ArrayMember(name, arraySize, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.bool3Array(arraySize: Int, name: String = "b3arr_${members.size}"): Bool3ArrayMember<T> {
+        /*protected*/ fun <T: Struct> T.bool3Array(arraySize: Int, name: String = "b3arr_${members.size}"): Bool3ArrayMember<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool3, arraySize)
             lastPos = offset + size
             return Bool3ArrayMember(name, arraySize, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.bool4Array(arraySize: Int, name: String = "b4arr_${members.size}"): Bool4ArrayMember<T> {
+        /*protected*/ fun <T: Struct> T.bool4Array(arraySize: Int, name: String = "b4arr_${members.size}"): Bool4ArrayMember<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool4, arraySize)
             lastPos = offset + size
             return Bool4ArrayMember(name, arraySize, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.mat2Array(arraySize: Int, name: String = "m2arr_${members.size}"): Mat2ArrayMember<T> {
+        /*protected*/ fun <T: Struct> T.mat2Array(arraySize: Int, name: String = "m2arr_${members.size}"): Mat2ArrayMember<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat2, arraySize)
             lastPos = offset + size
             return Mat2ArrayMember(name, arraySize, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.mat3Array(arraySize: Int, name: String = "m3arr_${members.size}"): Mat3ArrayMember<T> {
+        /*protected*/ fun <T: Struct> T.mat3Array(arraySize: Int, name: String = "m3arr_${members.size}"): Mat3ArrayMember<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat3, arraySize)
             lastPos = offset + size
             return Mat3ArrayMember(name, arraySize, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.mat4Array(arraySize: Int, name: String = "m4arr_${members.size}"): Mat4ArrayMember<T> {
+        /*protected*/ fun <T: Struct> T.mat4Array(arraySize: Int, name: String = "m4arr_${members.size}"): Mat4ArrayMember<T> {
             val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat4, arraySize)
             lastPos = offset + size
             return Mat4ArrayMember(name, arraySize, offset, this).also { addMember(it) }
         }
 
         @JvmStatic
-        protected fun <T: Struct, S: Struct> T.struct(struct: S, name: String = "nested_${struct.name}_${members.size}"): NestedStructMember<T, S> {
+        /*protected*/ fun <T: Struct, S: Struct> T.struct(struct: S, name: String = "nested_${struct.name}_${members.size}"): NestedStructMember<T, S> {
             require(struct.layout == layout) {
                 "Nested structs must have the same layout as the parent struct, but parent ${this::class} has layout $layout and nested ${struct::class} has ${struct.layout}"
             }
@@ -304,7 +305,7 @@ abstract class Struct(val name: String, val layout: MemoryLayout) {
         }
 
         @JvmStatic
-        protected fun <T: Struct, S: Struct> T.structArray(struct: S, arraySize: Int, name: String = "nestedArr_${members.size}"): NestedStructArrayMember<T, S> {
+        /*protected*/ fun <T: Struct, S: Struct> T.structArray(struct: S, arraySize: Int, name: String = "nestedArr_${members.size}"): NestedStructArrayMember<T, S> {
             require(struct.layout == layout) {
                 "Nested structs must have the same layout as the parent struct, but parent ${this::class} has layout $layout and nested ${struct::class} has ${struct.layout}"
             }
@@ -314,95 +315,95 @@ abstract class Struct(val name: String, val layout: MemoryLayout) {
         }
 
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Float1Member<*>): Float1Member<T> = float1(that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Float1Member<*>): Float1Member<T> = float1(that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Float2Member<*>): Float2Member<T> = float2(that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Float2Member<*>): Float2Member<T> = float2(that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Float3Member<*>): Float3Member<T> = float3(that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Float3Member<*>): Float3Member<T> = float3(that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Float4Member<*>): Float4Member<T> = float4(that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Float4Member<*>): Float4Member<T> = float4(that.name)
 
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Int1Member<*>): Int1Member<T> = int1(that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Int1Member<*>): Int1Member<T> = int1(that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Int2Member<*>): Int2Member<T> = int2(that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Int2Member<*>): Int2Member<T> = int2(that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Int3Member<*>): Int3Member<T> = int3(that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Int3Member<*>): Int3Member<T> = int3(that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Int4Member<*>): Int4Member<T> = int4(that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Int4Member<*>): Int4Member<T> = int4(that.name)
 
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Uint1Member<*>): Uint1Member<T> = uint1(that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Uint1Member<*>): Uint1Member<T> = uint1(that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Uint2Member<*>): Uint2Member<T> = uint2(that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Uint2Member<*>): Uint2Member<T> = uint2(that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Uint3Member<*>): Uint3Member<T> = uint3(that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Uint3Member<*>): Uint3Member<T> = uint3(that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Uint4Member<*>): Uint4Member<T> = uint4(that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Uint4Member<*>): Uint4Member<T> = uint4(that.name)
 
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Bool1Member<*>): Bool1Member<T> = bool1(that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Bool1Member<*>): Bool1Member<T> = bool1(that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Bool2Member<*>): Bool2Member<T> = bool2(that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Bool2Member<*>): Bool2Member<T> = bool2(that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Bool3Member<*>): Bool3Member<T> = bool3(that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Bool3Member<*>): Bool3Member<T> = bool3(that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Bool4Member<*>): Bool4Member<T> = bool4(that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Bool4Member<*>): Bool4Member<T> = bool4(that.name)
 
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Mat2Member<*>): Mat2Member<T> = mat2(that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Mat2Member<*>): Mat2Member<T> = mat2(that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Mat3Member<*>): Mat3Member<T> = mat3(that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Mat3Member<*>): Mat3Member<T> = mat3(that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Mat4Member<*>): Mat4Member<T> = mat4(that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Mat4Member<*>): Mat4Member<T> = mat4(that.name)
 
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Float1ArrayMember<*>): Float1ArrayMember<T> = float1Array(that.arraySize, that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Float1ArrayMember<*>): Float1ArrayMember<T> = float1Array(that.arraySize, that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Float2ArrayMember<*>): Float2ArrayMember<T> = float2Array(that.arraySize, that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Float2ArrayMember<*>): Float2ArrayMember<T> = float2Array(that.arraySize, that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Float3ArrayMember<*>): Float3ArrayMember<T> = float3Array(that.arraySize, that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Float3ArrayMember<*>): Float3ArrayMember<T> = float3Array(that.arraySize, that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Float4ArrayMember<*>): Float4ArrayMember<T> = float4Array(that.arraySize, that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Float4ArrayMember<*>): Float4ArrayMember<T> = float4Array(that.arraySize, that.name)
 
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Int1ArrayMember<*>): Int1ArrayMember<T> = int1Array(that.arraySize, that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Int1ArrayMember<*>): Int1ArrayMember<T> = int1Array(that.arraySize, that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Int2ArrayMember<*>): Int2ArrayMember<T> = int2Array(that.arraySize, that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Int2ArrayMember<*>): Int2ArrayMember<T> = int2Array(that.arraySize, that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Int3ArrayMember<*>): Int3ArrayMember<T> = int3Array(that.arraySize, that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Int3ArrayMember<*>): Int3ArrayMember<T> = int3Array(that.arraySize, that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Int4ArrayMember<*>): Int4ArrayMember<T> = int4Array(that.arraySize, that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Int4ArrayMember<*>): Int4ArrayMember<T> = int4Array(that.arraySize, that.name)
 
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Uint1ArrayMember<*>): Uint1ArrayMember<T> = uint1Array(that.arraySize, that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Uint1ArrayMember<*>): Uint1ArrayMember<T> = uint1Array(that.arraySize, that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Uint2ArrayMember<*>): Uint2ArrayMember<T> = uint2Array(that.arraySize, that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Uint2ArrayMember<*>): Uint2ArrayMember<T> = uint2Array(that.arraySize, that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Uint3ArrayMember<*>): Uint3ArrayMember<T> = uint3Array(that.arraySize, that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Uint3ArrayMember<*>): Uint3ArrayMember<T> = uint3Array(that.arraySize, that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Uint4ArrayMember<*>): Uint4ArrayMember<T> = uint4Array(that.arraySize, that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Uint4ArrayMember<*>): Uint4ArrayMember<T> = uint4Array(that.arraySize, that.name)
 
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Bool1ArrayMember<*>): Bool1ArrayMember<T> = bool1Array(that.arraySize, that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Bool1ArrayMember<*>): Bool1ArrayMember<T> = bool1Array(that.arraySize, that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Bool2ArrayMember<*>): Bool2ArrayMember<T> = bool2Array(that.arraySize, that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Bool2ArrayMember<*>): Bool2ArrayMember<T> = bool2Array(that.arraySize, that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Bool3ArrayMember<*>): Bool3ArrayMember<T> = bool3Array(that.arraySize, that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Bool3ArrayMember<*>): Bool3ArrayMember<T> = bool3Array(that.arraySize, that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Bool4ArrayMember<*>): Bool4ArrayMember<T> = bool4Array(that.arraySize, that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Bool4ArrayMember<*>): Bool4ArrayMember<T> = bool4Array(that.arraySize, that.name)
 
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Mat2ArrayMember<*>): Mat2ArrayMember<T> = mat2Array(that.arraySize, that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Mat2ArrayMember<*>): Mat2ArrayMember<T> = mat2Array(that.arraySize, that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Mat3ArrayMember<*>): Mat3ArrayMember<T> = mat3Array(that.arraySize, that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Mat3ArrayMember<*>): Mat3ArrayMember<T> = mat3Array(that.arraySize, that.name)
         @JvmStatic
-        protected fun <T: Struct> T.include(that: Mat4ArrayMember<*>): Mat4ArrayMember<T> = mat4Array(that.arraySize, that.name)
+        /*protected*/ fun <T: Struct> T.include(that: Mat4ArrayMember<*>): Mat4ArrayMember<T> = mat4Array(that.arraySize, that.name)
 
         @JvmStatic
-        protected fun <T: Struct, S: Struct> T.include(that: NestedStructMember<*, S>): NestedStructMember<T, S> = struct(that.struct, that.name)
+        /*protected*/ fun <T: Struct, S: Struct> T.include(that: NestedStructMember<*, S>): NestedStructMember<T, S> = struct(that.struct, that.name)
         @JvmStatic
-        protected fun <T: Struct, S: Struct> T.include(that: NestedStructArrayMember<*, S>): NestedStructArrayMember<T, S> = structArray(that.struct, that.arraySize, that.name)
+        /*protected*/ fun <T: Struct, S: Struct> T.include(that: NestedStructArrayMember<*, S>): NestedStructArrayMember<T, S> = structArray(that.struct, that.arraySize, that.name)
     }
 
     fun layoutInfo(indent: String): String {
