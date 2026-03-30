@@ -293,7 +293,7 @@ open class TriangleHitTraverser<T: Triangle> : NearestToRayTraverser<T>() {
                 return if (dist < Float.POSITIVE_INFINITY) {
                     (dist * dist).toDouble()
                 } else {
-                    return Double.POSITIVE_INFINITY
+                    Double.POSITIVE_INFINITY
                 }
             }
         }
@@ -327,4 +327,25 @@ interface RayDistance<T: Any> {
     fun itemSqrDistanceToRay(tree: SpatialTree<T>, item: T, ray: RayD): Double {
         return ray.sqrDistanceToPoint(tree.itemAdapter.getCenterX(item), tree.itemAdapter.getCenterY(item), tree.itemAdapter.getCenterZ(item))
     }
+}
+
+fun <T: Any> SpatialTree<T>.nearestToPoint(point: Vec3f, maxDistance: Double = Double.POSITIVE_INFINITY, traverser: NearestTraverser<T> = NearestTraverser()): T? {
+    traverser.setup(point, maxDistance)
+    traverser.traverse(this)
+    return traverser.nearest
+}
+
+fun <T: Any> SpatialTree<T>.kNearestToPoint(point: Vec3f, k: Int, maxDistance: Double = Double.POSITIVE_INFINITY, traverser: KNearestTraverser<T> = KNearestTraverser()): List<T> {
+    traverser.setup(point, k, maxDistance)
+    traverser.traverse(this)
+    return traverser.result.toList()
+}
+
+fun <T: Any> SpatialTree<T>.nearestToRay(rayF: RayF, traverser: NearestToRayTraverser<T> = NearestToRayTraverser()): T? =
+    nearestToRay(rayF.toRayD(), traverser)
+
+fun <T: Any> SpatialTree<T>.nearestToRay(rayD: RayD, traverser: NearestToRayTraverser<T> = NearestToRayTraverser()): T? {
+    traverser.setup(rayD)
+    traverser.traverse(this)
+    return traverser.nearest
 }

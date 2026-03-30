@@ -2,6 +2,7 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.ViewData
+import de.fabmax.kool.input.Input
 import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.DepthMode
@@ -353,6 +354,16 @@ abstract class Camera(name: String = "camera") : Node(name) {
             lazyInvView.isDirty = true
             lazyInvViewProj.isDirty = true
         }
+    }
+}
+
+context(scene: Scene)
+fun Camera.computeMousePickRay(result: RayF = RayF()): RayF? {
+    val pointer = Input.pointer.primaryPointer
+    return if (computePickRay(result, pointer, scene.mainRenderPass.viewport)) {
+        result
+    } else {
+        null
     }
 }
 

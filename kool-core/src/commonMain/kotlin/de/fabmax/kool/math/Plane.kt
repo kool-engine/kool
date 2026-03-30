@@ -36,7 +36,7 @@ class PlaneF() {
 
     /**
      * Computes the intersection point of this plane and the specified ray. Returns false if there is no intersection
-     * point (i.e. plane and ray are parallel).
+     * point (i.e. ray looks away from plane or plane and ray are parallel).
      */
     fun intersectionPoint(ray: RayF, result: MutableVec3f): Boolean {
         val denom = n.dot(ray.direction)
@@ -93,7 +93,7 @@ class PlaneD() {
 
     /**
      * Computes the intersection point of this plane and the specified ray. Returns false if there is no intersection
-     * point (i.e. plane and ray are parallel).
+     * point (i.e. ray looks away from plane or plane and ray are parallel).
      */
     fun intersectionPoint(ray: RayD, result: MutableVec3d): Boolean {
         val denom = n.dot(ray.direction)

@@ -86,8 +86,10 @@ class PbrMaterialBlock(
                 val r = inAmbientOrientation * reflect(-viewDir, inNormal)
                 val mipLevel by (1f.const - pow(1f.const - roughness, 1.25f.const)) * (ReflectionMapPass.REFLECTION_MIP_LEVELS - 1).toFloat().const
                 reflectionColor set sampleTexture(reflectionMaps[0], r, mipLevel).rgb * inReflectionMapWeights.x
-                `if` (inReflectionMapWeights.y gt 0f.const) {
-                    reflectionColor += sampleTexture(reflectionMaps[1], r, mipLevel).rgb * inReflectionMapWeights.y
+                if (reflectionMaps.size > 1) {
+                    `if` (inReflectionMapWeights.y gt 0f.const) {
+                        reflectionColor += sampleTexture(reflectionMaps[1], r, mipLevel).rgb * inReflectionMapWeights.y
+                    }
                 }
             }
             reflectionColor set reflectionColor * inReflectionStrength

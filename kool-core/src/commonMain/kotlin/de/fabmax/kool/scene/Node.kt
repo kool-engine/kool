@@ -403,7 +403,7 @@ open class Node(name: String? = null) : BaseReleasable() {
 // intentionally not a value class to avoid continuous boxing when used as a map key
 data class NodeId(val value: Long = UniqueId.nextId())
 
-fun Node.addGroup(name: String? = null, block: Node.() -> Unit): Node {
+inline fun Node.addGroup(name: String? = null, block: Node.() -> Unit): Node {
     val tg = Node(name)
     tg.block()
     addNode(tg)
