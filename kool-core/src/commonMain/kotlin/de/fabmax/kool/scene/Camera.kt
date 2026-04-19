@@ -358,8 +358,10 @@ abstract class Camera(name: String = "camera") : Node(name) {
 }
 
 context(scene: Scene)
-fun Camera.computeMousePickRay(result: RayF = RayF()): RayF? {
-    val pointer = Input.pointer.primaryPointer
+fun Camera.computeMousePickRay(
+    result: RayF = RayF(),
+    pointer: Pointer = Input.pointer.primaryPointer,
+): RayF? {
     return if (computePickRay(result, pointer, scene.mainRenderPass.viewport)) {
         result
     } else {

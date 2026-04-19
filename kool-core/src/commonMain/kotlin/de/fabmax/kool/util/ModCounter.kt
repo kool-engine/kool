@@ -1,25 +1,27 @@
 package de.fabmax.kool.util
 
+import kotlinx.atomicfu.atomic
+
 class ModCounter(init: Int = 0) {
-    var count: Int = init
-        private set
+    private val counter = atomic(init)
+    val count: Int get() = counter.value
 
     fun increment(): ModCounter {
-        count++
+        counter.incrementAndGet()
         return this
     }
 
     fun incrementIf(value: Boolean) {
         if (value) {
-            count++
+            counter.incrementAndGet()
         }
     }
 
-    fun reset(count: Int) { this.count = count }
+    fun reset(count: Int) { counter.getAndSet(count) }
     fun isDirty(count: Int): Boolean = count != this.count
     fun isNotDirty(count: Int): Boolean = count == this.count
 
-    fun reset(counter: ModCounter) { count = counter.count }
+    fun reset(counter: ModCounter) { this.counter.getAndSet(counter.count) }
     fun isDirty(counter: ModCounter): Boolean = counter.count != this.count
     fun isNotDirty(counter: ModCounter): Boolean = counter.count == this.count
 

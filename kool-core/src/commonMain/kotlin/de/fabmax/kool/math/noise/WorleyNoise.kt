@@ -10,37 +10,42 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 
 class WorleyNoise2d(val gridSizeX: Int, val gridSizeY: Int, seed: Int = 19937) : Noise2d {
-
-    private val grid = Array(gridSizeX * gridSizeY) { MutableVec2f() }
+    private val grid: Array<Vec2f>
 
     init {
         val rand = Random(seed)
-
-        for (y in 0 until gridSizeY) {
-            for (x in 0 until gridSizeX) {
-                grid(x, y).set(x + rand.randomF(), y + rand.randomF())
-            }
+        grid = Array(gridSizeX * gridSizeY) {
+            Vec2f(rand.randomF(), rand.randomF())
         }
     }
 
-    private fun grid(x: Int, y: Int): MutableVec2f {
-        val xw = x.wrap(0, gridSizeX)
-        val yw = y.wrap(0, gridSizeY)
-        return grid[yw * gridSizeX + xw]
+    private fun grid(x: Int, y: Int): Vec2f {
+        return grid[y * gridSizeX + x]
     }
 
     override fun eval(x: Float, y: Float): Float {
-        val px = x * gridSizeX
-        val py = y * gridSizeY
+        val px = (x * gridSizeX).mod(gridSizeX.toFloat())
+        val py = (y * gridSizeY).mod(gridSizeY.toFloat())
         val ix = px.toInt()
         val iy = py.toInt()
 
         var d = MAX_D
         for (gy in iy-1 .. iy+1) {
             for (gx in ix - 1..ix + 1) {
-                val v = grid(gx, gy)
-                val dx = px - v.x
-                val dy = py - v.y
+                val ogx = when {
+                    gx < 0 -> gridSizeX
+                    gx >= gridSizeX -> -gridSizeX
+                    else -> 0
+                }
+                val ogy = when {
+                    gy < 0 -> gridSizeY
+                    gy >= gridSizeY -> -gridSizeY
+                    else -> 0
+                }
+
+                val v = grid(gx + ogx, gy + ogy)
+                val dx = px - (v.x + gx)
+                val dy = py - (v.y + gy)
                 d = min(d, sqrt(dx*dx + dy*dy))
             }
         }
@@ -52,33 +57,24 @@ class WorleyNoise2d(val gridSizeX: Int, val gridSizeY: Int, seed: Int = 19937) :
     }
 }
 
-class GridWorleyNoise3d(val gridSizeX: Int, val gridSizeY: Int, val gridSizeZ: Int, seed: Int = 19937) : Noise3d {
-
-    private val grid = Array(gridSizeX * gridSizeY * gridSizeZ) { MutableVec3f() }
+class WorleyNoise3d(val gridSizeX: Int, val gridSizeY: Int, val gridSizeZ: Int, seed: Int = 19937) : Noise3d {
+    private val grid: Array<Vec3f>
 
     init {
         val rand = Random(seed)
-
-        for (z in 0 until gridSizeZ) {
-            for (y in 0 until gridSizeY) {
-                for (x in 0 until gridSizeX) {
-                    grid(x, y, z).set(rand.randomF(), rand.randomF(), rand.randomF())
-                }
-            }
+        grid = Array(gridSizeX * gridSizeY * gridSizeZ) {
+            Vec3f(rand.randomF(), rand.randomF(), rand.randomF())
         }
     }
 
-    private fun grid(x: Int, y: Int, z: Int): MutableVec3f {
-        val xw = x.wrap(0, gridSizeX)
-        val yw = y.wrap(0, gridSizeY)
-        val zw = z.wrap(0, gridSizeZ)
-        return grid[zw * (gridSizeX * gridSizeY) + yw * gridSizeX + xw]
+    private fun grid(x: Int, y: Int, z: Int): Vec3f {
+        return grid[z * (gridSizeX * gridSizeY) + y * gridSizeX + x]
     }
 
     override fun eval(x: Float, y: Float, z: Float): Float {
-        val px = x * gridSizeX
-        val py = y * gridSizeY
-        val pz = z * gridSizeZ
+        val px = (x * gridSizeX).mod(gridSizeX.toFloat())
+        val py = (y * gridSizeY).mod(gridSizeY.toFloat())
+        val pz = (z * gridSizeZ).mod(gridSizeZ.toFloat())
         val ix = px.toInt()
         val iy = py.toInt()
         val iz = pz.toInt()
@@ -87,7 +83,23 @@ class GridWorleyNoise3d(val gridSizeX: Int, val gridSizeY: Int, val gridSizeZ: I
         for (gz in iz-1 .. iz+1) {
             for (gy in iy-1 .. iy+1) {
                 for (gx in ix-1 .. ix+1) {
-                    val v = grid(gx, gy, gz)
+                    val ogx = when {
+                        gx < 0 -> gridSizeX
+                        gx >= gridSizeX -> -gridSizeX
+                        else -> 0
+                    }
+                    val ogy = when {
+                        gy < 0 -> gridSizeY
+                        gy >= gridSizeY -> -gridSizeY
+                        else -> 0
+                    }
+                    val ogz = when {
+                        gz < 0 -> gridSizeZ
+                        gz >= gridSizeZ -> -gridSizeZ
+                        else -> 0
+                    }
+
+                    val v = grid(gx + ogx, gy + ogy, gz + ogz)
                     val dx = px - (v.x + gx)
                     val dy = py - (v.y + gy)
                     val dz = pz - (v.z + gz)

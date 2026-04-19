@@ -172,7 +172,7 @@ class SwingWindowSubsystem(
     private fun unmanagedRenderLoop() {
         val ctx = KoolSystem.requireContext() as Lwjgl3Context
         runBlocking {
-            logI { "Starting unmanaged render loop" }
+            logI(tag = "SwingWindowSubsystem") { "Starting unmanaged render loop" }
             val window = canvasWrapper!!
             while (!isCloseRequested) {
                 window.pollEvents()
