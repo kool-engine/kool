@@ -7,7 +7,10 @@ import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.ComputePass
+import de.fabmax.kool.pipeline.SamplerSettings
+import de.fabmax.kool.pipeline.StorageTexture2d
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.launch
@@ -82,7 +85,7 @@ class HelloComputeTexture : DemoScene("Hello Compute Texture") {
                 fragmentStage {
                     main {
                         // TextureSampleType.UNFILTERABLE_FLOAT is needed for WebGPU only
-                        val storage = texture2d("pixelStorage", sampleType = TextureSampleType.UNFILTERABLE_FLOAT)
+                        val storage = texture2d("pixelStorage", isUnfilterable = true)
                         colorOutput(storage.sample(uv.output).rgb, 1f.const)
                     }
                 }

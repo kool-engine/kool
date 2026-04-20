@@ -1007,12 +1007,24 @@ class KslScopeBuilder(parentOp: KslOp?, parentScope: KslScopeBuilder?, parentSta
         sampler: KslExpression<T>,
         coord: KslExpression<*>,
         lod: KslScalarExpression<KslInt1>? = null
-    ) = KslImageTextureLoad(sampler, coord, lod)
+    ) = KslImageTextureLoad(sampler, coord, lod, KslFloat4)
 
     fun <T: KslColorSampler<R>, R : KslFloatType, C : KslIntType> KslExpression<T>.load(
         coord: KslExpression<C>,
         lod: KslScalarExpression<KslInt1>? = null
-    ) = KslImageTextureLoad(this, coord, lod)
+    ) = KslImageTextureLoad(this, coord, lod, KslFloat4)
+
+    @JvmName("loadInt")
+    fun <T: KslIntSampler<R>, R : KslFloatType, C : KslIntType> KslExpression<T>.load(
+        coord: KslExpression<C>,
+        lod: KslScalarExpression<KslInt1>? = null
+    ) = KslImageTextureLoad(this, coord, lod, KslInt4)
+
+    @JvmName("loadUint")
+    fun <T: KslUintSampler<R>, R : KslFloatType, C : KslIntType> KslExpression<T>.load(
+        coord: KslExpression<C>,
+        lod: KslScalarExpression<KslInt1>? = null
+    ) = KslImageTextureLoad(this, coord, lod, KslUint4)
 
     fun <T> textureSize1d(sampler: KslExpression<T>, lod: KslScalarExpression<KslInt1> = 0.const)
         where T: KslSamplerType<*>, T: KslSampler1dType = KslTextureSize1d(sampler, lod)

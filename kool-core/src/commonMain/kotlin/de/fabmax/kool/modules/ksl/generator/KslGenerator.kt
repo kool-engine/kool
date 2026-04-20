@@ -94,7 +94,7 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
             is KslSampleColorTextureArrayGrad<*> -> sampleColorTextureArrayGrad(expr)
             is KslSampleDepthTexture<*> -> sampleDepthTexture(expr)
             is KslSampleDepthTextureArray<*> -> sampleDepthTextureArray(expr)
-            is KslImageTextureLoad<*> -> imageTextureRead(expr)
+            is KslImageTextureLoad<*, *> -> imageTextureRead(expr)
             is KslStorageTextureLoad<*, *, *> -> storageTextureRead(expr)
             is KslStorageRead<*, *> -> generateStorageRead(expr)
             is KslStorageTextureSize<*, *, *> -> generateTextureSize(expr)
@@ -351,7 +351,7 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
     abstract fun generateTextureSize(textureSize: KslStorageTextureSize<*, *, *>): String
 
     abstract fun storageTextureRead(storageTextureRead: KslStorageTextureLoad<*, *, *>): String
-    abstract fun imageTextureRead(expression: KslImageTextureLoad<*>): String
+    abstract fun imageTextureRead(expression: KslImageTextureLoad<*, *>): String
 
     abstract fun generateStorageRead(storageRead: KslStorageRead<*, *>): String
     abstract fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *>): String

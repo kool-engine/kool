@@ -248,5 +248,7 @@ enum class StorageAccessType {
 enum class TextureSampleType {
     FLOAT,
     UNFILTERABLE_FLOAT,
-    DEPTH
+    DEPTH,
+    INT,
+    UINT,
 }

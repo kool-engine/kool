@@ -68,13 +68,12 @@ open class KslStorageTextureStore<T: KslStorageTextureType<R, C>, R: KslNumericT
     }
 }
 
-class KslImageTextureLoad<T: KslSamplerType<KslFloat4>>(
-    val sampler: KslExpression<T>,
+class KslImageTextureLoad<S: KslSamplerType<T>, T: KslNumericType>(
+    val sampler: KslExpression<S>,
     val coord: KslExpression<*>,
-    val lod: KslScalarExpression<KslInt1>?
-) : KslExprFloat4 {
-
-    override val expressionType = KslFloat4
+    val lod: KslScalarExpression<KslInt1>?,
+    override val expressionType: T
+) : KslExpression<T> {
 
     override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(sampler, coord, lod)
 

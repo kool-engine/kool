@@ -250,7 +250,7 @@ class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderS
     val inFragPosition = KslStageInputVector(KslVarVector(NAME_IN_FRAG_POSITION, KslFloat4, false), KslStateType.FragmentInput)
     val inIsFrontFacing = KslStageInputScalar(KslVarScalar(NAME_IN_IS_FRONT_FACING, KslBool1, false), KslStateType.FragmentInput)
     val outDepth = KslStageOutputScalar(KslVarScalar(NAME_OUT_DEPTH, KslFloat1, true), KslStateType.FragmentOutput)
-    val outColors = mutableListOf<KslStageOutputVector<KslFloat4, KslFloat1>>()
+    val outColors = mutableListOf<KslStageOutputVector<*, *>>()
 
     val isUsingFragPosition: Boolean get() = inFragPosition.value in main.dependencies
     val isUsingIsFrontFacing: Boolean get() = inIsFrontFacing.value in main.dependencies
@@ -264,8 +264,20 @@ class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderS
 
     fun colorOutput(location: Int = 0): KslStageOutputVector<KslFloat4, KslFloat1> {
         val name = "${NAME_OUT_COLOR_PREFIX}${location}"
-        return outColors.find { it.value.stateName == name }
+        @Suppress("UNCHECKED_CAST")
+        return outColors.find { it.value.stateName == name }?.let { it as KslStageOutputVector<KslFloat4, KslFloat1> }
             ?: KslStageOutputVector(KslVarVector(name, KslFloat4, true), KslStateType.FragmentOutput).also {
+                it.location = location
+                globalScope.definedStates += it.value
+                outColors += it
+            }
+    }
+
+    fun intOutput(location: Int = 0): KslStageOutputVector<KslInt4, KslInt1> {
+        val name = "${NAME_OUT_COLOR_PREFIX}${location}"
+        @Suppress("UNCHECKED_CAST")
+        return outColors.find { it.value.stateName == name }?.let { it as KslStageOutputVector<KslInt4, KslInt1> }
+            ?: KslStageOutputVector(KslVarVector(name, KslInt4, true), KslStateType.FragmentOutput).also {
                 it.location = location
                 globalScope.definedStates += it.value
                 outColors += it
@@ -281,6 +293,11 @@ class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderS
     fun KslScopeBuilder.colorOutput(value: KslVectorExpression<KslFloat4, KslFloat1>, location: Int = 0) {
         check (parentStage is KslFragmentStage) { "colorOutput is only available in fragment stage" }
         parentStage.colorOutput(location) set value
+    }
+
+    fun KslScopeBuilder.intOutput(value: KslVectorExpression<KslInt4, KslInt1>, location: Int = 0) {
+        check (parentStage is KslFragmentStage) { "colorOutput is only available in fragment stage" }
+        parentStage.intOutput(location) set value
     }
 
     companion object {

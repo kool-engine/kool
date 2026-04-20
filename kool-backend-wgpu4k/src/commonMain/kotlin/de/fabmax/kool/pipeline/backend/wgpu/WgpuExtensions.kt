@@ -201,4 +201,6 @@ val TextureSampleType.wgpu: GPUTextureSampleType
         TextureSampleType.FLOAT -> GPUTextureSampleType.Float
         TextureSampleType.UNFILTERABLE_FLOAT -> GPUTextureSampleType.UnfilterableFloat
         TextureSampleType.DEPTH -> GPUTextureSampleType.Depth
+        TextureSampleType.INT -> GPUTextureSampleType.Sint
+        TextureSampleType.UINT -> GPUTextureSampleType.Uint
     }

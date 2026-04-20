@@ -179,8 +179,10 @@ val TexFormat.wgpuStorage: GPUTextureFormat
     }
 
 val TextureSampleType.wgpu: GPUTextureSampleType
-    get() = when (this) {
+    get() =  when (this) {
         TextureSampleType.FLOAT -> GPUTextureSampleType.float
         TextureSampleType.UNFILTERABLE_FLOAT -> GPUTextureSampleType.unfilterableFloat
         TextureSampleType.DEPTH -> GPUTextureSampleType.depth
+        TextureSampleType.INT -> GPUTextureSampleType.sint
+        TextureSampleType.UINT -> GPUTextureSampleType.uint
     }

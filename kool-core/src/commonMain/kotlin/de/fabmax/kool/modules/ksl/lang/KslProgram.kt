@@ -188,18 +188,43 @@ open class KslProgram(val name: String) {
     inline fun <reified S: Struct> uniformStruct(name: String, struct: S, scope: BindGroupScope = BindGroupScope.PIPELINE): KslUniformStruct<S> =
         getOrCreateStructUniform(name, struct, scope)
 
-    fun texture1d(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
-        getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSampler1d, false)) }
-    fun texture2d(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
-        getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSampler2d, false)) }
-    fun texture3d(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
-        getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSampler3d, false)) }
-    fun textureCube(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
-        getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSamplerCube, false)) }
-    fun texture2dArray(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
-        getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSampler2dArray, false)) }
-    fun textureCubeArray(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
-        getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSamplerCubeArray, false)) }
+    fun texture1d(name: String, isUnfilterable: Boolean = false) =
+        getOrCreateSampler(name, if (isUnfilterable) TextureSampleType.UNFILTERABLE_FLOAT else TextureSampleType.FLOAT) {
+            KslUniform(KslVar(name, KslColorSampler1d, false))
+        }
+    fun texture2d(name: String, isUnfilterable: Boolean = false) =
+        getOrCreateSampler(name, if (isUnfilterable) TextureSampleType.UNFILTERABLE_FLOAT else TextureSampleType.FLOAT) {
+            KslUniform(KslVar(name, KslColorSampler2d, false))
+        }
+    fun texture3d(name: String, isUnfilterable: Boolean = false) =
+        getOrCreateSampler(name, if (isUnfilterable) TextureSampleType.UNFILTERABLE_FLOAT else TextureSampleType.FLOAT) {
+            KslUniform(KslVar(name, KslColorSampler3d, false))
+        }
+    fun textureCube(name: String, isUnfilterable: Boolean = false) =
+        getOrCreateSampler(name, if (isUnfilterable) TextureSampleType.UNFILTERABLE_FLOAT else TextureSampleType.FLOAT) {
+            KslUniform(KslVar(name, KslColorSamplerCube, false))
+        }
+    fun texture2dArray(name: String, isUnfilterable: Boolean = false) =
+        getOrCreateSampler(name, if (isUnfilterable) TextureSampleType.UNFILTERABLE_FLOAT else TextureSampleType.FLOAT) {
+            KslUniform(KslVar(name, KslColorSampler2dArray, false))
+        }
+    fun textureCubeArray(name: String, isUnfilterable: Boolean = false) =
+        getOrCreateSampler(name, if (isUnfilterable) TextureSampleType.UNFILTERABLE_FLOAT else TextureSampleType.FLOAT) {
+            KslUniform(KslVar(name, KslColorSamplerCubeArray, false))
+        }
+
+    fun texture2dInt(name: String) =
+        getOrCreateSampler(name, TextureSampleType.INT) { KslUniform(KslVar(name, KslIntSampler2d, false)) }
+    fun texture3dInt(name: String) =
+        getOrCreateSampler(name, TextureSampleType.INT) { KslUniform(KslVar(name, KslIntSampler3d, false)) }
+    fun texture2dArrayInt(name: String) =
+        getOrCreateSampler(name, TextureSampleType.INT) { KslUniform(KslVar(name, KslIntSampler2dArray, false)) }
+    fun texture2dUint(name: String) =
+        getOrCreateSampler(name, TextureSampleType.UINT) { KslUniform(KslVar(name, KslUintSampler2d, false)) }
+    fun texture3dUint(name: String) =
+        getOrCreateSampler(name, TextureSampleType.UINT) { KslUniform(KslVar(name, KslUintSampler3d, false)) }
+    fun texture2dArrayUint(name: String) =
+        getOrCreateSampler(name, TextureSampleType.UINT) { KslUniform(KslVar(name, KslUintSampler2dArray, false)) }
 
     fun depthTexture2d(name: String) =
         getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSampler2d, false)) }

@@ -223,7 +223,7 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
                         setLightData(lightData, shadowFactors, cfg.lightingConfig.lightStrength.const)
                     }
                     colorOutput(material.outColor + emissive)
-                    outDepth set sampleTexture(texture2d("depth", TextureSampleType.UNFILTERABLE_FLOAT), uv).r
+                    outDepth set sampleTexture(texture2d("depth", isUnfilterable = true), uv).r
                 }
             }
         }

@@ -148,7 +148,7 @@ object OceanShader {
                 val camData = cameraData()
                 val material = findBlock<LitMaterialBlock>()!!
                 val baseColorPort = getFloat4Port("baseColor")
-                val oceanFloorDepthTex = texture2d("tOceanFloorDepth", sampleType = TextureSampleType.UNFILTERABLE_FLOAT)
+                val oceanFloorDepthTex = texture2d("tOceanFloorDepth", isUnfilterable = true)
                 val oceanFloorColorTex = texture2d("tOceanFloorColor")
 
                 // sample bump map and compute fragment normal

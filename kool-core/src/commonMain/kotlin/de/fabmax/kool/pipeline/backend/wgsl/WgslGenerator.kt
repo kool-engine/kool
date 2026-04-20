@@ -322,7 +322,7 @@ class WgslGenerator private constructor(
         return "vec2i(textureDimensions(${textureSize.storageTex.generateExpression()}))"
     }
 
-    override fun imageTextureRead(expression: KslImageTextureLoad<*>): String {
+    override fun imageTextureRead(expression: KslImageTextureLoad<*, *>): String {
         val textureName = expression.sampler.generateExpression()
         val coord = expression.coord.generateExpression()
         val level = expression.lod?.generateExpression() ?: "0"
@@ -699,6 +699,13 @@ class WgslGenerator private constructor(
                 KslColorSamplerCube -> "sampler" to "texture_cube<f32>"
                 KslColorSampler2dArray -> "sampler" to "texture_2d_array<f32>"
                 KslColorSamplerCubeArray -> "sampler" to "texture_cube_array<f32>"
+
+                KslIntSampler2d -> "sampler" to "texture_2d<i32>"
+                KslIntSampler3d -> "sampler" to "texture_3d<i32>"
+                KslIntSampler2dArray -> "sampler" to "texture_2d<i32>"
+                KslUintSampler2d -> "sampler" to "texture_2d<u32>"
+                KslUintSampler3d -> "sampler" to "texture_3d<u32>"
+                KslUintSampler2dArray -> "sampler" to "texture_2d<u32>"
 
                 KslDepthSampler2d -> "sampler_comparison" to "texture_depth_2d"
                 KslDepthSamplerCube -> "sampler_comparison" to "texture_depth_cube"
