@@ -177,7 +177,7 @@ object OceanShader {
                 oceanFloorUv.flipUvByDeviceCoords()
                 val oceanDepth1 = float1Var(sampleTexture(oceanFloorDepthTex, oceanFloorUv).x)
                 if (depthMode == DepthMode.Reversed) {
-                    oceanDepth1 set camData.clipNear / max(0.00001f.const, oceanDepth1) - fragDepth
+                    oceanDepth1 set getLinearDepthReversed(oceanDepth1, camData.clipNear) - fragDepth
                 } else {
                     oceanDepth1 set getLinearDepth(oceanDepth1, camData.clipNear, camData.clipFar) - fragDepth
                 }
@@ -191,7 +191,7 @@ object OceanShader {
                 // 2nd depth sample - water depth at refracted position
                 val oceanDepth2 = float1Var(sampleTexture(oceanFloorDepthTex, refractUv).x)
                 if (depthMode == DepthMode.Reversed) {
-                    oceanDepth2 set camData.clipNear / max(0.00001f.const, oceanDepth1) - fragDepth
+                    oceanDepth2 set getLinearDepthReversed(oceanDepth1, camData.clipNear) - fragDepth
                 } else {
                     oceanDepth2 set getLinearDepth(oceanDepth2, camData.clipNear, camData.clipFar) - fragDepth
                 }
