@@ -44,7 +44,7 @@ class LoadedTextureGl(
         val isMipMapped = texture.mipMapping.isMipMapped
         currentSamplerSettings = settings
 
-        gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, settings.minFilter.glMinFilterMethod(isMipMapped))
+        gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, settings.minFilter.glMinFilterMethod(isMipMapped, settings.mipFilter))
         gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, settings.magFilter.glMagFilterMethod())
         gl.texParameteri(target, gl.TEXTURE_WRAP_S, settings.addressModeU.glAddressMode())
         gl.texParameteri(target, gl.TEXTURE_WRAP_T, settings.addressModeV.glAddressMode())
@@ -77,10 +77,14 @@ class LoadedTextureGl(
         allocationInfo.deleted()
     }
 
-    fun FilterMethod.glMinFilterMethod(mipMapping: Boolean): Int {
-        return when(this) {
-            FilterMethod.NEAREST -> if (mipMapping) gl.NEAREST_MIPMAP_NEAREST else gl.NEAREST
-            FilterMethod.LINEAR -> if (mipMapping) gl.LINEAR_MIPMAP_LINEAR else gl.LINEAR
+    fun FilterMethod.glMinFilterMethod(isMipMapped: Boolean, mipFilter: FilterMethod): Int {
+        return when (this) {
+            FilterMethod.NEAREST if (isMipMapped && mipFilter == FilterMethod.NEAREST) -> gl.NEAREST_MIPMAP_NEAREST
+            FilterMethod.NEAREST if (isMipMapped && mipFilter == FilterMethod.LINEAR) -> gl.NEAREST_MIPMAP_LINEAR
+            FilterMethod.NEAREST -> gl.NEAREST
+            FilterMethod.LINEAR if (isMipMapped && mipFilter == FilterMethod.NEAREST) -> gl.LINEAR_MIPMAP_NEAREST
+            FilterMethod.LINEAR if (isMipMapped && mipFilter == FilterMethod.LINEAR) -> gl.LINEAR_MIPMAP_LINEAR
+            FilterMethod.LINEAR -> gl.LINEAR
         }
     }
 
@@ -92,7 +96,7 @@ class LoadedTextureGl(
     }
 
     fun AddressMode.glAddressMode(): Int {
-        return when(this) {
+        return when (this) {
             AddressMode.CLAMP_TO_EDGE -> gl.CLAMP_TO_EDGE
             AddressMode.MIRRORED_REPEAT -> gl.MIRRORED_REPEAT
             AddressMode.REPEAT -> gl.REPEAT

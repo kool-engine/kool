@@ -30,6 +30,12 @@ data class SamplerSettings(
     val magFilter: FilterMethod = FilterMethod.LINEAR,
 
     /**
+     * Mip-mapping filter method to use.
+     * Either [FilterMethod.LINEAR] or [FilterMethod.NEAREST]. Default is LINEAR.
+     */
+    val mipFilter: FilterMethod = FilterMethod.LINEAR,
+
+    /**
      * Maximum level of anisotropic filtering to apply:
      *  - 1: no anisotropic filtering
      *  - 4: default value
@@ -59,14 +65,14 @@ data class SamplerSettings(
     val numMipLevels: Int = 0,
 ) {
     /**
-     * Returns a copy of this [SamplerSettings] with [minFilter] and [magFilter] set to [FilterMethod.NEAREST].
+     * Returns a copy of this [SamplerSettings] with [minFilter], [magFilter] and [mipFilter] set to [FilterMethod.NEAREST].
      */
-    fun nearest(): SamplerSettings = copy(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST)
+    fun nearest(): SamplerSettings = copy(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipFilter = FilterMethod.NEAREST)
 
     /**
-     * Returns a copy of this [SamplerSettings] with [minFilter] and [magFilter] set to [FilterMethod.LINEAR].
+     * Returns a copy of this [SamplerSettings] with [minFilter], [magFilter] and [mipFilter] set to [FilterMethod.LINEAR].
      */
-    fun linear(): SamplerSettings = copy(minFilter = FilterMethod.LINEAR, magFilter = FilterMethod.LINEAR)
+    fun linear(): SamplerSettings = copy(minFilter = FilterMethod.LINEAR, magFilter = FilterMethod.LINEAR, mipFilter = FilterMethod.LINEAR)
 
     /**
      * Returns a copy of this [SamplerSettings] with u, v and w address modes set to [AddressMode.CLAMP_TO_EDGE].

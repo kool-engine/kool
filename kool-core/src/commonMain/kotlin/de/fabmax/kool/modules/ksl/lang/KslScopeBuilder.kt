@@ -1152,18 +1152,18 @@ class KslScopeBuilder(parentOp: KslOp?, parentScope: KslScopeBuilder?, parentSta
         KslStorageAtomicCompareSwap(this, index, data, compare, storageType.elemType)
 
     // builtin storage texture functions
-    operator fun <T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType> KslStorageTexture<T, R, C>.get(coord: KslExpression<C>): KslExprFloat4 =
+    operator fun <T: KslStorageTextureType<R, C>, R: KslFloatType, C: KslIntType> KslStorageTexture<T, R, C>.get(coord: KslExpression<C>): KslExprFloat4 =
         KslStorageTextureLoad(this, coord)
 
     @JvmName("getTex2d")
-    operator fun <T: KslStorageTexture2dType<R>, R: KslNumericType> KslStorageTexture2d<T, R>.get(x: KslExprInt1, y: KslExprInt1): KslExprFloat4 =
+    operator fun <T: KslStorageTexture2dType<R>, R: KslFloatType> KslStorageTexture2d<T, R>.get(x: KslExprInt1, y: KslExprInt1): KslExprFloat4 =
         KslStorageTextureLoad(this, int2Value(x, y))
 
     @JvmName("getTex3d")
-    operator fun <T: KslStorageTexture3dType<R>, R: KslNumericType> KslStorageTexture3d<T, R>.get(x: KslExprInt1, y: KslExprInt1, z: KslExprInt1): KslExprFloat4 =
+    operator fun <T: KslStorageTexture3dType<R>, R: KslFloatType> KslStorageTexture3d<T, R>.get(x: KslExprInt1, y: KslExprInt1, z: KslExprInt1): KslExprFloat4 =
         KslStorageTextureLoad(this, int3Value(x, y, z))
 
-    operator fun <T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType> KslStorageTexture<T, R, C>.set(
+    operator fun <T: KslStorageTextureType<R, C>, R: KslFloatType, C: KslIntType> KslStorageTexture<T, R, C>.set(
         coord: KslExpression<C>,
         data: KslExprFloat4
     ) {
@@ -1171,7 +1171,7 @@ class KslScopeBuilder(parentOp: KslOp?, parentScope: KslScopeBuilder?, parentSta
     }
 
     @JvmName("setTex2d")
-    operator fun <T: KslStorageTexture2dType<R>, R: KslNumericType> KslStorageTexture2d<T, R>.set(
+    operator fun <T: KslStorageTexture2dType<R>, R: KslFloatType> KslStorageTexture2d<T, R>.set(
         x: KslExprInt1,
         y: KslExprInt1,
         data: KslExprFloat4
@@ -1180,7 +1180,7 @@ class KslScopeBuilder(parentOp: KslOp?, parentScope: KslScopeBuilder?, parentSta
     }
 
     @JvmName("setTex3d")
-    operator fun <T: KslStorageTexture3dType<R>, R: KslNumericType> KslStorageTexture3d<T, R>.set(
+    operator fun <T: KslStorageTexture3dType<R>, R: KslFloatType> KslStorageTexture3d<T, R>.set(
         x: KslExprInt1,
         y: KslExprInt1,
         z: KslExprInt1,
@@ -1189,15 +1189,27 @@ class KslScopeBuilder(parentOp: KslOp?, parentScope: KslScopeBuilder?, parentSta
         ops += KslStorageTextureStore(this, int3Value(x, y, z), data, this@KslScopeBuilder)
     }
 
-    fun <T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType> KslStorageTexture<T, R, C>.load(
+    fun <T: KslStorageTextureType<R, C>, R: KslFloatType, C: KslIntType> KslStorageTexture<T, R, C>.load(
         coord: KslExpression<C>
     ): KslExprFloat4 = KslStorageTextureLoad(this, coord)
 
-    fun <T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType> KslStorageTexture<T, R, C>.store(
+    fun <T: KslStorageTextureType<R, C>, R: KslFloatType, C: KslIntType> KslStorageTexture<T, R, C>.store(
         coord: KslExpression<C>,
         data: KslExprFloat4
     ) {
         ops += KslStorageTextureStore(this, coord, data, this@KslScopeBuilder)
     }
 
+    @JvmName("loadIntTex")
+    fun <T: KslStorageTextureType<R, C>, R: KslIntType, C: KslIntType> KslStorageTexture<T, R, C>.load(
+        coord: KslExpression<C>
+    ): KslExprInt4 = KslStorageTextureLoadInt(this, coord)
+
+    @JvmName("storeIntTex")
+    fun <T: KslStorageTextureType<R, C>, R: KslIntType, C: KslIntType> KslStorageTexture<T, R, C>.store(
+        coord: KslExpression<C>,
+        data: KslExprInt4
+    ) {
+        ops += KslStorageTextureStore(this, coord, data, this@KslScopeBuilder)
+    }
 }

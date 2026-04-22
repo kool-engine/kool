@@ -316,7 +316,11 @@ class BindGroupDataVk(
                 addressModeV(samplerSettings.addressModeV.vk)
                 addressModeW(samplerSettings.addressModeW.vk)
 
-                mipmapMode(if (tex.mipMapping.isMipMapped) VK_SAMPLER_MIPMAP_MODE_LINEAR else VK_SAMPLER_MIPMAP_MODE_NEAREST)
+                if (tex.mipMapping.isMipMapped && samplerSettings.mipFilter == FilterMethod.LINEAR) {
+                    mipmapMode( VK_SAMPLER_MIPMAP_MODE_LINEAR)
+                } else {
+                    mipmapMode( VK_SAMPLER_MIPMAP_MODE_NEAREST)
+                }
                 maxLod(VK_LOD_CLAMP_NONE)
 
                 val anisotropy = maxAnisotropy.toFloat().coerceAtMost(backend.physicalDevice.maxAnisotropy)
@@ -380,7 +384,7 @@ class BindGroupDataVk(
         }
 
         private fun checkView(stack: MemoryStack) {
-            val tex = checkNotNull(binding.storageTexture) { "Cannot create storage texture binding from null texture" }
+            val tex = checkNotNull(binding.storageTexture) { "Cannot create storage texture binding from null texture (${data.name})" }
             val image = checkNotNull(tex.asTexture.gpuTexture as ImageVk?) { "Cannot create storage texture binding from null texture" }
 
             if (boundImage == image) {

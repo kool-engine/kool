@@ -130,6 +130,13 @@ val FilterMethod.wgpu: GPUFilterMode
         FilterMethod.LINEAR -> GPUFilterMode.linear
     }
 
+fun FilterMethod.wgpuMipFilter(isMipMapped: Boolean): GPUMipmapFilterMode {
+    return when (this) {
+        FilterMethod.LINEAR if isMipMapped -> GPUMipmapFilterMode.linear
+        else -> GPUMipmapFilterMode.nearest
+    }
+}
+
 val PrimitiveType.wgpu: GPUPrimitiveTopology
     get() = when (this) {
         PrimitiveType.LINES -> GPUPrimitiveTopology.lineList

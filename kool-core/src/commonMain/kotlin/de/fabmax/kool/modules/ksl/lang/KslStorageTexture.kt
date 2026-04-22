@@ -32,25 +32,34 @@ class KslStorageTexture3d<T: KslStorageTexture3dType<R>, R: KslNumericType>(name
     override val expressionType: T get() = storageType
 }
 
-class KslStorageTextureLoad<T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType>(
+class KslStorageTextureLoad<T: KslStorageTextureType<R, C>, R: KslFloatType, C: KslIntType>(
     val storage: KslStorageTexture<T, R, C>,
     val coord: KslExpression<C>
 ) : KslExprFloat4 {
     override val expressionType = KslFloat4
 
-    init {
-        storage.isRead = true
-    }
+    init { storage.isRead = true }
 
     override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(storage, coord)
+    override fun toPseudoCode(): String = "textureLoad(${storage.toPseudoCode()}, ${coord.toPseudoCode()})"
+}
 
+class KslStorageTextureLoadInt<T: KslStorageTextureType<R, C>, R: KslIntType, C: KslIntType>(
+    val storage: KslStorageTexture<T, R, C>,
+    val coord: KslExpression<C>
+) : KslExprInt4 {
+    override val expressionType = KslInt4
+
+    init { storage.isRead = true }
+
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(storage, coord)
     override fun toPseudoCode(): String = "textureLoad(${storage.toPseudoCode()}, ${coord.toPseudoCode()})"
 }
 
 open class KslStorageTextureStore<T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType>(
     val storage: KslStorageTexture<T, R, C>,
     val coord: KslExpression<C>,
-    val data: KslExprFloat4,
+    val data: KslExpression<*>,
     scopeBuilder: KslScopeBuilder
 ) : KslStatement("store", scopeBuilder) {
 

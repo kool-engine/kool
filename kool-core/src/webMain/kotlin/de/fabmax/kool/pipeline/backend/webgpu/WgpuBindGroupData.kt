@@ -165,6 +165,7 @@ class WgpuBindGroupData(
             addressModeU = samplerSettings.addressModeU.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
+            mipmapFilter = samplerSettings.mipFilter.wgpuMipFilter(tex.mipMapping.isMipMapped),
         )
 
         textureBindings += TextureBinding(this, loadedTex)
@@ -190,7 +191,7 @@ class WgpuBindGroupData(
             addressModeV = samplerSettings.addressModeV.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
-            mipmapFilter = if (tex.mipMapping.isMipMapped) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            mipmapFilter = samplerSettings.mipFilter.wgpuMipFilter(tex.mipMapping.isMipMapped),
             maxAnisotropy = maxAnisotropy,
             compare = compare,
         )
@@ -220,7 +221,7 @@ class WgpuBindGroupData(
             addressModeW = samplerSettings.addressModeW.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
-            mipmapFilter = if (tex.mipMapping.isMipMapped) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            mipmapFilter = samplerSettings.mipFilter.wgpuMipFilter(tex.mipMapping.isMipMapped),
         )
 
         textureBindings += TextureBinding(this, loadedTex)
@@ -242,7 +243,7 @@ class WgpuBindGroupData(
             addressModeV = samplerSettings.addressModeV.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
-            mipmapFilter = if (tex.mipMapping.isMipMapped) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            mipmapFilter = samplerSettings.mipFilter.wgpuMipFilter(tex.mipMapping.isMipMapped),
             compare = compare,
         )
 
@@ -269,7 +270,7 @@ class WgpuBindGroupData(
             addressModeV = samplerSettings.addressModeV.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
-            mipmapFilter = if (tex.mipMapping.isMipMapped) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            mipmapFilter = samplerSettings.mipFilter.wgpuMipFilter(tex.mipMapping.isMipMapped),
             maxAnisotropy = maxAnisotropy,
             compare = compare,
         )
@@ -293,7 +294,7 @@ class WgpuBindGroupData(
             addressModeV = samplerSettings.addressModeV.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
-            mipmapFilter = if (tex.mipMapping.isMipMapped) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            mipmapFilter = samplerSettings.mipFilter.wgpuMipFilter(tex.mipMapping.isMipMapped),
             compare = compare,
         )
 
