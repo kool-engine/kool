@@ -17,6 +17,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.ClearColorDontCare
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.ao.AoPipeline
+import de.fabmax.kool.pipeline.ao.ForwardAoPipeline
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.RectProps
 import de.fabmax.kool.toString
@@ -52,7 +53,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
     private val aoPower = mutableStateOf(1f).onChange { _, new -> aoPipeline.power = new }
     private val aoStrength = mutableStateOf(1f).onChange { _, new -> aoPipeline.strength = new }
     private val aoSamples = mutableStateOf(16).onChange { _, new -> aoPipeline.kernelSz = new }
-    private val aoMapSize = mutableStateOf(1f).onChange { _, new -> aoPipeline.mapSize = new }
+    private val aoMapSize = mutableStateOf(1f).onChange { _, new -> (aoPipeline as? ForwardAoPipeline)?.mapSize = new }
 
     private lateinit var orbitCam: OrbitInputTransform
 
@@ -78,11 +79,11 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         shadows.add(shadowMap)
 
         aoPipeline = AoPipeline.createForward(mainScene)
+        aoMapSize.set((aoPipeline as? ForwardAoPipeline)?.mapSize ?: 0.5f)
         aoRadius.set(aoPipeline.radius)
         aoPower.set(aoPipeline.power)
         aoStrength.set(aoPipeline.strength)
         aoSamples.set(aoPipeline.kernelSz)
-        aoMapSize.set(aoPipeline.mapSize)
 
         addTeapots()
 
@@ -283,7 +284,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         if (showAoMapIndex.value != 0) {
             val shader = when (showAoMapIndex.value) {
                 1 -> aoMapShader.apply { colorMap = aoPipeline.aoMap }
-                2 -> noisyAoMapShader.apply { colorMap = aoPipeline.aoPass.colorTexture }
+                2 -> noisyAoMapShader.apply { colorMap = (aoPipeline as? ForwardAoPipeline)?.aoPass?.colorTexture }
                 else -> null
             }
             if (shader != null) {

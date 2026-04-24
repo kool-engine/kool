@@ -20,6 +20,7 @@ import de.fabmax.kool.physics.util.CharacterTrackingCamRig
 import de.fabmax.kool.pipeline.GradientTexture
 import de.fabmax.kool.pipeline.SamplerSettings
 import de.fabmax.kool.pipeline.ao.AoPipeline
+import de.fabmax.kool.pipeline.ao.ForwardAoPipeline
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
@@ -45,7 +46,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     private val oceanFloorCopy = mainScene.mainRenderPass.defaultView.copyOutput(isCopyColor = true, isCopyDepth = true, OCEAN_FLOOW_DRAW_GROUP)
 
     private lateinit var shadowMap: ShadowMap
-    private lateinit var ssao: AoPipeline.ForwardAoPipeline
+    private lateinit var ssao: ForwardAoPipeline
     private lateinit var sky: Sky
 
     private lateinit var wind: Wind
