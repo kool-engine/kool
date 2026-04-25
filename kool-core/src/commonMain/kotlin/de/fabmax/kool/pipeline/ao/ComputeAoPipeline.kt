@@ -234,6 +234,7 @@ class ComputeAoPass(
     private fun initDenoisePass(): KslComputeShader {
         val denoiseShader = denoiseShader()
         denoiseShader.texture2d("distInput", scaledDists, SamplerSettings().nearest().clamped())
+        denoiseShader.texture2d("normalInput", scaledNormals, SamplerSettings().nearest().clamped())
         denoiseShader.texture2d("noisyAo", aoNoisy, SamplerSettings().nearest())
         denoiseShader.storageTexture2d("filteredAo", filteredAo)
         return denoiseShader
@@ -372,14 +373,11 @@ class ComputeAoPass(
             val uStrength = uniformFloat1("uStrength")
             val uFalloff = uniformFloat1("uFalloff")
 
-            //val uFrameI = uniformInt1("uFrameI")
-
             main {
                 val baseCoord by inGlobalInvocationId.xy.toInt2()
                 val uv by (baseCoord.toFloat2() + 0.5f.const) / textureSize2d(normalInput).toFloat2()
                 val encodedNormal by normalInput.load(baseCoord).x
                 val occlFac by 1f.const
-                //val occlFac by 0f.const
 
                 val isValid = isValidEncodedNormal(encodedNormal)
                 `if`(isValid) {
@@ -436,6 +434,7 @@ class ComputeAoPass(
     private fun denoiseShader() = KslComputeShader("ao-denoise-shader") {
         val noisyAo = texture2d("noisyAo")
         val distInput = texture2d("distInput")
+        val normalInput = texture2dInt("normalInput")
         val uRadius = uniformFloat1("uRadius")
         val filteredAo = storageTexture2d<KslFloat1>("filteredAo", filteredAo.format)
 
@@ -446,12 +445,20 @@ class ComputeAoPass(
                 val ao by 0f.const
                 val dim = NOISE_TEX_SZ / 2
                 val baseDist by distInput.load(baseCoord).x
+                val baseNormal by decodeNormal(normalInput.load(baseCoord).x)
+
+                val sampleR by uRadius
+                `if`(sampleR lt 0f.const) {
+                    sampleR *= -baseDist
+                }
                 val sumWeight by 0f.const
                 for (y in -dim until dim) {
                     for (x in -dim until dim) {
                         val coord = int2Var(baseCoord + Vec2i(x, y).const + coordOffset)
                         val dist = float1Var(distInput.load(coord).x)
-                        val weight = float1Var(1f.const - smoothStep(0f.const, uRadius, abs(dist - baseDist)))
+                        val distWeight = float1Var(1f.const - smoothStep(0f.const, sampleR, abs(dist - baseDist)))
+                        val normalWeight = float1Var(saturate(dot(decodeNormal(normalInput.load(coord).x), baseNormal)))
+                        val weight = float1Var(0.0001f.const + distWeight * normalWeight)
                         ao += noisyAo.load(coord).x * weight
                         sumWeight += weight
                     }
