@@ -134,6 +134,7 @@ class ComputeAoPass(
     var falloff by aoShader.uniform1f("uFalloff", 1.5f)
 
     private var doClear = false
+    private var isConfigured = false
 
     companion object {
         const val MAX_KERNEL_SIZE = 64
@@ -171,14 +172,14 @@ class ComputeAoPass(
         }
 
         if (doClear) {
-            if (finalAo.width != 8 || finalAo.height != 8) {
+            if (!isConfigured || finalAo.width != 8 || finalAo.height != 8) {
                 finalAo.resize(8, 8)
                 SyncedScope.launch {
                     tasks.toList().forEach { removeAndReleaseTask(it) }
                     makeClearPass()
                 }
             }
-        } else if (fullWidth != finalAo.width || fullHeight != finalAo.height) {
+        } else if (!isConfigured || fullWidth != finalAo.width || fullHeight != finalAo.height) {
             val requiredWidth = scaledWidth
             val requiredHeight = scaledHeight
             logD { "Resizing AO pass to $requiredWidth x $requiredHeight, ao output size: $fullWidth x $fullHeight" }
@@ -197,6 +198,7 @@ class ComputeAoPass(
                 makeUpsamplePass()
             }
         }
+        isConfigured = true
     }
 
     internal fun applyEnabled(isEnabled: Boolean) {
@@ -206,6 +208,7 @@ class ComputeAoPass(
         } else {
             doClear = true
         }
+        isConfigured = false
     }
 
     private fun initDownSamplePass(): KslComputeShader {
