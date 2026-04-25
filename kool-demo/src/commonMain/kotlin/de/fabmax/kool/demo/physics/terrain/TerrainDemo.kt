@@ -227,11 +227,11 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             }
         }
 
-        ssao = AoPipeline.createForward(this).apply {
+        ssao = AoPipeline.createForwardLegacy(this).apply {
             // negative radius is used to set radius relative to camera distance
             radius = -0.05f
             isEnabled = isSsao.value
-            kernelSz = 8
+            kernelSize = 8
         }
 
         camLocalGrass.setupGrass(grassColor)

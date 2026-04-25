@@ -130,7 +130,7 @@ class NormalDepthShader(
                     }
                 }
                 val normal by normalize(viewNormal.output)
-                val encoded = encodeNormal(normal)
+                val encoded by encodeNormal(normal)
                 intOutput(int4Value(encoded, 0.const, 0.const, 0.const))
             }
         }
@@ -151,27 +151,44 @@ fun interface VertexTransformBlockBuilder {
     }
 }
 
-fun KslScopeBuilder.encodeNormal(normal: KslVarFloat3): KslVarInt1 {
-    val sign by step(0f.const, dot(normal, float3Value(0f.const, 0f.const, 1f.const))).toInt1()
-    val x by clamp(((normal.x + 1f.const) * 16383f.const).toInt1(), 0.const, 32766.const)
-    val y by clamp(((normal.y + 1f.const) * 16383f.const).toInt1(), 0.const, 32766.const)
-    val encoded by 0x80000000.toInt().const or (sign shl 15.const) or (y shl 16.const) or x
-    return encoded
-}
-
-fun KslScopeBuilder.decodeNormal(encoded: KslVarInt1): KslVarFloat3 {
-    val decodedNormal by 0f.const3
-    `if`(encoded and 0x80000000.toInt().const ne 0.const) {
-        val y by ((encoded shr 16.const) and 0x7fff.const).toFloat1() / 16383f.const - 1f.const
-        val x by (encoded and 0x7fff.const).toFloat1() / 16383f.const - 1f.const
-        val sign by (((encoded shr 15.const) and 1.const) * 2.const - 1.const).toFloat1()
-        val z by sqrt(clamp(1f.const - x*x - y*y, 0f.const, 1f.const)) * sign
-        decodedNormal.set(float3Value(x, y, z))
+class EncodeNormalFunc(parentScope: KslScopeBuilder) : KslFunction<KslInt1>("EncodeNormal", KslInt1, parentScope.parentStage) {
+    init {
+        val normal = paramFloat3("normal")
+        body {
+            val sign by step(0f.const, dot(normal, float3Value(0f.const, 0f.const, 1f.const))).toInt1()
+            val x by clamp(((normal.x + 1f.const) * 16383f.const).toInt1(), 0.const, 32766.const)
+            val y by clamp(((normal.y + 1f.const) * 16383f.const).toInt1(), 0.const, 32766.const)
+            0x80000000.toInt().const or (sign shl 15.const) or (y shl 16.const) or x
+        }
     }
-    return decodedNormal
 }
 
-fun KslScopeBuilder.isValidEncodedNormal(encoded: KslVarInt1): KslVarBool1 {
-    val isValidEncodedNormal by encoded and 0x80000000.toInt().const ne 0.const
-    return isValidEncodedNormal
+class DecodeNormalFunc(parentScope: KslScopeBuilder) : KslFunction<KslFloat3>("DecodeNormal", KslFloat3, parentScope.parentStage) {
+    init {
+        val encoded = paramInt1("encoded")
+        body {
+            val decodedNormal by 0f.const3
+            `if`(encoded and 0x80000000.toInt().const ne 0.const) {
+                val y by ((encoded shr 16.const) and 0x7fff.const).toFloat1() / 16383f.const - 1f.const
+                val x by (encoded and 0x7fff.const).toFloat1() / 16383f.const - 1f.const
+                val sign by (((encoded shr 15.const) and 1.const) * 2.const - 1.const).toFloat1()
+                val z by sqrt(clamp(1f.const - x*x - y*y, 0f.const, 1f.const)) * sign
+                decodedNormal.set(float3Value(x, y, z))
+            }
+            decodedNormal
+        }
+    }
 }
+
+fun KslScopeBuilder.encodeNormal(normal: KslExprFloat3): KslExprInt1 {
+    val func = parentStage.getOrCreateFunction("EncodeNormal") { EncodeNormalFunc(this) }
+    return func(normal)
+}
+
+fun KslScopeBuilder.decodeNormal(encoded: KslExprInt1): KslExprFloat3 {
+    val func = parentStage.getOrCreateFunction("DecodeNormal") { DecodeNormalFunc(this) }
+    return func(encoded)
+}
+
+fun KslScopeBuilder.isValidEncodedNormal(encoded: KslExprInt1): KslExprBool1 =
+    encoded and 0x80000000.toInt().const ne 0.const

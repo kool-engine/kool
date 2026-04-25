@@ -57,7 +57,6 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
     override suspend fun loadResources(ctx: KoolContext) {
         ao = AoPipeline.createForward(mainScene).apply {
-            mapSize = 0.7f
             radius = 0.5f
         }
         shadows += SimpleShadowMap(mainScene, mainScene.lighting.lights[0], mapSize = 4096).apply {

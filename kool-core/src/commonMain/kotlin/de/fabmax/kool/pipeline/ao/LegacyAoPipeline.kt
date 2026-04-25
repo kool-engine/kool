@@ -31,11 +31,11 @@ abstract class LegacyAoPipeline : AoPipeline, BaseReleasable() {
         get() = aoPass.strength
         set(value) { aoPass.strength = value }
 
-    override var power: Float
+    override var falloff: Float
         get() = aoPass.power
         set(value) { aoPass.power = value }
 
-    override var kernelSz: Int
+    override var kernelSize: Int
         get() = aoPass.kernelSz
         set(value) { aoPass.kernelSz = value }
 

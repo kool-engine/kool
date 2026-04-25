@@ -73,6 +73,7 @@ internal fun MutableMap<String, String>.deTranslation() = putAll(listOf(
     "Auto rotate view" to "Auto-Rotation",
     "AO Settings" to "AO Einstellungen",
     "Radius" to "Radius",
+    "Falloff" to "Falloff",
     "Power" to "Power",
     "Strength" to "Stärke",
     "Samples" to "Samples",
