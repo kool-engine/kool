@@ -84,7 +84,7 @@ class ComputeAoPipeline(val scene: Scene, camera: PerspectiveCamera, drawNode: N
 class ComputeAoPass(
     val normalDepthPass: NormalDepthMapPass,
     val camera: Camera,
-    val distFormat: TexFormat = TexFormat.R_F16,
+    val distFormat: TexFormat,
 ) : ComputePass("AO Pass") {
     private val inputDepth: Texture2d get() = normalDepthPass.depthTexture!!
     private val inputNormals: Texture2d get() = normalDepthPass.colorTexture!!
@@ -444,26 +444,28 @@ class ComputeAoPass(
         computeStage(8, 8) {
             main {
                 val baseCoord by inGlobalInvocationId.xy.toInt2()
-                val coordOffset by int2Value(baseCoord.x % 2.const, baseCoord.y % 2.const)
-                val ao by 0f.const
                 val dim = NOISE_TEX_SZ / 2
+
                 val baseDist by distInput.load(baseCoord).x
                 val baseNormal by decodeNormal(normalInput.load(baseCoord).x)
+                val ao by noisyAo.load(baseCoord).x
+                val sumWeight by 1f.const
 
                 val sampleR by uRadius
                 `if`(sampleR lt 0f.const) {
                     sampleR *= -baseDist
                 }
-                val sumWeight by 0f.const
                 for (y in -dim until dim) {
                     for (x in -dim until dim) {
-                        val coord = int2Var(baseCoord + Vec2i(x, y).const + coordOffset)
-                        val dist = float1Var(distInput.load(coord).x)
-                        val distWeight = float1Var(1f.const - smoothStep(0f.const, sampleR, abs(dist - baseDist)))
-                        val normalWeight = float1Var(saturate(dot(decodeNormal(normalInput.load(coord).x), baseNormal)))
-                        val weight = float1Var(0.0001f.const + distWeight * normalWeight)
-                        ao += noisyAo.load(coord).x * weight
-                        sumWeight += weight
+                        if (x != 0 || y != 0) {
+                            val coord = int2Var(baseCoord + Vec2i(x, y).const)
+                            val dist = float1Var(distInput.load(coord).x)
+                            val distWeight = float1Var(1f.const - smoothStep(0f.const, sampleR, abs(dist - baseDist)))
+                            val normalWeight = float1Var(saturate(dot(decodeNormal(normalInput.load(coord).x), baseNormal)))
+                            val weight = float1Var(0.0001f.const + distWeight * normalWeight)
+                            ao += noisyAo.load(coord).x * weight
+                            sumWeight += weight
+                        }
                     }
                 }
                 ao /= sumWeight

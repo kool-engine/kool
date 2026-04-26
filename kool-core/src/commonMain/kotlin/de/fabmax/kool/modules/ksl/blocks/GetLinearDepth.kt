@@ -6,9 +6,9 @@ class GetLinearDepth(parentScope: KslScopeBuilder) :
     KslFunction<KslFloat1>(FUNC_NAME, KslFloat1, parentScope.parentStage) {
 
     init {
-        val depth = paramFloat1("depth")
-        val camNear = paramFloat1("camNear")
-        val camFar = paramFloat1("camFar")
+        val depth = paramFloat1("clipDepth")
+        val camNear = paramFloat1("camClipNear")
+        val camFar = paramFloat1("camClipFar")
         body {
             return@body camNear * camFar / (camFar - depth * (camFar - camNear))
         }
@@ -32,8 +32,8 @@ class GetLinearDepthReversed(parentScope: KslScopeBuilder) :
     KslFunction<KslFloat1>(FUNC_NAME, KslFloat1, parentScope.parentStage) {
 
     init {
-        val depth = paramFloat1("depth")
-        val camNear = paramFloat1("camNear")
+        val depth = paramFloat1("clipDepth")
+        val camNear = paramFloat1("camClipNear")
         body {
             return@body camNear / max(1e-15f.const, depth)
         }

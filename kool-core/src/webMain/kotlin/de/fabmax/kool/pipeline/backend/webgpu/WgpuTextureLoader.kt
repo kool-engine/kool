@@ -260,9 +260,6 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             MipMapping.Off -> 1
         }
 
-        if (storageTexture.format == TexFormat.RG11B10_F) {
-            logW { "Storage texture format RG11B10_F is not supported by WebGPU, using RGBA_F16 instead" }
-        }
         val texDesc = GPUTextureDescriptor(
             size = size,
             format = storageTexture.format.wgpuStorage,

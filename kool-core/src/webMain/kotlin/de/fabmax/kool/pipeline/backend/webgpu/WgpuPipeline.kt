@@ -102,7 +102,8 @@ sealed class WgpuPipeline(
             GPUTextureSampleType.float -> GPUSamplerBindingType.filtering
             GPUTextureSampleType.depth -> GPUSamplerBindingType.comparison
             GPUTextureSampleType.unfilterableFloat -> GPUSamplerBindingType.nonFiltering
-            else -> error("unexpected: $texSampleType")
+            GPUTextureSampleType.sint -> GPUSamplerBindingType.nonFiltering
+            GPUTextureSampleType.uint -> GPUSamplerBindingType.nonFiltering
         }
 
         return listOf(
