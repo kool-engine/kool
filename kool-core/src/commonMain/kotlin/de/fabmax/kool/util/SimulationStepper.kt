@@ -17,7 +17,7 @@ interface SimulationStepper {
     val actualTimeFactor: Float
     val cpuMillisPerStep: Float
 
-    suspend fun stepPhysics()
+    suspend fun stepPhysics(deltaTime: Float)
 
     suspend fun waitForSimulation()
 }
@@ -47,16 +47,16 @@ class AsyncSimulationStepper(
     var maxSimulationDeltaT: Float = 0.1f
     var deltaTVariance: Float = 1.1f
 
-    override suspend fun stepPhysics() {
+    override suspend fun stepPhysics(deltaTime: Float) {
         waitForSimulation()
 
-        val dt = if (isPaused) 0f else (Time.deltaT * desiredTimeFactor).coerceAtMost(maxSimulationDeltaT)
+        val dt = if (isPaused) 0f else (deltaTime * desiredTimeFactor).coerceAtMost(maxSimulationDeltaT)
         refTime += dt
 
         val deltaCapture = simulationTime - simulationTimePrev
         val weightNext = ((refTime - simulationTimePrev) / deltaCapture).toFloat().clamp(0f, 1f)
         simulation.interpolateSteps(simulationTimePrev, simulationTime, refTime, weightNext)
-        actualTimeFactor = actualTimeFactor * 0.8f + dt / Time.deltaT * 0.2f
+        actualTimeFactor = actualTimeFactor * 0.8f + dt / deltaTime * 0.2f
 
         val expectedNextFrameTime = refTime + dt * deltaTVariance
         val nextDelta = expectedNextFrameTime - simulationTime
