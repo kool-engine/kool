@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.NormalLightRange
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.blocks.pbrLightBlock
 import de.fabmax.kool.modules.ksl.lang.*
@@ -102,7 +103,7 @@ class DeferredLightShader(encodedLightType: Float, model: Model = Model(encodedL
                     val viewDir = float3Var(normalize(camData.position - worldPos))
                     val f0 = mix(Vec3f(0.04f).const, color, metallic)
 
-                    val lightBlock = pbrLightBlock(false) {
+                    val lightBlock = pbrLightBlock(false, normalLightRange = NormalLightRange.ZeroToOne) {
                         inViewDir(viewDir)
                         inNormalLight(worldNrm)
                         inFragmentPosLight(worldPos)

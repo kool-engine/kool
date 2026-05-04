@@ -85,7 +85,7 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
             val uShininess = fragmentPropertyBlock(cfg.shininessCfg, ddx, ddy).outProperty
             val uSpecularStrength = fragmentPropertyBlock(cfg.specularStrengthCfg, ddx, ddy).outProperty
 
-            val material = blinnPhongMaterialBlock(cfg.lightingCfg.maxNumberOfLights) {
+            val material = blinnPhongMaterialBlock(cfg.lightingCfg.maxNumberOfLights, cfg.lightingCfg.normalLightRange) {
                 inCamPos(camData.position)
                 inNormal(normal)
                 inFragmentPos(fragmentWorldPos)

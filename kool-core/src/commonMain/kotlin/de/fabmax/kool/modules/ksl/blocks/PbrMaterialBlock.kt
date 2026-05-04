@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ksl.blocks
 
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.ksl.NormalLightRange
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.ibl.ReflectionMapPass
 import kotlin.math.PI
@@ -9,6 +10,7 @@ fun KslScopeBuilder.pbrMaterialBlock(
     maxNumberOfLights: Int,
     reflectionMaps: List<KslExpression<KslColorSamplerCube>>?,
     brdfLut: KslExpression<KslColorSampler2d>,
+    normalLightRange: NormalLightRange,
     block: PbrMaterialBlock.() -> Unit
 ): PbrMaterialBlock {
     val pbrMaterialBlock = PbrMaterialBlock(
@@ -16,6 +18,7 @@ fun KslScopeBuilder.pbrMaterialBlock(
         parentStage.program.nextName("pbrMaterialBlock"),
         reflectionMaps,
         brdfLut,
+        normalLightRange,
         this
     )
     ops += pbrMaterialBlock.apply(block)
@@ -27,7 +30,8 @@ class PbrMaterialBlock(
     name: String,
     reflectionMaps: List<KslExpression<KslColorSamplerCube>>?,
     brdfLut: KslExpression<KslColorSampler2d>,
-    parentScope: KslScopeBuilder
+    normalLightRange: NormalLightRange,
+    parentScope: KslScopeBuilder,
 ) : LitMaterialBlock(maxNumberOfLights, name, parentScope) {
 
     val inRoughness = inFloat1("inRoughness", KslValueFloat1(0.5f))
@@ -53,7 +57,7 @@ class PbrMaterialBlock(
             val lo by Vec3f.ZERO.const
 
             fori(0.const, inLightCount) { i ->
-                val light = pbrLightBlock(true) {
+                val light = pbrLightBlock(true, normalLightRange) {
                     inViewDir(viewDir)
                     inNormalLight(inNormal)
                     inFragmentPosLight(inFragmentPos)
@@ -106,13 +110,22 @@ class PbrMaterialBlock(
     }
 }
 
-fun KslScopeBuilder.pbrLightBlock(isInfiniteSoi: Boolean, block: PbrLightBlock.() -> Unit): PbrLightBlock {
-    val pbrLightBlock = PbrLightBlock(parentStage.program.nextName("pbrLightBlock"), isInfiniteSoi, this)
+fun KslScopeBuilder.pbrLightBlock(
+    isInfiniteSoi: Boolean,
+    normalLightRange: NormalLightRange,
+    block: PbrLightBlock.() -> Unit
+): PbrLightBlock {
+    val pbrLightBlock = PbrLightBlock(parentStage.program.nextName("pbrLightBlock"), isInfiniteSoi, normalLightRange, this)
     ops += pbrLightBlock.apply(block)
     return pbrLightBlock
 }
 
-class PbrLightBlock(name: String, isInfiniteSoi: Boolean, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
+class PbrLightBlock(
+    name: String,
+    isInfiniteSoi: Boolean,
+    normalLightRange: NormalLightRange,
+    parentScope: KslScopeBuilder,
+) : KslBlock(name, parentScope) {
     val inViewDir = inFloat3("inViewDir")
     val inNormalLight = inFloat3("inNormalLight")
     val inFragmentPosLight = inFloat3("inFragmentPosLight")
@@ -154,7 +167,10 @@ class PbrLightBlock(name: String, isInfiniteSoi: Boolean, parentScope: KslScopeB
                 )
             }
 
-            val nDotL by max(normalDotLight, 0f.const)
+            val nDotL by when (normalLightRange) {
+                NormalLightRange.ZeroToOne -> max(normalDotLight, 0f.const)
+                NormalLightRange.MinusOneToOne -> saturate(normalDotLight * 0.5f.const + 0.5f.const)
+            }
             `if`(nDotL gt 0f.const) {
                 // cook-torrance BRDF
                 val ndf by distributionGgx(inNormalLight, h, inRoughnessLight)
