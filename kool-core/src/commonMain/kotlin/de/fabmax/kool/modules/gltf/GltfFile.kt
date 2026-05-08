@@ -118,13 +118,15 @@ data class GltfFile(
     val skins: List<GltfSkin> = emptyList(),
     val textures: List<GltfTexture> = emptyList()
 ) {
-
-    @Deprecated(
-        message = "Use makeModelTemplate if creating multiple Models or makeSingleModel if creating a single Model from this GltfFile",
-        ReplaceWith("makeSingleModel(scene, modelCfg)")
-    )
+    /**
+     * Create a single model from this GltfFile. If you want to create multiple instances use [makeModelTemplate] instead.
+     * @see GltfFile.makeModelTemplate
+     */
     fun makeModel(modelCfg: GltfLoadConfig = GltfLoadConfig(), scene: Int = this.scene): Model {
-        return makeSingleModel(scene, modelCfg)
+        val template = makeModelTemplate(scene)
+        return template.makeModel(modelCfg).apply {
+            addDependingReleasable(template)
+        }
     }
 
     /**
@@ -133,17 +135,6 @@ data class GltfFile(
      */
     fun makeModelTemplate(scene: Int = this.scene): ModelTemplate {
         return ModelTemplate(scenes[scene], this)
-    }
-
-    /**
-     * Create a single model from this GltfFile. If you want to create multiple instances use [makeModelTemplate] instead.
-     * @see GltfFile.makeModelTemplate
-     */
-    fun makeSingleModel(scene: Int = this.scene, modelCfg: GltfLoadConfig = GltfLoadConfig()): Model {
-        val template = makeModelTemplate(scene)
-        return template.makeModel(modelCfg).apply {
-            addDependingReleasable(template)
-        }
     }
 
     internal fun updateReferences() {
