@@ -89,12 +89,7 @@ class ModelTemplate(val scene: GltfScene, val gltfFile: GltfFile) : BaseReleasab
                     if (nodeGrp != null) {
                         val animationNd = animNodes.getOrPut(nodeGrp) { AnimatedTransformGroup(nodeGrp) }
                         when (channel.target.path) {
-                            GltfAnimation.Target.PATH_TRANSLATION -> makeTranslationAnimation(
-                                channel,
-                                animationNd,
-                                modelAnim
-                            )
-
+                            GltfAnimation.Target.PATH_TRANSLATION -> makeTranslationAnimation(channel, animationNd, modelAnim)
                             GltfAnimation.Target.PATH_ROTATION -> makeRotationAnimation(channel, animationNd, modelAnim)
                             GltfAnimation.Target.PATH_SCALE -> makeScaleAnimation(channel, animationNd, modelAnim)
                         }
@@ -103,11 +98,7 @@ class ModelTemplate(val scene: GltfScene, val gltfFile: GltfFile) : BaseReleasab
             }
         }
 
-        private fun makeTranslationAnimation(
-            animCh: GltfAnimation.Channel,
-            animNd: AnimatedTransformGroup,
-            modelAnim: Animation
-        ) {
+        private fun makeTranslationAnimation(animCh: GltfAnimation.Channel, animNd: AnimatedTransformGroup, modelAnim: Animation) {
             val inputAcc = animCh.samplerRef.inputAccessorRef
             val outputAcc = animCh.samplerRef.outputAccessorRef
 
@@ -151,11 +142,7 @@ class ModelTemplate(val scene: GltfScene, val gltfFile: GltfFile) : BaseReleasab
             }
         }
 
-        private fun makeRotationAnimation(
-            animCh: GltfAnimation.Channel,
-            animNd: AnimatedTransformGroup,
-            modelAnim: Animation
-        ) {
+        private fun makeRotationAnimation(animCh: GltfAnimation.Channel, animNd: AnimatedTransformGroup, modelAnim: Animation) {
             val inputAcc = animCh.samplerRef.inputAccessorRef
             val outputAcc = animCh.samplerRef.outputAccessorRef
 
@@ -199,11 +186,7 @@ class ModelTemplate(val scene: GltfScene, val gltfFile: GltfFile) : BaseReleasab
             }
         }
 
-        private fun makeScaleAnimation(
-            animCh: GltfAnimation.Channel,
-            animNd: AnimatedTransformGroup,
-            modelAnim: Animation
-        ) {
+        private fun makeScaleAnimation(animCh: GltfAnimation.Channel, animNd: AnimatedTransformGroup, modelAnim: Animation) {
             val inputAcc = animCh.samplerRef.inputAccessorRef
             val outputAcc = animCh.samplerRef.outputAccessorRef
 
@@ -257,12 +240,7 @@ class ModelTemplate(val scene: GltfScene, val gltfFile: GltfFile) : BaseReleasab
             }
         }
 
-        private fun makeWeightAnimation(
-            gltfMesh: GltfMesh,
-            animCh: GltfAnimation.Channel,
-            animNd: MorphAnimatedMesh,
-            modelAnim: Animation
-        ) {
+        private fun makeWeightAnimation(gltfMesh: GltfMesh, animCh: GltfAnimation.Channel, animNd: MorphAnimatedMesh, modelAnim: Animation) {
             val inputAcc = animCh.samplerRef.inputAccessorRef
             val outputAcc = animCh.samplerRef.outputAccessorRef
 
@@ -460,11 +438,7 @@ class ModelTemplate(val scene: GltfScene, val gltfFile: GltfFile) : BaseReleasab
             return nodeGrp
         }
 
-        private fun GltfNode.createMeshes(
-            model: Model,
-            nodeGrp: Node,
-            cfg: GltfLoadConfig
-        ) {
+        private fun GltfNode.createMeshes(model: Model, nodeGrp: Node, cfg: GltfLoadConfig) {
             meshRef?.primitives?.forEachIndexed { index, prim ->
                 val name = "${meshRef?.name ?: "${nodeGrp.name}.mesh"}_$index"
                 val geometry = geometryCache.getOrPut(name) { prim.toGeometry(cfg, accessors) }
@@ -483,13 +457,7 @@ class ModelTemplate(val scene: GltfScene, val gltfFile: GltfFile) : BaseReleasab
                     }
 
                     val instances = cfg.instanceLayout?.let { MeshInstanceList(it) }
-                    val mesh = Mesh(
-                        geometry = geometry,
-                        instances = instances,
-                        morphWeights = morphWeights,
-                        skin = meshSkin,
-                        name = name
-                    )
+                    val mesh = Mesh(geometry = geometry, instances = instances, morphWeights = morphWeights, skin = meshSkin, name = name)
                     mesh.isFrustumChecked = isFrustumChecked
 
                     nodeGrp += mesh
@@ -516,11 +484,7 @@ class ModelTemplate(val scene: GltfScene, val gltfFile: GltfFile) : BaseReleasab
             }
         }
 
-        private fun makeKslMaterial(
-            prim: GltfMesh.Primitive,
-            mesh: Mesh<*>,
-            cfg: GltfLoadConfig,
-        ): Pair<KslShader, DepthShader.Config?> {
+        private fun makeKslMaterial(prim: GltfMesh.Primitive, mesh: Mesh<*>, cfg: GltfLoadConfig): Pair<KslShader, DepthShader.Config?> {
             var isDeferred = cfg.materialConfig.isDeferredShading
             val useVertexColor = prim.attributes.containsKey(GltfMesh.Primitive.ATTRIBUTE_COLOR_0)
 
