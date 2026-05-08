@@ -7,14 +7,10 @@ import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.loadTexture2d
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
-import de.fabmax.kool.modules.ksl.blocks.BlinnPhongMaterialBlock
-import de.fabmax.kool.modules.ksl.blocks.TexCoordAttributeBlock
-import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.generateTangents
 import de.fabmax.kool.util.*
-import kotlin.math.PI
 
 class KslShaderTest : DemoScene("KslShader") {
 
@@ -97,22 +93,6 @@ class KslShaderTest : DemoScene("KslShader") {
 
             var rotationX = -23f
             var rotationY = 52f
-//            ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_UP, "rotx") {
-//                rotationX += 1f
-//                println("x: $rotationX, y: $rotationY")
-//            }
-//            ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_DOWN, "rotx") {
-//                rotationX -= 1f
-//                println("x: $rotationX, y: $rotationY")
-//            }
-//            ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_RIGHT, "roty") {
-//                rotationY += 1f
-//                println("x: $rotationX, y: $rotationY")
-//            }
-//            ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_LEFT, "roty") {
-//                rotationY -= 1f
-//                println("x: $rotationX, y: $rotationY")
-//            }
 
             onUpdate += {
                 transform.setIdentity()
@@ -160,8 +140,6 @@ class KslShaderTest : DemoScene("KslShader") {
 
                 vertices { instancedModelMatrix() }
                 color {
-                    //addInstanceColor()
-                    //addStaticColor(Color.WHITE)
                     textureColor(colorMap)
                 }
                 normalMapping { useNormalMap(normalMap) }
@@ -170,40 +148,11 @@ class KslShaderTest : DemoScene("KslShader") {
 
                 modelCustomizer = {
                     dumpCode = true
-                    //sparkleMod()
                 }
             }
 
-            var uSparkle by phongShader.uniform1f("uSparkle")
-            phongShader.texture2d("tShininess", makeNoiseTex())
-
+            phongShader.bindTexture2d("tShininess", makeNoiseTex())
             shader = phongShader
-            onUpdate += {
-                uSparkle = (Time.gameTime % 1.0).toFloat()
-            }
-        }
-    }
-
-    private fun KslProgram.sparkleMod() {
-        val shininessTex = texture2d("tShininess")
-        val sparkleOffset = uniformFloat1("uSparkle")
-        val instanceOffset = interStageFloat1()
-
-        vertexStage {
-            main {
-                instanceOffset.input set inInstanceIndex.toFloat1() * 1.73f.const
-            }
-        }
-
-        fragmentStage {
-            main {
-                findBlock<BlinnPhongMaterialBlock>()!!.apply {
-                    val texCoordBlock: TexCoordAttributeBlock = vertexStage!!.findBlock()!!
-                    val texCoords = texCoordBlock.getTextureCoords()
-                    val sparkle = float1Var((sampleTexture(shininessTex, texCoords).r + sparkleOffset + instanceOffset.output) * (2f * PI.toFloat()).const)
-                    inShininess(10f.const + (cos(sparkle) * 0.5f.const + 0.5f.const) * 30f.const)
-                }
-            }
         }
     }
 

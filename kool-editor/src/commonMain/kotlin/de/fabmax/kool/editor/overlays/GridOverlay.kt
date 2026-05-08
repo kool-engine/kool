@@ -119,12 +119,12 @@ class GridOverlay(val overlay: OverlayScene) : Node("Grid overlay"), EditorOverl
     }
 
     private class GridShader : KslShader("grid-shader") {
-        var scale by uniform2f("uScale", Vec2f(1f, 1f))
-        var posOffset by uniform3f("uPosOffset", Vec3f.ZERO)
+        var scale by bindUniformFloat2("uScale", Vec2f(1f, 1f))
+        var posOffset by bindUniformFloat3("uPosOffset", Vec3f.ZERO)
 
-        var lineColor by uniformColor("uLineColor", Color.LIGHT_GRAY.withAlpha(0.4f))
-        var superTickColor by uniformColor("uSuperTickColor")
-        var majorWeight by uniform1f("uMajorWeight", 0.5f)
+        var lineColor by bindUniformColor("uLineColor", Color.LIGHT_GRAY.withAlpha(0.4f))
+        var superTickColor by bindUniformColor("uSuperTickColor")
+        var majorWeight by bindUniformFloat1("uMajorWeight", 0.5f)
 
         init {
             program.gridProgram()

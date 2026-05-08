@@ -29,10 +29,10 @@ class DeferredLightShader(encodedLightType: Float, model: Model = Model(encodedL
         )
     )
 {
-    var positionFlags by texture2d("positionFlags")
-    var normalRoughness by texture2d("normalRoughness")
-    var colorMetallic by texture2d("colorMetallic")
-    var emissiveAo by texture2d("emissiveAo")
+    var positionFlags by bindTexture2d("positionFlags")
+    var normalRoughness by bindTexture2d("normalRoughness")
+    var colorMetallic by bindTexture2d("colorMetallic")
+    var emissiveAo by bindTexture2d("emissiveAo")
 
     fun setMaterialInput(materialPass: MaterialPass) {
         createdPipeline?.swapPipelineData(materialPass)
@@ -78,10 +78,10 @@ class DeferredLightShader(encodedLightType: Float, model: Model = Model(encodedL
                         uv.y set 1f.const - uv.y
                     }
 
-                    val posFlags = float4Var(sampleTexture(texture2d("positionFlags"), uv))
-                    val normalRoughness = float4Var(sampleTexture(texture2d("normalRoughness"), uv))
-                    val colorMetallic = float4Var(sampleTexture(texture2d("colorMetallic"), uv))
-                    val emissiveAo = float4Var(sampleTexture(texture2d("emissiveAo"), uv))
+                    val posFlags = float4Var(texture2d("positionFlags").sample(uv))
+                    val normalRoughness = float4Var(texture2d("normalRoughness").sample(uv))
+                    val colorMetallic = float4Var(texture2d("colorMetallic").sample(uv))
+                    val emissiveAo = float4Var(texture2d("emissiveAo").sample(uv))
 
                     val viewPos = posFlags.xyz
                     val viewNormal = normalRoughness.xyz

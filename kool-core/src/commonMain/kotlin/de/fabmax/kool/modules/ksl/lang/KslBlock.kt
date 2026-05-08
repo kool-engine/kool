@@ -1,8 +1,17 @@
 package de.fabmax.kool.modules.ksl.lang
 
+import de.fabmax.kool.modules.ksl.KslDomain
 import de.fabmax.kool.modules.ksl.model.KslMutatedState
 
-abstract class KslBlock(name: String, parentScope: KslScopeBuilder) : KslStatement(name, parentScope) {
+fun interface KslBlockBodyBuilder<R> {
+    context(program: KslProgram)
+    fun KslScopeBuilder.build(): R
+}
+
+abstract class KslBlock(
+    name: String,
+    parentScope: KslScopeBuilder
+) : KslStatement(name, parentScope), KslDomain {
 
     private val inputDependencies = mutableMapOf<BlockInput<*, *>, Set<KslMutatedState>>()
     private val outputs = mutableListOf<KslValue<*>>()
@@ -12,6 +21,13 @@ abstract class KslBlock(name: String, parentScope: KslScopeBuilder) : KslStateme
 
     init {
         childScopes += body
+    }
+
+    protected fun <R> body(builder: KslBlockBodyBuilder<R>): R = body.run {
+        val scope = this
+        context(scope.parentStage.program) {
+            with(builder) { scope.build() }
+        }
     }
 
     private fun nextName(suffix: String): String = parentScopeBuilder.parentStage.program.nextName("${opName}_$suffix")
@@ -92,19 +108,30 @@ abstract class KslBlock(name: String, parentScope: KslScopeBuilder) : KslStateme
             updateDependencies(it, defaultValue)
         }
 
-    protected fun outFloat1(name: String? = null): KslVarScalar<KslFloat1> = parentScopeBuilder.float1Var(name = nextName(name ?: "outF1")).also { outputs += it }
-    protected fun outFloat2(name: String? = null): KslVarVector<KslFloat2, KslFloat1> = parentScopeBuilder.float2Var(name = nextName(name ?: "outF2")).also { outputs += it }
-    protected fun outFloat3(name: String? = null): KslVarVector<KslFloat3, KslFloat1> = parentScopeBuilder.float3Var(name = nextName(name ?: "outF3")).also { outputs += it }
-    protected fun outFloat4(name: String? = null): KslVarVector<KslFloat4, KslFloat1> = parentScopeBuilder.float4Var(name = nextName(name ?: "outF4")).also { outputs += it }
+    protected fun outFloat1(name: String? = null): KslVarScalar<KslFloat1> =
+        context(parentScopeBuilder) { float1Var(name = nextName(name ?: "outF1")).also { outputs += it } }
+    protected fun outFloat2(name: String? = null): KslVarVector<KslFloat2, KslFloat1> =
+        context(parentScopeBuilder) { float2Var(name = nextName(name ?: "outF2")).also { outputs += it } }
+    protected fun outFloat3(name: String? = null): KslVarVector<KslFloat3, KslFloat1> =
+        context(parentScopeBuilder) { float3Var(name = nextName(name ?: "outF3")).also { outputs += it } }
+    protected fun outFloat4(name: String? = null): KslVarVector<KslFloat4, KslFloat1> =
+        context(parentScopeBuilder) { float4Var(name = nextName(name ?: "outF4")).also { outputs += it } }
 
-    protected fun outInt1(name: String? = null): KslVarScalar<KslInt1> = parentScopeBuilder.int1Var(name = nextName(name ?: "outI1")).also { outputs += it }
-    protected fun outInt2(name: String? = null): KslVarVector<KslInt2, KslInt1> = parentScopeBuilder.int2Var(name = nextName(name ?: "outI2")).also { outputs += it }
-    protected fun outInt3(name: String? = null): KslVarVector<KslInt3, KslInt1> = parentScopeBuilder.int3Var(name = nextName(name ?: "outI3")).also { outputs += it }
-    protected fun outInt4(name: String? = null): KslVarVector<KslInt4, KslInt1> = parentScopeBuilder.int4Var(name = nextName(name ?: "outI4")).also { outputs += it }
+    protected fun outInt1(name: String? = null): KslVarScalar<KslInt1> =
+        context(parentScopeBuilder) { int1Var(name = nextName(name ?: "outI1")).also { outputs += it } }
+    protected fun outInt2(name: String? = null): KslVarVector<KslInt2, KslInt1> =
+        context(parentScopeBuilder) { int2Var(name = nextName(name ?: "outI2")).also { outputs += it } }
+    protected fun outInt3(name: String? = null): KslVarVector<KslInt3, KslInt1> =
+        context(parentScopeBuilder) { int3Var(name = nextName(name ?: "outI3")).also { outputs += it } }
+    protected fun outInt4(name: String? = null): KslVarVector<KslInt4, KslInt1> =
+        context(parentScopeBuilder) { int4Var(name = nextName(name ?: "outI4")).also { outputs += it } }
 
-    protected fun outMat2(name: String? = null): KslVarMatrix<KslMat2, KslFloat2> = parentScopeBuilder.mat2Var(name = nextName(name ?: "outM2")).also { outputs += it }
-    protected fun outMat3(name: String? = null): KslVarMatrix<KslMat3, KslFloat3> = parentScopeBuilder.mat3Var(name = nextName(name ?: "outM3")).also { outputs += it }
-    protected fun outMat4(name: String? = null): KslVarMatrix<KslMat4, KslFloat4> = parentScopeBuilder.mat4Var(name = nextName(name ?: "outM4")).also { outputs += it }
+    protected fun outMat2(name: String? = null): KslVarMatrix<KslMat2, KslFloat2> =
+        context(parentScopeBuilder) { mat2Var(name = nextName(name ?: "outM2")).also { outputs += it } }
+    protected fun outMat3(name: String? = null): KslVarMatrix<KslMat3, KslFloat3> =
+        context(parentScopeBuilder) { mat3Var(name = nextName(name ?: "outM3")).also { outputs += it } }
+    protected fun outMat4(name: String? = null): KslVarMatrix<KslMat4, KslFloat4> =
+        context(parentScopeBuilder) { mat4Var(name = nextName(name ?: "outM4")).also { outputs += it } }
 
     private fun updateDependencies(input: BlockInput<*, *>, newExpression: KslExpression<*>?) {
         // collect dependencies of new input expression

@@ -4,9 +4,10 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Texture2d
 
-fun KslScopeBuilder.parallaxMapBlock(cfg: ParallaxMapConfig, block: ParallaxMapBlock.() -> Unit): ParallaxMapBlock {
-    val parallaxMapBlock = ParallaxMapBlock(cfg, parentStage.program.nextName("parallaxMapBlock"), this)
-    ops += parallaxMapBlock.apply(block)
+context(builder: KslScopeBuilder)
+fun parallaxMapBlock(cfg: ParallaxMapConfig, block: ParallaxMapBlock.() -> Unit): ParallaxMapBlock {
+    val parallaxMapBlock = ParallaxMapBlock(cfg, builder.parentStage.program.nextName("parallaxMapBlock"), builder)
+    builder.ops += parallaxMapBlock.apply(block)
     return parallaxMapBlock
 }
 
@@ -26,7 +27,7 @@ class ParallaxMapBlock(val cfg: ParallaxMapConfig, name: String, parentScope: Ks
     val outDdy = outFloat2()
 
     init {
-        body.apply {
+        body {
             if (cfg.isParallaxMapped) {
                 parallaxMapping()
             } else {
@@ -36,9 +37,10 @@ class ParallaxMapBlock(val cfg: ParallaxMapConfig, name: String, parentScope: Ks
         }
     }
 
+    context(program: KslProgram)
     private fun KslScopeBuilder.parallaxMapping() {
-        val camData = parentStage.program.cameraData()
-        val parallaxMap = parentStage.program.texture2d(cfg.parallaxMapName)
+        val camData = cameraData()
+        val parallaxMap = texture2d(cfg.parallaxMapName)
 
         val step = float1Var(1f.const / inMaxSteps.toFloat1())
 
@@ -70,7 +72,7 @@ class ParallaxMapBlock(val cfg: ParallaxMapConfig, name: String, parentScope: Ks
 
         repeat(inMaxSteps) { i ->
             val hLimit = float1Var(hStart + i.toFloat1() * step)
-            val h = float1Var(1f.const - sampleTextureGrad(parallaxMap, sampleUv, outDdx, outDdy).x)
+            val h = float1Var(1f.const - parallaxMap.sample(sampleUv, outDdx, outDdy).x)
 
             `if` (h lt hLimit) {
                 val afterDepth = float1Var(h - hLimit)

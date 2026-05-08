@@ -1,10 +1,7 @@
 package de.fabmax.kool.demo.physics.vehicle
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.modules.ksl.lang.getFloat4Port
-import de.fabmax.kool.modules.ksl.lang.times
-import de.fabmax.kool.modules.ksl.lang.x
-import de.fabmax.kool.modules.ksl.lang.y
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.BoxGeometry

@@ -26,9 +26,9 @@ interface WindAffectedShader : EnvMapShader {
 object TreeShader {
     class Pbr(shadowMap: ShadowMap, ssaoMap: Texture2d, windTex: Texture3d)
         : KslPbrShader(pbrConfig(shadowMap, ssaoMap)), WindAffectedShader {
-        override var windOffsetStrength by uniform4f("uWindOffsetStrength")
-        override var windScale by uniform1f("uWindScale", 0.01f)
-        override var windDensity by texture3d("tWindTex", windTex)
+        override var windOffsetStrength by bindUniformFloat4("uWindOffsetStrength")
+        override var windScale by bindUniformFloat1("uWindScale", 0.01f)
+        override var windDensity by bindTexture3d("tWindTex", windTex)
         override val shader = this
 
         override fun updateEnvMaps(envMaps: Sky.WeightedEnvMaps) {
@@ -39,9 +39,9 @@ object TreeShader {
     class BlinnPhong(shadowMap: ShadowMap, ssaoMap: Texture2d, windTex: Texture3d)
         : KslBlinnPhongShader(blinnPhongConfig(shadowMap, ssaoMap)), WindAffectedShader {
         override val shader = this
-        override var windOffsetStrength by uniform4f("uWindOffsetStrength")
-        override var windScale by uniform1f("uWindScale", 0.01f)
-        override var windDensity by texture3d("tWindTex", windTex)
+        override var windOffsetStrength by bindUniformFloat4("uWindOffsetStrength")
+        override var windScale by bindUniformFloat1("uWindScale", 0.01f)
+        override var windDensity by bindTexture3d("tWindTex", windTex)
 
         override fun updateEnvMaps(envMaps: Sky.WeightedEnvMaps) {
             with(TerrainDemo) { updateSky(envMaps) }
@@ -50,9 +50,9 @@ object TreeShader {
 
     class Shadow(windTex: Texture3d, isAoDepth: Boolean) : DepthShader(shadowConfig(isAoDepth)), WindAffectedShader {
         override val shader = this
-        override var windOffsetStrength by uniform4f("uWindOffsetStrength")
-        override var windScale by uniform1f("uWindScale", 0.01f)
-        override var windDensity by texture3d("tWindTex", windTex)
+        override var windOffsetStrength by bindUniformFloat4("uWindOffsetStrength")
+        override var windScale by bindUniformFloat1("uWindScale", 0.01f)
+        override var windDensity by bindTexture3d("tWindTex", windTex)
 
         override fun updateEnvMaps(envMaps: Sky.WeightedEnvMaps) { }
     }
@@ -107,7 +107,7 @@ object TreeShader {
                 val windOffset = uniformFloat4("uWindOffsetStrength")
                 val worldPos = worldPosPort.input.input!!
                 val windSamplePos = (windOffset.xyz + worldPos) * uniformFloat1("uWindScale")
-                val windValue = float3Var(sampleTexture(windTex, windSamplePos, 0f.const).xyz - float3Value(0.5f, 0.5f, 0.5f), "windValue")
+                val windValue = float3Var(windTex.sample(windSamplePos, 0f.const).xyz - float3Value(0.5f, 0.5f, 0.5f), "windValue")
                 windValue.y *= 0.5f.const
                 val displacement = float3Port("windDisplacement", windValue * vertexAttrib(Wind.VertexLayoutWind.windSensitivity) * windOffset.w)
                 worldPosPort.input(worldPos + displacement)

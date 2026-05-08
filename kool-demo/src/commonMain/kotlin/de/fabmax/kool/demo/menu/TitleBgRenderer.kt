@@ -76,9 +76,9 @@ class TitleBgRenderer(
     }
 
     private class CategoryShader : KslShader(Model(), pipelineConfig) {
-        val colorTex by texture1d("tGradient", bgGradientTex)
-        val noiseTex by texture2d("tNoise", bgNoiseTex)
-        var noiseOffset by uniform1f("uNoiseOffset")
+        val colorTex by bindTexture1d("tGradient", bgGradientTex)
+        val noiseTex by bindTexture2d("tNoise", bgNoiseTex)
+        var noiseOffset by bindUniformFloat1("uNoiseOffset")
 
         private class Model : KslProgram("Demo category shader") {
             init {
@@ -96,7 +96,7 @@ class TitleBgRenderer(
                         meshUv.x += uniformFloat1("uNoiseOffset")
                         meshUv.y += uvRange.x
 
-                        val noise = sampleTexture(texture2d("tNoise"), meshUv, 0f.const)
+                        val noise = texture2d("tNoise").sample(meshUv, 0f.const)
                         val pos by vertexAttrib(VertexLayouts.Position.position)
                         pos.xy set pos.xy + (noise.xy * 2f.const - 1f.const) * Vec2f(0.1f, 0.5f).const
 
@@ -114,7 +114,7 @@ class TitleBgRenderer(
                 fragmentStage {
                     main {
                         val gradientTex = texture1d("tGradient")
-                        val color = float4Var(sampleTexture(gradientTex, texCoords.output.x))
+                        val color = float4Var(gradientTex.sample(texCoords.output.x))
 
                         `if` (all(screenPos.output gt clipBounds.output.xy) and
                                 all(screenPos.output lt clipBounds.output.zw)) {

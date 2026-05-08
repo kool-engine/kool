@@ -25,9 +25,9 @@ object GrassShader {
     class Pbr(grassColor: Texture2d, shadowMap: ShadowMap, ssaoMap: Texture2d, windTex: Texture3d, isInstanced: Boolean)
         : KslPbrShader(pbrConfig(grassColor, shadowMap, ssaoMap, isInstanced)), WindAffectedShader {
         override val shader = this
-        override var windOffsetStrength by uniform4f("uWindOffsetStrength")
-        override var windScale by uniform1f("uWindScale", 0.01f)
-        override var windDensity by texture3d("tWindTex", windTex)
+        override var windOffsetStrength by bindUniformFloat4("uWindOffsetStrength")
+        override var windScale by bindUniformFloat1("uWindScale", 0.01f)
+        override var windDensity by bindTexture3d("tWindTex", windTex)
 
         override fun updateEnvMaps(envMaps: Sky.WeightedEnvMaps) {
             with(TerrainDemo) { updateSky(envMaps) }
@@ -37,9 +37,9 @@ object GrassShader {
     class BlinnPhong(grassColor: Texture2d, shadowMap: ShadowMap, ssaoMap: Texture2d, windTex: Texture3d, isInstanced: Boolean)
         : KslBlinnPhongShader(blinnPhongConfig(grassColor, shadowMap, ssaoMap, isInstanced)), WindAffectedShader {
         override val shader = this
-        override var windOffsetStrength by uniform4f("uWindOffsetStrength")
-        override var windScale by uniform1f("uWindScale", 0.01f)
-        override var windDensity by texture3d("tWindTex", windTex)
+        override var windOffsetStrength by bindUniformFloat4("uWindOffsetStrength")
+        override var windScale by bindUniformFloat1("uWindScale", 0.01f)
+        override var windDensity by bindTexture3d("tWindTex", windTex)
 
         override fun updateEnvMaps(envMaps: Sky.WeightedEnvMaps) {
             with(TerrainDemo) { updateSky(envMaps) }
@@ -48,12 +48,12 @@ object GrassShader {
 
     class Shadow(grassColor: Texture2d, windTex: Texture3d, isInstanced: Boolean, isAoDepth: Boolean)
         : DepthShader(shadowConfig(isInstanced, isAoDepth)), WindAffectedShader {
-        var grassAlpha by texture2d("grassAlpha", grassColor)
+        var grassAlpha by bindTexture2d("grassAlpha", grassColor)
 
         override val shader = this
-        override var windOffsetStrength by uniform4f("uWindOffsetStrength")
-        override var windScale by uniform1f("uWindScale", 0.01f)
-        override var windDensity by texture3d("tWindTex", windTex)
+        override var windOffsetStrength by bindUniformFloat4("uWindOffsetStrength")
+        override var windScale by bindUniformFloat1("uWindScale", 0.01f)
+        override var windDensity by bindTexture3d("tWindTex", windTex)
 
         override fun updateEnvMaps(envMaps: Sky.WeightedEnvMaps) { }
     }
@@ -131,7 +131,7 @@ object GrassShader {
                 main {
                     val tex = texture2d("grassAlpha")
                     val uv = texCoords.getTextureCoords()
-                    val texAlpha = float1Var(sampleTexture(tex, uv).a)
+                    val texAlpha = float1Var(tex.sample(uv).a)
                     `if`(texAlpha lt 0.35f.const) {
                         discard()
                     }
@@ -166,11 +166,11 @@ object GrassShader {
                     // wind based tint (moving darker patches)
                     val windOffset = uniformFloat4("uWindOffsetStrength").xyz * 0.5f.const
                     val windSamplePos = (windOffset + worldPos) * uniformFloat1("uWindScale")
-                    val slowWind = float3Var(sampleTexture(windTex, windSamplePos, 0f.const).xyz)
+                    val slowWind = float3Var(windTex.sample(windSamplePos, 0f.const).xyz)
                     val windTint = clamp(slowWind.x + 0.3f.const, 0.2f.const, 1f.const)
 
                     // position based tint (fixed position yellowish patches)
-                    val positionTint = sampleTexture(windTex, worldPos * 0.05f.const, 0f.const).y * 0.5f.const
+                    val positionTint = windTex.sample(worldPos * 0.05f.const, 0f.const).y * 0.5f.const
 
                     // forward tint values to fragment stage
                     tint.input set float2Value(windTint, positionTint)

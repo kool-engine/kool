@@ -32,7 +32,7 @@ fun KslScopeBuilder.fragmentOnlyShadowBlock(
     normalWorldSPace: KslExprFloat3,
     shadowFactors: KslArrayScalar<KslFloat1>
 ): ShadowBlockFragmentStage {
-    val shadowData = parentStage.program.shadowData(cfg)
+    val shadowData = context(parentStage.program) { shadowData(cfg) }
     val normalZs = List(shadowData.numSubMaps) { float1Var() }
     val lightSpacePos = List(shadowData.numSubMaps) { float4Var() }
 

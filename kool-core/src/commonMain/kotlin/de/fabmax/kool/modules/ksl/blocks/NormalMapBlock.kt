@@ -4,14 +4,15 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.Texture2dArray
 
-fun KslScopeBuilder.normalMapBlock(
+context(builder: KslScopeBuilder)
+fun normalMapBlock(
     cfg: NormalMapConfig,
     ddx: KslExprFloat2? = null,
     ddy: KslExprFloat2? = null,
     block: NormalMapBlock.() -> Unit
 ): NormalMapBlock {
-    val normalMapBlock = NormalMapBlock(cfg, parentStage.program.nextName("normalMapBlock"), ddx, ddy, this)
-    ops += normalMapBlock.apply(block)
+    val normalMapBlock = NormalMapBlock(cfg, builder.parentStage.program.nextName("normalMapBlock"), ddx, ddy, builder)
+    builder.ops += normalMapBlock.apply(block)
     return normalMapBlock
 }
 
@@ -31,21 +32,21 @@ class NormalMapBlock(
     val outBumpNormal = outFloat3()
 
     init {
-        body.apply {
+        body {
             if (cfg.isNormalMapped) {
                 val sample = if (cfg.isArrayNormalMap) {
-                    val normalMap = parentStage.program.texture2dArray(cfg.textureName)
+                    val normalMap = texture2dArray(cfg.textureName)
                     if (inDdx != null && inDdy != null) {
-                        sampleTextureArrayGrad(normalMap, cfg.normalMapArrayIndex.const, inTexCoords, inDdx, inDdy)
+                        normalMap.sample(cfg.normalMapArrayIndex.const, inTexCoords, inDdx, inDdy)
                     } else {
-                        sampleTextureArray(normalMap, cfg.normalMapArrayIndex.const, inTexCoords)
+                        normalMap.sample(cfg.normalMapArrayIndex.const, inTexCoords)
                     }
                 } else {
-                    val normalMap = parentStage.program.texture2d(cfg.textureName)
+                    val normalMap = texture2d(cfg.textureName)
                     if (inDdx != null && inDdy != null) {
-                        sampleTextureGrad(normalMap, inTexCoords, inDdx, inDdy)
+                        normalMap.sample(inTexCoords, inDdx, inDdy)
                     } else {
-                        sampleTexture(normalMap, inTexCoords)
+                        normalMap.sample(inTexCoords)
                     }
                 }
                 val mapNormal = float3Var(sample.rgb)

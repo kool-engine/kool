@@ -68,10 +68,10 @@ class BloomPass(
     }
 
     private fun makeDownSamplePasses() {
-        val sampleInput = downSampleShader.texture2d("sampleInput")
-        val downSampled = downSampleShader.storageTexture2d("downSampled")
-        var uThreshold by downSampleShader.uniform4f("threshold")
-        var uInputTexelSize by downSampleShader.uniform2f("inputTexelSize")
+        val sampleInput = downSampleShader.bindTexture2d("sampleInput")
+        val downSampled = downSampleShader.bindStorageTexture2d("downSampled")
+        var uThreshold by downSampleShader.bindUniformFloat4("threshold")
+        var uInputTexelSize by downSampleShader.bindUniformFloat2("inputTexelSize")
 
         for (level in 0 until levels) {
             val groupsX = ((width shr level) + 7) / 8
@@ -94,12 +94,12 @@ class BloomPass(
     }
 
     private fun makeUpSamplePasses() {
-        val sampleInput = upSampleShader.texture2d("sampleInput")
-        val downSampled = upSampleShader.storageTexture2d("downSampled")
-        val upSampled = upSampleShader.storageTexture2d("upSampled")
-        var uInputTexelSize by upSampleShader.uniform2f("inputTexelSize")
-        var uRadius by upSampleShader.uniform1f("radius", radius)
-        var uOutputScale by upSampleShader.uniform1f("outputScale", radius)
+        val sampleInput = upSampleShader.bindTexture2d("sampleInput")
+        val downSampled = upSampleShader.bindStorageTexture2d("downSampled")
+        val upSampled = upSampleShader.bindStorageTexture2d("upSampled")
+        var uInputTexelSize by upSampleShader.bindUniformFloat2("inputTexelSize")
+        var uRadius by upSampleShader.bindUniformFloat1("radius", radius)
+        var uOutputScale by upSampleShader.bindUniformFloat1("outputScale", radius)
 
         for (level in (levels - 2) downTo 0) {
             val groupsX = ((width shr level) + 7) / 8

@@ -8,15 +8,14 @@ import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.pipeline.ShaderBase
 import de.fabmax.kool.pipeline.UniformBinding4f
 
-fun KslProgram.morphWeightData(): MorphWeightData {
-    return (dataBlocks.find { it is MorphWeightData } as? MorphWeightData) ?: MorphWeightData(this)
+context(program: KslProgram)
+fun morphWeightData(): MorphWeightData {
+    return (program.dataBlocks.find { it is MorphWeightData } as? MorphWeightData) ?: MorphWeightData(program)
 }
 
-class MorphWeightData(program: KslProgram) : KslDataBlock, KslShaderListener {
-    override val name = NAME
-
-    val weightsA = program.uniformFloat4("uMorphWeightsA")
-    val weightsB = program.uniformFloat4("uMorphWeightsB")
+class MorphWeightData(program: KslProgram) : KslDataBlock(NAME, program), KslShaderListener {
+    val weightsA = uniformFloat4("uMorphWeightsA")
+    val weightsB = uniformFloat4("uMorphWeightsB")
 
     private var uMorphWeightsA: UniformBinding4f? = null
     private var uMorphWeightsB: UniformBinding4f? = null
@@ -28,8 +27,8 @@ class MorphWeightData(program: KslProgram) : KslDataBlock, KslShaderListener {
     }
 
     override fun onShaderCreated(shader: ShaderBase<*>) {
-        uMorphWeightsA = shader.uniform4f("uMorphWeightsA")
-        uMorphWeightsB = shader.uniform4f("uMorphWeightsB")
+        uMorphWeightsA = shader.bindUniformFloat4("uMorphWeightsA")
+        uMorphWeightsB = shader.bindUniformFloat4("uMorphWeightsB")
     }
 
     override fun onUpdateDrawData(cmd: DrawCommand) {

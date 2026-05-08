@@ -8,14 +8,13 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.Struct
 
-fun KslProgram.deferredCameraData(): DeferredCamData {
-    return (dataBlocks.find { it is DeferredCamData } as? DeferredCamData) ?: DeferredCamData(this)
+context(program: KslProgram)
+fun deferredCameraData(): DeferredCamData {
+    return (program.dataBlocks.find { it is DeferredCamData } as? DeferredCamData) ?: DeferredCamData(program)
 }
 
-class DeferredCamData(program: KslProgram) : KslDataBlock, KslShaderListener {
-    override val name = "DeferredCamData"
-
-    private val camUniform = program.uniformStruct("uDeferredCameraData", DeferredCamDataStruct, BindGroupScope.VIEW)
+class DeferredCamData(program: KslProgram) : KslDataBlock("DeferredCamData", program), KslShaderListener {
+    private val camUniform = uniformStruct("uDeferredCameraData", DeferredCamDataStruct, BindGroupScope.VIEW)
 
     val position: KslExprFloat3 get() = camUniform[DeferredCamDataStruct.position]
     val projMat: KslExprMat4 get() = camUniform[DeferredCamDataStruct.proj]

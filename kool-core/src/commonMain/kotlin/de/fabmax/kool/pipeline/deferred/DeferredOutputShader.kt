@@ -24,13 +24,13 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, deferredPipeline: Deferr
 {
     private val noBloomMap = SingleColorTexture(Color(0f, 0f, 0f, 0f))
 
-    var bloomMap by texture2d("bloom", noBloomMap)
+    var bloomMap by bindTexture2d("bloom", noBloomMap)
     var isBloomEnabled = true
 
-    private var currentLighting by texture2d("currentLighting")
-    private var depthTex by texture2d("currentDepth")
+    private var currentLighting by bindTexture2d("currentLighting")
+    private var depthTex by bindTexture2d("currentDepth")
 
-    private var vignetteCfg by uniform3f("uVignetteCfg", Vec3f(0.4f, 0.71f, 0.25f))
+    private var vignetteCfg by bindUniformFloat3("uVignetteCfg", Vec3f(0.4f, 0.71f, 0.25f))
     val vignetteStrength: Float
         get() = vignetteCfg.z
     val vignetteInnerRadius: Float
@@ -38,8 +38,8 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, deferredPipeline: Deferr
     val vignetteOuterRadius: Float
         get() = vignetteCfg.y
 
-    var chromaticAberrationStrength by uniform3f("uChromaticAberration", Vec3f(-0.001f, 0.0f, 0.001f))
-    var chromaticAberrationStrengthBloom by uniform3f("uChromaticAberration", Vec3f(-0.003f, 0.0f, 0.003f))
+    var chromaticAberrationStrength by bindUniformFloat3("uChromaticAberration", Vec3f(-0.001f, 0.0f, 0.001f))
+    var chromaticAberrationStrengthBloom by bindUniformFloat3("uChromaticAberration", Vec3f(-0.003f, 0.0f, 0.003f))
 
     init {
         deferredPipeline.scene.onRelease { noBloomMap.release() }
@@ -74,9 +74,9 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, deferredPipeline: Deferr
                         val uvR = float2Var(centerUv * (1f.const + str.r))
                         val uvG = float2Var(centerUv * (1f.const + str.g))
                         val uvB = float2Var(centerUv * (1f.const + str.b))
-                        val r = sampleTexture(tex, uvR + 0.5f.const).r
-                        val g = sampleTexture(tex, uvG + 0.5f.const).g
-                        val b = sampleTexture(tex, uvB + 0.5f.const).b
+                        val r = tex.sample(uvR + 0.5f.const).r
+                        val g = tex.sample(uvG + 0.5f.const).g
+                        val b = tex.sample(uvB + 0.5f.const).b
 
                         float4Value(r, g, b, 1f.const)
                     }
@@ -104,7 +104,7 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, deferredPipeline: Deferr
                         val str = uniformFloat3("uChromaticAberration")
                         linearColor set funSampleAberrated(currentLighting, texCoord.output, str)
                     } else {
-                        linearColor set sampleTexture(currentLighting, texCoord.output)
+                        linearColor set currentLighting.sample(texCoord.output)
                     }
 
                     if (cfg.isWithBloom) {
@@ -113,7 +113,7 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, deferredPipeline: Deferr
                             val str = uniformFloat3("uChromaticAberrationBloom")
                             linearColor += funSampleAberrated(bloomInput, texCoord.output, str)
                         } else {
-                            linearColor += sampleTexture(bloomInput, texCoord.output)
+                            linearColor += bloomInput.sample(texCoord.output)
                         }
                     }
 
@@ -123,7 +123,7 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, deferredPipeline: Deferr
                     }
                     colorOutput(srgb)
 
-                    outDepth set sampleTexture(texture2d("currentDepth", isUnfilterable = true), texCoord.output).r
+                    outDepth set texture2d("currentDepth", isUnfilterable = true).sample(texCoord.output).r
                 }
             }
         }

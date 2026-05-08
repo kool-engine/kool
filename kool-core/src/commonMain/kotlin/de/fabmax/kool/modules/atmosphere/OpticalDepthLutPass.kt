@@ -129,9 +129,9 @@ class OpticalDepthLutPass :
 
     private inner class OpticalDepthLutShader
         : KslShader(opticalDepthLutProg(), FullscreenShaderUtil.fullscreenShaderPipelineCfg) {
-        var atmosphereRadius by uniform1f("uAtmosphereRadius", 65f)
-        var surfaceRadius by uniform1f("uSurfaceRadius", 60f)
-        var densityFalloff by uniform1f("uDensityFalloff", 9f)
+        var atmosphereRadius by bindUniformFloat1("uAtmosphereRadius", 65f)
+        var surfaceRadius by bindUniformFloat1("uSurfaceRadius", 60f)
+        var densityFalloff by bindUniformFloat1("uDensityFalloff", 9f)
     }
 
     companion object {

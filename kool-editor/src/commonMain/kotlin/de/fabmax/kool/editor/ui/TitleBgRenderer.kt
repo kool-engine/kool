@@ -83,9 +83,9 @@ class TitleBgRenderer(
     }
 
     private class TitleBgShader : KslShader(Model(), pipelineConfig) {
-        var accentColor by uniformColor("uAccentColor", MdColor.CYAN)
-        var bgColor by uniformColor("uBgColor", UiColors.titleBg)
-        var fadeProps by uniform4f("uFadeProps")
+        var accentColor by bindUniformColor("uAccentColor", MdColor.CYAN)
+        var bgColor by bindUniformColor("uBgColor", UiColors.titleBg)
+        var fadeProps by bindUniformFloat4("uFadeProps")
 
         private class Model : KslProgram("title bg shader") {
             init {

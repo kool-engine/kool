@@ -43,7 +43,7 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
             .filterIsInstance<ColorBlockConfig.TextureArrayColor>()
             .filter { it.textureName !in textureArrays || it.defaultTexture != null && textureArrays[it.textureName] == null }
             .forEach {
-                textureArrays[it.textureName] = texture2dArray(it.textureName, it.defaultTexture, null)
+                textureArrays[it.textureName] = bindTexture2dArray(it.textureName, it.defaultTexture, null)
             }
     }
 
@@ -52,7 +52,7 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
             .filterIsInstance<PropertyBlockConfig.TextureArrayProperty>()
             .filter { it.textureName !in textureArrays || it.defaultTexture != null && textureArrays[it.textureName] == null }
             .forEach {
-                textureArrays[it.textureName] = texture2dArray(it.textureName, it.defaultTexture, null)
+                textureArrays[it.textureName] = bindTexture2dArray(it.textureName, it.defaultTexture, null)
             }
     }
 

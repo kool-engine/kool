@@ -4,9 +4,10 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.vertexAttrib
 
-fun KslScopeBuilder.vertexDisplacementBlock(cfg: PropertyBlockConfig): VertexDisplacementBlock {
-    val displacementBlock = VertexDisplacementBlock(cfg, this)
-    ops += displacementBlock
+context(builder: KslScopeBuilder)
+fun vertexDisplacementBlock(cfg: PropertyBlockConfig): VertexDisplacementBlock {
+    val displacementBlock = VertexDisplacementBlock(cfg, builder)
+    builder.ops += displacementBlock
     return displacementBlock
 }
 
@@ -21,7 +22,7 @@ class VertexDisplacementBlock(
     val textures = mutableMapOf<PropertyBlockConfig.TextureProperty, KslUniform<KslColorSampler2d>>()
 
     init {
-        body.apply {
+        body {
             check(parentStage is KslVertexStage) { "VertexDisplacementBlock can only be added to KslVertexStage" }
 
             if (cfg.propertySources.isEmpty() || cfg.propertySources.first().blendMode != PropertyBlockConfig.BlendMode.Set) {
@@ -31,16 +32,16 @@ class VertexDisplacementBlock(
             cfg.propertySources.forEach { source ->
                 val propertyValue: KslScalarExpression<KslFloat1> = when (source) {
                     is PropertyBlockConfig.ConstProperty -> source.value.const
-                    is PropertyBlockConfig.UniformProperty -> parentStage.program.uniformFloat1(source.uniformName)
+                    is PropertyBlockConfig.UniformProperty -> uniformFloat1(source.uniformName)
                     is PropertyBlockConfig.VertexProperty -> parentStage.vertexAttribFloat1(source.propertyName)
                     is PropertyBlockConfig.InstanceProperty -> parentStage.instanceAttribFloat1(source.propertyName)
                     is PropertyBlockConfig.TextureProperty ->  {
                         var sampleValue = findExistingSampleValue(source.textureName, parentStage)
                         if (sampleValue == null) {
-                            val tex = parentStage.program.texture2d(source.textureName).also { textures[source] = it }
+                            val tex = texture2d(source.textureName).also { textures[source] = it }
                             sampleValue = parentScope.run {
-                                val texCoords = this@apply.parentStage.vertexAttrib(VertexLayouts.TexCoord.texCoord)
-                                float4Var(sampleTexture(tex, texCoords, 0f.const)).also {
+                                val texCoords = (parentStage as KslVertexStage).vertexAttrib(VertexLayouts.TexCoord.texCoord)
+                                float4Var(tex.sample(texCoords, 0f.const)).also {
                                     outSamplerValues[source.textureName] = it
                                 }
                             }
@@ -57,10 +58,10 @@ class VertexDisplacementBlock(
                         val texKey = "${source.textureName}[${source.arrayIndex}]"
                         var sampleValue = findExistingSampleValue(texKey, parentStage)
                         if (sampleValue == null) {
-                            val tex = parentStage.program.texture2dArray(source.textureName)
+                            val tex = texture2dArray(source.textureName)
                             sampleValue = parentScope.run {
-                                val texCoords = this@apply.parentStage.vertexAttrib(VertexLayouts.TexCoord.texCoord)
-                                float4Var(sampleTextureArray(tex, source.arrayIndex.const, texCoords, 0f.const)).also {
+                                val texCoords = (parentStage as KslVertexStage).vertexAttrib(VertexLayouts.TexCoord.texCoord)
+                                float4Var(tex.sample(source.arrayIndex.const, texCoords, 0f.const)).also {
                                     outSamplerValues[texKey] = it
                                 }
                             }

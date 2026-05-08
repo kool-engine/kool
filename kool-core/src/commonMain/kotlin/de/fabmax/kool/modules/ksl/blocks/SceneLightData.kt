@@ -9,11 +9,9 @@ import kotlin.math.min
 
 fun KslProgram.sceneLightData(maxLights: Int) = SceneLightData(this, maxLights)
 
-class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock, KslShaderListener {
-    override val name = "SceneLightData"
-
+class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock("SceneLightData", program), KslShaderListener {
     private val struct = LightDataStruct(maxLightCount)
-    private val lightUniform = program.uniformStruct("uLightData", struct, BindGroupScope.VIEW)
+    private val lightUniform = uniformStruct("uLightData", struct, BindGroupScope.VIEW)
 
     val encodedPositions: KslExprFloat4Array get() = lightUniform[struct.encodedPositions]
     val encodedDirections: KslExprFloat4Array get() = lightUniform[struct.encodedDirections]

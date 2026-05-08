@@ -202,13 +202,13 @@ fun ThumbnailRenderer.textureThumbnail(texPath: String): ThumbnailRenderer.Thumb
                     }.`else` {
                         bg set (MdColor.GREY tone 350).const
                     }
-                    val color = float4Var(sampleTexture(texture2d("thumb"), uv.output))
+                    val color = float4Var(texture2d("thumb").sample(uv.output))
                     bg.rgb set mix(bg.rgb, color.rgb, color.a)
                     colorOutput(bg)
                 }
             }
         }.also {
-            it.texture2d("thumb", tex)
+            it.bindTexture2d("thumb", tex)
         }
     }
 
@@ -237,14 +237,14 @@ fun ThumbnailRenderer.hdriThumbnail(texPath: String): ThumbnailRenderer.Thumbnai
             }
             fragmentStage {
                 main {
-                    val rgbe = float4Var(sampleTexture(texture2d("thumb"), uv.output))
+                    val rgbe = float4Var(texture2d("thumb").sample(uv.output))
                     val exp = float1Var(rgbe.w * 255f.const - 128f.const)
                     val rgb = float3Var(rgbe.rgb * pow(2f.const, exp))
                     colorOutput(convertColorSpace(rgb, ColorSpaceConversion.LinearToSrgbHdr(ToneMapping.Aces)))
                 }
             }
         }.also {
-            it.texture2d("thumb", tex)
+            it.bindTexture2d("thumb", tex)
         }
     }
 
@@ -320,14 +320,14 @@ private class SceneBgMesh(val shaderData: SceneShaderData) : Mesh<VertexLayouts.
                         val skyUv = float2Var(uv.output - 0.5f.const)
                         val dir = float3Var(normalize(float3Value(skyUv.x, -skyUv.y, (-1f).const)))
                         val colorConv = ColorSpaceConversion.LinearToSrgbHdr(shaderData.toneMapping)
-                        colorOutput(convertColorSpace(sampleTexture(sky, dir, 2f.const).rgb, colorConv))
+                        colorOutput(convertColorSpace(sky.sample(dir, 2f.const).rgb, colorConv))
                     } else {
                         colorOutput(shaderData.ambientColorLinear.toSrgb().const)
                     }
                 }
             }
         }.also {
-            it.textureCube("sky", shaderData.environmentMap?.reflectionMap)
+            it.bindTextureCube("sky", shaderData.environmentMap?.reflectionMap)
         }
     }
 

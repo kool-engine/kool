@@ -5,7 +5,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.VertexTransformBlock
 import de.fabmax.kool.modules.ksl.blocks.cameraData
-import de.fabmax.kool.modules.ksl.lang.gt
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color

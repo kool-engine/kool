@@ -109,12 +109,12 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
 
                 if (aoSetup.isDeferred) {
                     depthComponent = "z"
-                    normal = float3Var(sampleTexture(texture2d("normalTex"), uv.output).xyz)
-                    origin = float3Var(sampleTexture(viewSpaceTex, uv.output).xyz)
+                    normal = float3Var(texture2d("normalTex").sample(uv.output).xyz)
+                    origin = float3Var(viewSpaceTex.sample(uv.output).xyz)
 
                 } else {
                     depthComponent = "a"
-                    val normalDepth = float4Var(sampleTexture(viewSpaceTex, uv.output))
+                    val normalDepth = float4Var(viewSpaceTex.sample(uv.output))
                     normal = float3Var(normalDepth.xyz)
 
                     val depth = float1Var(normalDepth.w)
@@ -136,7 +136,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                     `if`(linDistance lt sampleR * 200f.const) {
                         // compute kernel rotation
                         val noiseCoord = float2Var(uv.output * uNoiseScale)
-                        val rotVec = float3Var(sampleTexture(noiseTex, noiseCoord, 0f.const).xyz * 2f.const - 1f.const)
+                        val rotVec = float3Var(noiseTex.sample(noiseCoord, 0f.const).xyz * 2f.const - 1f.const)
                         val tan1 = float3Var(normalize(cross(Vec3f(1f, 1.1337e-6f, 1.1337e-6f).const, normal)))
                         val tan2 = float3Var(cross(tan1, normal))
                         val tan1Rot = float3Var(tan1 * rotVec.x + tan2 * rotVec.y)
@@ -161,7 +161,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                                 if (aoSetup.isDeferred && KoolSystem.requireContext().backend.isInvertedNdcY) {
                                     sampleUv.y set 1f.const - sampleUv.y
                                 }
-                                val sampleDepth = sampleTexture(viewSpaceTex, sampleUv, 0f.const).float1(depthComponent)
+                                val sampleDepth = viewSpaceTex.sample(sampleUv, 0f.const).float1(depthComponent)
                                 val rangeCheck = float1Var(1f.const - smoothStep(0f.const, 1f.const, abs(origin.z - sampleDepth) / (4f.const * sampleR)))
                                 val occlusionInc = float1Var(clamp((sampleDepth - (samplePos.z + uBias)) * 10f.const, 0f.const, 1f.const))
                                 occlusion += occlusionInc * rangeCheck
@@ -179,19 +179,19 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
     }
 
     inner class AoPassShader : KslShader(aoPassProg(), fullscreenShaderPipelineCfg) {
-        var noiseTex by texture2d("noiseTex", generateFilterNoiseTex(NOISE_TEX_SIZE).also { it.releaseWith(this@AmbientOcclusionPass) })
-        var viewSpaceTex by texture2d("viewSpaceTex")
-        var normalTex by texture2d("normalTex")
+        var noiseTex by bindTexture2d("noiseTex", generateFilterNoiseTex(NOISE_TEX_SIZE).also { it.releaseWith(this@AmbientOcclusionPass) })
+        var viewSpaceTex by bindTexture2d("viewSpaceTex")
+        var normalTex by bindTexture2d("normalTex")
 
-        val uKernel = uniform3fv("uKernel", MAX_KERNEL_SIZE)
-        var uProj by uniformMat4f("uProj")
-        var uInvProj by uniformMat4f("uInvProj")
-        var uNoiseScale by uniform2f("uNoiseScale")
-        var uKernelSize by uniform1i("uKernelRange", 16)
-        var uRadius by uniform1f("uRadius", 1f)
-        var uStrength by uniform1f("uStrength", 1.25f)
-        var uPower by uniform1f("uPower", 1.5f)
-        var uBias by uniform1f("uBias", 0.05f)
+        val uKernel = bindUniformFloat3Array("uKernel", MAX_KERNEL_SIZE)
+        var uProj by bindUniformMat4("uProj")
+        var uInvProj by bindUniformMat4("uInvProj")
+        var uNoiseScale by bindUniformFloat2("uNoiseScale")
+        var uKernelSize by bindUniformInt1("uKernelRange", 16)
+        var uRadius by bindUniformFloat1("uRadius", 1f)
+        var uStrength by bindUniformFloat1("uStrength", 1.25f)
+        var uPower by bindUniformFloat1("uPower", 1.5f)
+        var uBias by bindUniformFloat1("uBias", 0.05f)
     }
 
     companion object {

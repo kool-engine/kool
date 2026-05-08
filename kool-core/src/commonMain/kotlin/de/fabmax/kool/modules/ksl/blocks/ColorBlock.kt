@@ -34,16 +34,16 @@ class ColorBlockVertexStage(cfg: ColorBlockConfig, parentScope: KslScopeBuilder)
     val instanceColors = mutableMapOf<ColorBlockConfig.InstanceColor, KslInterStageVector<KslFloat4, KslFloat1>>()
 
     init {
-        body.apply {
+        body {
             check(parentStage is KslVertexStage) { "ColorBlockVertexStage can only be added to KslVertexStage" }
 
             cfg.colorSources.filterIsInstance<ColorBlockConfig.VertexColor>().mapIndexed { i, source ->
-                vertexColors[source] = parentStage.program.interStageFloat4(name = nextName("${opName}_vertexColor_$i")).apply {
+                vertexColors[source] = interStageFloat4(name = nextName("${opName}_vertexColor_$i")).apply {
                     input set parentStage.vertexAttribFloat4(source.attributeName)
                 }
             }
             cfg.colorSources.filterIsInstance<ColorBlockConfig.InstanceColor>().mapIndexed { i, source ->
-                instanceColors[source] = parentStage.program.interStageFloat4(name = nextName("${opName}_instanceColor_$i")).apply {
+                instanceColors[source] = interStageFloat4(name = nextName("${opName}_instanceColor_$i")).apply {
                     input set parentStage.instanceAttribFloat4(source.attributeName)
                 }
             }
@@ -63,7 +63,7 @@ class ColorBlockFragmentStage(
     val outColor = outFloat4(parentScope.nextName("${opName}_outColor"))
 
     init {
-        body.apply {
+        body {
             check(parentStage is KslFragmentStage) { "ColorBlockFragmentStage can only be added to KslFragmentStage" }
 
             if (cfg.colorSources.isEmpty() || cfg.colorSources.first().blendMode != ColorBlockConfig.BlendMode.Set) {
@@ -73,16 +73,16 @@ class ColorBlockFragmentStage(
             cfg.colorSources.forEach { source ->
                 val colorValue: KslVectorExpression<KslFloat4, KslFloat1> = when (source) {
                     is ColorBlockConfig.ConstColor -> source.constColor.const
-                    is ColorBlockConfig.UniformColor -> parentStage.program.uniformFloat4(source.uniformName)
+                    is ColorBlockConfig.UniformColor -> uniformFloat4(source.uniformName)
                     is ColorBlockConfig.VertexColor -> vertexBlock(parentStage).vertexColors[source]?.output ?: Vec4f.ZERO.const
                     is ColorBlockConfig.InstanceColor -> vertexBlock(parentStage).instanceColors[source]?.output ?: Vec4f.ZERO.const
                     is ColorBlockConfig.TextureColor -> {
-                        val tex = parentStage.program.texture2d(source.textureName)
+                        val tex = texture2d(source.textureName)
                         val texCoords = inUv ?: texCoordBlock(parentStage).getTextureCoords()
                         val texColor = if (inDdx != null && inDdy != null) {
-                            float4Var(sampleTextureGrad(tex, texCoords, inDdx, inDdy))
+                            float4Var(tex.sample(texCoords, inDdx, inDdy))
                         } else {
-                            float4Var(sampleTexture(tex, texCoords))
+                            float4Var(tex.sample(texCoords))
                         }
                         if (source.gamma != 1f) {
                             texColor.rgb set pow(texColor.rgb, Vec3f(source.gamma).const)
@@ -90,12 +90,12 @@ class ColorBlockFragmentStage(
                         texColor
                     }
                     is ColorBlockConfig.TextureArrayColor -> {
-                        val tex = parentStage.program.texture2dArray(source.textureName)
+                        val tex = texture2dArray(source.textureName)
                         val texCoords = inUv ?: texCoordBlock(parentStage).getTextureCoords()
                         val texColor = if (inDdx != null && inDdy != null) {
-                            float4Var(sampleTextureArrayGrad(tex, source.arrayIndex.const, texCoords, inDdx, inDdy))
+                            float4Var(tex.sample(source.arrayIndex.const, texCoords, inDdx, inDdy))
                         } else {
-                            float4Var(sampleTextureArray(tex, source.arrayIndex.const, texCoords))
+                            float4Var(tex.sample(source.arrayIndex.const, texCoords))
                         }
                         if (source.gamma != 1f) {
                             texColor.rgb set pow(texColor.rgb, Vec3f(source.gamma).const)

@@ -11,10 +11,7 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
-import de.fabmax.kool.modules.ksl.lang.div
-import de.fabmax.kool.modules.ksl.lang.rem
-import de.fabmax.kool.modules.ksl.lang.times
-import de.fabmax.kool.modules.ksl.lang.toFloat1
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
@@ -101,12 +98,12 @@ class ArrayTexturesTest : DemoScene("Array Textures Test") {
                         val arraySampler = texture2dArray("texArray2d")
                         val arrayIdx = int1Var((camData.frameIndex / 100.const) % colors.size.const)
                         val mipLevel = int1Var((camData.frameIndex / 600.const) % 4.const)
-                        val color = sampleTextureArray(arraySampler, arrayIdx, uv.output, mipLevel.toFloat1())
+                        val color = arraySampler.sample(arrayIdx, uv.output, mipLevel.toFloat1())
                         colorOutput(color)
                     }
                 }
             }.also {
-                it.texture2dArray("texArray2d", arrayTex)
+                it.bindTexture2dArray("texArray2d", arrayTex)
             }
         }
     }
@@ -166,12 +163,12 @@ class ArrayTexturesTest : DemoScene("Array Textures Test") {
                         val cubeArraySampler = textureCubeArray("texArrayCube")
                         val arrayIdx = int1Var((camData.frameIndex / 100.const) % 2.const)
                         val mipLevel = int1Var((camData.frameIndex / 200.const) % 4.const)
-                        val color = sampleTextureArray(cubeArraySampler, arrayIdx, normalize(pos.output), mipLevel.toFloat1())
+                        val color = cubeArraySampler.sample(arrayIdx, normalize(pos.output), mipLevel.toFloat1())
                         colorOutput(color)
                     }
                 }
             }.also {
-                it.textureCubeArray("texArrayCube", cubeArrayTex)
+                it.bindTextureCubeArray("texArrayCube", cubeArrayTex)
             }
         }
     }

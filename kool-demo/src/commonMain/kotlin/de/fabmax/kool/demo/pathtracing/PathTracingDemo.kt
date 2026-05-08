@@ -275,22 +275,22 @@ class PathTracingDemo : DemoScene("Path-tracing") {
         val task = raytracingPass.addTask(raytracingShader, Vec3i.ZERO)
         addComputePass(raytracingPass)
 
-        var frameId by raytracingShader.uniform1i("frameId")
-        var imageSize by raytracingShader.uniform2i("imageSize")
-        var camPos by raytracingShader.uniform3f("camPos")
-        var camUp by raytracingShader.uniform3f("camUp")
-        var camRight by raytracingShader.uniform3f("camRight")
-        var camFront by raytracingShader.uniform3f("camFront")
-        var camMatrix by raytracingShader.uniformMat4f("camMatrix")
-        var outputTex by raytracingShader.storage("outputTex")
+        var frameId by raytracingShader.bindUniformInt1("frameId")
+        var imageSize by raytracingShader.bindUniformInt2("imageSize")
+        var camPos by raytracingShader.bindUniformFloat3("camPos")
+        var camUp by raytracingShader.bindUniformFloat3("camUp")
+        var camRight by raytracingShader.bindUniformFloat3("camRight")
+        var camFront by raytracingShader.bindUniformFloat3("camFront")
+        var camMatrix by raytracingShader.bindUniformMat4("camMatrix")
+        var outputTex by raytracingShader.bindStorage("outputTex")
 
-        var defocusAngle by raytracingShader.uniform1f("defocusAngle", defocusAngle.value.deg.rad)
-        var focusDist by raytracingShader.uniform1f("focusDist", focusDistance.value)
+        var defocusAngle by raytracingShader.bindUniformFloat1("defocusAngle", defocusAngle.value.deg.rad)
+        var focusDist by raytracingShader.bindUniformFloat1("focusDist", focusDistance.value)
 
-        raytracingShader.uniform1i("numObjects", spheres.limit)
-        raytracingShader.uniform1i("maxBounces", 10)
-        raytracingShader.storage("materials", materialBuffer)
-        raytracingShader.storage("objects", sphereBuffer)
+        raytracingShader.bindUniformInt1("numObjects", spheres.limit)
+        raytracingShader.bindUniformInt1("maxBounces", 10)
+        raytracingShader.bindStorage("materials", materialBuffer)
+        raytracingShader.bindStorage("objects", sphereBuffer)
 
         defaultOrbitCamera(yaw = 78f, pitch = -9f).apply {
             smoothingDecay = 0.0
@@ -311,8 +311,8 @@ class PathTracingDemo : DemoScene("Path-tracing") {
                 }
             }
         }
-        var outImageBuffer by outputShader.storage("outputTex")
-        var outImageSize by outputShader.uniform2i("imageSize")
+        var outImageBuffer by outputShader.bindStorage("outputTex")
+        var outImageSize by outputShader.bindUniformInt2("imageSize")
 
         addTextureMesh {
             generateFullscreenQuad(mirrorTexCoordsY = true)

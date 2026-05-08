@@ -51,8 +51,8 @@ class ReflectionDenoisePass(reflectionPass: OffscreenPass2d) :
 
             main {
                 val blurSize = ReflectionPass.NOISE_SIZE.const
-                val texelSize = float2Var(1f.const / textureSize2d(noisyReflectionTex).toFloat2())
-                val depthOri = float1Var(sampleTexture(positionTex, uv.output).z)
+                val texelSize = float2Var(1f.const / noisyReflectionTex.size().toFloat2())
+                val depthOri = float1Var(positionTex.sample(uv.output).z)
                 val depthThreshold = float1Var(max(0.3f.const, depthOri * 0.05f.const))
                 val output = float4Var(Vec4f.ZERO.const)
 
@@ -61,10 +61,10 @@ class ReflectionDenoisePass(reflectionPass: OffscreenPass2d) :
                 fori(0.const, blurSize) { x ->
                     fori(0.const, blurSize) { y ->
                         val sampleUv = float2Var(uv.output + (hlim + float2Value(x.toFloat1(), y.toFloat1())) * texelSize)
-                        val sampleDepth = abs(sampleTexture(positionTex, sampleUv).z - depthOri)
+                        val sampleDepth = abs(positionTex.sample(sampleUv).z - depthOri)
                         val w = 1f.const - step(depthThreshold, sampleDepth) * 0.99f.const
 
-                        output += sampleTexture(noisyReflectionTex, sampleUv) * w
+                        output += noisyReflectionTex.sample(sampleUv) * w
                         weight += w
                     }
                 }
@@ -75,7 +75,7 @@ class ReflectionDenoisePass(reflectionPass: OffscreenPass2d) :
 
     private inner class DenoiseShader(noisyReflection: Texture2d?)
         : KslShader(denoiseProg(), FullscreenShaderUtil.fullscreenShaderPipelineCfg) {
-        var noisyReflectionTex by texture2d("noisyReflectionTex", noisyReflection)
-        var depthTex by texture2d("positionFlags")
+        var noisyReflectionTex by bindTexture2d("noisyReflectionTex", noisyReflection)
+        var depthTex by bindTexture2d("positionFlags")
     }
 }

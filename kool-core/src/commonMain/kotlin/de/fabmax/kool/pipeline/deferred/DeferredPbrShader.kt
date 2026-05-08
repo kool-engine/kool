@@ -24,26 +24,26 @@ inline fun deferredKslPbrShader(block: DeferredKslPbrShader.Config.Builder.() ->
  */
 open class DeferredKslPbrShader(cfg: Config) : KslShader(deferredPbrModel(cfg), cfg.pipelineCfg) {
 
-    var color: Color by colorUniform(cfg.colorCfg)
-    var colorMap: Texture2d? by colorTexture(cfg.colorCfg)
+    var color: Color by bindColorUniform(cfg.colorCfg)
+    var colorMap: Texture2d? by bindColorTexture(cfg.colorCfg)
 
-    var normalMap: Texture2d? by texture2d(cfg.normalMapCfg.textureName, cfg.normalMapCfg.defaultNormalMap)
-    var normalMapStrength: Float by propertyUniform(cfg.normalMapCfg.strengthCfg)
+    var normalMap: Texture2d? by bindTexture2d(cfg.normalMapCfg.textureName, cfg.normalMapCfg.defaultNormalMap)
+    var normalMapStrength: Float by bindPropertyUniform(cfg.normalMapCfg.strengthCfg)
 
-    var displacement: Float by propertyUniform(cfg.vertexCfg.displacementCfg)
-    var displacementMap: Texture2d? by propertyTexture(cfg.vertexCfg.displacementCfg)
+    var displacement: Float by bindPropertyUniform(cfg.vertexCfg.displacementCfg)
+    var displacementMap: Texture2d? by bindPropertyTexture(cfg.vertexCfg.displacementCfg)
 
-    var emission: Color by colorUniform(cfg.emissionCfg)
-    var emissionMap: Texture2d? by colorTexture(cfg.emissionCfg)
+    var emission: Color by bindColorUniform(cfg.emissionCfg)
+    var emissionMap: Texture2d? by bindColorTexture(cfg.emissionCfg)
 
-    var materialAo: Float by propertyUniform(cfg.aoCfg)
-    var materialAoMap: Texture2d? by propertyTexture(cfg.aoCfg)
+    var materialAo: Float by bindPropertyUniform(cfg.aoCfg)
+    var materialAoMap: Texture2d? by bindPropertyTexture(cfg.aoCfg)
 
-    var metallic: Float by propertyUniform(cfg.metallicCfg)
-    var metallicMap: Texture2d? by propertyTexture(cfg.metallicCfg)
+    var metallic: Float by bindPropertyUniform(cfg.metallicCfg)
+    var metallicMap: Texture2d? by bindPropertyTexture(cfg.metallicCfg)
 
-    var roughness: Float by propertyUniform(cfg.roughnessCfg)
-    var roughnessMap: Texture2d? by propertyTexture(cfg.roughnessCfg)
+    var roughness: Float by bindPropertyUniform(cfg.roughnessCfg)
+    var roughnessMap: Texture2d? by bindPropertyTexture(cfg.roughnessCfg)
 
     init {
         if (cfg.pipelineCfg.blendMode != BlendMode.DISABLED) {
