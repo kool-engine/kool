@@ -138,8 +138,6 @@ open class Mesh<Layout: Struct>(
 ) : Node(name), DoubleBuffered {
 
     var isOpaque = true
-    var releaseGeometry = true
-
     val meshPipelineData = MultiPipelineBindGroupData(BindGroupScope.MESH)
 
     private var pipeline: DrawPipeline? = null
@@ -278,7 +276,7 @@ open class Mesh<Layout: Struct>(
      */
     override fun doRelease() {
         super.doRelease()
-        if (releaseGeometry) geometry.release()
+        if (!geometry.isShared) geometry.release()
         drawGeometry.release()
         instances?.release()
         drawInstances?.release()
