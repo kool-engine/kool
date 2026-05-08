@@ -489,7 +489,7 @@ class ModelTemplate(val scene: GltfScene, val gltfFile: GltfFile) : BaseReleasab
                         morphWeights = morphWeights,
                         skin = meshSkin,
                         name = name
-                    ).apply { releaseGeometry = false }
+                    )
                     mesh.isFrustumChecked = isFrustumChecked
 
                     nodeGrp += mesh

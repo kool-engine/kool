@@ -65,6 +65,7 @@ class IndexedVertexList<Layout: Struct>(
     val texCoordAttr: Float2Member<Layout>? = layout.getFloat2(VertexLayouts.TexCoord.name),
     val joint: Int4Member<Layout>? = layout.getInt4(VertexLayouts.Joint.name),
     val weight: Float4Member<Layout>? = layout.getFloat4(VertexLayouts.Weight.name),
+    val isShared: Boolean = false,
 ) : BaseReleasable() {
 
     var name: String = "geometry"
