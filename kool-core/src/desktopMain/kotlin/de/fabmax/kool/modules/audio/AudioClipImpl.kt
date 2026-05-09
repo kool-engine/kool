@@ -125,6 +125,7 @@ class AudioClipImpl(private val audioData: ByteArray, private val format: String
                 field = value
                 if (value) {
                     clip?.loop(Clip.LOOP_CONTINUOUSLY)
+                    if (clipState == ClipState.STOPPED) clip?.stop()
                 }
             }
 
