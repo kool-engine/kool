@@ -252,7 +252,7 @@ class GizmoClientNode(val node: Node) : GizmoClient {
     override val globalToParent: Mat4d get() = node.parent?.invModelMatD ?: Mat4d.IDENTITY
 
     override fun updateMatrices() {
-        node.updateModelMatRecursive()
+        node.updateModelMatRecursiveDown()
     }
 }
 

@@ -199,11 +199,16 @@ open class Node(name: String? = null) : BaseReleasable() {
 
     fun updateModelMat(): Boolean = transform.applyToModelMat(parent?.modelMatrixData, modelMatrixData)
 
-    fun updateModelMatRecursive() {
+    fun updateModelMatRecursiveDown() {
         updateModelMat()
         for (i in children.indices) {
-            children[i].updateModelMatRecursive()
+            children[i].updateModelMatRecursiveDown()
         }
+    }
+
+    fun updateModelMatRecursiveUp() {
+        parent?.updateModelMatRecursiveUp()
+        updateModelMat()
     }
 
     /**

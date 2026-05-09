@@ -68,7 +68,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
         } else {
             handleTransform.scale(gizmoSize)
         }
-        updateModelMatRecursive()
+        updateModelMatRecursiveDown()
         if (isManipulating) {
             gizmoListeners.forEach { it.onGizmoUpdate(gizmoTransform) }
         }
