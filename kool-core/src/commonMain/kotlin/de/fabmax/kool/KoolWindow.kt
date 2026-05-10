@@ -1,5 +1,6 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.WindowTitleHoverHandler
@@ -137,7 +138,11 @@ interface DragAndDropListener {
      * containing the drag and drop state (e.g., cursor position) before files are dropped, but this is currently not
      * possible due to limited drag and drop support of GLFW on JVM.
      */
-    fun onFileDrop(droppedFiles: List<LoadableFile>) { }
+    fun onFileDrop(droppedFiles: List<LoadableFile>, position: Vec2f) { }
+
+    fun onTextDrop(text: String, position: Vec2f) { }
+
+    fun onDropCursorPos(position: Vec2f) { }
 }
 
 fun KoolWindow.onResize(listener: WindowResizeListener) {

@@ -1,6 +1,7 @@
 package de.fabmax.kool.platform.sdl
 
 import de.fabmax.kool.*
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.pipeline.TexFormat
@@ -17,10 +18,14 @@ import org.lwjgl.sdl.SDLSurface.SDL_CreateSurface
 import org.lwjgl.sdl.SDLVideo.*
 import org.lwjgl.sdl.SDLVulkan.SDL_Vulkan_CreateSurface
 import org.lwjgl.sdl.SDLVulkan.SDL_Vulkan_DestroySurface
+import org.lwjgl.sdl.SDL_DropEvent
 import org.lwjgl.sdl.SDL_Event
 import org.lwjgl.sdl.SDL_WindowEvent
 import org.lwjgl.vulkan.VkInstance
 import java.awt.image.BufferedImage
+import java.io.File
+import java.nio.file.LinkOption
+import kotlin.io.path.*
 
 class SdlWindow(internal val handle: Long, title: String, ctx: Lwjgl3Context) : KoolWindowJvm {
     val input = SdlInput(this)
@@ -126,6 +131,12 @@ class SdlWindow(internal val handle: Long, title: String, ctx: Lwjgl3Context) : 
                 SDL_EVENT_WINDOW_HDR_STATE_CHANGED -> {}
                 SDL_EVENT_WINDOW_DESTROYED -> {}
 
+                SDL_EVENT_DROP_FILE -> handleFileDrop(sdlEvent.drop())
+                SDL_EVENT_DROP_TEXT -> handleTextDrop(sdlEvent.drop())
+                SDL_EVENT_DROP_BEGIN -> logD { "Drop begin" }
+                SDL_EVENT_DROP_COMPLETE -> logD { "Drop complete" }
+                SDL_EVENT_DROP_POSITION -> handleDropPosition(sdlEvent.drop())
+
                 SDL_EVENT_CLIPBOARD_UPDATE -> {}
 
                 SDL_EVENT_QUIT -> isCloseRequested = true
@@ -156,6 +167,45 @@ class SdlWindow(internal val handle: Long, title: String, ctx: Lwjgl3Context) : 
         parentScreenScale = SDL_GetWindowDisplayScale(handle)
         UiScale.updateUiScaleFromWindowScale(renderScale)
         logD { "Screen scale changed to: $parentScreenScale" }
+    }
+
+    private fun handleFileDrop(drop: SDL_DropEvent) {
+        val files = mutableListOf<LoadableFile>()
+        drop.dataString()?.let { path ->
+            val file = File(path)
+            if (file.exists()) {
+                if (file.isDirectory) {
+                    val dirPath = file.toPath()
+                    dirPath.walk(PathWalkOption.INCLUDE_DIRECTORIES)
+                        .filter { it.isRegularFile(LinkOption.NOFOLLOW_LINKS) }
+                        .forEach {
+                            files += LoadableFileImpl(it.toFile(), it.relativeTo(dirPath.parent).pathString)
+                        }
+                } else {
+                    files += LoadableFileImpl(file)
+                }
+            }
+        }
+        if (files.isNotEmpty()) {
+            logD { "Files dropped: ${files.map { it.name }}" }
+            dragAndDropListeners.forEachUpdated {
+                it.onFileDrop(files, Vec2f(drop.x(), drop.y()))
+            }
+        }
+    }
+
+    private fun handleTextDrop(drop: SDL_DropEvent) {
+        drop.dataString()?.let { text ->
+            dragAndDropListeners.forEachUpdated {
+                it.onTextDrop(text, Vec2f(drop.x(), drop.y()))
+            }
+        }
+    }
+
+    private fun handleDropPosition(drop: SDL_DropEvent) {
+        dragAndDropListeners.forEachUpdated {
+            it.onDropCursorPos(Vec2f(drop.x(), drop.y()))
+        }
     }
 
     override fun createVulkanSurface(instance: VkInstance): Long {

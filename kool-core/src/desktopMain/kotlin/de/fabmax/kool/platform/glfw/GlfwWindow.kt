@@ -1,6 +1,7 @@
 package de.fabmax.kool.platform.glfw
 
 import de.fabmax.kool.*
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.pipeline.TexFormat
@@ -360,7 +361,7 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
                 files += LoadableFileImpl(file)
             }
         }
-        dragAndDropListeners.forEach { it.onFileDrop(files) }
+        dragAndDropListeners.forEach { it.onFileDrop(files, Vec2f.ZERO) }
     }
 
     fun setWindowIcon(icon: List<BufferedImage>) {

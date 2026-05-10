@@ -13,10 +13,7 @@ import de.fabmax.kool.editor.overlays.TransformGizmoOverlay
 import de.fabmax.kool.editor.ui.EditorUi
 import de.fabmax.kool.editor.util.gameEntity
 import de.fabmax.kool.input.InputStack
-import de.fabmax.kool.math.Vec3d
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.deg
-import de.fabmax.kool.math.toVec3d
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.filesystem.InMemoryFileSystem
 import de.fabmax.kool.modules.filesystem.copyRecursively
 import de.fabmax.kool.modules.filesystem.toZip
@@ -116,7 +113,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
             }
         }
         ctx.window.dragAndDropListeners += object : DragAndDropListener{
-            override fun onFileDrop(droppedFiles: List<LoadableFile>) {
+            override fun onFileDrop(droppedFiles: List<LoadableFile>, position: Vec2f) {
                 val targetPath = ui.assetBrowser.selectedDirectory.value?.path ?: ""
                 FrontendScope.launch {
                     availableAssets.importAssets(targetPath, droppedFiles)

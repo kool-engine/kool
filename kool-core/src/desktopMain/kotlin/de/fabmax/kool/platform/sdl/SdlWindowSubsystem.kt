@@ -1,13 +1,19 @@
 package de.fabmax.kool.platform.sdl
 
+import de.fabmax.kool.Clipboard
+import de.fabmax.kool.ClipboardImpl
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
 import de.fabmax.kool.input.PlatformInput
 import de.fabmax.kool.platform.*
+import de.fabmax.kool.util.BackendScope
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logI
 import de.fabmax.kool.util.logW
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.lwjgl.sdl.SDLClipboard.SDL_GetClipboardText
+import org.lwjgl.sdl.SDLClipboard.SDL_SetClipboardText
 import org.lwjgl.sdl.SDLError.SDL_ClearError
 import org.lwjgl.sdl.SDLError.SDL_GetError
 import org.lwjgl.sdl.SDLInit.SDL_INIT_VIDEO
@@ -61,6 +67,8 @@ object SdlWindowSubsystem : WindowSubsystem {
 
         check(SDL_Init(SDL_INIT_VIDEO)) { "Failed to initialize SDL" }
         logSdlError("onEarlyInit")
+
+        Clipboard.impl = SdlClipboard
     }
 
     override fun onBackendCreated(ctx: Lwjgl3Context) {
@@ -93,5 +101,19 @@ object SdlWindowSubsystem : WindowSubsystem {
             SDL_ClearError()
         }
     }
+}
 
+internal object SdlClipboard : ClipboardImpl {
+    override fun copyToClipboard(string: String) {
+        logD { "Copy to clipboard: $string" }
+        BackendScope.launch { SDL_SetClipboardText(string) }
+    }
+
+    override fun getStringFromClipboard(receiver: (String?) -> Unit) {
+        BackendScope.launch {
+            val clipboardText = SDL_GetClipboardText()
+            logD { "Got from clipboard: $clipboardText" }
+            receiver(clipboardText)
+        }
+    }
 }

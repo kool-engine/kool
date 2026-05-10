@@ -2,6 +2,7 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
 import de.fabmax.kool.input.PlatformInputJs
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.pipeline.backend.RenderBackend
@@ -217,8 +218,8 @@ class JsWindow(val canvas: HTMLCanvasElement, val config: KoolConfigJs) : KoolWi
         browserWindow.ondragenter = {
             it.preventDefault()
         }
-        browserWindow.ondragover = {
-            it.preventDefault()
+        browserWindow.ondragover = { e ->
+            dragAndDropListeners.forEachUpdated { it.onDropCursorPos(Vec2f(e.x.toFloat(), e.y.toFloat())) }
         }
         browserWindow.ondrop = { e ->
             e.dataTransfer?.files?.let { fileList ->
@@ -227,7 +228,7 @@ class JsWindow(val canvas: HTMLCanvasElement, val config: KoolConfigJs) : KoolWi
                     fileList[i]?.let { dropFiles += LoadableFileImpl(it) }
                 }
                 if (dropFiles.isNotEmpty()) {
-                    dragAndDropListeners.forEach { it.onFileDrop(dropFiles) }
+                    dragAndDropListeners.forEachUpdated { it.onFileDrop(dropFiles, Vec2f(e.x.toFloat(), e.y.toFloat())) }
                 }
             }
             e.preventDefault()

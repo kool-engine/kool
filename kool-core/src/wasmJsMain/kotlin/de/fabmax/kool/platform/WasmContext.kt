@@ -2,6 +2,7 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
 import de.fabmax.kool.input.PlatformInputWasm
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.pipeline.backend.RenderBackend
@@ -13,6 +14,7 @@ import kotlinx.coroutines.launch
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.Window
 import org.w3c.dom.events.Event
+import org.w3c.files.get
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -209,18 +211,17 @@ class WasmWindow(val canvas: HTMLCanvasElement, val config: KoolConfigWasm) : Ko
         browserWindow.ondragenter = {
             it.preventDefault()
         }
-        browserWindow.ondragover = {
-            it.preventDefault()
+        browserWindow.ondragover = { e ->
+            dragAndDropListeners.forEachUpdated { it.onDropCursorPos(Vec2f(e.x.toFloat(), e.y.toFloat())) }
         }
         browserWindow.ondrop = { e ->
             e.dataTransfer?.files?.let { fileList ->
                 val dropFiles = mutableListOf<LoadableFile>()
                 for (i in 0 until fileList.length) {
-                    TODO("browserWindow.ondrop")
-//                    fileList[i]?.let { dropFiles += LoadableFileImpl(it) }
+                    fileList[i]?.let { dropFiles += LoadableFileImpl(it) }
                 }
                 if (dropFiles.isNotEmpty()) {
-                    dragAndDropListeners.forEach { it.onFileDrop(dropFiles) }
+                    dragAndDropListeners.forEachUpdated { it.onFileDrop(dropFiles, Vec2f(e.x.toFloat(), e.y.toFloat())) }
                 }
             }
             e.preventDefault()
