@@ -38,6 +38,7 @@ jspecify-annotations = { module = "org.jspecify:jspecify", version = "1.0.0" }
 androidsvg = { group = "com.caverock", name = "androidsvg-aar", version.ref = "androidsvg" }
 lwjgl-core = { group = "org.lwjgl", name = "lwjgl", version.ref = "lwjgl" }
 lwjgl-glfw = { group = "org.lwjgl", name = "lwjgl-glfw", version.ref = "lwjgl" }
+lwjgl-sdl = { group = "org.lwjgl", name = "lwjgl-sdl", version.ref = "lwjgl" }
 lwjgl-jemalloc = { group = "org.lwjgl", name = "lwjgl-jemalloc", version.ref = "lwjgl" }
 lwjgl-opengl = { group = "org.lwjgl", name = "lwjgl-opengl", version.ref = "lwjgl" }
 lwjgl-vulkan = { group = "org.lwjgl", name = "lwjgl-vulkan", version.ref = "lwjgl" }
@@ -81,6 +82,6 @@ jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose" }
 
 
 [bundles]
-lwjgl = ["lwjgl-core", "lwjgl-glfw", "lwjgl-jemalloc", "lwjgl-opengl", "lwjgl-vulkan", "lwjgl-vma", "lwjgl-shaderc", "lwjgl-nfd", "lwjgl-stb", "lwjgl-jawt", "lwjgl-msdfgen"]
+lwjgl = ["lwjgl-core", "lwjgl-glfw", "lwjgl-sdl", "lwjgl-jemalloc", "lwjgl-opengl", "lwjgl-vulkan", "lwjgl-vma", "lwjgl-shaderc", "lwjgl-nfd", "lwjgl-stb", "lwjgl-jawt", "lwjgl-msdfgen"]
 wgpu4k = ["wgpu4k", "webgpu-descriptors"]
 wgpu4k-surface-utils = ["rococoa", "jna", "jna-platform"]

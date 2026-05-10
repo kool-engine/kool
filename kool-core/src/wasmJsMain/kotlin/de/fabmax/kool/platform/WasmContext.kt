@@ -95,7 +95,7 @@ class WasmWindow(val canvas: HTMLCanvasElement, val config: KoolConfigWasm) : Ko
     override val parentScreenScale: Float
         get() = min(config.deviceScaleLimit, browserWindow.devicePixelRatio).toFloat()
 
-    override var positionInScreen: Vec2i = Vec2i.ZERO
+    override var positionOnScreen: Vec2i = Vec2i.ZERO
         set(value) {
             logE { "WasmWindow position cannot be set" }
         }

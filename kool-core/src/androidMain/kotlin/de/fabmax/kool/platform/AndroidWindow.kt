@@ -16,7 +16,7 @@ class AndroidWindow(val ctx: KoolContextAndroid, config: KoolConfigAndroid) : Ko
 
     override val parentScreenScale: Float
 
-    override var positionInScreen: Vec2i
+    override var positionOnScreen: Vec2i
         get() = Vec2i(0, 0)
         set(value) {}
 

@@ -77,8 +77,8 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
                 WM_NCHITTEST -> {
                     val y = lParam.toInt() shr 16
                     val x = lParam.toInt() and 0xffff
-                    val clientX = x - glfwWindow.positionInScreen.x - nonTopBorder
-                    val clientY = y - glfwWindow.positionInScreen.y - topBorder
+                    val clientX = x - glfwWindow.positionOnScreen.x - nonTopBorder
+                    val clientY = y - glfwWindow.positionOnScreen.y - topBorder
                     val resizeBorder = 4
 
                     if (clientY < resizeBorder && !isMaximized) {

@@ -37,7 +37,7 @@ internal class CanvasWrapper(val canvas: Canvas) : KoolWindowJvm {
     override var isMouseOverWindow: Boolean = false; internal set
 
     override val parentScreenScale: Float get() = canvasScale.x
-    override var positionInScreen: Vec2i = Vec2i.ZERO
+    override var positionOnScreen: Vec2i = Vec2i.ZERO
         set(_) {}
 
     override var sizeOnScreen: Vec2i

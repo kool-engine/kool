@@ -14,7 +14,7 @@ interface KoolWindow {
     /**
      * Window position in scaled screen space (i.e., considering [parentScreenScale]).
      */
-    var positionInScreen: Vec2i
+    var positionOnScreen: Vec2i
 
     /**
      * Window size in scaled screen space (i.e., considering [parentScreenScale]). For example, a full-screen
@@ -96,6 +96,7 @@ data class WindowFlags(
     val isMaximized: Boolean = false,
     val isMinimized: Boolean = false,
     val isVisible: Boolean = false,
+    val isOccluded: Boolean = false,
     val isFocused: Boolean = false,
     val isHiddenTitleBar: Boolean = false,
 )

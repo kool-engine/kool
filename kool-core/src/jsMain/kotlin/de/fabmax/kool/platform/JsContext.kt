@@ -100,7 +100,7 @@ class JsWindow(val canvas: HTMLCanvasElement, val config: KoolConfigJs) : KoolWi
     override val parentScreenScale: Float
         get() = min(config.deviceScaleLimit, browserWindow.devicePixelRatio).toFloat()
 
-    override var positionInScreen: Vec2i = Vec2i.ZERO
+    override var positionOnScreen: Vec2i = Vec2i.ZERO
         set(value) {
             logE { "JsWindow position cannot be set" }
         }

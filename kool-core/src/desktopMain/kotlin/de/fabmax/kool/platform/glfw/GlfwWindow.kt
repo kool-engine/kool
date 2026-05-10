@@ -36,7 +36,7 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
 
     override var parentScreenScale: Float = 1f; private set
 
-    override var positionInScreen: Vec2i
+    override var positionOnScreen: Vec2i
         get() = _screenPos
         set(value) {
             _screenPos = value
@@ -247,7 +247,7 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
     }
 
     private fun enableFullscreen() {
-        windowedPos = positionInScreen
+        windowedPos = positionOnScreen
         windowedSize = sizeOnScreen
         val vidMode = glfwGetVideoMode(fsMonitor)!!
         glfwSetWindowMonitor(
