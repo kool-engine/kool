@@ -3,19 +3,26 @@ package de.fabmax.kool.platform.sdl
 import de.fabmax.kool.*
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ui2.UiScale
+import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.platform.ImageDecoder
 import de.fabmax.kool.platform.KoolWindowJvm
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.launch
+import org.lwjgl.sdl.SDLError.SDL_GetError
 import org.lwjgl.sdl.SDLEvents.*
-import org.lwjgl.sdl.SDLVideo.SDL_GetWindowDisplayScale
-import org.lwjgl.sdl.SDLVideo.SDL_GetWindowPosition
+import org.lwjgl.sdl.SDLPixels.SDL_PIXELFORMAT_ABGR8888
+import org.lwjgl.sdl.SDLSurface.SDL_AddSurfaceAlternateImage
+import org.lwjgl.sdl.SDLSurface.SDL_CreateSurface
+import org.lwjgl.sdl.SDLVideo.*
 import org.lwjgl.sdl.SDLVulkan.SDL_Vulkan_CreateSurface
 import org.lwjgl.sdl.SDLVulkan.SDL_Vulkan_DestroySurface
 import org.lwjgl.sdl.SDL_Event
 import org.lwjgl.sdl.SDL_WindowEvent
 import org.lwjgl.vulkan.VkInstance
+import java.awt.image.BufferedImage
 
-class SdlWindow(private val handle: Long, ctx: Lwjgl3Context) : KoolWindowJvm {
+class SdlWindow(internal val handle: Long, title: String, ctx: Lwjgl3Context) : KoolWindowJvm {
     val input = SdlInput(this)
 
     override var isMouseOverWindow: Boolean = false
@@ -29,9 +36,15 @@ class SdlWindow(private val handle: Long, ctx: Lwjgl3Context) : KoolWindowJvm {
     override val renderScale: Float
         get() = parentScreenScale * renderResolutionFactor
 
-    override var title: String = "Sdl window"
+    override var title: String = title
+        set(value) {
+            field = value
+            BackendScope.launch {
+                SDL_SetWindowTitle(handle, value)
+            }
+        }
 
-    override val capabilities: WindowCapabilities = WindowCapabilities.NONE
+    override val capabilities: WindowCapabilities = WindowCapabilities.NONE.copy(canSetTitle = true)
 
     override val resizeListeners: BufferedList<WindowResizeListener> = BufferedList()
     override val scaleChangeListeners: BufferedList<ScaleChangeListener> = BufferedList()
@@ -56,8 +69,12 @@ class SdlWindow(private val handle: Long, ctx: Lwjgl3Context) : KoolWindowJvm {
             val y = callocInt(1)
             check(SDL_GetWindowPosition(handle, x, y))
             positionOnScreen = Vec2i(x.get(0), y.get(0))
-
             parentScreenScale = SDL_GetWindowDisplayScale(handle)
+        }
+
+        val iconList = KoolSystem.configJvm.windowIcon.ifEmpty { KoolWindowJvm.loadDefaultWindowIconSet() }
+        if (iconList.isNotEmpty()) {
+            setWindowIcon(iconList)
         }
     }
 
@@ -78,8 +95,8 @@ class SdlWindow(private val handle: Long, ctx: Lwjgl3Context) : KoolWindowJvm {
 
                 SDL_EVENT_KEY_DOWN -> input.handleKey(sdlEvent.key())
                 SDL_EVENT_KEY_UP -> input.handleKey(sdlEvent.key())
+                SDL_EVENT_TEXT_INPUT -> input.handleText(sdlEvent.text())
                 SDL_EVENT_TEXT_EDITING -> {}
-                SDL_EVENT_TEXT_INPUT -> {}
                 SDL_EVENT_KEYMAP_CHANGED -> {}
                 SDL_EVENT_KEYBOARD_ADDED -> { logI { "Keyboard added" } }
 
@@ -97,10 +114,10 @@ class SdlWindow(private val handle: Long, ctx: Lwjgl3Context) : KoolWindowJvm {
                 SDL_EVENT_WINDOW_MOVED -> updateWindowPos(sdlEvent.window())
                 SDL_EVENT_WINDOW_RESIZED -> updateWindowSize(sdlEvent.window())
                 SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED -> updateWindowSize(sdlEvent.window())
-                SDL_EVENT_WINDOW_CLOSE_REQUESTED -> { println("close requested") }
-                SDL_EVENT_WINDOW_DISPLAY_CHANGED -> { println("display changed") }
-                SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED -> { println("display changed: ${sdlEvent.window().data1()}") }
-                SDL_EVENT_WINDOW_HIT_TEST -> { println("hittest") }
+                SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED -> updateScreenScale(sdlEvent.window())
+                SDL_EVENT_WINDOW_DISPLAY_CHANGED -> logD { "Display changed" }
+                SDL_EVENT_WINDOW_CLOSE_REQUESTED -> { isCloseRequested = true }
+                SDL_EVENT_WINDOW_HIT_TEST -> {}
                 SDL_EVENT_WINDOW_ICCPROF_CHANGED -> {}
                 SDL_EVENT_WINDOW_ENTER_FULLSCREEN -> {}
                 SDL_EVENT_WINDOW_LEAVE_FULLSCREEN -> {}
@@ -124,6 +141,8 @@ class SdlWindow(private val handle: Long, ctx: Lwjgl3Context) : KoolWindowJvm {
 
     private fun updateWindowSize(event: SDL_WindowEvent) {
         val sz = Vec2i(event.data1(), event.data2())
+        logD { "Window size changed to: ${sz.x}x${sz.y}" }
+
         sizeOnScreen = sz
         size = sz
         framebufferSize = sz
@@ -131,6 +150,12 @@ class SdlWindow(private val handle: Long, ctx: Lwjgl3Context) : KoolWindowJvm {
         UiScale.updateUiScaleFromWindowScale(renderScale)
         resizeListeners.updated().forEach { it.onResize(sz) }
         scaleChangeListeners.updated().forEach { it.onScaleChanged(renderScale) }
+    }
+
+    private fun updateScreenScale(event: SDL_WindowEvent) {
+        parentScreenScale = SDL_GetWindowDisplayScale(handle)
+        UiScale.updateUiScaleFromWindowScale(renderScale)
+        logD { "Screen scale changed to: $parentScreenScale" }
     }
 
     override fun createVulkanSurface(instance: VkInstance): Long {
@@ -151,5 +176,31 @@ class SdlWindow(private val handle: Long, ctx: Lwjgl3Context) : KoolWindowJvm {
 
     override fun close() {
         isCloseRequested = true
+    }
+
+    fun setWindowIcon(icon: BufferedImage) = setWindowIcon(listOf(icon))
+
+    fun setWindowIcon(icons: List<BufferedImage>) {
+        val image = icons.firstOrNull() ?: return
+
+        val surface = checkNotNull(SDL_CreateSurface(image.width, image.height, SDL_PIXELFORMAT_ABGR8888))
+        val buffer = ImageDecoder.loadBufferedImage(image, TexFormat.RGBA).data as Uint8BufferImpl
+        buffer.useRaw {
+            checkNotNull(surface.pixels()).put(it)
+        }
+
+        for (i in 1 until icons.size) {
+            val altIcon = icons[i]
+            val altSurface = checkNotNull(SDL_CreateSurface(altIcon.width, altIcon.height, SDL_PIXELFORMAT_ABGR8888))
+            val altBuffer = ImageDecoder.loadBufferedImage(altIcon, TexFormat.RGBA).data as Uint8BufferImpl
+            altBuffer.useRaw {
+                checkNotNull(altSurface.pixels()).put(it)
+            }
+            SDL_AddSurfaceAlternateImage(surface, altSurface)
+        }
+
+        if (!SDL_SetWindowIcon(handle, surface)) {
+            logE { "Failed to set window icon for SDL window $handle: $${SDL_GetError()}" }
+        }
     }
 }

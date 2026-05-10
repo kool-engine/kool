@@ -2,28 +2,81 @@ package de.fabmax.kool.platform.sdl
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.input.*
-import de.fabmax.kool.util.logE
+import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.util.BackendScope
+import de.fabmax.kool.util.logW
+import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.launch
+import org.lwjgl.sdl.*
+import org.lwjgl.sdl.SDLKeyboard.SDL_StartTextInput
+import org.lwjgl.sdl.SDLKeyboard.SDL_StopTextInput
 import org.lwjgl.sdl.SDLKeycode.*
+import org.lwjgl.sdl.SDLMouse.*
 import org.lwjgl.sdl.SDLScancode.*
-import org.lwjgl.sdl.SDL_KeyboardEvent
-import org.lwjgl.sdl.SDL_MouseButtonEvent
-import org.lwjgl.sdl.SDL_MouseMotionEvent
-import org.lwjgl.sdl.SDL_MouseWheelEvent
 
 class SdlInput(val window: SdlWindow) : PlatformInput {
+    private val isTextInput = atomic(false)
+
+    private val defaultCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT)
+    private val cursorShapes = mutableMapOf(
+        CursorShape.DEFAULT to defaultCursor,
+        CursorShape.TEXT to SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT),
+        CursorShape.HAND to SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_POINTER),
+        CursorShape.CROSSHAIR to SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR),
+        CursorShape.NOT_ALLOWED to SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NOT_ALLOWED),
+        CursorShape.MOVE to SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_MOVE),
+        CursorShape.RESIZE_E to SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_E_RESIZE),
+        CursorShape.RESIZE_W to SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_W_RESIZE),
+        CursorShape.RESIZE_N to SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_N_RESIZE),
+        CursorShape.RESIZE_S to SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_S_RESIZE),
+        CursorShape.RESIZE_NW to SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NW_RESIZE),
+        CursorShape.RESIZE_SE to SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SE_RESIZE),
+        CursorShape.RESIZE_NE to SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NE_RESIZE),
+        CursorShape.RESIZE_SW to SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SW_RESIZE),
+    )
+
+    private var cursorMode = CursorMode.NORMAL
+    private val cursorPos = MutableVec2f()
 
     override fun setCursorMode(cursorMode: CursorMode) {
-        logE { "setCursorMode not yet implemented" }
+        this.cursorMode = cursorMode
+        BackendScope.launch {
+            SDL_SetWindowRelativeMouseMode(window.handle, cursorMode == CursorMode.LOCKED)
+        }
     }
 
     override fun applyCursorShape(cursorShape: CursorShape) {
-        logE { "applyCursorShape not yet implemented" }
+        BackendScope.launch {
+            val shape = cursorShapes[cursorShape] ?: defaultCursor
+            if (!SDL_SetCursor(shape)) {
+                logW { "Failed to set cursor shape with SDL: $cursorShape" }
+            }
+        }
+    }
+
+    override fun requestKeyboard() {
+        if (isTextInput.compareAndSet(expect = false, update = true)) {
+            BackendScope.launch { SDL_StartTextInput(window.handle) }
+        }
+    }
+
+    override fun hideKeyboard() {
+        if (isTextInput.compareAndSet(expect = true, update = false)) {
+            BackendScope.launch { SDL_StopTextInput(window.handle) }
+        }
     }
 
     internal fun handleMouseMotion(event: SDL_MouseMotionEvent) {
         val baseScale = if (KoolSystem.platform.isMacOs /*|| isWayland*/) window.parentScreenScale else 1f
         val scale = baseScale * window.renderResolutionFactor
-        PointerInput.handleMouseMove(event.x() * scale, event.y() * scale)
+
+        if (cursorMode == CursorMode.NORMAL) {
+            cursorPos.set(event.x() * scale, event.y() * scale)
+        } else {
+            cursorPos.x += event.xrel() * scale
+            cursorPos.y += event.yrel() * scale
+        }
+        PointerInput.handleMouseMove(cursorPos.x, cursorPos.y)
     }
 
     internal fun handleMouseWheel(event: SDL_MouseWheelEvent) {
@@ -31,7 +84,14 @@ class SdlInput(val window: SdlWindow) : PlatformInput {
     }
 
     internal fun handleMouseButton(event: SDL_MouseButtonEvent) {
-        val button = event.button().toInt()
+        val button = when (val btn = event.button().toInt()) {
+            1 -> PointerInput.LEFT_BUTTON
+            2 -> PointerInput.MIDDLE_BUTTON
+            3 -> PointerInput.RIGHT_BUTTON
+            4 -> PointerInput.BACK_BUTTON
+            5 -> PointerInput.FORWARD_BUTTON
+            else -> btn - 1
+        }
         val down = event.down()
         PointerInput.handleMouseButtonEvent(button, down)
     }
@@ -42,7 +102,7 @@ class SdlInput(val window: SdlWindow) : PlatformInput {
             event.down() -> KeyboardInput.KEY_EV_DOWN
             else -> KeyboardInput.KEY_EV_UP
         }
-        val keyCode = sdlScancodesToKeys[event.scancode()] ?: UniversalKeyCode(event.key()).also { println("unmapped: ${event.scancode()}") }
+        val keyCode = sdlScancodesToKeys[event.scancode()] ?: UniversalKeyCode(event.key())
 
         val sdlMod = event.mod().toInt()
         var modifiers = 0
@@ -58,6 +118,12 @@ class SdlInput(val window: SdlWindow) : PlatformInput {
             modifiers = modifiers
         )
         KeyboardInput.handleKeyEvent(ev)
+    }
+
+    internal fun handleText(event: SDL_TextInputEvent) {
+        event.textString()?.forEach { char ->
+            KeyboardInput.handleCharTyped(char)
+        }
     }
 
     companion object {

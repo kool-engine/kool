@@ -1,11 +1,15 @@
 package de.fabmax.kool.platform.sdl
 
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.configJvm
 import de.fabmax.kool.input.PlatformInput
 import de.fabmax.kool.platform.*
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logI
+import de.fabmax.kool.util.logW
 import kotlinx.coroutines.runBlocking
+import org.lwjgl.sdl.SDLError.SDL_ClearError
+import org.lwjgl.sdl.SDLError.SDL_GetError
 import org.lwjgl.sdl.SDLInit.SDL_INIT_VIDEO
 import org.lwjgl.sdl.SDLInit.SDL_Init
 import org.lwjgl.sdl.SDLVideo.*
@@ -34,13 +38,15 @@ object SdlWindowSubsystem : WindowSubsystem {
             ClientApi.OPEN_GL -> SDL_WINDOW_OPENGL
             ClientApi.UNMANAGED -> 0
         }
-        val windowHandle = SDL_CreateWindow("SDL Window", 1600, 900, SDL_WINDOW_RESIZABLE or SDL_WINDOW_HIGH_PIXEL_DENSITY or apiFlag)
-        logD { "Created SDL window: $windowHandle" }
+        val title = KoolSystem.configJvm.windowTitle
+        val windowHandle = SDL_CreateWindow(title, 1600, 900, SDL_WINDOW_RESIZABLE or SDL_WINDOW_HIGH_PIXEL_DENSITY or apiFlag)
+        logD { "Created SDL window" }
 
-        val window = SdlWindow(windowHandle, ctx)
+        val window = SdlWindow(windowHandle, title, ctx)
         if (primaryWindow == null) {
             primaryWindow = window
         }
+        logSdlError("createWindow")
         return window
     }
 
@@ -54,10 +60,11 @@ object SdlWindowSubsystem : WindowSubsystem {
         }
 
         check(SDL_Init(SDL_INIT_VIDEO)) { "Failed to initialize SDL" }
+        logSdlError("onEarlyInit")
     }
 
     override fun onBackendCreated(ctx: Lwjgl3Context) {
-
+        logSdlError("onBackendCreated")
     }
 
     override fun runRenderLoop() {
@@ -73,9 +80,18 @@ object SdlWindowSubsystem : WindowSubsystem {
                 } else {
                     Thread.sleep(10)
                 }
+                logSdlError("runRenderLoop")
             }
         }
         shutdown()
+    }
+
+    private fun logSdlError(tag: String) {
+        val err = SDL_GetError()
+        if (!err.isNullOrBlank()) {
+            logW(tag) { "SDL error: $err" }
+            SDL_ClearError()
+        }
     }
 
 }
