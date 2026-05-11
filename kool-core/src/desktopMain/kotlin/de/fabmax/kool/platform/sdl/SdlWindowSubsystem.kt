@@ -45,7 +45,9 @@ object SdlWindowSubsystem : WindowSubsystem {
             ClientApi.UNMANAGED -> 0
         }
         val title = KoolSystem.configJvm.windowTitle
-        val windowHandle = SDL_CreateWindow(title, 1600, 900, SDL_WINDOW_RESIZABLE or SDL_WINDOW_HIGH_PIXEL_DENSITY or apiFlag)
+        val width = KoolSystem.configJvm.windowSize.x
+        val height = KoolSystem.configJvm.windowSize.y
+        val windowHandle = SDL_CreateWindow(title, width, height, SDL_WINDOW_RESIZABLE or SDL_WINDOW_HIGH_PIXEL_DENSITY or apiFlag)
         logD { "Created SDL window" }
 
         if (clientApi == ClientApi.OPEN_GL) {
@@ -54,7 +56,7 @@ object SdlWindowSubsystem : WindowSubsystem {
             requireNotNull(glInitCallback).initGl()
         }
 
-        val window = SdlWindow(windowHandle, title, clientApi, ctx)
+        val window = SdlWindow(windowHandle, width, height, title, clientApi, ctx)
         if (primaryWindow == null) {
             primaryWindow = window
         }

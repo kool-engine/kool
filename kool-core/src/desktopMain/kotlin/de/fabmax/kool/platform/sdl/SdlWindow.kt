@@ -12,33 +12,35 @@ import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.launch
 import org.lwjgl.sdl.SDLError.SDL_GetError
-import org.lwjgl.sdl.SDLEvents.*
 import org.lwjgl.sdl.SDLPixels.SDL_PIXELFORMAT_ABGR8888
 import org.lwjgl.sdl.SDLSurface.SDL_AddSurfaceAlternateImage
 import org.lwjgl.sdl.SDLSurface.SDL_CreateSurface
 import org.lwjgl.sdl.SDLVideo.*
 import org.lwjgl.sdl.SDLVulkan.SDL_Vulkan_CreateSurface
 import org.lwjgl.sdl.SDLVulkan.SDL_Vulkan_DestroySurface
-import org.lwjgl.sdl.SDL_DropEvent
-import org.lwjgl.sdl.SDL_Event
-import org.lwjgl.sdl.SDL_WindowEvent
 import org.lwjgl.vulkan.VkInstance
 import java.awt.image.BufferedImage
 import java.io.File
 import java.nio.file.LinkOption
 import kotlin.io.path.*
 
-class SdlWindow(internal val handle: Long, title: String, private val clientApi: ClientApi, ctx: Lwjgl3Context) : KoolWindowJvm {
+class SdlWindow(internal val handle: Long, width: Int, height: Int, title: String, private val clientApi: ClientApi, ctx: Lwjgl3Context) : KoolWindowJvm {
     val input = SdlInput(this)
 
     override var isMouseOverWindow: Boolean = false
 
     override var parentScreenScale: Float = 1f; private set
     override var positionOnScreen: Vec2i = Vec2i.ZERO
-    override var sizeOnScreen: Vec2i = Vec2i(1600, 900)
+    override var sizeOnScreen: Vec2i = Vec2i(width, height)
     override var renderResolutionFactor: Float = 1f
-    override var framebufferSize: Vec2i = Vec2i(1600, 900); private set
-    override var size: Vec2i = Vec2i(1600, 900); private set
+        set(value) {
+            if (value != field) {
+                field = value
+                updateSizesAndScales()
+            }
+        }
+    override var framebufferSize: Vec2i = Vec2i(width, height); private set
+    override var size: Vec2i = Vec2i(width, height); private set
     override val renderScale: Float
         get() = parentScreenScale * renderResolutionFactor
 
@@ -69,7 +71,18 @@ class SdlWindow(internal val handle: Long, title: String, private val clientApi:
             }
         }
 
+    var isCloseRequested = false; private set
+
     init {
+        if (KoolSystem.platform.isMacOs) {
+            // workaround for https://github.com/libsdl-org/SDL/issues/13920
+            val events1 = drainSdlEventQueue()
+            SDL_RaiseWindow(handle)
+            val events2 = drainSdlEventQueue()
+            handleEvents(events1)
+            handleEvents(events2)
+        }
+
         scopedMem {
             val x = callocInt(1)
             val y = callocInt(1)
@@ -77,6 +90,7 @@ class SdlWindow(internal val handle: Long, title: String, private val clientApi:
             positionOnScreen = Vec2i(x.get(0), y.get(0))
             parentScreenScale = SDL_GetWindowDisplayScale(handle)
         }
+        updateSizesAndScales()
 
         val iconList = KoolSystem.configJvm.windowIcon.ifEmpty { KoolWindowJvm.loadDefaultWindowIconSet() }
         if (iconList.isNotEmpty()) {
@@ -84,128 +98,120 @@ class SdlWindow(internal val handle: Long, title: String, private val clientApi:
         }
     }
 
-    var isCloseRequested = false; private set
-    private val sdlEvent = SDL_Event.create()
-
     override fun pollEvents() {
-        while (true) {
-            SDL_PollEvent(sdlEvent)
-            when (sdlEvent.type()) {
-                SDL_EVENT_POLL_SENTINEL -> break
+        handleEvents(drainSdlEventQueue())
+    }
 
-                SDL_EVENT_MOUSE_MOTION -> input.handleMouseMotion(sdlEvent.motion())
-                SDL_EVENT_MOUSE_WHEEL -> input.handleMouseWheel(sdlEvent.wheel())
-                SDL_EVENT_MOUSE_BUTTON_DOWN -> input.handleMouseButton(sdlEvent.button())
-                SDL_EVENT_MOUSE_BUTTON_UP -> input.handleMouseButton(sdlEvent.button())
-                SDL_EVENT_MOUSE_ADDED -> { logI { "Mouse added" } }
-
-                SDL_EVENT_KEY_DOWN -> input.handleKey(sdlEvent.key())
-                SDL_EVENT_KEY_UP -> input.handleKey(sdlEvent.key())
-                SDL_EVENT_TEXT_INPUT -> input.handleText(sdlEvent.text())
-                SDL_EVENT_TEXT_EDITING -> {}
-                SDL_EVENT_KEYMAP_CHANGED -> {}
-                SDL_EVENT_KEYBOARD_ADDED -> { logI { "Keyboard added" } }
-
-                SDL_EVENT_WINDOW_MOUSE_ENTER -> isMouseOverWindow = true
-                SDL_EVENT_WINDOW_MOUSE_LEAVE -> isMouseOverWindow = false
-                SDL_EVENT_WINDOW_SHOWN -> flags = flags.copy(isVisible = true)
-                SDL_EVENT_WINDOW_HIDDEN -> flags = flags.copy(isVisible = true)
-                SDL_EVENT_WINDOW_MINIMIZED -> flags = flags.copy(isMinimized = true)
-                SDL_EVENT_WINDOW_MAXIMIZED -> flags = flags.copy(isMaximized = true)
-                SDL_EVENT_WINDOW_RESTORED -> flags = flags.copy(isMinimized = false, isMaximized = false)
-                SDL_EVENT_WINDOW_FOCUS_GAINED -> flags = flags.copy(isFocused = true)
-                SDL_EVENT_WINDOW_FOCUS_LOST -> flags = flags.copy(isFocused = false)
-                SDL_EVENT_WINDOW_EXPOSED -> flags = flags.copy(isOccluded = false)
-                SDL_EVENT_WINDOW_OCCLUDED -> flags = flags.copy(isOccluded = true)
-                SDL_EVENT_WINDOW_MOVED -> updateWindowPos(sdlEvent.window())
-                SDL_EVENT_WINDOW_RESIZED -> updateWindowSize(sdlEvent.window())
-                SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED -> updateWindowSize(sdlEvent.window())
-                SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED -> updateScreenScale(sdlEvent.window())
-                SDL_EVENT_WINDOW_DISPLAY_CHANGED -> logD { "Display changed" }
-                SDL_EVENT_WINDOW_CLOSE_REQUESTED -> { isCloseRequested = true }
-                SDL_EVENT_WINDOW_HIT_TEST -> {}
-                SDL_EVENT_WINDOW_ICCPROF_CHANGED -> {}
-                SDL_EVENT_WINDOW_ENTER_FULLSCREEN -> {}
-                SDL_EVENT_WINDOW_LEAVE_FULLSCREEN -> {}
-                SDL_EVENT_WINDOW_METAL_VIEW_RESIZED -> {}
-                SDL_EVENT_WINDOW_SAFE_AREA_CHANGED -> {}
-                SDL_EVENT_WINDOW_HDR_STATE_CHANGED -> {}
-                SDL_EVENT_WINDOW_DESTROYED -> {}
-
-                SDL_EVENT_DROP_FILE -> handleFileDrop(sdlEvent.drop())
-                SDL_EVENT_DROP_TEXT -> handleTextDrop(sdlEvent.drop())
-                SDL_EVENT_DROP_BEGIN -> logD { "Drop begin" }
-                SDL_EVENT_DROP_COMPLETE -> logD { "Drop complete" }
-                SDL_EVENT_DROP_POSITION -> handleDropPosition(sdlEvent.drop())
-
-                SDL_EVENT_CLIPBOARD_UPDATE -> {}
-
-                SDL_EVENT_QUIT -> isCloseRequested = true
-
-                else -> logD { "Unhandled SDL event type: ${sdlEvent.type().toHexString()}" }
+    private fun handleEvents(events: List<SdlEvent>) {
+        for (event in events) {
+            when (event) {
+                is SdlEvent.Motion -> input.handleMouseMotion(event)
+                is SdlEvent.Button -> input.handleMouseButton(event)
+                is SdlEvent.Wheel -> input.handleMouseWheel(event)
+                is SdlEvent.Drop -> handleDropEvent(event)
+                is SdlEvent.Key -> input.handleKey(event)
+                is SdlEvent.Text -> input.handleText(event)
+                is SdlEvent.Window -> handleWindowEvent(event)
+                SdlEvent.Quit -> isCloseRequested = true
+                is SdlEvent.Other -> logD { "Unhandled SDL event: ${event.name}" }
             }
         }
     }
 
-    private fun updateWindowPos(event: SDL_WindowEvent) {
-        positionOnScreen = Vec2i(event.data1(), event.data2())
+    private fun handleWindowEvent(window: SdlEvent.Window) {
+        when (window.type) {
+            SdlEventType.WINDOW_MOUSE_ENTER -> isMouseOverWindow = true
+            SdlEventType.WINDOW_MOUSE_LEAVE -> isMouseOverWindow = false
+            SdlEventType.WINDOW_SHOWN -> flags = flags.copy(isVisible = true)
+            SdlEventType.WINDOW_HIDDEN -> flags = flags.copy(isVisible = true)
+            SdlEventType.WINDOW_MINIMIZED -> flags = flags.copy(isMinimized = true)
+            SdlEventType.WINDOW_MAXIMIZED -> flags = flags.copy(isMaximized = true)
+            SdlEventType.WINDOW_RESTORED -> flags = flags.copy(isMinimized = false, isMaximized = false)
+            SdlEventType.WINDOW_FOCUS_GAINED -> flags = flags.copy(isFocused = true)
+            SdlEventType.WINDOW_FOCUS_LOST -> flags = flags.copy(isFocused = false)
+            SdlEventType.WINDOW_EXPOSED -> flags = flags.copy(isOccluded = false)
+            SdlEventType.WINDOW_OCCLUDED -> flags = flags.copy(isOccluded = true)
+            SdlEventType.WINDOW_MOVED -> updateWindowPos(window)
+            SdlEventType.WINDOW_RESIZED -> updateWindowSize(window)
+            SdlEventType.WINDOW_PIXEL_SIZE_CHANGED -> updateFramebufferSize(window)
+            SdlEventType.WINDOW_DISPLAY_SCALE_CHANGED -> updateScreenScale()
+            SdlEventType.WINDOW_CLOSE_REQUESTED -> { isCloseRequested = true }
+            else -> logD { "Unhandled window event: ${window.name}" }
+        }
     }
 
-    private fun updateWindowSize(event: SDL_WindowEvent) {
-        val sz = Vec2i(event.data1(), event.data2())
-        logD { "Window size changed to: ${sz.x}x${sz.y}" }
+    private fun updateWindowPos(event: SdlEvent.Window) {
+        positionOnScreen = Vec2i(event.data1, event.data2)
+    }
 
-        sizeOnScreen = sz
-        size = sz
+    private fun updateFramebufferSize(event: SdlEvent.Window) {
+        val sz = Vec2i(event.data1, event.data2)
+        logD { "Framebuffer size changed to: ${sz.x}x${sz.y}" }
         framebufferSize = sz
+        updateSizesAndScales()
+    }
 
+    private fun updateWindowSize(event: SdlEvent.Window) {
+        val sz = Vec2i(event.data1, event.data2)
+        logD { "Window size changed to: ${sz.x}x${sz.y}" }
+        sizeOnScreen = sz
+        updateSizesAndScales()
+    }
+
+    private fun updateScreenScale() {
+        parentScreenScale = SDL_GetWindowDisplayScale(handle)
+        logD { "Screen scale changed to: $parentScreenScale" }
+        updateSizesAndScales()
+    }
+
+    private fun updateSizesAndScales() {
+        size = Vec2i(
+            (framebufferSize.x * renderResolutionFactor).toInt(),
+            (framebufferSize.y * renderResolutionFactor).toInt()
+        )
         UiScale.updateUiScaleFromWindowScale(renderScale)
-        resizeListeners.updated().forEach { it.onResize(sz) }
+        resizeListeners.updated().forEach { it.onResize(size) }
         scaleChangeListeners.updated().forEach { it.onScaleChanged(renderScale) }
     }
 
-    private fun updateScreenScale(event: SDL_WindowEvent) {
-        parentScreenScale = SDL_GetWindowDisplayScale(handle)
-        UiScale.updateUiScaleFromWindowScale(renderScale)
-        logD { "Screen scale changed to: $parentScreenScale" }
-    }
-
-    private fun handleFileDrop(drop: SDL_DropEvent) {
-        val files = mutableListOf<LoadableFile>()
-        drop.dataString()?.let { path ->
-            val file = File(path)
-            if (file.exists()) {
-                if (file.isDirectory) {
-                    val dirPath = file.toPath()
-                    dirPath.walk(PathWalkOption.INCLUDE_DIRECTORIES)
-                        .filter { it.isRegularFile(LinkOption.NOFOLLOW_LINKS) }
-                        .forEach {
-                            files += LoadableFileImpl(it.toFile(), it.relativeTo(dirPath.parent).pathString)
+    private fun handleDropEvent(drop: SdlEvent.Drop) {
+        when (drop.type) {
+            SdlEventType.DROP_FILE -> {
+                val files = mutableListOf<LoadableFile>()
+                drop.data?.let { path ->
+                    val file = File(path)
+                    if (file.exists()) {
+                        if (file.isDirectory) {
+                            val dirPath = file.toPath()
+                            dirPath.walk(PathWalkOption.INCLUDE_DIRECTORIES)
+                                .filter { it.isRegularFile(LinkOption.NOFOLLOW_LINKS) }
+                                .forEach {
+                                    files += LoadableFileImpl(it.toFile(), it.relativeTo(dirPath.parent).pathString)
+                                }
+                        } else {
+                            files += LoadableFileImpl(file)
                         }
-                } else {
-                    files += LoadableFileImpl(file)
+                    }
+                }
+                if (files.isNotEmpty()) {
+                    logD { "Files dropped: ${files.map { it.name }}" }
+                    dragAndDropListeners.forEachUpdated {
+                        it.onFileDrop(files, Vec2f(drop.x, drop.y))
+                    }
                 }
             }
-        }
-        if (files.isNotEmpty()) {
-            logD { "Files dropped: ${files.map { it.name }}" }
-            dragAndDropListeners.forEachUpdated {
-                it.onFileDrop(files, Vec2f(drop.x(), drop.y()))
+            SdlEventType.DROP_TEXT -> {
+                drop.data?.let { text ->
+                    dragAndDropListeners.forEachUpdated {
+                        it.onTextDrop(text, Vec2f(drop.x, drop.y))
+                    }
+                }
             }
-        }
-    }
-
-    private fun handleTextDrop(drop: SDL_DropEvent) {
-        drop.dataString()?.let { text ->
-            dragAndDropListeners.forEachUpdated {
-                it.onTextDrop(text, Vec2f(drop.x(), drop.y()))
+            SdlEventType.DROP_POSITION -> {
+                dragAndDropListeners.forEachUpdated {
+                    it.onDropCursorPos(Vec2f(drop.x, drop.y))
+                }
             }
-        }
-    }
-
-    private fun handleDropPosition(drop: SDL_DropEvent) {
-        dragAndDropListeners.forEachUpdated {
-            it.onDropCursorPos(Vec2f(drop.x(), drop.y()))
         }
     }
 
@@ -224,7 +230,7 @@ class SdlWindow(internal val handle: Long, title: String, private val clientApi:
     }
 
     override fun swapBuffers() {
-        //check(clientApi == ClientApi.OPEN_GL) { "Client api needs to be OpenGL for swapBuffers()" }
+        check(clientApi == ClientApi.OPEN_GL) { "Client api needs to be OpenGL for swapBuffers()" }
         SDL_GL_SwapWindow(handle)
     }
 

@@ -7,7 +7,6 @@ import de.fabmax.kool.util.BackendScope
 import de.fabmax.kool.util.logW
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.launch
-import org.lwjgl.sdl.*
 import org.lwjgl.sdl.SDLKeyboard.SDL_StartTextInput
 import org.lwjgl.sdl.SDLKeyboard.SDL_StopTextInput
 import org.lwjgl.sdl.SDLKeycode.*
@@ -66,25 +65,25 @@ class SdlInput(val window: SdlWindow) : PlatformInput {
         }
     }
 
-    internal fun handleMouseMotion(event: SDL_MouseMotionEvent) {
+    internal fun handleMouseMotion(event: SdlEvent.Motion) {
         val baseScale = if (KoolSystem.platform.isMacOs /*|| isWayland*/) window.parentScreenScale else 1f
         val scale = baseScale * window.renderResolutionFactor
 
         if (cursorMode == CursorMode.NORMAL) {
-            cursorPos.set(event.x() * scale, event.y() * scale)
+            cursorPos.set(event.x * scale, event.y * scale)
         } else {
-            cursorPos.x += event.xrel() * scale
-            cursorPos.y += event.yrel() * scale
+            cursorPos.x += event.xRel * scale
+            cursorPos.y += event.yRel * scale
         }
         PointerInput.handleMouseMove(cursorPos.x, cursorPos.y)
     }
 
-    internal fun handleMouseWheel(event: SDL_MouseWheelEvent) {
-        PointerInput.handleMouseScroll(event.x(), event.y())
+    internal fun handleMouseWheel(event: SdlEvent.Wheel) {
+        PointerInput.handleMouseScroll(event.x, event.y)
     }
 
-    internal fun handleMouseButton(event: SDL_MouseButtonEvent) {
-        val button = when (val btn = event.button().toInt()) {
+    internal fun handleMouseButton(event: SdlEvent.Button) {
+        val button = when (val btn = event.button) {
             1 -> PointerInput.LEFT_BUTTON
             2 -> PointerInput.MIDDLE_BUTTON
             3 -> PointerInput.RIGHT_BUTTON
@@ -92,19 +91,18 @@ class SdlInput(val window: SdlWindow) : PlatformInput {
             5 -> PointerInput.FORWARD_BUTTON
             else -> btn - 1
         }
-        val down = event.down()
-        PointerInput.handleMouseButtonEvent(button, down)
+        PointerInput.handleMouseButtonEvent(button, event.down)
     }
 
-    internal fun handleKey(event: SDL_KeyboardEvent) {
+    internal fun handleKey(event: SdlEvent.Key) {
         val type = when {
-            event.repeat() -> KeyboardInput.KEY_EV_REPEATED
-            event.down() -> KeyboardInput.KEY_EV_DOWN
+            event.repeat -> KeyboardInput.KEY_EV_REPEATED
+            event.down -> KeyboardInput.KEY_EV_DOWN
             else -> KeyboardInput.KEY_EV_UP
         }
-        val keyCode = sdlScancodesToKeys[event.scancode()] ?: UniversalKeyCode(event.key())
+        val keyCode = sdlScancodesToKeys[event.scancode] ?: UniversalKeyCode(event.key)
 
-        val sdlMod = event.mod().toInt()
+        val sdlMod = event.mod
         var modifiers = 0
         if (sdlMod and SDL_KMOD_SHIFT != 0) modifiers = modifiers or KeyboardInput.KEY_MOD_SHIFT
         if (sdlMod and SDL_KMOD_CTRL != 0) modifiers = modifiers or KeyboardInput.KEY_MOD_CTRL
@@ -113,15 +111,15 @@ class SdlInput(val window: SdlWindow) : PlatformInput {
 
         val ev = KeyEvent(
             keyCode = keyCode,
-            localKeyCode = LocalKeyCode(event.key()),
+            localKeyCode = LocalKeyCode(event.key),
             event = type,
             modifiers = modifiers
         )
         KeyboardInput.handleKeyEvent(ev)
     }
 
-    internal fun handleText(event: SDL_TextInputEvent) {
-        event.textString()?.forEach { char ->
+    internal fun handleText(event: SdlEvent.Text) {
+        event.text.forEach { char ->
             KeyboardInput.handleCharTyped(char)
         }
     }
