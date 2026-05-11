@@ -39,7 +39,7 @@ object SdlWindowSubsystem : WindowSubsystem {
         }
     }
 
-    override fun createWindow(clientApi: ClientApi, glCallbacks: GlWindowCallbacks?, ctx: Lwjgl3Context): KoolWindowJvm {
+    override fun createWindow(clientApi: ClientApi, glInitCallback: GlInitCallback?, ctx: Lwjgl3Context): KoolWindowJvm {
         val apiFlag = when (clientApi) {
             ClientApi.OPEN_GL -> SDL_WINDOW_OPENGL
             ClientApi.UNMANAGED -> 0
@@ -48,7 +48,13 @@ object SdlWindowSubsystem : WindowSubsystem {
         val windowHandle = SDL_CreateWindow(title, 1600, 900, SDL_WINDOW_RESIZABLE or SDL_WINDOW_HIGH_PIXEL_DENSITY or apiFlag)
         logD { "Created SDL window" }
 
-        val window = SdlWindow(windowHandle, title, ctx)
+        if (clientApi == ClientApi.OPEN_GL) {
+            check(SDL_GL_CreateContext(windowHandle) != 0L)
+            SDL_GL_SetSwapInterval(if (KoolSystem.configJvm.isVsync) 1 else 0)
+            requireNotNull(glInitCallback).initGl()
+        }
+
+        val window = SdlWindow(windowHandle, title, clientApi, ctx)
         if (primaryWindow == null) {
             primaryWindow = window
         }
@@ -59,12 +65,10 @@ object SdlWindowSubsystem : WindowSubsystem {
     override fun onEarlyInit() {
         // Put AWT in headless mode on macOS, to avoid clashes in the window event thread
         // This has to happen before *any* AWT class (BufferedImage, etc.) is loaded.
-        val osName = System.getProperty("os.name", "unknown").lowercase()
-        if ("mac os" in osName || "darwin" in osName || "osx" in osName) {
+        if (KoolSystem.platform.isMacOs) {
             logD { "Detected macOS. Enabling AWT headless mode to mitigate AWT / GLFW compatibility issues" }
             System.setProperty("java.awt.headless", "true")
         }
-
         check(SDL_Init(SDL_INIT_VIDEO)) { "Failed to initialize SDL" }
         logSdlError("onEarlyInit")
 

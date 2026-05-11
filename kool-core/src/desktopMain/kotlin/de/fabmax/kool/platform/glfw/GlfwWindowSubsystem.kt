@@ -16,7 +16,6 @@ object GlfwWindowSubsystem : WindowSubsystem {
     private val _monitors: MutableList<MonitorSpec> = mutableListOf()
     val monitors: List<MonitorSpec> get() = _monitors
     var primaryMonitor: MonitorSpec? = null; private set
-    private var glCallbacks: GlWindowCallbacks? = null
 
     var primaryWindow: GlfwWindow? = null
         private set
@@ -41,8 +40,7 @@ object GlfwWindowSubsystem : WindowSubsystem {
         }
     }
 
-    override fun createWindow(clientApi: ClientApi, glCallbacks: GlWindowCallbacks?, ctx: Lwjgl3Context): GlfwWindow {
-        this.glCallbacks = glCallbacks
+    override fun createWindow(clientApi: ClientApi, glInitCallback: GlInitCallback?, ctx: Lwjgl3Context): GlfwWindow {
         if (clientApi == ClientApi.UNMANAGED) {
             // tell GLFW to not initialize default OpenGL API before we create the window
             check(GLFWVulkan.glfwVulkanSupported()) { "Cannot find a compatible Vulkan installable client driver (ICD)" }
@@ -63,7 +61,7 @@ object GlfwWindowSubsystem : WindowSubsystem {
         if (clientApi == ClientApi.OPEN_GL) {
             glfwMakeContextCurrent(window.windowHandle)
             glfwSwapInterval(if (KoolSystem.configJvm.isVsync) 1 else 0)
-            requireNotNull(glCallbacks).initGl()
+            requireNotNull(glInitCallback).initGl()
         }
         return window
     }
@@ -72,12 +70,10 @@ object GlfwWindowSubsystem : WindowSubsystem {
         // on macOS, AWT clashes with GLFW, because GLFW also has to run on the first thread enabling AWT
         // headless-mode somewhat mitigates this problem.
         // This has to happen before *any* AWT class (BufferedImage, etc.) is loaded.
-        val osName = System.getProperty("os.name", "unknown").lowercase()
-        if ("mac os" in osName || "darwin" in osName || "osx" in osName) {
+        if (KoolSystem.platform.isMacOs) {
             logD { "Detected macOS. Enabling AWT headless mode to mitigate AWT / GLFW compatibility issues" }
             System.setProperty("java.awt.headless", "true")
         }
-
         GLFWErrorCallback.createPrint(System.err).set()
         check(glfwInit()) { "Unable to initialize GLFW" }
 
@@ -112,12 +108,7 @@ object GlfwWindowSubsystem : WindowSubsystem {
                 window.pollEvents()
 
                 if (!window.flags.isMinimized) {
-                    val cb = glCallbacks
-                    if (cb != null) {
-                        cb.drawFrame()
-                    } else {
-                        ctx.renderFrame()
-                    }
+                    ctx.renderFrame()
                 } else {
                     Thread.sleep(10)
                 }

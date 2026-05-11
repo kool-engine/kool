@@ -5,6 +5,7 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.platform.ClientApi
 import de.fabmax.kool.platform.ImageDecoder
 import de.fabmax.kool.platform.KoolWindowJvm
 import de.fabmax.kool.platform.Lwjgl3Context
@@ -27,7 +28,7 @@ import java.io.File
 import java.nio.file.LinkOption
 import kotlin.io.path.*
 
-class SdlWindow(internal val handle: Long, title: String, ctx: Lwjgl3Context) : KoolWindowJvm {
+class SdlWindow(internal val handle: Long, title: String, private val clientApi: ClientApi, ctx: Lwjgl3Context) : KoolWindowJvm {
     val input = SdlInput(this)
 
     override var isMouseOverWindow: Boolean = false
@@ -222,7 +223,10 @@ class SdlWindow(internal val handle: Long, title: String, ctx: Lwjgl3Context) : 
         SDL_Vulkan_DestroySurface(instance, surface, null)
     }
 
-    override fun swapBuffers() { }
+    override fun swapBuffers() {
+        //check(clientApi == ClientApi.OPEN_GL) { "Client api needs to be OpenGL for swapBuffers()" }
+        SDL_GL_SwapWindow(handle)
+    }
 
     override fun close() {
         isCloseRequested = true
