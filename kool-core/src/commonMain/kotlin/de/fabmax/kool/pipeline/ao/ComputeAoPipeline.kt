@@ -267,6 +267,7 @@ class ComputeAoPass(
 
     private fun makeDownSampleLowerPasses() {
         val distInput = downSampleLowerShader.bindTexture2d("distInput")
+        val loadLod = downSampleLowerShader.bindUniformInt1("loadLod")
         val distOutput = downSampleLowerShader.bindStorageTexture2d("distOutput")
 
         for (level in 1 until SCALE_LEVELS) {
@@ -275,10 +276,10 @@ class ComputeAoPass(
             val task = addTask(downSampleLowerShader, Vec3i(groupsX, groupsY, 1))
 
             val key = "$level"
-            val inputSampler = SamplerSettings().nearest().clamped().copy(baseMipLevel = (level - 1), numMipLevels = 1)
             task.onBeforeDispatch {
                 downSampleLowerShader.createdPipeline?.swapPipelineDataCapturing(key) {
-                    distInput.set(scaledDists, inputSampler)
+                    distInput.set(scaledDists)
+                    loadLod.set(level - 1)
                     distOutput.set(scaledDists, level)
                 }
             }
@@ -343,6 +344,7 @@ class ComputeAoPass(
         computeStage(8, 8) {
             val distInput = texture2d("distInput", isUnfilterable = true)
             val distOutput = storageTexture2d<KslFloat1>("distOutput", distFormat)
+            val loadLod = uniformInt1("loadLod")
 
             main {
                 val baseCoord by inGlobalInvocationId.xy.toInt2()
@@ -350,7 +352,7 @@ class ComputeAoPass(
                 val maxDepth by 0f.const
                 val samplePos = listOf(Vec2i(0, 0), Vec2i(1, 0), Vec2i(0, 1), Vec2i(1, 1))
                 samplePos.forEach { sample ->
-                    val sampleDepth = float1Var(distInput.load(loadCoord + sample.const).x)
+                    val sampleDepth = float1Var(distInput.load(loadCoord + sample.const, loadLod).x)
                     `if`(sampleDepth gt maxDepth) {
                         maxDepth set sampleDepth
                     }
@@ -415,7 +417,7 @@ class ComputeAoPass(
                             val sampleDepth by -samplePos.z
                             val sampleProj by uProj * float4Value(samplePos, 1f.const)
                             val sampleUv by sampleProj.xy / sampleProj.w * 0.5f.const + 0.5f.const
-                            val sampleLod by length(sampleUv - uv) * 25f.const / uRadius
+                            val sampleLod by clamp(length(sampleUv - uv) * 25f.const / uRadius, 0f.const, (SCALE_LEVELS - 1f).const)
                             sampleLod set clamp(sampleLod, 0f.const, (SCALE_LEVELS-1).toFloat().const)
                             val sampleScreenDepth by distInput.sample(sampleUv, sampleLod).x
 
@@ -429,7 +431,7 @@ class ComputeAoPass(
                         occlFac set pow(clamp(1f.const - occlusion * distFac * uStrength, 0f.const, 1f.const), uFalloff)
                     }
                 }
-                aoOutput.store(baseCoord, float4Value(occlFac, 0f.const, 0f.const, 0f.const))
+                aoOutput.store(baseCoord, float4Value(occlFac, 0f.const, 0f.const, 1f.const))
             }
         }
     }
