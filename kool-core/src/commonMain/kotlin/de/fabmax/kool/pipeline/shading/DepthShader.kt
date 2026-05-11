@@ -104,7 +104,7 @@ open class DepthShader(
     }
 
     data class Config(
-        val pipelineCfg: PipelineConfig = PipelineConfig(),
+        val pipelineCfg: PipelineConfig = PipelineConfig(BlendMode.DISABLED),
         val vertexCfg: BasicVertexConfig = BasicVertexConfig.Builder().build(),
         val alphaMode: AlphaMode = AlphaMode.Opaque,
         val alphaMask: Texture2d? = null,

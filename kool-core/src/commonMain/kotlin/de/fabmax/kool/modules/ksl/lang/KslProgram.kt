@@ -68,7 +68,7 @@ open class KslProgram(val name: String) {
         stage.apply(block)
     }
 
-    fun computeStage(workGroupSizeX: Int = 1, workGroupSizeY: Int = 1, workGroupSizeZ: Int = 1, block: KslComputeStage.() -> Unit) {
+    fun computeStage(workGroupSizeX: Int, workGroupSizeY: Int = 1, workGroupSizeZ: Int = 1, block: KslComputeStage.() -> Unit) {
         contract {
             callsInPlace(block, InvocationKind.EXACTLY_ONCE)
         }

@@ -277,7 +277,7 @@ class ComputeAoPass(
 
             val key = "$level"
             task.onBeforeDispatch {
-                downSampleLowerShader.createdPipeline?.swapPipelineDataCapturing(key) {
+                downSampleLowerShader.swapPipelineDataCapturing(key) {
                     distInput.set(scaledDists)
                     loadLod.set(level - 1)
                     distOutput.set(scaledDists, level)

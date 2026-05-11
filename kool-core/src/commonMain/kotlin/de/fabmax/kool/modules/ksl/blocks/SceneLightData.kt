@@ -3,7 +3,9 @@ package de.fabmax.kool.modules.ksl.blocks
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.scene.Lighting
 import de.fabmax.kool.util.MemoryLayout
+import de.fabmax.kool.util.MutableStructBufferView
 import de.fabmax.kool.util.Struct
 import kotlin.math.min
 
@@ -36,27 +38,31 @@ class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock
             val binding = viewData.uniformStructBindingData(layout)
             val lighting = cmd.queue.renderPass.lighting
             binding.set {
-                if (lighting == null) {
-                    set(it.lightCount, 0)
-                } else {
-                    val lightCount = min(lighting.lights.size, maxLightCount)
-                    set(it.lightCount, lightCount)
-                    for (i in 0 until lightCount) {
-                        val light = lighting.lights[i]
-                        light.updateEncodedValues()
-                        set(it.encodedPositions, i, light.encodedPosition)
-                        set(it.encodedDirections, i, light.encodedDirection)
-                        set(it.encodedColors, i, light.encodedColor)
-                    }
-                }
+                setLightData(lighting, maxLightCount, it)
             }
         }
     }
+}
 
-    class LightDataStruct(maxLightCount: Int) : Struct("LightData", MemoryLayout.Std140) {
-        val encodedPositions = float4Array(maxLightCount, "encodedPositions")
-        val encodedDirections = float4Array(maxLightCount, "encodedDirections")
-        val encodedColors = float4Array(maxLightCount, "encodedColors")
-        val lightCount = int1("lightCount")
+class LightDataStruct(maxLightCount: Int) : Struct("LightData", MemoryLayout.Std140) {
+    val encodedPositions = float4Array(maxLightCount, "encodedPositions")
+    val encodedDirections = float4Array(maxLightCount, "encodedDirections")
+    val encodedColors = float4Array(maxLightCount, "encodedColors")
+    val lightCount = int1("lightCount")
+}
+
+fun MutableStructBufferView<LightDataStruct>.setLightData(lighting: Lighting?, maxLightCount: Int, layout: LightDataStruct) {
+    if (lighting == null) {
+        set(layout.lightCount, 0)
+    } else {
+        val lightCount = min(lighting.lights.size, maxLightCount)
+        set(layout.lightCount, lightCount)
+        for (i in 0 until lightCount) {
+            val light = lighting.lights[i]
+            light.updateEncodedValues()
+            set(layout.encodedPositions, i, light.encodedPosition)
+            set(layout.encodedDirections, i, light.encodedDirection)
+            set(layout.encodedColors, i, light.encodedColor)
+        }
     }
 }
