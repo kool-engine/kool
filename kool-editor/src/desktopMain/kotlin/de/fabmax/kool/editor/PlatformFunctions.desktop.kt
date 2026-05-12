@@ -38,12 +38,12 @@ actual object PlatformFunctions {
         val posX = KeyValueStore.getInt("editor.window.posX", -1)
         val posY = KeyValueStore.getInt("editor.window.posY", -1)
         if (posX != -1 && posY != -1) {
-            wnd.positionOnScreen = Vec2i(posX, posY)
+            wnd.setPositionOnScreen(Vec2i(posX, posY))
         }
 
         val width = KeyValueStore.getInt("editor.window.width", KoolSystem.configJvm.windowSize.x)
         val height = KeyValueStore.getInt("editor.window.height", KoolSystem.configJvm.windowSize.y)
-        wnd.sizeOnScreen = Vec2i(width, height)
+        wnd.setSizeOnScreen(Vec2i(width, height))
 
         val isMaximized = KeyValueStore.getBoolean("editor.window.isMaximized", false)
         if (isMaximized) {

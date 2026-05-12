@@ -27,11 +27,12 @@ import kotlin.io.path.*
 class SdlWindow(internal val handle: Long, width: Int, height: Int, title: String, private val clientApi: ClientApi, ctx: Lwjgl3Context) : KoolWindowJvm {
     val input = SdlInput(this)
 
-    override var isMouseOverWindow: Boolean = false
+    override var isMouseOverWindow: Boolean = false; private set
 
     override var parentScreenScale: Float = 1f; private set
-    override var positionOnScreen: Vec2i = Vec2i.ZERO
-    override var sizeOnScreen: Vec2i = Vec2i(width, height)
+    override var positionOnScreen: Vec2i = Vec2i.ZERO; private set
+    override var sizeOnScreen: Vec2i = Vec2i(width, height); private set
+
     override var renderResolutionFactor: Float = 1f
         set(value) {
             if (value != field) {
@@ -52,16 +53,6 @@ class SdlWindow(internal val handle: Long, width: Int, height: Int, title: Strin
             }
         }
 
-    override val capabilities: WindowCapabilities = WindowCapabilities.NONE.copy(canSetTitle = true)
-
-    override val resizeListeners: BufferedList<WindowResizeListener> = BufferedList()
-    override val scaleChangeListeners: BufferedList<ScaleChangeListener> = BufferedList()
-    override val flagListeners: BufferedList<WindowFlagsListener> = BufferedList()
-    override val closeListeners: BufferedList<WindowCloseListener> = BufferedList()
-    override val dragAndDropListeners: BufferedList<DragAndDropListener> = BufferedList()
-
-    override var windowTitleHoverHandler: WindowTitleHoverHandler = WindowTitleHoverHandler()
-
     override var flags: WindowFlags = WindowFlags(isHiddenTitleBar = ctx.config.isNoTitleBar)
         private set(value) {
             if (value != field) {
@@ -70,6 +61,25 @@ class SdlWindow(internal val handle: Long, width: Int, height: Int, title: Strin
                 flagListeners.updated().forEach { it.onFlagsChanged(oldFlags, value) }
             }
         }
+
+    override val capabilities: WindowCapabilities = WindowCapabilities(
+        canSetSize = true,
+        canSetPosition = true,
+        canSetFullscreen = true,
+        canMaximize = true,
+        canMinimize = true,
+        canSetVisibility = true,
+        canSetTitle = true,
+        canHideTitleBar = false,
+    )
+
+    override val resizeListeners: BufferedList<WindowResizeListener> = BufferedList()
+    override val scaleChangeListeners: BufferedList<ScaleChangeListener> = BufferedList()
+    override val flagListeners: BufferedList<WindowFlagsListener> = BufferedList()
+    override val closeListeners: BufferedList<WindowCloseListener> = BufferedList()
+    override val dragAndDropListeners: BufferedList<DragAndDropListener> = BufferedList()
+
+    override var windowTitleHoverHandler: WindowTitleHoverHandler = WindowTitleHoverHandler()
 
     var isCloseRequested = false; private set
 
@@ -96,6 +106,62 @@ class SdlWindow(internal val handle: Long, width: Int, height: Int, title: Strin
         if (iconList.isNotEmpty()) {
             setWindowIcon(iconList)
         }
+    }
+
+    override fun setSizeOnScreen(size: Vec2i) {
+        BackendScope.launch {
+            SDL_SetWindowSize(handle, size.x, size.y)
+        }
+    }
+
+    override fun setPositionOnScreen(pos: Vec2i) {
+        BackendScope.launch {
+            SDL_SetWindowPosition(handle, size.x, size.y)
+        }
+    }
+
+    override fun setFullscreen(flag: Boolean) {
+        flags = flags.copy(isFullscreen = flag)
+        BackendScope.launch {
+            SDL_SetWindowFullscreen(handle, flag)
+        }
+    }
+
+    override fun setMaximized(flag: Boolean) {
+        flags = flags.copy(isMaximized = flag)
+        BackendScope.launch {
+            if (flag) {
+                SDL_MaximizeWindow(handle)
+            } else {
+                SDL_RestoreWindow(handle)
+            }
+        }
+    }
+
+    override fun setMinimized(flag: Boolean) {
+        flags = flags.copy(isMinimized = flag)
+        BackendScope.launch {
+            if (flag) {
+                SDL_MinimizeWindow(handle)
+            } else {
+                SDL_RestoreWindow(handle)
+            }
+        }
+    }
+
+    override fun setVisible(flag: Boolean) {
+        flags = flags.copy(isVisible = flag)
+        BackendScope.launch {
+            if (flag) {
+                SDL_ShowWindow(handle)
+            } else {
+                SDL_HideWindow(handle)
+            }
+        }
+    }
+
+    override fun requestFocus() {
+        BackendScope.launch { SDL_RaiseWindow(handle) }
     }
 
     override fun pollEvents() {
@@ -131,6 +197,8 @@ class SdlWindow(internal val handle: Long, width: Int, height: Int, title: Strin
             SdlEventType.WINDOW_FOCUS_LOST -> flags = flags.copy(isFocused = false)
             SdlEventType.WINDOW_EXPOSED -> flags = flags.copy(isOccluded = false)
             SdlEventType.WINDOW_OCCLUDED -> flags = flags.copy(isOccluded = true)
+            SdlEventType.WINDOW_ENTER_FULLSCREEN -> flags = flags.copy(isFullscreen = true)
+            SdlEventType.WINDOW_LEAVE_FULLSCREEN -> flags = flags.copy(isFullscreen = false)
             SdlEventType.WINDOW_MOVED -> updateWindowPos(window)
             SdlEventType.WINDOW_RESIZED -> updateWindowSize(window)
             SdlEventType.WINDOW_PIXEL_SIZE_CHANGED -> updateFramebufferSize(window)

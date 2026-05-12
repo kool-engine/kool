@@ -4,6 +4,7 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.WindowTitleHoverHandler
+import de.fabmax.kool.util.logW
 
 interface KoolWindow {
     /**
@@ -15,16 +16,16 @@ interface KoolWindow {
     /**
      * Window position in scaled screen space (i.e., considering [parentScreenScale]).
      */
-    var positionOnScreen: Vec2i
+    val positionOnScreen: Vec2i
 
     /**
      * Window size in scaled screen space (i.e., considering [parentScreenScale]). For example, a full-screen
      * window on a 4k screen with 150% scale has a `screenSize` of `(3840, 2160) / 1.5 = (2560, 1440)`
      */
-    var sizeOnScreen: Vec2i
+    val sizeOnScreen: Vec2i
 
     /**
-     * User settable render resolution factor. Default value 1.0. Can be set to values < 1 to save performance
+     * User-settable render resolution factor. Default value 1.0. Can be set to values < 1 to save performance
      * at the cost of more pixelated output. Does not affect the size of UI elements.
      */
     var renderResolutionFactor: Float
@@ -58,12 +59,61 @@ interface KoolWindow {
 
     var windowTitleHoverHandler: WindowTitleHoverHandler
 
-    fun setFullscreen(flag: Boolean) { }
-    fun setMaximized(flag: Boolean) { }
-    fun setMinimized(flag: Boolean) { }
-    fun setVisible(flag: Boolean) { }
-    fun setFocused(flag: Boolean) { }
-    fun setTitleBarVisibility(flag: Boolean) { }
+    /**
+     * Request setting the window size in scaled screen space. Might not be supported by all window implementations.
+     * Depending on the implementation, setting the window size can take some time and [sizeOnScreen] therefore might
+     * not immediately reflect the new size.
+     */
+    fun setSizeOnScreen(size: Vec2i) { logW { "setSizeOnScreen() not supported by this window implementation" } }
+
+    /**
+     * Request setting the window position in scaled screen space. Might not be supported by all window implementations.
+     * Depending on the implementation, setting the window position can take some time and [positionOnScreen] therefore
+     * might not immediately reflect the new size.
+     */
+    fun setPositionOnScreen(pos: Vec2i) { logW { "setPositionOnScreen() not supported by this window implementation" } }
+
+    /**
+     * Request fullscreen mode. Might not be supported by all window implementations.
+     * Depending on the implementation, setting the window flags can take some time and [flags] therefore
+     * might not immediately reflect the new state.
+     */
+    fun setFullscreen(flag: Boolean) { logW { "setFullscreen() not supported by this window implementation" } }
+
+    /**
+     * Request maximizing the window. Might not be supported by all window implementations.
+     * Depending on the implementation, setting the window flags can take some time and [flags] therefore
+     * might not immediately reflect the new state.
+     */
+    fun setMaximized(flag: Boolean) { logW { "setMaximized() not supported by this window implementation" } }
+
+    /**
+     * Request minimizing the window. Might not be supported by all window implementations.
+     * Depending on the implementation, setting the window flags can take some time and [flags] therefore
+     * might not immediately reflect the new state.
+     */
+    fun setMinimized(flag: Boolean) { logW { "setMinimized() not supported by this window implementation" } }
+
+    /**
+     * Request setting window visibility. Might not be supported by all window implementations.
+     * Depending on the implementation, setting the window flags can take some time and [flags] therefore
+     * might not immediately reflect the new state.
+     */
+    fun setVisible(flag: Boolean) { logW { "setVisible() not supported by this window implementation" } }
+
+    /**
+     * Request setting title bar visibility. Might not be supported by all window implementations.
+     * Depending on the implementation, setting the window flags can take some time and [flags] therefore
+     * might not immediately reflect the new state.
+     */
+    fun setTitleBarVisibility(flag: Boolean) { logW { "setTitleBarVisibility() not supported by this window implementation" } }
+
+    /**
+     * Request OS-level window focus. Might not be supported by all window implementations.
+     * Depending on the implementation, setting the window flags can take some time and [flags] therefore
+     * might not immediately reflect the new state.
+     */
+    fun requestFocus() { logW { "requestFocus() not supported by this window implementation" } }
 
     fun close()
 }

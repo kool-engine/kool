@@ -32,28 +32,11 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
 
     override var isMouseOverWindow: Boolean = false; internal set
 
-    private var _screenPos = Vec2i(0, 0)
-    private var _screenSize = Vec2i(KoolSystem.configJvm.windowSize)
-
     override var parentScreenScale: Float = 1f; private set
 
-    override var positionOnScreen: Vec2i
-        get() = _screenPos
-        set(value) {
-            _screenPos = value
-            BackendScope.launch {
-                platformWindowHelper.setWindowPos(windowHandle, value.x, value.y)
-            }
-        }
+    override var positionOnScreen: Vec2i = Vec2i(0, 0); private set
 
-    override var sizeOnScreen: Vec2i
-        get() = _screenSize
-        set(value) {
-            _screenSize = value
-            BackendScope.launch {
-                platformWindowHelper.setWindowSize(windowHandle, value.x, value.y)
-            }
-        }
+    override var sizeOnScreen: Vec2i = Vec2i(KoolSystem.configJvm.windowSize); private set
 
     override var renderResolutionFactor: Float = 1f
         set(value) {
@@ -149,22 +132,22 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
         val outFloat2 = FloatArray(1)
         if (GlfwWindowSubsystem.platform != GlfwPlatform.LinuxWayland) {
             glfwGetWindowPos(windowHandle, outInt1, outInt2)
-            _screenPos = Vec2i(outInt1[0], outInt2[0])
+            positionOnScreen = Vec2i(outInt1[0], outInt2[0])
         }
-        windowedPos = _screenPos
+        windowedPos = positionOnScreen
         glfwGetFramebufferSize(windowHandle, outInt1, outInt2)
         framebufferSize = Vec2i(outInt1[0], outInt2[0])
         glfwGetWindowContentScale(windowHandle, outFloat1, outFloat2)
         parentScreenScale = outFloat1[0]
         updateSizesAndScales()
 
-        _screenSize = Vec2i((size.x / parentScreenScale).roundToInt(), (size.y / parentScreenScale).roundToInt())
-        windowedSize = _screenSize
+        sizeOnScreen = Vec2i((size.x / parentScreenScale).roundToInt(), (size.y / parentScreenScale).roundToInt())
+        windowedSize = sizeOnScreen
 
         updateWindowFlagsFromState()
 
         glfwSetWindowSizeCallback(windowHandle) { _, w, h ->
-            _screenSize = Vec2i(w, h)
+            sizeOnScreen = Vec2i(w, h)
             windowResizeHandler()
         }
         glfwSetFramebufferSizeCallback(windowHandle) { _, w, h ->
@@ -172,7 +155,7 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
             updateSizesAndScales()
         }
         glfwSetWindowPosCallback(windowHandle) { _, x, y ->
-            _screenPos = platformWindowHelper.getWindowPos(windowHandle, x, y)
+            positionOnScreen = platformWindowHelper.getWindowPos(windowHandle, x, y)
         }
         glfwSetWindowCloseCallback(windowHandle) {
             onWindowCloseRequest()
@@ -189,6 +172,17 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
         }
     }
 
+    override fun setSizeOnScreen(size: Vec2i) {
+        BackendScope.launch {
+            platformWindowHelper.setWindowSize(windowHandle, size.x, size.y)
+        }
+    }
+
+    override fun setPositionOnScreen(pos: Vec2i) {
+        BackendScope.launch {
+            platformWindowHelper.setWindowPos(windowHandle, pos.x, pos.y)
+        }
+    }
 
     override fun setFullscreen(flag: Boolean) {
         if (flag != flags.isMaximized) {
