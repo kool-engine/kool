@@ -119,7 +119,7 @@ class ImageVk(
         scopedMem(stack) {
             val prevLayout = lastKnownLayout
             transitionLayout(
-                VK_IMAGE_LAYOUT_UNDEFINED,
+                prevLayout,
                 VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                 commandBuffer,
                 stack = this

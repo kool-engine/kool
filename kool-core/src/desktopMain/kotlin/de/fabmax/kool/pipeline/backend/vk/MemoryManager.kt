@@ -35,6 +35,14 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
         impl.freeBuffer(deferTicks, buffer)
     }
 
+    fun flushBuffer(buffer: VkBuffer, offset: Long = 0L, size: Long = VK_WHOLE_SIZE) {
+        impl.flushAllocation(buffer.allocation, offset, size)
+    }
+
+    fun invalidateBuffer(buffer: VkBuffer, offset: Long = 0L, size: Long = VK_WHOLE_SIZE) {
+        impl.invalidateAllocation(buffer.allocation, offset, size)
+    }
+
     inline fun stagingBuffer(
         size: Long,
         usage: Int = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -107,6 +115,8 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
         fun freeImage(deferTicks: Int, image: VkImage)
         fun mapMemory(allocation: Long): Long
         fun unmapMemory(allocation: Long)
+        fun flushAllocation(allocation: Long, offset: Long, size: Long)
+        fun invalidateAllocation(allocation: Long, offset: Long, size: Long)
         fun freeResources()
     }
 
@@ -236,6 +246,14 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
 
         override fun unmapMemory(allocation: Long) {
             vmaUnmapMemory(allocator, allocation)
+        }
+
+        override fun flushAllocation(allocation: Long, offset: Long, size: Long) {
+            vmaFlushAllocation(allocator, allocation, offset, size)
+        }
+
+        override fun invalidateAllocation(allocation: Long, offset: Long, size: Long) {
+            vmaInvalidateAllocation(allocator, allocation, offset, size)
         }
 
         fun printMemoryStats() {

@@ -22,13 +22,13 @@ object TextureLoaderGl {
         var loaded = loadedTextures[data.id]
         if (loaded != null && loaded.isReleased) { loadedTextures -= data.id }
         loaded = loadedTextures.getOrPut(data.id) {
-            when {
-                tex is Texture1d && data is ImageData1d -> loadTexture1dCompat(tex, data, backend)
-                tex is Texture2d && data is ImageData2d -> loadTexture2d(tex, data, backend)
-                tex is Texture3d && data is ImageData3d -> loadTexture3d(tex, data, backend)
-                tex is TextureCube && data is ImageDataCube -> loadTextureCube(tex, data, backend)
-                tex is Texture2dArray && data is ImageData3d -> loadTexture2dArray(tex, data, backend)
-                tex is TextureCubeArray && data is ImageDataCubeArray -> loadTextureCubeArray(tex, data, backend)
+            when (tex) {
+                is Texture1d if data is ImageData1d -> loadTexture1dCompat(tex, data, backend)
+                is Texture2d if data is ImageData2d -> loadTexture2d(tex, data, backend)
+                is Texture3d if data is ImageData3d -> loadTexture3d(tex, data, backend)
+                is TextureCube if data is ImageDataCube -> loadTextureCube(tex, data, backend)
+                is Texture2dArray if data is ImageData3d -> loadTexture2dArray(tex, data, backend)
+                is TextureCubeArray if data is ImageDataCubeArray -> loadTextureCubeArray(tex, data, backend)
                 else -> error("Invalid texture / image data combination: ${tex::class.simpleName} / ${data::class.simpleName}")
             }
         }

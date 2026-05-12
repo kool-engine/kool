@@ -34,18 +34,21 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
 
         var loaded = loadedTextures[data.id]
         if (loaded != null && loaded.isReleased) { loadedTextures -= data.id }
-
-        loaded = when {
-            tex is Texture1d && data is ImageData1d -> loadTexture1d(tex, data)
-            tex is Texture2d && data is ImageData2d -> loadTexture2d(tex, data)
-            tex is Texture3d && data is ImageData3d -> loadTexture3d(tex, data)
-            tex is TextureCube && data is ImageDataCube -> loadTextureCube(tex, data)
-            tex is Texture2dArray && data is ImageData3d -> loadTexture2dArray(tex, data)
-            tex is TextureCubeArray && data is ImageDataCubeArray -> loadTextureCubeArray(tex, data)
-            else -> error("Invalid texture / image data combination: ${tex::class.simpleName} / ${data::class.simpleName}")
+        loaded = loadedTextures.getOrPut(data.id) {
+            when (tex) {
+                is Texture1d if data is ImageData1d -> loadTexture1d(tex, data)
+                is Texture2d if data is ImageData2d -> loadTexture2d(tex, data)
+                is Texture3d if data is ImageData3d -> loadTexture3d(tex, data)
+                is TextureCube if data is ImageDataCube -> loadTextureCube(tex, data)
+                is Texture2dArray if data is ImageData3d -> loadTexture2dArray(tex, data)
+                is TextureCubeArray if data is ImageDataCubeArray -> loadTextureCubeArray(tex, data)
+                else -> error("Invalid texture / image data combination: ${tex::class.simpleName} / ${data::class.simpleName}")
+            }
         }
-        tex.gpuTexture?.release()
-        tex.gpuTexture = loaded
+        if (loaded !== tex.gpuTexture) {
+            tex.gpuTexture?.release()
+            tex.gpuTexture = loaded
+        }
     }
 
     private fun loadTexture1d(tex: Texture1d, data: ImageData1d): WgpuTextureResource {
