@@ -243,7 +243,11 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
             aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
         )
         val storageImage = ImageVk(backend, imageInfo)
-        storageImage.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, commandBuffer)
+        if (storageTexture.format.isFloat) {
+            storageImage.clearColor(VK_IMAGE_LAYOUT_GENERAL, commandBuffer)
+        } else {
+            storageImage.clearColorInt(VK_IMAGE_LAYOUT_GENERAL, commandBuffer)
+        }
         storageTexture.gpuTexture?.release()
         storageTexture.gpuTexture = storageImage
     }

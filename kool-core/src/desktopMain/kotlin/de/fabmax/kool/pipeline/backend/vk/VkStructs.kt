@@ -51,6 +51,12 @@ inline fun MemoryStack.callocVkBufferCreateInfo(block: VkBufferCreateInfo.() -> 
         block()
     }
 
+inline fun MemoryStack.callocVkClearValue(block: VkClearValue.() -> Unit): VkClearValue =
+    allocStruct(VkClearValue::calloc, block)
+
+inline fun MemoryStack.callocVkClearColorValue(block: VkClearColorValue.() -> Unit): VkClearColorValue =
+    allocStruct(VkClearColorValue::calloc, block)
+
 inline fun MemoryStack.callocVkCommandBufferAllocateInfo(block: VkCommandBufferAllocateInfo.() -> Unit): VkCommandBufferAllocateInfo =
     allocStruct(VkCommandBufferAllocateInfo::calloc) {
         `sType$Default`()
@@ -122,6 +128,11 @@ inline fun MemoryStack.callocVkImageCreateInfo(block: VkImageCreateInfo.() -> Un
         `sType$Default`()
         block()
     }
+
+
+inline fun MemoryStack.callocVkImageSubresourceRange(block: VkImageSubresourceRange.() -> Unit): VkImageSubresourceRange =
+    allocStruct(VkImageSubresourceRange::calloc, block)
+
 
 inline fun MemoryStack.callocVkImageViewCreateInfo(block: VkImageViewCreateInfo.() -> Unit): VkImageViewCreateInfo =
     allocStruct(VkImageViewCreateInfo::calloc) {

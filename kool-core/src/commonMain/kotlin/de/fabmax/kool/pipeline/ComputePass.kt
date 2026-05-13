@@ -19,20 +19,25 @@ fun ComputePass(computeShader: ComputeShader, numInvocationsX: Int, numInvocatio
 }
 
 open class ComputePass(name: String) : GpuPass(name) {
-    private val _tasks = mutableListOf<Task>()
-    val tasks: List<Task> get() = _tasks
+    val tasks: List<Task>
+        field = mutableListOf<Task>()
 
     val impl = KoolSystem.requireContext().backend.createComputePass(this)
 
     fun addTask(computeShader: ComputeShader, numGroups: Vec3i): Task {
         val task = Task(computeShader, numGroups)
-        _tasks += task
+        tasks += task
         return task
     }
 
     fun removeAndReleaseTask(task: Task) {
-        _tasks.remove(task)
+        tasks.remove(task)
         task.release()
+    }
+
+    fun clearAndReleaseTasks() {
+        tasks.forEach { it.release() }
+        tasks.clear()
     }
 
     override fun update(passData: PassData, ctx: KoolContext) {
@@ -42,8 +47,8 @@ open class ComputePass(name: String) : GpuPass(name) {
     }
 
     override fun doRelease() {
-        _tasks.forEach { it.release() }
-        _tasks.clear()
+        tasks.forEach { it.release() }
+        tasks.clear()
     }
 
     inner class Task(val shader: ComputeShader, numGroups: Vec3i) : BaseReleasable() {

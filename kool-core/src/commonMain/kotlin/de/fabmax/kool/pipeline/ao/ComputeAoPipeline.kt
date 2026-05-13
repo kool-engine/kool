@@ -175,7 +175,7 @@ class ComputeAoPass(
             if (!isConfigured || finalAo.width != 8 || finalAo.height != 8) {
                 finalAo.resize(8, 8)
                 SyncedScope.launch {
-                    tasks.toList().forEach { removeAndReleaseTask(it) }
+                    clearAndReleaseTasks()
                     makeClearPass()
                 }
             }
@@ -190,7 +190,7 @@ class ComputeAoPass(
             finalAo.resize(fullWidth, fullHeight)
 
             SyncedScope.launch {
-                tasks.toList().forEach { removeAndReleaseTask(it) }
+                clearAndReleaseTasks()
                 makeDownSamplePass()
                 makeDownSampleLowerPasses()
                 makeAoPass()
