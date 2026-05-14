@@ -49,8 +49,8 @@ class TemporalFilterPass(
         temporalShader.swapPipelineDataCapturing(filterOutput.newVal) {
             oldAlbedo = gbuffers.oldVal.albedoEmission
             newAlbedo = gbuffers.newVal.albedoEmission
-            oldMeta = gbuffers.oldVal.meta
-            newMeta = gbuffers.newVal.meta
+            oldMeta = gbuffers.oldVal.objectIds
+            newMeta = gbuffers.newVal.objectIds
             oldFilter = filterOutput.oldVal
             newFilter = filterOutput.newVal
             frameI = Time.frameCount
@@ -115,10 +115,10 @@ class TemporalFilterShader(
                 val meta2 = paramInt1()
 
                 body {
-                    val x1 by meta1 and 0xf.const
-                    val y1 by (meta1 shr 4.const) and 0xf.const
-                    val x2 by meta2 and 0xf.const
-                    val y2 by (meta2 shr 4.const) and 0xf.const
+                    val x1 by (meta1 shr 24.const) and 0xf.const
+                    val y1 by (meta1 shr 28.const) and 0xf.const
+                    val x2 by (meta2 shr 24.const) and 0xf.const
+                    val y2 by (meta2 shr 28.const) and 0xf.const
                     (abs(x1 - x2) le 3.const) and (abs(y1 - y2) le 3.const)
                 }
             }
@@ -190,9 +190,9 @@ class TemporalFilterShader(
                 newFilter[baseCoord] = float4Value(filtered, 1f)
 //                newFilter[baseCoord] = float4Value(current, 1f)
 
-//                val x1 by curMeta and 0xf.const
-//                val y1 by (curMeta shr 4.const) and 0xf.const
-//                newFilter[baseCoord] = float4Value(x1.toFloat1() / 15f.const, y1.toFloat1() / 15f.const, 0f.const, 1f.const)
+//                val x1 by (curMeta shr 16.const) and 0xff.const
+//                val y1 by (curMeta shr 24.const) and 0xff.const
+//                newFilter[baseCoord] = float4Value(x1.toFloat1() / 127f.const, y1.toFloat1() / 127f.const, 0f.const, 1f.const)
 
 //                newFilter[baseCoord] = float4Value(mix(curColor, curAlbedo, 0.5f.const), 1f)
 

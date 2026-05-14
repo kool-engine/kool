@@ -104,7 +104,7 @@ class DeferredLightingShader : KslShader("deferred2-lighting") {
         fullscreenQuadVertexStage(uv)
         fragmentStage {
             val depth = texture2d("depth", isUnfilterable = true)
-            val encodedNormals = texture2dInt("encodedNormals")
+            val encodedNormals = texture2d("encodedNormals")
             val albedoEmission = texture2d("albedoEmission")
             val metalRoughnessAo = texture2d("metalRoughnessAo")
 
@@ -118,9 +118,8 @@ class DeferredLightingShader : KslShader("deferred2-lighting") {
                 val invView = camData[DeferredCamDataStruct.invView]
                 val worldPos by unprojectBaseCoord(depth, baseCoord, camNear, invProj, invView).xyz
 
-                val encNormalMeta by encodedNormals.load(baseCoord, lod = 0.const).xy
-                val viewNormal by decodeNormal(encNormalMeta.x)
-                val worldNormal by (camData[DeferredCamDataStruct.invView] * float4Value(viewNormal, 0f)).xyz
+                val viewNormal by decodeNormalRgb(encodedNormals.load(baseCoord, lod = 0.const).xyz)
+                val worldNormal by (invView * float4Value(viewNormal, 0f.const)).xyz
 
                 val albedoEmission = float4Var(albedoEmission.load(baseCoord, lod = 0.const))
                 val albedo = albedoEmission.xyz
