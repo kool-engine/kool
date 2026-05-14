@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 
-private const val renderScale = 0.75f
+private const val renderScale = 1f
 val tsaa = TSAA_PATTERN_4
 
 class Deferred2Pipeline(

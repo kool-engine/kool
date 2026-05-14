@@ -30,6 +30,10 @@ suspend fun KoolApplication.deferred2Test() {
                 generate {
                     color = Color.WHITE
                     cube { origin.set(-2.5f, 0f, 0f)}
+                    icoSphere {
+                        center.set(-2.5f, 0f, 2.5f)
+                        steps = 4
+                    }
                 }
                 onUpdate {
 //                    transform.rotate(360f.deg * Time.deltaT, Vec3f.Y_AXIS)
@@ -43,7 +47,8 @@ suspend fun KoolApplication.deferred2Test() {
                 onUpdate {
                     transform
                         .setIdentity()
-                        .rotate(90f.deg * Time.gameTime.toFloat(), Vec3f.Y_AXIS)
+                        .rotate(10f.deg * Time.gameTime.toFloat(), Vec3f.Y_AXIS)
+                        //.rotate(20f.deg, Vec3f.Y_AXIS)
                         .translate(2.5f, 0f, 0f)
                 }
                 shader = GbufferShader(GbufferShaderConfig.Builder().apply {
@@ -94,31 +99,6 @@ suspend fun KoolApplication.deferred2Test() {
             val orbitCam = orbitCamera(deferred2Pipeline.camera) { }
             addNode(orbitCam)
         }
-
-//        val matPass = GbufferPass(content)
-//        addOffscreenPass(matPass)
-//        content.apply {
-//            orbitCamera(matPass.defaultView) { }
-//        }
-//
-//        val lighting = Lighting().apply {
-//            singlePointLight {
-//                //setup(Vec3f(3f, 4f, 2f))
-//                //setColor(MdColor.AMBER.toLinear(), intensity = 30f)
-//                setup(Vec3f(1.2f, 1.2f, 2f))
-//                setColor(Color.WHITE, intensity = 5f)
-//            }
-//        }
-//
-//        val lightingPass = DeferredLightingPass(
-//            depth = matPass.depth,
-//            encodedNormalsMeta = matPass.encodedNormalsMeta,
-//            albedoEmission = matPass.albedoEmission,
-//            metalRoughnessAo = matPass.metalRoughnessAo,
-//            sceneCam = matPass.camera,
-//            lighting = lighting,
-//        )
-//        addComputePass(lightingPass)
 
         addTextureMesh {
             generate {

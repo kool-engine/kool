@@ -20,19 +20,23 @@ import de.fabmax.kool.util.Time
 class GbufferPass(content: Node, camera: Camera, initialSize: Vec2i) : OffscreenPass2d(
     drawNode = content,
     attachmentConfig = AttachmentConfig {
-        addColor(TexFormat.R_I32, filterMethod = FilterMethod.NEAREST)      // meta data
-        addColor(TexFormat.R_I32, filterMethod = FilterMethod.NEAREST)      // encoded normals
-        addColor(TexFormat.RGBA, filterMethod = FilterMethod.NEAREST)        // albedo, a * 255 = emission strength
-        addColor(TexFormat.RGBA, filterMethod = FilterMethod.NEAREST)        // metal, roughness, ao
+        // albedo, a * 255 = emission strength
+        addColor(TexFormat.RGBA, filterMethod = FilterMethod.NEAREST)
+        // metal, roughness, ao, [empty: a, flags maybe?]
+        addColor(TexFormat.RGBA, filterMethod = FilterMethod.NEAREST)
+        // encoded normals, alpha almost free
+        addColor(TexFormat.RGBA, filterMethod = FilterMethod.NEAREST, clearColor = ClearColorFill(Color.ZERO))
+        // object-ids, meta
+        addColor(TexFormat.R_I32, filterMethod = FilterMethod.NEAREST)
         defaultDepth()
     },
     initialSize = initialSize,
     name = "deferred2-gbuffer-pass"
 ) {
-    val meta get() = colorTextures[0]
-    val encodedNormals get() = colorTextures[1]
-    val albedoEmission get() = colorTextures[2]
-    val metalRoughnessAo get() = colorTextures[3]
+    val albedoEmission get() = colorTextures[0]
+    val metalRoughnessAo get() = colorTextures[1]
+    val encodedNormals get() = colorTextures[2]
+    val objectIds get() = colorTextures[3]
 
     val depth get() = depthTexture!!
 
@@ -99,7 +103,6 @@ class GbufferShader(val config: GbufferShaderConfig) : KslShader("deferred2-gbuf
 
     private fun KslProgram.program() {
         val camData = cameraData()
-        val positionViewSpace = interStageFloat3("positionWorldSpace")
         val normalViewSpace = interStageFloat3("normalWorldSpace")
         var tangentViewSpace: KslInterStageVector<KslFloat4, KslFloat1>? = null
 
@@ -124,7 +127,6 @@ class GbufferShader(val config: GbufferShaderConfig) : KslShader("deferred2-gbuf
                 val viewPos by camData.viewMat * float4Value(worldPos, 1f)
                 outPosition set camData.projMat * viewPos
 
-                positionViewSpace.input set viewPos.xyz
                 normalViewSpace.input set (camData.viewMat * float4Value(worldNormal, 0f)).xyz
 
                 if (config.normalMapCfg.isNormalMapped) {
@@ -174,13 +176,14 @@ class GbufferShader(val config: GbufferShaderConfig) : KslShader("deferred2-gbuf
                 val metallic = float1Port("metallic", fragmentPropertyBlock(config.metallicCfg).outProperty)
                 val aoFactor = float1Port("aoFactor", fragmentPropertyBlock(config.aoCfg).outProperty)
 
-                val normalHashX by clamp(((sqrt(abs(normal.x)) * sign(normal.x) + 1f.const) * 8f.const).toInt1(), 0.const, 15.const)
-                val normalHashY by clamp(((sqrt(abs(normal.y)) * sign(normal.y) + 1f.const) * 8f.const).toInt1(), 0.const, 15.const)
+                val normalHashX by clamp(((normal.x + 1f.const) * 8f.const).toInt1(), 0.const, 15.const)
+                val normalHashY by clamp(((normal.y + 1f.const) * 8f.const).toInt1(), 0.const, 15.const)
+                val hash by (normalHashX shl 28.const) or (normalHashY shl 24.const)
 
-                intOutput(int4Value(normalHashX or (normalHashY shl 4.const), 0.const, 0.const, 0.const), location = 0)
-                intOutput(int4Value(encodeNormal(normal), 0.const, 0.const, 0.const), location = 1)
-                colorOutput(float4Value(baseColor.rgb, emissionStrength), location = 2)
-                colorOutput(float4Value(metallic, roughness, aoFactor, 0f.const), location = 3)
+                colorOutput(float4Value(baseColor.rgb, emissionStrength), location = 0)
+                colorOutput(float4Value(metallic, roughness, aoFactor, 0f.const), location = 1)
+                colorOutput(encodeNormalRgb(normal), location = 2)
+                intOutput(int4Value(hash, 0.const, 0.const, 0.const), location = 3)
             }
         }
     }
@@ -264,10 +267,5 @@ class GbufferShaderConfig(builder: Builder) {
         }
 
         open fun build() = GbufferShaderConfig(this)
-    }
-
-    companion object {
-        const val MATERIAL_FLAG_ALWAYS_LIT = 1
-        const val MATERIAL_FLAG_IS_MOVING = 2
     }
 }
