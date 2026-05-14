@@ -43,7 +43,7 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
             .filterIsInstance<ColorBlockConfig.TextureArrayColor>()
             .filter { it.textureName !in textureArrays || it.defaultTexture != null && textureArrays[it.textureName] == null }
             .forEach {
-                textureArrays[it.textureName] = texture2dArray(it.textureName, it.defaultTexture, null)
+                textureArrays[it.textureName] = bindTexture2dArray(it.textureName, it.defaultTexture, null)
             }
     }
 
@@ -52,7 +52,7 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
             .filterIsInstance<PropertyBlockConfig.TextureArrayProperty>()
             .filter { it.textureName !in textureArrays || it.defaultTexture != null && textureArrays[it.textureName] == null }
             .forEach {
-                textureArrays[it.textureName] = texture2dArray(it.textureName, it.defaultTexture, null)
+                textureArrays[it.textureName] = bindTexture2dArray(it.textureName, it.defaultTexture, null)
             }
     }
 
@@ -167,10 +167,19 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
 
 fun KslProgram.makeBindGroupLayout(isComputePipeline: Boolean): BindGroupLayouts {
     return if (isComputePipeline) {
+        val viewBindings = makeBindGroupLayout(-1, BindGroupScope.VIEW, name)
+        val meshBindings = makeBindGroupLayout(-1, BindGroupScope.MESH, name)
+        check(viewBindings.bindings.isEmpty()) {
+            "BindGroupScope.VIEW is not applicable for compute pipelines, found bindings: ${viewBindings.bindings.map { it.name }}"
+        }
+        check(meshBindings.bindings.isEmpty()) {
+            "BindGroupScope.MESH is not applicable for compute pipelines, found bindings: ${meshBindings.bindings.map { it.name }}"
+        }
+
         BindGroupLayouts(
-            BindGroupLayout(-1, BindGroupScope.VIEW, emptyList(), name),
+            viewBindings,
             makeBindGroupLayout(0, BindGroupScope.PIPELINE, name),
-            BindGroupLayout(-1, BindGroupScope.MESH, emptyList(), name),
+            meshBindings,
         )
     } else {
         BindGroupLayouts(

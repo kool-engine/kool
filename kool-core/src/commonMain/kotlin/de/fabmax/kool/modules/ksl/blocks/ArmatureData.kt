@@ -8,10 +8,8 @@ import de.fabmax.kool.pipeline.ShaderBase
 import de.fabmax.kool.pipeline.UniformBindingMat4fv
 import kotlin.math.min
 
-class ArmatureData(maxBones: Int, program: KslProgram) : KslDataBlock, KslShaderListener {
-    override val name = NAME
-
-    val boneTransforms = program.uniformMat4Array("uJointTransform", maxBones)
+class ArmatureData(maxBones: Int, program: KslProgram) : KslDataBlock(NAME, program), KslShaderListener {
+    val boneTransforms = uniformMat4Array("uJointTransform", maxBones)
     private var uBoneTransforms: UniformBindingMat4fv? = null
 
     init {
@@ -21,7 +19,7 @@ class ArmatureData(maxBones: Int, program: KslProgram) : KslDataBlock, KslShader
     }
 
     override fun onShaderCreated(shader: ShaderBase<*>) {
-        uBoneTransforms = shader.uniformMat4fv("uJointTransform")
+        uBoneTransforms = shader.bindUniformMat4Array("uJointTransform")
     }
 
     override fun onUpdateDrawData(cmd: DrawCommand) {

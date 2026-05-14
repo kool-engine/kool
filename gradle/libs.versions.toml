@@ -3,14 +3,14 @@ agp = "8.13.2"
 compose = "1.10.3"
 compose-mini = "0.0.1"
 kotlin = "2.3.21"
-kotlin-coroutines = "1.10.2"
+kotlin-coroutines = "1.11.0"
 kotlin-serialization = "1.11.0"
-kotlin-datetime = "0.7.1-0.6.x-compat"
+kotlin-datetime = "0.8.0-0.6.x-compat"
 kotlin-atomicfu = "0.32.1"
 kotlin-dokka = "2.2.0"
 kotlinx-browser = "0.5.0"
 lwjgl = "3.4.1"
-jsvg = "2.0.0"
+jsvg = "2.1.0"
 androidsvg = "1.4"
 physx-jni = "2.7.2"
 physx-wasm = "2.7.2"
@@ -38,6 +38,7 @@ jspecify-annotations = { module = "org.jspecify:jspecify", version = "1.0.0" }
 androidsvg = { group = "com.caverock", name = "androidsvg-aar", version.ref = "androidsvg" }
 lwjgl-core = { group = "org.lwjgl", name = "lwjgl", version.ref = "lwjgl" }
 lwjgl-glfw = { group = "org.lwjgl", name = "lwjgl-glfw", version.ref = "lwjgl" }
+lwjgl-sdl = { group = "org.lwjgl", name = "lwjgl-sdl", version.ref = "lwjgl" }
 lwjgl-jemalloc = { group = "org.lwjgl", name = "lwjgl-jemalloc", version.ref = "lwjgl" }
 lwjgl-opengl = { group = "org.lwjgl", name = "lwjgl-opengl", version.ref = "lwjgl" }
 lwjgl-vulkan = { group = "org.lwjgl", name = "lwjgl-vulkan", version.ref = "lwjgl" }
@@ -81,6 +82,6 @@ jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose" }
 
 
 [bundles]
-lwjgl = ["lwjgl-core", "lwjgl-glfw", "lwjgl-jemalloc", "lwjgl-opengl", "lwjgl-vulkan", "lwjgl-vma", "lwjgl-shaderc", "lwjgl-nfd", "lwjgl-stb", "lwjgl-jawt", "lwjgl-msdfgen"]
+lwjgl = ["lwjgl-core", "lwjgl-glfw", "lwjgl-sdl", "lwjgl-jemalloc", "lwjgl-opengl", "lwjgl-vulkan", "lwjgl-vma", "lwjgl-shaderc", "lwjgl-nfd", "lwjgl-stb", "lwjgl-jawt", "lwjgl-msdfgen"]
 wgpu4k = ["wgpu4k", "webgpu-descriptors"]
 wgpu4k-surface-utils = ["rococoa", "jna", "jna-platform"]

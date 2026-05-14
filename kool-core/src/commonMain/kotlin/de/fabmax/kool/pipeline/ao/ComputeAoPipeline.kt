@@ -84,7 +84,7 @@ class ComputeAoPipeline(val scene: Scene, camera: PerspectiveCamera, drawNode: N
 class ComputeAoPass(
     val normalDepthPass: NormalDepthMapPass,
     val camera: Camera,
-    val distFormat: TexFormat = TexFormat.R_F16,
+    val distFormat: TexFormat,
 ) : ComputePass("AO Pass") {
     private val inputDepth: Texture2d get() = normalDepthPass.depthTexture!!
     private val inputNormals: Texture2d get() = normalDepthPass.colorTexture!!
@@ -108,9 +108,9 @@ class ComputeAoPass(
     private val upsampleShader = initUpsamplePass()
     private val clearShader = initClearPass()
 
-    private var uProj by aoShader.uniformMat4f("uProj")
-    private var uInvProj by aoShader.uniformMat4f("uInvProj")
-    private var uCamNear by aoShader.uniform1f("uCamNear")
+    private var uProj by aoShader.bindUniformMat4("uProj")
+    private var uInvProj by aoShader.bindUniformMat4("uInvProj")
+    private var uCamNear by aoShader.bindUniformFloat1("uCamNear")
 
     var kernelSize = 16
         set(value) {
@@ -118,8 +118,8 @@ class ComputeAoPass(
             generateAoSampleDirs(kernelSize).forEachIndexed { i, kernel -> uKernels[i] = kernel }
             uKernelSize = field
         }
-    private var uKernelSize by aoShader.uniform1i("uKernelRange", kernelSize)
-    private val uKernels = aoShader.uniform3fv("uKernel", MAX_KERNEL_SIZE)
+    private var uKernelSize by aoShader.bindUniformInt1("uKernelRange", kernelSize)
+    private val uKernels = aoShader.bindUniformFloat3Array("uKernel", MAX_KERNEL_SIZE)
 
     var radius: Float = 1f
         set(value) {
@@ -127,11 +127,11 @@ class ComputeAoPass(
             uAoRadius = value
             uDenoiseRadius = value
         }
-    private var uAoRadius by aoShader.uniform1f("uRadius", radius)
-    private var uDenoiseRadius by denoiseShader.uniform1f("uRadius", radius)
+    private var uAoRadius by aoShader.bindUniformFloat1("uRadius", radius)
+    private var uDenoiseRadius by denoiseShader.bindUniformFloat1("uRadius", radius)
 
-    var strength by aoShader.uniform1f("uStrength", 1.25f)
-    var falloff by aoShader.uniform1f("uFalloff", 1.5f)
+    var strength by aoShader.bindUniformFloat1("uStrength", 1.25f)
+    var falloff by aoShader.bindUniformFloat1("uFalloff", 1.5f)
 
     private var doClear = false
     private var isConfigured = false
@@ -213,11 +213,11 @@ class ComputeAoPass(
 
     private fun initDownSamplePass(): KslComputeShader {
         val downSampleShader = downSamplingShader()
-        downSampleShader.texture2d("normalInput", inputNormals, SamplerSettings().nearest())
-        downSampleShader.texture2d("distInput", inputDepth, SamplerSettings().nearest())
-        downSampleShader.storageTexture2d("normalOutput", scaledNormals)
-        downSampleShader.storageTexture2d("distOutput", scaledDists)
-        downSampleShader.uniform1f("camNear", camera.clipNear)
+        downSampleShader.bindTexture2d("normalInput", inputNormals, SamplerSettings().nearest())
+        downSampleShader.bindTexture2d("distInput", inputDepth, SamplerSettings().nearest())
+        downSampleShader.bindStorageTexture2d("normalOutput", scaledNormals)
+        downSampleShader.bindStorageTexture2d("distOutput", scaledDists)
+        downSampleShader.bindUniformFloat1("camNear", camera.clipNear)
         return downSampleShader
     }
 
@@ -227,35 +227,35 @@ class ComputeAoPass(
 
     private fun initAoPass(): KslComputeShader {
         val aoShader = aoShader()
-        aoShader.texture2d("normalInput", scaledNormals, SamplerSettings().nearest().clamped())
-        aoShader.texture2d("distInput", scaledDists, SamplerSettings().nearest().clamped())
-        aoShader.texture2d("noiseTex", noiseTex, SamplerSettings().nearest())
-        aoShader.storageTexture2d("aoOutput", aoNoisy)
+        aoShader.bindTexture2d("normalInput", scaledNormals, SamplerSettings().nearest().clamped())
+        aoShader.bindTexture2d("distInput", scaledDists, SamplerSettings().nearest().clamped())
+        aoShader.bindTexture2d("noiseTex", noiseTex, SamplerSettings().nearest())
+        aoShader.bindStorageTexture2d("aoOutput", aoNoisy)
         return aoShader
     }
 
     private fun initDenoisePass(): KslComputeShader {
         val denoiseShader = denoiseShader()
-        denoiseShader.texture2d("distInput", scaledDists, SamplerSettings().nearest().clamped())
-        denoiseShader.texture2d("normalInput", scaledNormals, SamplerSettings().nearest().clamped())
-        denoiseShader.texture2d("noisyAo", aoNoisy, SamplerSettings().nearest())
-        denoiseShader.storageTexture2d("filteredAo", filteredAo)
+        denoiseShader.bindTexture2d("distInput", scaledDists, SamplerSettings().nearest().clamped())
+        denoiseShader.bindTexture2d("normalInput", scaledNormals, SamplerSettings().nearest().clamped())
+        denoiseShader.bindTexture2d("noisyAo", aoNoisy, SamplerSettings().nearest())
+        denoiseShader.bindStorageTexture2d("filteredAo", filteredAo)
         return denoiseShader
     }
 
     private fun initUpsamplePass(): KslComputeShader {
         val upsampleShader = upsampleShader()
-        upsampleShader.texture2d("filteredAo", filteredAo, SamplerSettings().nearest())
-        upsampleShader.texture2d("distInput", inputDepth, SamplerSettings().nearest())
-        upsampleShader.texture2d("scaledDistInput", scaledDists, SamplerSettings().nearest())
-        upsampleShader.uniform1f("camNear", camera.clipNear)
-        upsampleShader.storageTexture2d("finalAo", finalAo)
+        upsampleShader.bindTexture2d("filteredAo", filteredAo, SamplerSettings().nearest())
+        upsampleShader.bindTexture2d("distInput", inputDepth, SamplerSettings().nearest())
+        upsampleShader.bindTexture2d("scaledDistInput", scaledDists, SamplerSettings().nearest())
+        upsampleShader.bindUniformFloat1("camNear", camera.clipNear)
+        upsampleShader.bindStorageTexture2d("finalAo", finalAo)
         return upsampleShader
     }
 
     private fun initClearPass(): KslComputeShader {
         val clearShader = clearShader()
-        clearShader.storageTexture2d("finalAo", finalAo)
+        clearShader.bindStorageTexture2d("finalAo", finalAo)
         return clearShader
     }
 
@@ -266,8 +266,9 @@ class ComputeAoPass(
     }
 
     private fun makeDownSampleLowerPasses() {
-        val distInput = downSampleLowerShader.texture2d("distInput")
-        val distOutput = downSampleLowerShader.storageTexture2d("distOutput")
+        val distInput = downSampleLowerShader.bindTexture2d("distInput")
+        val loadLod = downSampleLowerShader.bindUniformInt1("loadLod")
+        val distOutput = downSampleLowerShader.bindStorageTexture2d("distOutput")
 
         for (level in 1 until SCALE_LEVELS) {
             val groupsX = ((scaledWidth shr level) + 7) / 8
@@ -275,10 +276,10 @@ class ComputeAoPass(
             val task = addTask(downSampleLowerShader, Vec3i(groupsX, groupsY, 1))
 
             val key = "$level"
-            val inputSampler = SamplerSettings().nearest().clamped().copy(baseMipLevel = (level - 1), numMipLevels = 1)
             task.onBeforeDispatch {
-                downSampleLowerShader.createdPipeline?.swapPipelineDataCapturing(key) {
-                    distInput.set(scaledDists, inputSampler)
+                downSampleLowerShader.swapPipelineDataCapturing(key) {
+                    distInput.set(scaledDists)
+                    loadLod.set(level - 1)
                     distOutput.set(scaledDists, level)
                 }
             }
@@ -343,6 +344,7 @@ class ComputeAoPass(
         computeStage(8, 8) {
             val distInput = texture2d("distInput", isUnfilterable = true)
             val distOutput = storageTexture2d<KslFloat1>("distOutput", distFormat)
+            val loadLod = uniformInt1("loadLod")
 
             main {
                 val baseCoord by inGlobalInvocationId.xy.toInt2()
@@ -350,7 +352,7 @@ class ComputeAoPass(
                 val maxDepth by 0f.const
                 val samplePos = listOf(Vec2i(0, 0), Vec2i(1, 0), Vec2i(0, 1), Vec2i(1, 1))
                 samplePos.forEach { sample ->
-                    val sampleDepth = float1Var(distInput.load(loadCoord + sample.const).x)
+                    val sampleDepth = float1Var(distInput.load(loadCoord + sample.const, loadLod).x)
                     `if`(sampleDepth gt maxDepth) {
                         maxDepth set sampleDepth
                     }
@@ -378,7 +380,7 @@ class ComputeAoPass(
 
             main {
                 val baseCoord by inGlobalInvocationId.xy.toInt2()
-                val uv by (baseCoord.toFloat2() + 0.5f.const) / textureSize2d(normalInput).toFloat2()
+                val uv by (baseCoord.toFloat2() + 0.5f.const) / normalInput.size().toFloat2()
                 val encodedNormal by normalInput.load(baseCoord).x
                 val occlFac by 1f.const
 
@@ -415,9 +417,9 @@ class ComputeAoPass(
                             val sampleDepth by -samplePos.z
                             val sampleProj by uProj * float4Value(samplePos, 1f.const)
                             val sampleUv by sampleProj.xy / sampleProj.w * 0.5f.const + 0.5f.const
-                            val sampleLod by length(sampleUv - uv) * 25f.const / uRadius
+                            val sampleLod by clamp(length(sampleUv - uv) * 25f.const / uRadius, 0f.const, (SCALE_LEVELS - 1f).const)
                             sampleLod set clamp(sampleLod, 0f.const, (SCALE_LEVELS-1).toFloat().const)
-                            val sampleScreenDepth by sampleTexture(distInput, sampleUv, sampleLod).x
+                            val sampleScreenDepth by distInput.sample(sampleUv, sampleLod).x
 
                             val occlusionDistance by clamp((sampleDepth - sampleScreenDepth - 0.05f.const) * 10f.const, 0f.const, 1f.const)
                             val occlusionFalloff by 1f.const - smoothStep(0f.const, 1f.const, abs(depth - sampleScreenDepth) / (4f.const * sampleR))
@@ -429,7 +431,7 @@ class ComputeAoPass(
                         occlFac set pow(clamp(1f.const - occlusion * distFac * uStrength, 0f.const, 1f.const), uFalloff)
                     }
                 }
-                aoOutput.store(baseCoord, float4Value(occlFac, 0f.const, 0f.const, 0f.const))
+                aoOutput.store(baseCoord, float4Value(occlFac, 0f.const, 0f.const, 1f.const))
             }
         }
     }
@@ -444,26 +446,28 @@ class ComputeAoPass(
         computeStage(8, 8) {
             main {
                 val baseCoord by inGlobalInvocationId.xy.toInt2()
-                val coordOffset by int2Value(baseCoord.x % 2.const, baseCoord.y % 2.const)
-                val ao by 0f.const
                 val dim = NOISE_TEX_SZ / 2
+
                 val baseDist by distInput.load(baseCoord).x
                 val baseNormal by decodeNormal(normalInput.load(baseCoord).x)
+                val ao by noisyAo.load(baseCoord).x
+                val sumWeight by 1f.const
 
                 val sampleR by uRadius
                 `if`(sampleR lt 0f.const) {
                     sampleR *= -baseDist
                 }
-                val sumWeight by 0f.const
                 for (y in -dim until dim) {
                     for (x in -dim until dim) {
-                        val coord = int2Var(baseCoord + Vec2i(x, y).const + coordOffset)
-                        val dist = float1Var(distInput.load(coord).x)
-                        val distWeight = float1Var(1f.const - smoothStep(0f.const, sampleR, abs(dist - baseDist)))
-                        val normalWeight = float1Var(saturate(dot(decodeNormal(normalInput.load(coord).x), baseNormal)))
-                        val weight = float1Var(0.0001f.const + distWeight * normalWeight)
-                        ao += noisyAo.load(coord).x * weight
-                        sumWeight += weight
+                        if (x != 0 || y != 0) {
+                            val coord = int2Var(baseCoord + Vec2i(x, y).const)
+                            val dist = float1Var(distInput.load(coord).x)
+                            val distWeight = float1Var(1f.const - smoothStep(0f.const, sampleR, abs(dist - baseDist)))
+                            val normalWeight = float1Var(saturate(dot(decodeNormal(normalInput.load(coord).x), baseNormal)))
+                            val weight = float1Var(0.0001f.const + distWeight * normalWeight)
+                            ao += noisyAo.load(coord).x * weight
+                            sumWeight += weight
+                        }
                     }
                 }
                 ao /= sumWeight

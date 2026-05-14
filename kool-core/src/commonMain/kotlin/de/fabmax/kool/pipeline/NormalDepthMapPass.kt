@@ -124,7 +124,7 @@ class NormalDepthShader(
         fragmentStage {
             main {
                 (cfg.alphaMode as? AlphaMode.Mask)?.let { mask ->
-                    val alpha by sampleTexture(texture2d("tAlphaMask"), alphaMaskUv!!.output).a
+                    val alpha by texture2d("tAlphaMask").sample(alphaMaskUv!!.output).a
                     `if`(alpha lt mask.cutOff.const) {
                         discard()
                     }
@@ -138,7 +138,7 @@ class NormalDepthShader(
 }
 
 fun interface VertexTransformBlockBuilder {
-    context(vs: KslVertexStage)
+    context(program: KslProgram, vs: KslVertexStage)
     fun KslScopeBuilder.vertexTransformBlock(cfg: BasicVertexConfig): VertexTransformBlock
 
     companion object {

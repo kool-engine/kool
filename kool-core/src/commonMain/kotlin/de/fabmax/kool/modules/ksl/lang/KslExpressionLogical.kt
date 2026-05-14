@@ -43,3 +43,13 @@ class KslBoolNotExpr(val expr: KslScalarExpression<KslBool1>) : KslScalarExpress
 }
 
 operator fun KslScalarExpression<KslBool1>.not() = KslBoolNotExpr(this)
+
+context(_: KslScopeBuilder)
+fun <T> any(boolVec: KslVectorExpression<T, KslBool1>) where T: KslBoolType, T: KslVector<KslBool1> =
+    KslBoolVectorExpr(boolVec, KslBoolVecOperator.Any)
+context(_: KslScopeBuilder)
+fun <T> all(boolVec: KslVectorExpression<T, KslBool1>) where T: KslBoolType, T: KslVector<KslBool1> =
+    KslBoolVectorExpr(boolVec, KslBoolVecOperator.All)
+context(_: KslScopeBuilder)
+fun <T> none(boolVec: KslVectorExpression<T, KslBool1>) where T: KslBoolType, T: KslVector<KslBool1> =
+    KslBoolVectorExpr(boolVec, KslBoolVecOperator.None)

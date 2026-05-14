@@ -218,7 +218,7 @@ class ImageMesh(name: String) : Mesh<UiVertexLayout>(
 }
 
 class ImageShader : KslShader(Model(), pipelineConfig) {
-    var image by texture2d("uImageTex")
+    var image by bindTexture2d("uImageTex")
 
     private class Model : KslProgram("UI2 image shader") {
         init {
@@ -240,7 +240,7 @@ class ImageShader : KslShader(Model(), pipelineConfig) {
             }
             fragmentStage {
                 main {
-                    val color by sampleTexture(texture2d("uImageTex"), texCoords.output) * tint.output
+                    val color by texture2d("uImageTex").sample(texCoords.output) * tint.output
                     `if` (all(screenPos.output gt clipBounds.output.xy) and
                             all(screenPos.output lt clipBounds.output.zw)) {
                         colorOutput(color.rgb * color.a, color.a)

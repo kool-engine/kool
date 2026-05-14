@@ -14,8 +14,8 @@ open class KslUnlitShader(cfg: UnlitShaderConfig) : KslShader("Unlit Shader") {
 
     constructor(block: UnlitShaderConfig.Builder.() -> Unit) : this(UnlitShaderConfig.Builder().apply(block).build())
 
-    var color: Color by colorUniform(cfg.colorCfg)
-    var colorMap: Texture2d? by colorTexture(cfg.colorCfg)
+    var color: Color by bindColorUniform(cfg.colorCfg)
+    var colorMap: Texture2d? by bindColorTexture(cfg.colorCfg)
 
     val colorCfg = cfg.colorCfg
 

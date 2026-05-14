@@ -524,9 +524,9 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     }
 
     private class MetalRoughFlagsShader : KslUnlitShader(cfg) {
-        var flags by texture2d("tFlags")
-        var rough by texture2d("tRough")
-        var metal by texture2d("tMetal")
+        var flags by bindTexture2d("tFlags")
+        var rough by bindTexture2d("tRough")
+        var metal by bindTexture2d("tMetal")
 
         companion object {
             val cfg = UnlitShaderConfig {
@@ -541,9 +541,9 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     }
                     fragmentStage {
                         main {
-                            val metal = sampleTexture(texture2d("tMetal"), uv.output).a
-                            val rough = sampleTexture(texture2d("tRough"), uv.output).a
-                            val flags = sampleTexture(texture2d("tFlags"), uv.output).a
+                            val metal = texture2d("tMetal").sample(uv.output).a
+                            val rough = texture2d("tRough").sample(uv.output).a
+                            val flags = texture2d("tFlags").sample(uv.output).a
                             val color = float4Var(float4Value(metal, rough, flags, 1f.const))
                             getFloat4Port("baseColor").input(color)
                         }

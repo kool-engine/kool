@@ -59,8 +59,8 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
             fullscreenCubeVertexStage(localPos)
 
             fragmentStage {
-                val sampleEnvMap = hdri2d?.let { environmentMapSampler2d(this@apply, "hdri2d") }
-                     ?: environmentMapSamplerCube(this@apply, "hdriCube")
+                val sampleEnvMap = hdri2d?.let { environmentMapSampler2d("hdri2d") }
+                     ?: environmentMapSamplerCube("hdriCube")
 
                 main {
                     val normal = float3Var(normalize(localPos.output))
@@ -91,8 +91,8 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
         },
         FullscreenShaderUtil.fullscreenShaderPipelineCfg
     ) {
-        val hdri2dTex by texture2d("hdri2d", hdri2d)
-        val hdriCubeTex by textureCube("hdriCube", hdriCube)
+        val hdri2dTex by bindTexture2d("hdri2d", hdri2d)
+        val hdriCubeTex by bindTextureCube("hdriCube", hdriCube)
     }
 
     companion object {

@@ -199,7 +199,7 @@ class Glass(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Defer
     private class GlassShader(ibl: EnvironmentMap, shadowMap: SimpleShadowMap, cfg: Config = glassShaderConfig(ibl, shadowMap))
         : KslPbrShader(cfg, glassShaderModel(cfg))
     {
-        var refractionColorMap by texture2d("tRefractionColor")
+        var refractionColorMap by bindTexture2d("tRefractionColor")
 
         companion object {
             fun glassShaderConfig(ibl: EnvironmentMap, shadowMap: SimpleShadowMap) = Config.Builder().apply {
@@ -239,11 +239,11 @@ class Glass(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Defer
                         val refractionColor = float4Var(Vec4f.ZERO.const)
                         `if`((samplePos.x gt 0f.const) and (samplePos.x lt 1f.const) and
                                 (samplePos.y gt 0f.const) and (samplePos.y lt 1f.const)) {
-                            refractionColor set sampleTexture(refractionColorMap, samplePos, 0f.const)
+                            refractionColor set refractionColorMap.sample(samplePos, 0f.const)
                         }
                         `if`(refractionColor.a eq 0f.const) {
                             // refraction sample pos out of screen bounds -> use first reflection map instead
-                            refractionColor set sampleTexture(textureCube("tReflectionMap_0"), refractionDir, 0f.const)
+                            refractionColor set textureCube("tReflectionMap_0").sample(refractionDir, 0f.const)
                         }
 
                         val weight = 1f.const - materialColorInput.a

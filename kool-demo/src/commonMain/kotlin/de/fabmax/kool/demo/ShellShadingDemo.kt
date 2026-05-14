@@ -387,22 +387,22 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
 }
 
 class FurShader(uvBased: Boolean) : KslShader("Fur shader") {
-    var furGradient by texture1d("tFurColor")
-    var noise3d by texture3d("tNoise3d")
-    var irradiance by textureCube("tIrradiance")
+    var furGradient by bindTexture1d("tFurColor")
+    var noise3d by bindTexture3d("tNoise3d")
+    var irradiance by bindTextureCube("tIrradiance")
 
-    var density by uniform1f("uDensity", 300f)
-    var hairLength by uniform1f("uHairLength", 0.5f)
-    var hairThickness by uniform1f("uThickness", 1f)
-    var hairRandomness by uniform1f("uRandomness", 1f)
+    var density by bindUniformFloat1("uDensity", 300f)
+    var hairLength by bindUniformFloat1("uHairLength", 0.5f)
+    var hairThickness by bindUniformFloat1("uThickness", 1f)
+    var hairRandomness by bindUniformFloat1("uRandomness", 1f)
 
-    var noiseDispScale by uniform1f("uNoiseDispScale", 0.4f)
-    var noiseDispStrength by uniform1f("uNoiseDispStrength", 0.4f)
-    var noiseLenScale by uniform1f("uNoiseLenScale", 1f)
-    var noiseLenStrength by uniform1f("uNoiseLenStrength", 0.5f)
+    var noiseDispScale by bindUniformFloat1("uNoiseDispScale", 0.4f)
+    var noiseDispStrength by bindUniformFloat1("uNoiseDispStrength", 0.4f)
+    var noiseLenScale by bindUniformFloat1("uNoiseLenScale", 1f)
+    var noiseLenStrength by bindUniformFloat1("uNoiseLenStrength", 0.5f)
 
-    var windStrength by uniform1f("uWindStrength", 0.25f)
-    var windOffset by uniform3f("uWindOffset")
+    var windStrength by bindUniformFloat1("uWindStrength", 0.25f)
+    var windOffset by bindUniformFloat3("uWindOffset")
 
     init {
         program.furProgram(uvBased)
@@ -436,9 +436,9 @@ class FurShader(uvBased: Boolean) : KslShader("Fur shader") {
                 val strength = uniformFloat1("uNoiseDispStrength") * 0.2f.const
 
                 val samplePos = float3Var(pos * scale + uniformFloat3("uWindOffset") * uniformFloat1("uWindStrength"))
-                val d = float3Var(sampleTexture(noise3d, samplePos, 0f.const).xyz * 2f.const - 1f.const)
+                val d = float3Var(noise3d.sample(samplePos, 0f.const).xyz * 2f.const - 1f.const)
                 val windPos = float3Var(pos + d * shell.input * strength)
-                d set sampleTexture(noise3d, pos.float3("zyx") * scale, 0f.const).xyz * 2f.const - 1f.const
+                d set noise3d.sample(pos.float3("zyx") * scale, 0f.const).xyz * 2f.const - 1f.const
                 windPos += d * shell.input * strength
 
                 // reproject distorted (windy) position to shell surface
@@ -514,7 +514,7 @@ class FurShader(uvBased: Boolean) : KslShader("Fur shader") {
                 }
 
                 // determine length of selected hair
-                val perlinNoiseLenFac = float1Var(sampleTexture(noise3d, basePos.output * uniformFloat1("uNoiseLenScale")).x)
+                val perlinNoiseLenFac = float1Var(noise3d.sample(basePos.output * uniformFloat1("uNoiseLenScale")).x)
                 randomHairLen *= mix(1f.const, perlinNoiseLenFac * 2f.const - 0.25f.const, uniformFloat1("uNoiseLenStrength"))
 
                 // relative position along hair: 1 -> bottom, 0 -> tip of the hair (or higher)
@@ -524,13 +524,13 @@ class FurShader(uvBased: Boolean) : KslShader("Fur shader") {
                 val hairRadius = hairThickness * hairThicknessFac
 
                 // 1d texture needs to be sampled in uniform control flow to work in webgpu (the usual level = 0 trick does not work for 1d textures...)
-                val furColor = float3Var(sampleTexture(texture1d("tFurColor"), pow(shell.output, 1.5f.const)).rgb)
+                val furColor = float3Var(texture1d("tFurColor").sample(pow(shell.output, 1.5f.const)).rgb)
                 val isOutside = bool1Var((hairRadius - distToNearestHair lt 0f.const) or (shell.output gt randomHairLen))
 
                 `if`(isOutside and (shell.output gt 0f.const)) {
                     discard()
                 }.`else` {
-                    val lightColor = float3Var(sampleTexture(textureCube("tIrradiance"), worldNormal.output, 0f.const).rgb)
+                    val lightColor = float3Var(textureCube("tIrradiance").sample(worldNormal.output, 0f.const).rgb)
                     val linColor = float3Var(furColor * lightColor)
                     colorOutput(convertColorSpace(linColor, ColorSpaceConversion.LinearToSrgbHdr()), 1f.const)
                 }

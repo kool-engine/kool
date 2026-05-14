@@ -61,7 +61,7 @@ class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float 
                 val uBrightness = uniformFloat1("uBrightness")
 
                 main {
-                    val rgbe = float4Var(sampleTexture(rgbeTex, uv.output))
+                    val rgbe = float4Var(rgbeTex.sample(uv.output))
                     val exp = float1Var(rgbe.w * 255f.const - 128f.const)
                     colorOutput(min(rgbe.rgb * pow(2f.const, exp) * uBrightness, uMaxBrightness))
                 }
@@ -69,8 +69,8 @@ class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float 
         },
         fullscreenShaderPipelineCfg
     ) {
-        val rgbeTex by texture2d("rgbeTex", hdriTexture)
-        val uBrightness by uniform1f("uBrightness", brightness)
-        val uMaxBrightness by uniform3f("uMaxBrightness", Vec3f(20f))
+        val rgbeTex by bindTexture2d("rgbeTex", hdriTexture)
+        val uBrightness by bindUniformFloat1("uBrightness", brightness)
+        val uMaxBrightness by bindUniformFloat3("uMaxBrightness", Vec3f(20f))
     }
 }

@@ -99,6 +99,7 @@ class BindGroupDataVk(
             val ubo = bindGroup.uboBindings[i]
             if (ubo.isUpdate(frameIdx, ubo.binding.modCount.count) || resetBindGroup) {
                 ubo.binding.buffer.buffer.useRaw { raw -> ubo.mappedBuffers[frameIdx].put(raw).flip() }
+                backend.memManager.flushBuffer(ubo.buffers[frameIdx].vkBuffer)
             }
         }
     }
@@ -431,6 +432,7 @@ class BindGroupDataVk(
                         is Float32Buffer -> upload.useRaw { stagingBuf.mapped!!.asFloatBuffer().put(it) }
                         is MixedBuffer -> upload.useRaw { stagingBuf.mapped!!.put(it) }
                     }
+                    backend.memManager.flushBuffer(stagingBuf)
                     gpuBuffer.copyFrom(stagingBuf, passEncoderState.commandBuffer)
                 }
             }
@@ -475,6 +477,7 @@ class BindGroupDataVk(
                 )
                 if (buffer.uploadData == null) {
                     vkCmdFillBuffer(commandBuffer, gpuBuffer.vkBuffer.handle, 0L, VK_WHOLE_SIZE, 0)
+                    bufferTransferWriteBarrier(commandBuffer)
                 }
                 buffer.gpuBuffer = gpuBuffer
             }

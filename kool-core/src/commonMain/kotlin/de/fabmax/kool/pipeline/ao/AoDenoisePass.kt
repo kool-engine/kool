@@ -78,9 +78,9 @@ class AoDenoisePass(aoPass: OffscreenPass2d, depthComponent: String) :
     inner class DenoiseShader(aoPass: OffscreenPass2d, depthComponent: String) :
         KslShader("Ambient Occlusion Denoise Pass")
     {
-        var noisyAoTex by texture2d("noisyAoTex", aoPass.colorTexture)
-        var viewSpaceTex by texture2d("viewSpaceTex")
-        var uRadius by uniform1f("uRadius", 1f)
+        var noisyAoTex by bindTexture2d("noisyAoTex", aoPass.colorTexture)
+        var viewSpaceTex by bindTexture2d("viewSpaceTex")
+        var uRadius by bindUniformFloat1("uRadius", 1f)
 
         init {
             pipelineConfig = fullscreenShaderPipelineCfg
@@ -98,8 +98,8 @@ class AoDenoisePass(aoPass: OffscreenPass2d, depthComponent: String) :
                 val uRadius = uniformFloat1("uRadius")
 
                 main {
-                    val texelSize = float2Var(1f.const / textureSize2d(noisyAoTex).toFloat2())
-                    val baseDepth = float1Var(sampleTexture(viewSpaceTex, uv.output).float1(depthComponent))
+                    val texelSize = float2Var(1f.const / noisyAoTex.size().toFloat2())
+                    val baseDepth = float1Var(viewSpaceTex.sample(uv.output).float1(depthComponent))
                     val depthThresh = float1Var(uRadius * 0.1f.const)
 
                     val result = float1Var(0f.const)
@@ -108,9 +108,9 @@ class AoDenoisePass(aoPass: OffscreenPass2d, depthComponent: String) :
                     fori(0.const, AmbientOcclusionPass.NOISE_TEX_SIZE.const) { y ->
                         fori(0.const, AmbientOcclusionPass.NOISE_TEX_SIZE.const) { x ->
                             val sampleUv = float2Var(uv.output + (hlim + float2Value(x.toFloat1(), y.toFloat1())) * texelSize)
-                            val sampleDepth = abs(sampleTexture(viewSpaceTex, sampleUv).float1(depthComponent) - baseDepth)
+                            val sampleDepth = abs(viewSpaceTex.sample(sampleUv).float1(depthComponent) - baseDepth)
                             val w = 1f.const - step(depthThresh, sampleDepth) * 0.99f.const
-                            result += sampleTexture(noisyAoTex, sampleUv).r * w
+                            result += noisyAoTex.sample(sampleUv).r * w
                             weight += w
                         }
                     }

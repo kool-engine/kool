@@ -6,7 +6,7 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
 import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
-import de.fabmax.kool.platform.GlWindowCallbacks
+import de.fabmax.kool.platform.GlInitCallback
 import de.fabmax.kool.platform.KoolWindowJvm
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.createGlWindow
@@ -41,42 +41,36 @@ class RenderBackendGlImpl(ctx: Lwjgl3Context) :
 
     private val initSignal = CompletableDeferred<Unit>()
 
-    private val glCallbacks = object : GlWindowCallbacks {
-        override fun initGl() {
-            // This line is critical for LWJGL's interoperation with GLFW's OpenGL context, or any context that is managed
-            // externally. LWJGL detects the context that is current in the current thread, creates the GLCapabilities
-            // instance and makes the OpenGL bindings available for use.
-            GL.createCapabilities()
+    private val glInitCallback = GlInitCallback {
+        // This line is critical for LWJGL's interoperation with GLFW's OpenGL context, or any context that is managed
+        // externally. LWJGL detects the context that is current in the current thread, creates the GLCapabilities
+        // instance and makes the OpenGL bindings available for use.
+        GL.createCapabilities()
 
-            GlImpl.initOpenGl(this@RenderBackendGlImpl)
-            glslGeneratorHints = GlslGenerator.Hints(
-                glslVersionStr = "#version ${GlImpl.version.major}${GlImpl.version.minor}0 core"
-            )
+        GlImpl.initOpenGl(this@RenderBackendGlImpl)
+        glslGeneratorHints = GlslGenerator.Hints(
+            glslVersionStr = "#version ${GlImpl.version.major}${GlImpl.version.minor}0 core"
+        )
 
-            sceneRenderer.resolveDirect = true
-            glEnable(GL_VERTEX_PROGRAM_POINT_SIZE)
-            glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS)
-            setupGl()
+        sceneRenderer.resolveDirect = true
+        glEnable(GL_VERTEX_PROGRAM_POINT_SIZE)
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS)
+        setupGl()
 
-            features = BackendFeatures(
-                computeShaders = true,
-                cubeMapArrays = true,
-                reversedDepth = GlImpl.capabilities.hasClipControl,
-                maxSamples = 4,
-                readWriteStorageTextures = true,
-                depthOnlyShaderColorOutput = Color.BLACK,
-                maxComputeWorkGroupsPerDimension = GlImpl.capabilities.maxWorkGroupCount,
-                maxComputeWorkGroupSize = GlImpl.capabilities.maxWorkGroupSize,
-                maxComputeInvocationsPerWorkgroup = GlImpl.capabilities.maxWorkGroupInvocations
-            )
+        features = BackendFeatures(
+            computeShaders = true,
+            cubeMapArrays = true,
+            reversedDepth = GlImpl.capabilities.hasClipControl,
+            maxSamples = 4,
+            readWriteStorageTextures = true,
+            depthOnlyShaderColorOutput = Color.BLACK,
+            maxComputeWorkGroupsPerDimension = GlImpl.capabilities.maxWorkGroupCount,
+            maxComputeWorkGroupSize = GlImpl.capabilities.maxWorkGroupSize,
+            maxComputeInvocationsPerWorkgroup = GlImpl.capabilities.maxWorkGroupInvocations
+        )
 
-            timer = TimeQuery(gl)
-            initSignal.complete(Unit)
-        }
-
-        override fun drawFrame() {
-            runBlocking { ctx.renderFrame()}
-        }
+        timer = TimeQuery(gl)
+        initSignal.complete(Unit)
     }
 
     init {
@@ -101,7 +95,7 @@ class RenderBackendGlImpl(ctx: Lwjgl3Context) :
     }
 
     private fun createWindow(): KoolWindowJvm {
-        val window = KoolSystem.configJvm.windowSubsystem.createGlWindow(glCallbacks, ctx as Lwjgl3Context)
+        val window = KoolSystem.configJvm.windowSubsystem.createGlWindow(glInitCallback, ctx as Lwjgl3Context)
         window.setFullscreen(KoolSystem.configJvm.isFullscreen)
         window.setVisible(KoolSystem.configJvm.showWindowOnStart)
         return window

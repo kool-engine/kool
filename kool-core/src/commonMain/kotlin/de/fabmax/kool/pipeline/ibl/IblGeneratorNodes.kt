@@ -24,11 +24,12 @@ class Hammersley(parentScope: KslScopeBuilder) :
     }
 }
 
-fun KslScopeBuilder.hammersley(
+context(scope: KslScopeBuilder)
+fun hammersley(
     i: KslExprInt1,
     n: KslExprInt1
 ): KslExprFloat2 {
-    val func = parentStage.getOrCreateFunction("Hammersley") { Hammersley(this) }
+    val func = scope.parentStage.getOrCreateFunction("Hammersley") { Hammersley(scope) }
     return func(i, n)
 }
 
@@ -78,8 +79,9 @@ fun KslScopeBuilder.importanceSampleGgx(
     return func(xi, n, roughness)
 }
 
-fun KslShaderStage.environmentMapSampler2d(program: KslProgram, texName: String): KslFunction<KslFloat3> {
-    val tex = program.texture2d(texName)
+context(program: KslProgram)
+fun KslShaderStage.environmentMapSampler2d(texName: String): KslFunction<KslFloat3> {
+    val tex = texture2d(texName)
     return functionFloat3("sampleEnv2d") {
         val coord = paramFloat3("coord")
         val mipLevel = paramFloat1("mipLevel")
@@ -88,18 +90,19 @@ fun KslShaderStage.environmentMapSampler2d(program: KslProgram, texName: String)
             val uv = float2Var(float2Value(atan2(normalizedCoord.z, normalizedCoord.x), -asin(normalizedCoord.y)))
             uv set uv * float2Value(0.1591f, 0.3183f) + 0.5f.const
 
-            return@body sampleTexture(tex, uv, mipLevel).rgb
+            return@body tex.sample(uv, mipLevel).rgb
         }
     }
 }
 
-fun KslShaderStage.environmentMapSamplerCube(program: KslProgram, texName: String): KslFunction<KslFloat3> {
-    val tex = program.textureCube(texName)
+context(program: KslProgram)
+fun KslShaderStage.environmentMapSamplerCube(texName: String): KslFunction<KslFloat3> {
+    val tex = textureCube(texName)
     return functionFloat3("sampleEnvCube") {
         val coord = paramFloat3("coord")
         val mipLevel = paramFloat1("mipLevel")
         body {
-            return@body sampleTexture(tex, coord, mipLevel).rgb
+            return@body tex.sample(coord, mipLevel).rgb
         }
     }
 }

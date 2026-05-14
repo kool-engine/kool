@@ -8,21 +8,23 @@ import de.fabmax.kool.pipeline.Texture2dArray
 import de.fabmax.kool.pipeline.backend.gl.channels
 import de.fabmax.kool.util.Float1Member
 
-fun KslScopeBuilder.vertexPropertyBlock(cfg: PropertyBlockConfig): PropertyBlockVertexStage {
-    val propertyBlock = PropertyBlockVertexStage(cfg, this)
-    ops += propertyBlock
+context(builder: KslScopeBuilder)
+fun vertexPropertyBlock(cfg: PropertyBlockConfig): PropertyBlockVertexStage {
+    val propertyBlock = PropertyBlockVertexStage(cfg, builder)
+    builder.ops += propertyBlock
     return propertyBlock
 }
 
-fun KslScopeBuilder.fragmentPropertyBlock(
+context(builder: KslScopeBuilder)
+fun fragmentPropertyBlock(
     cfg: PropertyBlockConfig,
     ddx: KslExprFloat2? = null,
     ddy: KslExprFloat2? = null,
     uv: KslExprFloat2? = null,
     vertexStage: PropertyBlockVertexStage? = null
 ): PropertyBlockFragmentStage {
-    val propertyBlock = PropertyBlockFragmentStage(cfg, vertexStage, uv, ddx, ddy, this)
-    ops += propertyBlock
+    val propertyBlock = PropertyBlockFragmentStage(cfg, vertexStage, uv, ddx, ddy, builder)
+    builder.ops += propertyBlock
     return propertyBlock
 }
 
@@ -31,11 +33,11 @@ class PropertyBlockVertexStage(cfg: PropertyBlockConfig, parentScope: KslScopeBu
     val instanceProperties = mutableMapOf<PropertyBlockConfig.InstanceProperty, KslInterStageScalar<KslFloat1>>()
 
     init {
-        body.apply {
+        body {
             check(parentStage is KslVertexStage) { "PropertyBlockVertexStage can only be added to KslVertexStage" }
 
             cfg.propertySources.filterIsInstance<PropertyBlockConfig.VertexProperty>().mapIndexed { i, source ->
-                vertexProperties[source] = parentStage.program.interStageFloat1(name = nextName("${opName}_vertexProp_$i")).apply {
+                vertexProperties[source] = interStageFloat1(name = nextName("${opName}_vertexProp_$i")).apply {
                     val prop = if (source.type.channels == 1) {
                         parentStage.vertexAttribFloat1(source.propertyName)
                     } else {
@@ -55,7 +57,7 @@ class PropertyBlockVertexStage(cfg: PropertyBlockConfig, parentScope: KslScopeBu
                 }
             }
             cfg.propertySources.filterIsInstance<PropertyBlockConfig.InstanceProperty>().mapIndexed { i, source ->
-                instanceProperties[source] = parentStage.program.interStageFloat1(name = nextName("${opName}_instanceProp_$i")).apply {
+                instanceProperties[source] = interStageFloat1(name = nextName("${opName}_instanceProp_$i")).apply {
                     val prop = if (source.type.channels == 1) {
                         parentStage.instanceAttribFloat1(source.propertyName)
                     } else {
@@ -91,7 +93,7 @@ class PropertyBlockFragmentStage(
     val outSamplerValues = mutableMapOf<String, KslVectorExpression<KslFloat4, KslFloat1>>()
 
     init {
-        body.apply {
+        body {
             check(parentStage is KslFragmentStage) { "PropertyBlockFragmentStage can only be added to KslFragmentStage" }
 
             if (cfg.propertySources.isEmpty() || cfg.propertySources.first().blendMode != PropertyBlockConfig.BlendMode.Set) {
@@ -101,19 +103,19 @@ class PropertyBlockFragmentStage(
             cfg.propertySources.forEach { source ->
                 val propertyValue: KslScalarExpression<KslFloat1> = when (source) {
                     is PropertyBlockConfig.ConstProperty -> source.value.const
-                    is PropertyBlockConfig.UniformProperty -> parentStage.program.uniformFloat1(source.uniformName)
+                    is PropertyBlockConfig.UniformProperty -> uniformFloat1(source.uniformName)
                     is PropertyBlockConfig.VertexProperty -> vertexBlock(parentStage).vertexProperties[source]?.output ?: 0f.const
                     is PropertyBlockConfig.InstanceProperty -> vertexBlock(parentStage).instanceProperties[source]?.output ?: 0f.const
                     is PropertyBlockConfig.TextureProperty ->  {
                         var sampleValue = findExistingSampleValue(source.textureName, parentStage)
                         if (sampleValue == null) {
-                            val tex = parentStage.program.texture2d(source.textureName)
+                            val tex = texture2d(source.textureName)
                             sampleValue = parentScope.run {
                                 val texCoords = inUv ?: texCoordBlock(parentStage).getTextureCoords()
                                 val sample = if (inDdx != null && inDdy != null) {
-                                    float4Var(sampleTextureGrad(tex, texCoords, inDdx, inDdy))
+                                    float4Var(tex.sample(texCoords, inDdx, inDdy))
                                 } else {
-                                    float4Var(sampleTexture(tex, texCoords))
+                                    float4Var(tex.sample(texCoords))
                                 }
                                 outSamplerValues[source.textureName] = sample
                                 sample
@@ -131,13 +133,13 @@ class PropertyBlockFragmentStage(
                         val texKey = "${source.textureName}[${source.arrayIndex}]"
                         var sampleValue = findExistingSampleValue(texKey, parentStage)
                         if (sampleValue == null) {
-                            val tex = parentStage.program.texture2dArray(source.textureName)
+                            val tex = texture2dArray(source.textureName)
                             sampleValue = parentScope.run {
                                 val texCoords = inUv ?: texCoordBlock(parentStage).getTextureCoords()
                                 val sample = if (inDdx != null && inDdy != null) {
-                                    float4Var(sampleTextureArrayGrad(tex, source.arrayIndex.const, texCoords, inDdx, inDdy))
+                                    float4Var(tex.sample(source.arrayIndex.const, texCoords, inDdx, inDdy))
                                 } else {
-                                    float4Var(sampleTextureArray(tex, source.arrayIndex.const, texCoords))
+                                    float4Var(tex.sample(source.arrayIndex.const, texCoords))
                                 }
                                 outSamplerValues[texKey] = sample
                                 sample

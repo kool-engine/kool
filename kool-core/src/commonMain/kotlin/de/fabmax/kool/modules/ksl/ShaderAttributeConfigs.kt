@@ -116,6 +116,7 @@ data class LightingConfig(
     val flipBacksideNormals: Boolean,
     val isSsao: Boolean,
     val defaultSsaoMap: Texture2d?,
+    val normalLightRange: NormalLightRange,
 ) {
     class Builder {
         var ambientLight: AmbientLight = AmbientLight.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
@@ -125,6 +126,7 @@ data class LightingConfig(
         var flipBacksideNormals = false
         var isSsao = false
         var defaultSsaoMap: Texture2d? = null
+        var normalLightRange: NormalLightRange = NormalLightRange.ZeroToOne
 
         fun enableSsao(ssaoMap: Texture2d? = null): Builder {
             isSsao = ssaoMap != null
@@ -166,9 +168,15 @@ data class LightingConfig(
                 flipBacksideNormals = flipBacksideNormals,
                 isSsao = isSsao,
                 defaultSsaoMap = defaultSsaoMap,
+                normalLightRange = normalLightRange
             )
         }
     }
+}
+
+enum class NormalLightRange {
+    ZeroToOne,
+    MinusOneToOne
 }
 
 data class ShadowMapConfig(val shadowMap: ShadowMap, val samplePattern: List<Vec2f> = SHADOW_SAMPLE_PATTERN_4x4) {

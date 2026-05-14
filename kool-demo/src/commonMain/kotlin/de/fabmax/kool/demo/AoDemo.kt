@@ -9,10 +9,7 @@ import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
-import de.fabmax.kool.modules.ksl.lang.b
-import de.fabmax.kool.modules.ksl.lang.g
-import de.fabmax.kool.modules.ksl.lang.getFloat4Port
-import de.fabmax.kool.modules.ksl.lang.r
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.ClearColorDontCare
 import de.fabmax.kool.pipeline.DepthCompareOp

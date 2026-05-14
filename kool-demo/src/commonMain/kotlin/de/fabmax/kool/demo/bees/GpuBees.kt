@@ -9,6 +9,7 @@ import de.fabmax.kool.modules.ksl.blocks.noise13
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.compat.storage
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.RectUvs
 import de.fabmax.kool.util.*
@@ -166,18 +167,18 @@ class GpuBees(beeScene: Scene) {
     }
 
     private class BeeUpdateShader : KslComputeShader("bee-update-shader") {
-        var deltaT by uniform1f("deltaT")
-        var randomSeed by uniform1f("randomSeed")
-        var numBees by uniform1i("numBees")
-        var spawnPos by uniform3f("spawnPos")
-        var beeBuffer by storage("beeBuffer")
-        var enemyBeeBuffer by storage("enemyBeeBuffer")
+        var deltaT by bindUniformFloat1("deltaT")
+        var randomSeed by bindUniformFloat1("randomSeed")
+        var numBees by bindUniformInt1("numBees")
+        var spawnPos by bindUniformFloat3("spawnPos")
+        var beeBuffer by bindStorage("beeBuffer")
+        var enemyBeeBuffer by bindStorage("enemyBeeBuffer")
 
-        var speedJitter by uniform1f("speedJitter")
-        var teamAttraction by uniform1f("teamAttraction")
-        var teamRepulsion by uniform1f("teamRepulsion")
-        var chaseForce by uniform1f("chaseForce")
-        var attackForce by uniform1f("attackForce")
+        var speedJitter by bindUniformFloat1("speedJitter")
+        var teamAttraction by bindUniformFloat1("teamAttraction")
+        var teamRepulsion by bindUniformFloat1("teamRepulsion")
+        var chaseForce by bindUniformFloat1("chaseForce")
+        var attackForce by bindUniformFloat1("attackForce")
 
         init {
             program.makeBeeUpdateProgram()

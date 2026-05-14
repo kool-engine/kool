@@ -77,21 +77,27 @@ class Lighting {
         _lights.clear()
     }
 
-    fun singleDirectionalLight(block: Light.Directional.() -> Unit): Light {
+    fun singleDirectionalLight(block: Light.Directional.() -> Unit): Light.Directional {
+        val light = Light.Directional()
         clear()
-        addLight(Light.Directional().apply(block))
-        return lights[0]
+        addLight(light)
+        light.apply(block)
+        return light
     }
 
-    fun singlePointLight(block: Light.Point.() -> Unit): Light {
+    fun singlePointLight(block: Light.Point.() -> Unit): Light.Point {
+        val light = Light.Point()
         clear()
-        addLight(Light.Point().apply(block))
-        return lights[0]
+        addLight(light)
+        light.apply(block)
+        return light
     }
 
-    fun singleSpotLight(block: Light.Spot.() -> Unit): Light {
+    fun singleSpotLight(block: Light.Spot.() -> Unit): Light.Spot {
+        val light = Light.Spot()
         clear()
-        addLight(Light.Spot().apply(block))
-        return lights[0]
+        addLight(light)
+        light.apply(block)
+        return light
     }
 }

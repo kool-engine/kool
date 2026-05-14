@@ -218,8 +218,8 @@ class Sky(val mainScene: Scene, moonTex: Texture2d) {
         colorBlock: ColorBlockConfig.Builder.() -> Unit
     ) : KslUnlitShader(config(depthMode, colorBlock)) {
 
-        var orientation: Mat3f by uniformMat3f("uOrientation")
-        var alpha: Float by uniform1f("uAlpha", 1f)
+        var orientation: Mat3f by bindUniformMat3("uOrientation")
+        var alpha: Float by bindUniformFloat1("uAlpha", 1f)
 
         companion object {
             fun config(depthMode: DepthMode, colorBlock: ColorBlockConfig.Builder.() -> Unit) = UnlitShaderConfig {
@@ -258,8 +258,8 @@ class Sky(val mainScene: Scene, moonTex: Texture2d) {
     }
 
     private class StarShader(depthMode: DepthMode) : KslShader("triangulated-star-shader") {
-        var orientation: Mat3f by uniformMat3f("uOrientation")
-        var alpha: Float by uniform1f("uAlpha", 1f)
+        var orientation: Mat3f by bindUniformMat3("uOrientation")
+        var alpha: Float by bindUniformFloat1("uAlpha", 1f)
 
         init {
             program.apply {

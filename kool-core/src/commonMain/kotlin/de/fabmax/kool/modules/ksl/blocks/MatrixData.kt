@@ -14,19 +14,22 @@ import de.fabmax.kool.pipeline.UniformBufferLayout
 import de.fabmax.kool.util.ModCounter
 import de.fabmax.kool.util.setMat4
 
-fun KslProgram.mvpMatrix(): MvpMatrixData {
-    return (dataBlocks.find { it is MvpMatrixData } as? MvpMatrixData) ?: MvpMatrixData(this)
+context(program: KslProgram)
+fun mvpMatrix(): MvpMatrixData {
+    return (program.dataBlocks.find { it is MvpMatrixData } as? MvpMatrixData) ?: MvpMatrixData(program)
 }
 
-fun KslProgram.modelMatrix(): ModelMatrixData {
-    return (dataBlocks.find { it is ModelMatrixData } as? ModelMatrixData) ?: ModelMatrixData(this)
+context(program: KslProgram)
+fun modelMatrix(): ModelMatrixData {
+    return (program.dataBlocks.find { it is ModelMatrixData } as? ModelMatrixData) ?: ModelMatrixData(program)
 }
 
-fun KslProgram.invProjMatrix(): InvProjMatrixData {
-    return (dataBlocks.find { it is InvProjMatrixData } as? InvProjMatrixData) ?: InvProjMatrixData(this)
+context(program: KslProgram)
+fun invProjMatrix(): InvProjMatrixData {
+    return (program.dataBlocks.find { it is InvProjMatrixData } as? InvProjMatrixData) ?: InvProjMatrixData(program)
 }
 
-abstract class MatrixData(program: KslProgram, val uniformName: String, scope: BindGroupScope) : KslDataBlock, KslShaderListener {
+abstract class MatrixData(name: String, program: KslProgram, val uniformName: String, scope: BindGroupScope) : KslDataBlock(name, program), KslShaderListener {
     val matrix: KslUniformMatrix<KslMat4, KslFloat4>
 
     private val matrixUbo = KslUniformBuffer("${uniformName}_ubo", program, scope).apply {
@@ -55,9 +58,7 @@ abstract class MatrixData(program: KslProgram, val uniformName: String, scope: B
     }
 }
 
-class MvpMatrixData(program: KslProgram) : MatrixData(program, "uMvpMat", BindGroupScope.MESH) {
-    override val name = NAME
-
+class MvpMatrixData(program: KslProgram) : MatrixData(NAME, program, "uMvpMat", BindGroupScope.MESH) {
     private val tmpMat4d = MutableMat4d()
     private val tmpMat4f = MutableMat4f()
 
@@ -86,9 +87,7 @@ class MvpMatrixData(program: KslProgram) : MatrixData(program, "uMvpMat", BindGr
     }
 }
 
-class ModelMatrixData(program: KslProgram) : MatrixData(program, "uModelMat", BindGroupScope.MESH) {
-    override val name = NAME
-
+class ModelMatrixData(program: KslProgram) : MatrixData(NAME, program, "uModelMat", BindGroupScope.MESH) {
     private val tmpMat4f = MutableMat4f()
     private val bindingModCounts = mutableMapOf<UniformBufferBindingData<*>, ModCounter>()
 
@@ -114,9 +113,7 @@ class ModelMatrixData(program: KslProgram) : MatrixData(program, "uModelMat", Bi
 }
 
 
-class InvProjMatrixData(program: KslProgram) : MatrixData(program, "uInvProjMat", BindGroupScope.VIEW) {
-    override val name = NAME
-
+class InvProjMatrixData(program: KslProgram) : MatrixData(NAME, program, "uInvProjMat", BindGroupScope.VIEW) {
     override fun onUpdateDrawData(cmd: DrawCommand) {
         val bindingLayout = uboLayout ?: return
         cmd.queue.view.viewPipelineData.updatePipelineData(cmd.pipeline, bindingLayout.bindingIndex) { viewData ->

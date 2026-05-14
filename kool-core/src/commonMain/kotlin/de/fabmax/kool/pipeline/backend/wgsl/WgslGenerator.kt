@@ -794,7 +794,11 @@ class WgslGenerator private constructor(
 
         fun storageTextureFormatQualifier(texFormat: TexFormat): String {
             return when (texFormat) {
+                TexFormat.R -> "r8unorm"                // texture formats tier 1
+                TexFormat.RG -> "rg8unorm"              // texture formats tier 1
                 TexFormat.RGBA -> "rgba8unorm"
+                TexFormat.R_F16 -> "r16float"           // texture formats tier 1
+                TexFormat.RG_F16 -> "rg16float"         // texture formats tier 1
                 TexFormat.RGBA_F16 -> "rgba16float"
                 TexFormat.R_F32 -> "r32float"
                 TexFormat.RG_F32 -> "rg32float"
@@ -805,8 +809,7 @@ class WgslGenerator private constructor(
                 TexFormat.R_U32 -> "r32uint"
                 TexFormat.RG_U32 -> "rg32uint"
                 TexFormat.RGBA_U32 -> "rgba32uint"
-                TexFormat.RG11B10_F -> "rgba16float"        // wgsl does not support rg11b10 as storage texture format -> use f16 as fallback
-                else -> error("unsupported storage texture format: $texFormat")
+                TexFormat.RG11B10_F -> "rg11b10ufloat"  // texture formats tier 1
             }
         }
     }

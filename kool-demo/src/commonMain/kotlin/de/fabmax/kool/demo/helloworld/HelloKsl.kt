@@ -7,9 +7,7 @@ import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.blocks.modelMatrix
-import de.fabmax.kool.modules.ksl.lang.plus
-import de.fabmax.kool.modules.ksl.lang.times
-import de.fabmax.kool.modules.ksl.lang.xyz
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Time
 import kotlin.math.sin
@@ -59,7 +57,7 @@ class HelloKsl : DemoScene("Hello KSL Shaders") {
             shader = helloKslShader
 
             // connect to the shader uniform (the names need to match)
-            var shaderScale by helloKslShader.uniform1f("uScale")
+            var shaderScale by helloKslShader.bindUniformFloat1("uScale")
             onUpdate {
                 // update shader uniform on each frame
                 shaderScale = sin(Time.gameTime * 2).toFloat() * 0.25f + 0.75f

@@ -10,12 +10,12 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
 
     constructor(block: Config.Builder.() -> Unit) : this(Config.Builder().apply(block).build())
 
-    var shininess: Float by propertyUniform(cfg.shininessCfg)
-    var shininessMap: Texture2d? by propertyTexture(cfg.shininessCfg)
-    var specularStrength: Float by propertyUniform(cfg.shininessCfg)
-    var specularStrengthMap: Texture2d? by propertyTexture(cfg.specularStrengthCfg)
+    var shininess: Float by bindPropertyUniform(cfg.shininessCfg)
+    var shininessMap: Texture2d? by bindPropertyTexture(cfg.shininessCfg)
+    var specularStrength: Float by bindPropertyUniform(cfg.shininessCfg)
+    var specularStrengthMap: Texture2d? by bindPropertyTexture(cfg.specularStrengthCfg)
 
-    var specularColor: Color by uniformColor("uSpecularColor", cfg.specularColor)
+    var specularColor: Color by bindUniformColor("uSpecularColor", cfg.specularColor)
 
     val shininessCfg = PropertyBlockConfig(cfg.shininessCfg.propertyName, cfg.shininessCfg.propertySources.copy().toMutableList())
     val specularStrengthCfg = PropertyBlockConfig(cfg.specularStrengthCfg.propertyName, cfg.specularStrengthCfg.propertySources.copy().toMutableList())
@@ -85,7 +85,7 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
             val uShininess = fragmentPropertyBlock(cfg.shininessCfg, ddx, ddy).outProperty
             val uSpecularStrength = fragmentPropertyBlock(cfg.specularStrengthCfg, ddx, ddy).outProperty
 
-            val material = blinnPhongMaterialBlock(cfg.lightingCfg.maxNumberOfLights) {
+            val material = blinnPhongMaterialBlock(cfg.lightingCfg.maxNumberOfLights, cfg.lightingCfg.normalLightRange) {
                 inCamPos(camData.position)
                 inNormal(normal)
                 inFragmentPos(fragmentWorldPos)

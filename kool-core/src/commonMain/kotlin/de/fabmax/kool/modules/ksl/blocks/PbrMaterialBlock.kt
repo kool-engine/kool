@@ -1,24 +1,28 @@
 package de.fabmax.kool.modules.ksl.blocks
 
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.ksl.NormalLightRange
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.ibl.ReflectionMapPass
 import kotlin.math.PI
 
-fun KslScopeBuilder.pbrMaterialBlock(
+context(builder: KslScopeBuilder)
+fun pbrMaterialBlock(
     maxNumberOfLights: Int,
     reflectionMaps: List<KslExpression<KslColorSamplerCube>>?,
     brdfLut: KslExpression<KslColorSampler2d>,
+    normalLightRange: NormalLightRange,
     block: PbrMaterialBlock.() -> Unit
 ): PbrMaterialBlock {
     val pbrMaterialBlock = PbrMaterialBlock(
         maxNumberOfLights,
-        parentStage.program.nextName("pbrMaterialBlock"),
+        builder.parentStage.program.nextName("pbrMaterialBlock"),
         reflectionMaps,
         brdfLut,
-        this
+        normalLightRange,
+        builder
     )
-    ops += pbrMaterialBlock.apply(block)
+    builder.ops += pbrMaterialBlock.apply(block)
     return pbrMaterialBlock
 }
 
@@ -27,22 +31,23 @@ class PbrMaterialBlock(
     name: String,
     reflectionMaps: List<KslExpression<KslColorSamplerCube>>?,
     brdfLut: KslExpression<KslColorSampler2d>,
-    parentScope: KslScopeBuilder
+    normalLightRange: NormalLightRange,
+    parentScope: KslScopeBuilder,
 ) : LitMaterialBlock(maxNumberOfLights, name, parentScope) {
 
-    val inRoughness = inFloat1("inRoughness", KslValueFloat1(0.5f))
-    val inMetallic = inFloat1("inMetallic", KslValueFloat1(0f))
+    val inRoughness = inFloat1("inRoughness", 0f.const)
+    val inMetallic = inFloat1("inMetallic", 0f.const)
 
     // environment reflection map(s)
-    val inReflectionMapWeights = inFloat2("inReflectionMapWeights", KslValueFloat2(1f, 0f))
-    val inReflectionStrength = inFloat3("inReflectionStrength", KslValueFloat3(1f, 1f, 1f))
+    val inReflectionMapWeights = inFloat2("inReflectionMapWeights", float2Value(1f, 0f))
+    val inReflectionStrength = inFloat3("inReflectionStrength", float3Value(1f, 1f, 1f))
     // screen-space reflection
-    val inReflectionColor = inFloat3("inReflectionColor", KslValueFloat3(1f, 1f, 1f))
-    val inReflectionWeight = inFloat1("inReflectionWeight", KslValueFloat1(0f))
+    val inReflectionColor = inFloat3("inReflectionColor", float3Value(1f, 1f, 1f))
+    val inReflectionWeight = inFloat1("inReflectionWeight", 0f.const)
 
     val inAmbientOrientation = inMat3("inAmbientOrientation")
     val inIrradiance = inFloat3("inIrradiance")
-    val inAoFactor = inFloat1("inAoFactor", KslValueFloat1(1f))
+    val inAoFactor = inFloat1("inAoFactor", 0f.const)
 
     init {
         body.apply {
@@ -53,7 +58,7 @@ class PbrMaterialBlock(
             val lo by Vec3f.ZERO.const
 
             fori(0.const, inLightCount) { i ->
-                val light = pbrLightBlock(true) {
+                val light = pbrLightBlock(true, normalLightRange) {
                     inViewDir(viewDir)
                     inNormalLight(inNormal)
                     inFragmentPosLight(inFragmentPos)
@@ -85,10 +90,10 @@ class PbrMaterialBlock(
                 // sample reflection map in reflection direction
                 val r = inAmbientOrientation * reflect(-viewDir, inNormal)
                 val mipLevel by (1f.const - pow(1f.const - roughness, 1.25f.const)) * (ReflectionMapPass.REFLECTION_MIP_LEVELS - 1).toFloat().const
-                reflectionColor set sampleTexture(reflectionMaps[0], r, mipLevel).rgb * inReflectionMapWeights.x
+                reflectionColor set reflectionMaps[0].sample(r, mipLevel).rgb * inReflectionMapWeights.x
                 if (reflectionMaps.size > 1) {
                     `if` (inReflectionMapWeights.y gt 0f.const) {
-                        reflectionColor += sampleTexture(reflectionMaps[1], r, mipLevel).rgb * inReflectionMapWeights.y
+                        reflectionColor += reflectionMaps[1].sample(r, mipLevel).rgb * inReflectionMapWeights.y
                     }
                 }
             }
@@ -97,7 +102,7 @@ class PbrMaterialBlock(
             // screen-space reflection
             reflectionColor set mix(reflectionColor, clamp(inReflectionColor, Vec3f.ZERO.const, Vec3f(5f).const), inReflectionWeight)
 
-            val brdf by sampleTexture(brdfLut, float2Value(normalDotView, roughness)).rg
+            val brdf by brdfLut.sample(float2Value(normalDotView, roughness)).rg
             val specular by reflectionColor * (fAmbient * brdf.r + brdf.g) / inBaseColor.a
             val ambient by kDAmbient * diffuse * inAoFactor
             val reflection by specular * inAoFactor
@@ -106,13 +111,23 @@ class PbrMaterialBlock(
     }
 }
 
-fun KslScopeBuilder.pbrLightBlock(isInfiniteSoi: Boolean, block: PbrLightBlock.() -> Unit): PbrLightBlock {
-    val pbrLightBlock = PbrLightBlock(parentStage.program.nextName("pbrLightBlock"), isInfiniteSoi, this)
-    ops += pbrLightBlock.apply(block)
+context(builder: KslScopeBuilder)
+fun pbrLightBlock(
+    isInfiniteSoi: Boolean,
+    normalLightRange: NormalLightRange,
+    block: PbrLightBlock.() -> Unit
+): PbrLightBlock {
+    val pbrLightBlock = PbrLightBlock(builder.parentStage.program.nextName("pbrLightBlock"), isInfiniteSoi, normalLightRange, builder)
+    builder.ops += pbrLightBlock.apply(block)
     return pbrLightBlock
 }
 
-class PbrLightBlock(name: String, isInfiniteSoi: Boolean, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
+class PbrLightBlock(
+    name: String,
+    isInfiniteSoi: Boolean,
+    normalLightRange: NormalLightRange,
+    parentScope: KslScopeBuilder,
+) : KslBlock(name, parentScope) {
     val inViewDir = inFloat3("inViewDir")
     val inNormalLight = inFloat3("inNormalLight")
     val inFragmentPosLight = inFloat3("inFragmentPosLight")
@@ -154,7 +169,10 @@ class PbrLightBlock(name: String, isInfiniteSoi: Boolean, parentScope: KslScopeB
                 )
             }
 
-            val nDotL by max(normalDotLight, 0f.const)
+            val nDotL by when (normalLightRange) {
+                NormalLightRange.ZeroToOne -> max(normalDotLight, 0f.const)
+                NormalLightRange.MinusOneToOne -> saturate(normalDotLight * 0.5f.const + 0.5f.const)
+            }
             `if`(nDotL gt 0f.const) {
                 // cook-torrance BRDF
                 val ndf by distributionGgx(inNormalLight, h, inRoughnessLight)

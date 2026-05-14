@@ -13,11 +13,11 @@ sealed class KeyCode(val code: Int, val isLocal: Boolean, name: String?) {
 }
 
 class UniversalKeyCode(code: Int, name: String? = null) : KeyCode(code, false, name) {
-    constructor(codeChar: Char) : this(codeChar.uppercaseChar().code)
+    constructor(codeChar: Char) : this(codeChar.lowercaseChar().code)
     override fun toString() = "{universal:$name}"
 }
 
 class LocalKeyCode(code: Int, name: String? = null) : KeyCode(code, true, name) {
-    constructor(codeChar: Char) : this(codeChar.uppercaseChar().code)
+    constructor(codeChar: Char) : this(codeChar.lowercaseChar().code)
     override fun toString() = "{local:$name}"
 }

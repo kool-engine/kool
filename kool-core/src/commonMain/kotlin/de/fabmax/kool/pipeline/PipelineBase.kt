@@ -80,6 +80,12 @@ inline fun PipelineBase.swapPipelineDataCapturing(key: Any?, block: () -> Unit) 
     captureBuffer()
 }
 
+inline fun <T: ShaderBase<*>> T.swapPipelineDataCapturing(key: Any?, block: T.() -> Unit) {
+    createdPipeline?.swapPipelineDataCapturing(key) {
+        block()
+    }
+}
+
 interface PipelineBackend : Releasable
 
 class MultiPipelineBindGroupData(val scope: BindGroupScope) : BaseReleasable(), DoubleBuffered {

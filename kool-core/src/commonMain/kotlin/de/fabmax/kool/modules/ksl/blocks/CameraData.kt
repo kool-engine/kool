@@ -8,8 +8,9 @@ import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.Struct
 import de.fabmax.kool.util.Time
 
-fun KslProgram.cameraData(): CameraData {
-    return (dataBlocks.find { it is CameraData } as? CameraData) ?: CameraData(this)
+context(program: KslProgram)
+fun cameraData(): CameraData {
+    return (program.dataBlocks.find { it is CameraData } as? CameraData) ?: CameraData(program)
 }
 
 fun KslScopeBuilder.depthToViewSpacePos(linearDepth: KslExprFloat1, clipSpaceXy: KslExprFloat2, camData: CameraData): KslExprFloat3 {
@@ -20,10 +21,8 @@ fun KslScopeBuilder.depthToViewSpacePos(linearDepth: KslExprFloat1, clipSpaceXy:
     return float3Value(clipSpaceXy * linearDepth * viewParams.xy + clipSpaceXy * viewParams.zw, -linearDepth)
 }
 
-class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
-    override val name = "CameraData"
-
-    private val camUniform = program.uniformStruct("uCameraData", CamDataStruct, BindGroupScope.VIEW)
+class CameraData(program: KslProgram) : KslDataBlock("CameraData", program), KslShaderListener {
+    private val camUniform = uniformStruct("uCameraData", CamDataStruct, BindGroupScope.VIEW)
 
     val viewProjMat: KslExprMat4 get() = camUniform[CamDataStruct.viewProj]
     val viewMat: KslExprMat4 get() = camUniform[CamDataStruct.view]

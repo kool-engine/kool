@@ -10,13 +10,12 @@ import de.fabmax.kool.pipeline.UniformBindingMat4fv
 import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.SimpleShadowMap
 
-fun KslProgram.shadowData(shadowCfg: LightingConfig): ShadowData {
-    return (dataBlocks.find { it is ShadowData } as? ShadowData) ?: ShadowData(shadowCfg, this)
+context(program: KslProgram)
+fun shadowData(shadowCfg: LightingConfig): ShadowData {
+    return (program.dataBlocks.find { it is ShadowData } as? ShadowData) ?: ShadowData(shadowCfg, program)
 }
 
-class ShadowData(val shadowCfg: LightingConfig, program: KslProgram) : KslDataBlock, KslShaderListener {
-    override val name = NAME
-
+class ShadowData(val shadowCfg: LightingConfig, program: KslProgram) : KslDataBlock(NAME, program), KslShaderListener {
     val shadowMapInfos: List<ShadowMapInfo>
     val subMaps: List<SimpleShadowMap>
     val numSubMaps: Int get() = subMaps.size
@@ -41,8 +40,8 @@ class ShadowData(val shadowCfg: LightingConfig, program: KslProgram) : KslDataBl
 
         // If shadowCfg is empty, uniforms are created with array size 0, which is kind of invalid. However, they are
         // also not referenced later on and therefore removed before shader is generated (again because shadowCfg is empty)
-        shadowMapViewProjMats = program.uniformMat4Array(UNIFORM_NAME_SHADOW_VP_MATS, numSubMaps)
-        depthMaps = List(numSubMaps) { program.depthTexture2d(samplerName(it)) }
+        shadowMapViewProjMats = uniformMat4Array(UNIFORM_NAME_SHADOW_VP_MATS, numSubMaps)
+        depthMaps = List(numSubMaps) { depthTexture2d(samplerName(it)) }
 
         program.dataBlocks += this
         if (subMaps.isNotEmpty()) {
@@ -51,9 +50,9 @@ class ShadowData(val shadowCfg: LightingConfig, program: KslProgram) : KslDataBl
     }
 
     override fun onShaderCreated(shader: ShaderBase<*>) {
-        uShadowMapViewProjMats = shader.uniformMat4fv(UNIFORM_NAME_SHADOW_VP_MATS)
+        uShadowMapViewProjMats = shader.bindUniformMat4Array(UNIFORM_NAME_SHADOW_VP_MATS)
         subMaps.forEachIndexed { i, shadowMap ->
-            shader.texture2d(samplerName(i), shadowMap.depthTexture)
+            shader.bindTexture2d(samplerName(i), shadowMap.depthTexture)
         }
     }
 

@@ -19,7 +19,7 @@ interface WindowSubsystem {
     val input: PlatformInput
 
     fun queryRequiredVkExtensions(): List<String>
-    fun createWindow(clientApi: ClientApi, glCallbacks: GlWindowCallbacks?, ctx: Lwjgl3Context): KoolWindowJvm
+    fun createWindow(clientApi: ClientApi, glInitCallback: GlInitCallback?, ctx: Lwjgl3Context): KoolWindowJvm
 
     fun onEarlyInit()
     fun onBackendCreated(ctx: Lwjgl3Context)
@@ -27,7 +27,7 @@ interface WindowSubsystem {
 }
 
 fun WindowSubsystem.createVkWindow(ctx: Lwjgl3Context) = createWindow(ClientApi.UNMANAGED, null, ctx)
-fun WindowSubsystem.createGlWindow(glCallbacks: GlWindowCallbacks, ctx: Lwjgl3Context) = createWindow(ClientApi.OPEN_GL, glCallbacks, ctx)
+fun WindowSubsystem.createGlWindow(glInitCallback: GlInitCallback, ctx: Lwjgl3Context) = createWindow(ClientApi.OPEN_GL, glInitCallback, ctx)
 
 
 internal fun WindowSubsystem.shutdown() {
@@ -81,7 +81,6 @@ interface KoolWindowJvm : KoolWindow {
     }
 }
 
-interface GlWindowCallbacks {
+fun interface GlInitCallback {
     fun initGl()
-    fun drawFrame()
 }

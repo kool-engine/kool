@@ -14,35 +14,34 @@ import de.fabmax.kool.scene.vertexAttrib
 import de.fabmax.kool.util.Color
 
 abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslShader(model, cfg.pipelineCfg) {
+    var color: Color by bindColorUniform(cfg.colorCfg)
+    var colorMap: Texture2d? by bindColorTexture(cfg.colorCfg)
 
-    var color: Color by colorUniform(cfg.colorCfg)
-    var colorMap: Texture2d? by colorTexture(cfg.colorCfg)
+    var normalMap: Texture2d? by bindNormalTexture(cfg.normalMapCfg)
+    var normalMapStrength: Float by bindPropertyUniform(cfg.normalMapCfg.strengthCfg)
 
-    var normalMap: Texture2d? by normalTexture(cfg.normalMapCfg)
-    var normalMapStrength: Float by propertyUniform(cfg.normalMapCfg.strengthCfg)
+    var emission: Color by bindColorUniform(cfg.emissionCfg)
+    var emissionMap: Texture2d? by bindColorTexture(cfg.emissionCfg)
 
-    var emission: Color by colorUniform(cfg.emissionCfg)
-    var emissionMap: Texture2d? by colorTexture(cfg.emissionCfg)
+    var ao: Float by bindPropertyUniform(cfg.aoCfg)
+    var aoMap: Texture2d? by bindPropertyTexture(cfg.aoCfg)
 
-    var ao: Float by propertyUniform(cfg.aoCfg)
-    var aoMap: Texture2d? by propertyTexture(cfg.aoCfg)
+    var ssaoMap: Texture2d? by bindTexture2d("tSsaoMap", cfg.lightingCfg.defaultSsaoMap)
 
-    var ssaoMap: Texture2d? by texture2d("tSsaoMap", cfg.lightingCfg.defaultSsaoMap)
+    var parallaxMap: Texture2d? by bindTexture2d(cfg.parallaxCfg.parallaxMapName, cfg.parallaxCfg.defaultParallaxMap)
+    var parallaxStrength: Float by bindUniformFloat1("uParallaxStrength", cfg.parallaxCfg.strength)
+    var parallaxMapSteps: Int by bindUniformInt1("uParallaxMaxSteps", cfg.parallaxCfg.maxSteps)
 
-    var parallaxMap: Texture2d? by texture2d(cfg.parallaxCfg.parallaxMapName, cfg.parallaxCfg.defaultParallaxMap)
-    var parallaxStrength: Float by uniform1f("uParallaxStrength", cfg.parallaxCfg.strength)
-    var parallaxMapSteps: Int by uniform1i("uParallaxMaxSteps", cfg.parallaxCfg.maxSteps)
+    var vertexDisplacementMap: Texture2d? by bindPropertyTexture(cfg.vertexCfg.displacementCfg)
+    var vertexDisplacementStrength: Float by bindPropertyUniform(cfg.vertexCfg.displacementCfg)
 
-    var vertexDisplacementMap: Texture2d? by propertyTexture(cfg.vertexCfg.displacementCfg)
-    var vertexDisplacementStrength: Float by propertyUniform(cfg.vertexCfg.displacementCfg)
-
-    var ambientFactor: Color by uniformColor("uAmbientColor")
-    var ambientMapOrientation: Mat3f by uniformMat3f("uAmbientTextureOri")
+    var ambientFactor: Color by bindUniformColor("uAmbientColor")
+    var ambientMapOrientation: Mat3f by bindUniformMat3("uAmbientTextureOri")
     // if ambient color is image based
-    var ambientMap: TextureCube? by textureCube("tAmbientTexture")
+    var ambientMap: TextureCube? by bindTextureCube("tAmbientTexture")
     // if ambient color is dual image based
-    val ambientMaps = List(2) { textureCube("tAmbientTexture_$it") }
-    var ambientMapWeights by uniform2f("tAmbientWeights", Vec2f.X_AXIS)
+    val ambientMaps = List(2) { bindTextureCube("tAmbientTexture_$it") }
+    var ambientMapWeights by bindUniformFloat2("tAmbientWeights", Vec2f.X_AXIS)
 
     val ambientCfg: AmbientLight get() = cfg.lightingCfg.ambientLight
     val colorCfg: ColorBlockConfig get() = cfg.colorCfg
@@ -61,7 +60,7 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
 
     init {
         if (cfg.normalMapCfg.isArrayNormalMap) {
-            textureArrays[cfg.normalMapCfg.textureName] = texture2dArray(cfg.normalMapCfg.textureName, cfg.normalMapCfg.defaultArrayNormalMap)
+            textureArrays[cfg.normalMapCfg.textureName] = bindTexture2dArray(cfg.normalMapCfg.textureName, cfg.normalMapCfg.defaultArrayNormalMap)
         }
         registerArrayTextures(cfg.colorCfg)
         registerArrayTextures(cfg.emissionCfg)
@@ -308,7 +307,7 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                     if (cfg.lightingCfg.isSsao) {
                         val aoMap = texture2d("tSsaoMap")
                         val aoUv = float2Var(projPosition.output.xy / projPosition.output.w * 0.5f.const + 0.5f.const)
-                        aoFactor *= sampleTexture(aoMap, aoUv, 0f.const).x
+                        aoFactor *= aoMap.sample(aoUv, 0f.const).x
                     }
 
                     val irradiance = when (cfg.lightingCfg.ambientLight) {
@@ -316,15 +315,15 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                         is AmbientLight.ImageBased -> {
                             val ambientOri = uniformMat3("uAmbientTextureOri")
                             val ambientTex = textureCube("tAmbientTexture")
-                            (sampleTexture(ambientTex, ambientOri * normal, 0f.const) * uniformFloat4("uAmbientColor")).rgb
+                            (ambientTex.sample(ambientOri * normal, 0f.const) * uniformFloat4("uAmbientColor")).rgb
                         }
                         is AmbientLight.DualImageBased -> {
                             val ambientOri = uniformMat3("uAmbientTextureOri")
                             val ambientTexs = List(2) { textureCube("tAmbientTexture_$it") }
                             val ambientWeights = uniformFloat2("tAmbientWeights")
-                            val ambientColor = float4Var(sampleTexture(ambientTexs[0], ambientOri * normal, 0f.const) * ambientWeights.x)
+                            val ambientColor = float4Var(ambientTexs[0].sample(ambientOri * normal, 0f.const) * ambientWeights.x)
                             `if`(ambientWeights.y gt 0f.const) {
-                                ambientColor += float4Var(sampleTexture(ambientTexs[1], ambientOri * normal, 0f.const) * ambientWeights.y)
+                                ambientColor += float4Var(ambientTexs[1].sample(ambientOri * normal, 0f.const) * ambientWeights.y)
                             }
                             (ambientColor * uniformFloat4("uAmbientColor")).rgb
                         }

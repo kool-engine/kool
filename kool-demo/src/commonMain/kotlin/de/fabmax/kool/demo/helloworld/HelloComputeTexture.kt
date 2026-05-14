@@ -58,10 +58,10 @@ class HelloComputeTexture : DemoScene("Hello Compute Texture") {
 
         // create and bind the storage texture used as compute shader output
         val storageTexture = StorageTexture2d(storageSizeX, storageSizeY, TexFormat.RGBA_F32, samplerSettings = SamplerSettings().nearest())
-        computeShader.storageTexture2d("pixelStorage", storageTexture)
+        computeShader.bindStorageTexture2d("pixelStorage", storageTexture)
 
         // animate offset position to change the colors over time
-        var offsetPos by computeShader.uniform2f("uOffset")
+        var offsetPos by computeShader.bindUniformFloat2("uOffset")
         onUpdate {
             offsetPos = Vec2f((Time.gameTime * 0.1f).toFloat(), (Time.gameTime * 0.17f).toFloat())
         }
@@ -91,7 +91,7 @@ class HelloComputeTexture : DemoScene("Hello Compute Texture") {
                 }
             }.apply {
                 // storage textures can also be used like regular textures
-                texture2d("pixelStorage", storageTexture)
+                bindTexture2d("pixelStorage", storageTexture)
             }
         }
 
