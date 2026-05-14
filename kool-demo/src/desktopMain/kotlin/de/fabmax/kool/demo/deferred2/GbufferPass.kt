@@ -14,10 +14,15 @@ import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.vertexAttrib
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.*
 
-class GbufferPass(content: Node, camera: Camera, initialSize: Vec2i) : OffscreenPass2d(
+object ObjModelMatLayout : Struct("obj_model_mat", MemoryLayout.Std140) {
+    val reprojectMat = mat4("reprojectMat")
+}
+
+private val prevViewProjMats = List(1024) { MutableMat4f() }
+
+class GbufferPass(content: Node, camera: Camera, initialSize: Vec2i, name: String) : OffscreenPass2d(
     drawNode = content,
     attachmentConfig = AttachmentConfig {
         // albedo, a * 255 = emission strength
@@ -31,7 +36,7 @@ class GbufferPass(content: Node, camera: Camera, initialSize: Vec2i) : Offscreen
         defaultDepth()
     },
     initialSize = initialSize,
-    name = "deferred2-gbuffer-pass"
+    name = name
 ) {
     val albedoEmission get() = colorTextures[0]
     val metalRoughnessAo get() = colorTextures[1]
@@ -39,6 +44,9 @@ class GbufferPass(content: Node, camera: Camera, initialSize: Vec2i) : Offscreen
     val objectIds get() = colorTextures[3]
 
     val depth get() = depthTexture!!
+
+    val objModelMats = StructBuffer(ObjModelMatLayout, 1024)
+    val objModelMatsGpu = objModelMats.asStorageBuffer()
 
     init {
         this.camera = camera
@@ -48,6 +56,23 @@ class GbufferPass(content: Node, camera: Camera, initialSize: Vec2i) : Offscreen
             val offset = tsaa[Time.frameCount % tsaa.size]
             offsetMat.setIdentity().translate(offset.x / width, offset.y / height, 0f).mul(camera.proj)
             camera.proj.set(offsetMat)
+        }
+
+        val inverseBuf = MutableMat4f()
+        val reprojectBuf = MutableMat4f()
+        onAfterCollectDrawCommands += { viewData ->
+            viewData.drawQueue.forEach { cmd ->
+                (cmd.mesh.shader as? GbufferShader)?.let { gbufferShader ->
+                    val id = gbufferShader.objectId
+                    objModelMats.set(id) {
+                        val prevViewProj = prevViewProjMats[id]
+                        inverseBuf.set(cmd.modelMatF).invert()
+                        reprojectBuf.set(prevViewProj).mul(inverseBuf)
+                        set(it.reprojectMat, reprojectBuf)
+                        prevViewProj.set(viewData.drawQueue.viewProjMatF).mul(cmd.modelMatF)
+                    }
+                }
+            }
         }
     }
 
@@ -95,6 +120,8 @@ class GbufferPass(content: Node, camera: Camera, initialSize: Vec2i) : Offscreen
 }
 
 class GbufferShader(val config: GbufferShaderConfig) : KslShader("deferred2-gbuffer-shader") {
+    var objectId: Int by bindUniformInt1("uObjectId", config.objectId)
+
     init {
         pipelineConfig = PipelineConfig(blendMode = BlendMode.DISABLED, cullMethod = config.cullMethod)
         program.program()
@@ -103,6 +130,7 @@ class GbufferShader(val config: GbufferShaderConfig) : KslShader("deferred2-gbuf
 
     private fun KslProgram.program() {
         val camData = cameraData()
+        val objectId = interStageInt1("objectId")
         val normalViewSpace = interStageFloat3("normalWorldSpace")
         var tangentViewSpace: KslInterStageVector<KslFloat4, KslFloat1>? = null
 
@@ -110,6 +138,9 @@ class GbufferShader(val config: GbufferShaderConfig) : KslShader("deferred2-gbuf
 
         vertexStage {
             main {
+                val uObjectId = uniformInt1("uObjectId")
+                objectId.input set uObjectId + (inInstanceIndex.toInt1() shl 10.const)
+
                 val vertexBlock = vertexTransformBlock(config.vertexCfg) {
                     inLocalPos(vertexAttrib(VertexLayouts.Position.position))
                     inLocalNormal(vertexAttrib(VertexLayouts.Normal.normal))
@@ -178,12 +209,12 @@ class GbufferShader(val config: GbufferShaderConfig) : KslShader("deferred2-gbuf
 
                 val normalHashX by clamp(((normal.x + 1f.const) * 8f.const).toInt1(), 0.const, 15.const)
                 val normalHashY by clamp(((normal.y + 1f.const) * 8f.const).toInt1(), 0.const, 15.const)
-                val hash by (normalHashX shl 28.const) or (normalHashY shl 24.const)
+                val meta by (normalHashX shl 28.const) or (normalHashY shl 24.const) or objectId.output
 
                 colorOutput(float4Value(baseColor.rgb, emissionStrength), location = 0)
                 colorOutput(float4Value(metallic, roughness, aoFactor, 0f.const), location = 1)
                 colorOutput(encodeNormalRgb(normal), location = 2)
-                intOutput(int4Value(hash, 0.const, 0.const, 0.const), location = 3)
+                intOutput(int4Value(meta, 0.const, 0.const, 0.const), location = 3)
             }
         }
     }
@@ -202,7 +233,7 @@ class GbufferShaderConfig(builder: Builder) {
 
     val alphaMode: AlphaMode = builder.alphaMode
     val cullMethod: CullMethod = builder.cullMethod
-    val materialFlags: Int = builder.materialFlags
+    val objectId: Int = builder.objectId
 
     val modelCustomizer: (KslProgram.() -> Unit)? = builder.modelCustomizer
 
@@ -220,7 +251,7 @@ class GbufferShaderConfig(builder: Builder) {
         var alphaMode: AlphaMode = AlphaMode.Blend
         var cullMethod: CullMethod = CullMethod.CULL_BACK_FACES
 
-        var materialFlags = 0
+        var objectId = 0
 
         var modelCustomizer: (KslProgram.() -> Unit)? = null
 

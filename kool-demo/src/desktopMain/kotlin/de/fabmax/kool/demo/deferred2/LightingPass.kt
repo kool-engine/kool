@@ -14,13 +14,10 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.Struct
+import de.fabmax.kool.util.Time
 
 class LightingPass(
     val gbuffers: AlternatingPair<GbufferPass>,
-//    val depth: Texture2d,
-//    val encodedNormalsMeta: Texture2d,
-//    val albedoEmission: Texture2d,
-//    val metalRoughnessAo: Texture2d,
     camera: Camera,
     lighting: Lighting?,
     size: Vec2i,
@@ -33,18 +30,9 @@ class LightingPass(
     initialSize = size,
     name = "deferred2-lighting-pass"
 ) {
-//    val lightingOutput = AlternatingPair {
-//        StorageTexture2d(size.x, size.y, TexFormat.RG11B10_F, samplerSettings = SamplerSettings().clamped().nearest())
-//    }
-
     val lightingOutput: Texture2d get() = colorTexture!!
 
-    private val lightingShader = DeferredLightingShader(
-//        depth = depth,
-//        encodedNormalsMeta = encodedNormalsMeta,
-//        albedoEmission = albedoEmission,
-//        metalRoughnessAo = metalRoughnessAo,
-    )
+    private val lightingShader = DeferredLightingShader()
 
     init {
         this.camera = camera
@@ -58,17 +46,18 @@ class LightingPass(
     }
 
     fun swapBuffers() {
-        val newGbuffer = gbuffers.oldVal
+        val newGbuffer = gbuffers.newVal
         lightingShader.swapPipelineDataCapturing(newGbuffer) {
             depthTex = newGbuffer.depth
             encodedNormals = newGbuffer.encodedNormals
             albedoEmissionTex = newGbuffer.albedoEmission
             metalRoughnessAoTex = newGbuffer.metalRoughnessAo
+            frameI = Time.frameCount
 
             camData.set {
                 set(it.proj, camera.proj)
-                set(it.invProj, camera.invProj)
                 set(it.invView, camera.invView)
+                set(it.invViewProj, camera.invViewProj)
                 set(it.viewport, Vec4f(0f, 0f, width.toFloat(), height.toFloat()))
                 set(it.position, camera.globalPos)
                 set(it.camNear, camera.clipNear)
@@ -89,6 +78,8 @@ class DeferredLightingShader : KslShader("deferred2-lighting") {
     val camData = bindUniformStruct("deferredCamData", DeferredCamDataStruct)
     private val lightDataStruct = LightDataStruct(4)
     val lightData = bindUniformStruct("lightData", lightDataStruct)
+
+    var frameI by bindUniformInt1("frameI")
 
     init {
         pipelineConfig = PipelineConfig(
@@ -111,12 +102,14 @@ class DeferredLightingShader : KslShader("deferred2-lighting") {
             val camData = uniformStruct("deferredCamData", DeferredCamDataStruct)
             val lightData = uniformStruct("lightData", lightDataStruct)
 
+            val frameI = uniformInt1("frameI")
+
             main {
                 val baseCoord = (uv.output * depth.size().toFloat2()).toInt2()
                 val camNear = camData[DeferredCamDataStruct.camNear]
-                val invProj = camData[DeferredCamDataStruct.invProj]
                 val invView = camData[DeferredCamDataStruct.invView]
-                val worldPos by unprojectBaseCoord(depth, baseCoord, camNear, invProj, invView).xyz
+                val invViewProj = camData[DeferredCamDataStruct.invViewProj]
+                val worldPos by unprojectBaseCoord(depth, baseCoord, camNear, invViewProj).xyz
 
                 val viewNormal by decodeNormalRgb(encodedNormals.load(baseCoord, lod = 0.const).xyz)
                 val worldNormal by (invView * float4Value(viewNormal, 0f.const)).xyz
@@ -138,8 +131,10 @@ class DeferredLightingShader : KslShader("deferred2-lighting") {
 
                 val ambient by 0.04f.const
                 val diffuse by albedo * ambient + albedo * radiance * saturate(dot(dirToLight, worldNormal))
-
                 colorOutput(diffuse)
+
+//                val filterNoise by noise31(float3Value(uv.output, frameI.toFloat1())) * 0.7f.const + 0.3f.const
+//                colorOutput(diffuse * filterNoise)
             }
         }
     }
@@ -147,8 +142,9 @@ class DeferredLightingShader : KslShader("deferred2-lighting") {
 
 object DeferredCamDataStruct : Struct("DeferredCameraData", MemoryLayout.Std140) {
     val proj = mat4("projMat")
-    val invProj = mat4("invProjMat")
+//    val invProj = mat4("invProjMat")
     val invView = mat4("invView")
+    val invViewProj = mat4("invViewProjMat")
     val viewport = float4("viewport")
     val position = float3("position")
     val camNear = float1("camClipNear")
