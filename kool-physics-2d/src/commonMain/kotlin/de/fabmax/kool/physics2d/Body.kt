@@ -30,6 +30,7 @@ enum class BodyType {
 
 class Body internal constructor(bodyDef: BodyDef, internal val bodyId: BodyId) {
     private val shapes = mutableMapOf<ShapeId, Pair<Geometry, ShapeDef>>()
+    private val chains = mutableListOf<ChainId>()
     val type: BodyType = bodyDef.type
 
     var isValid = true; private set
@@ -81,6 +82,11 @@ class Body internal constructor(bodyDef: BodyDef, internal val bodyId: BodyId) {
         shapes[shapeId] = geometry to shapeDef
     }
 
+    fun attachChain(chainDef: ChainDef) {
+        val chainId = bodyId.addChain(chainDef)
+        chains += chainId
+    }
+
     fun setPose(position: Vec2f, rotation: Rotation) {
         checkIsValid()
         bodyId.setPose(Pose2f(position, rotation))
@@ -118,6 +124,8 @@ internal expect fun BodyId.getAngularVelocity(): Float
 internal expect fun BodyId.setAngularVelocity(angularVelocity: Float)
 
 internal expect fun BodyId.setTargetTransform(target: Pose2f, duration: Float)
+
+internal expect fun BodyId.addChain(chainDef: ChainDef): ChainId
 
 internal expect object BodyDefDefaults {
     val linearVelocity: Vec2f

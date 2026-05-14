@@ -11,6 +11,14 @@ fun MemoryStack.allocVec2(x: Float, y: Float) = b2Vec2.createAt(this, MemoryStac
     it.y = y
 }
 
+fun MemoryStack.allocVec2Array(points: List<Vec2f>) =
+    b2Vec2Array.createAt(this, MemoryStack::nmalloc, points.size).also {
+        for (i in points.indices) {
+            val point = allocVec2(points[i].x, points[i].y)
+            it.set(i, point)
+        }
+    }
+
 fun MemoryStack.allocRotation(r: Rotation) = b2Rot.createAt(this, MemoryStack::nmalloc).also {
     it.s = r.sin
     it.c = r.cos
@@ -43,6 +51,7 @@ fun MemoryStack.allocCircle(radius: Float) = b2Circle.createAt(this, MemoryStack
     it.radius = radius
 }
 
+fun MemoryStack.allocChainDef() = b2ChainDef.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.allocBodyDef() = b2BodyDef.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.allocShapeDef() = b2ShapeDef.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.allocWordDef() = b2WorldDef.createAt(this, MemoryStack::nmalloc)

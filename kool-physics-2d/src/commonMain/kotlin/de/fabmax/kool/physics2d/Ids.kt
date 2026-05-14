@@ -23,3 +23,8 @@ internal data class WorldId(val id: Long) {
     override fun equals(other: Any?): Boolean = (other as? WorldId)?.id == id
     override fun hashCode(): Int = id.toInt() xor (id ushr 32).toInt()
 }
+
+internal data class ChainId(val id: Long) {
+    override fun equals(other: Any?): Boolean = (other as? ChainId)?.id == id
+    override fun hashCode(): Int = id.toInt() xor (id ushr 32).toInt()
+}
