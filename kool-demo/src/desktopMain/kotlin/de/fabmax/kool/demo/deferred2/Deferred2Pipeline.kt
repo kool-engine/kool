@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo.deferred2
 
-import de.fabmax.kool.demo.deferred2.GbufferPass.Companion.TSAA_PATTERN_4
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.BufferedImageData2d
 import de.fabmax.kool.pipeline.TexFormat
@@ -15,8 +14,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 
-private const val renderScale = 1f
-val tsaa = TSAA_PATTERN_4
+private const val renderScale = 0.5f
+val tsaa = GbufferPass.TSAA_PATTERN_4
 
 class Deferred2Pipeline(
     val content: Node,
@@ -26,7 +25,8 @@ class Deferred2Pipeline(
     val camera = PerspectiveCamera()
 
     val gbuffers = AlternatingPair {
-        GbufferPass(content, camera, scene.renderSize)
+        val suff = if (it) "A" else "B"
+        GbufferPass(content, camera, scene.renderSize, "deferred2-gbuffer-pass-$suff")
     }
 
     // fixme: think of something better for providing a camera
@@ -61,17 +61,21 @@ class Deferred2Pipeline(
                 lightingPass.setSize(size.x, size.y)
                 filterPass.resize(size)
             }
-
-
         }
 
         scene.coroutineScope.launch {
             withContext(KoolDispatchers.Synced) {
                 while (true) {
-                    gbuffers.newVal.isEnabled = true
-                    gbuffers.oldVal.isEnabled = false
                     lightingPass.swapBuffers()
                     filterPass.swapBuffers()
+
+
+                    gbuffers.newVal.objModelMatsGpu.uploadData(gbuffers.newVal.objModelMats)
+//                    gbuffers.oldVal.objModelMatsGpu.uploadData(gbuffers.oldVal.objModelMats)
+
+                    // this is called after update, newVal was enabled and updated, disable it and enable oldVal for next frame
+                    gbuffers.newVal.isEnabled = false
+                    gbuffers.oldVal.isEnabled = true
                     yield()
                 }
             }

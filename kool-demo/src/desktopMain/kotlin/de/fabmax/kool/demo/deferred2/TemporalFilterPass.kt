@@ -20,7 +20,7 @@ class TemporalFilterPass(
     filterStorageFmt: TexFormat = TexFormat.RGBA_F16,
 ) : ComputePass("deferred2-lighting-pass") {
     val filterOutput = AlternatingPair {
-        StorageTexture2d(size.x, size.y, filterStorageFmt, samplerSettings = SamplerSettings().clamped().nearest())
+        StorageTexture2d(size.x, size.y, filterStorageFmt, samplerSettings = SamplerSettings().clamped())
     }
     private val filterState = StorageTexture2d(size.x, size.y, TexFormat.R, samplerSettings = SamplerSettings().clamped().nearest())
 
@@ -47,13 +47,23 @@ class TemporalFilterPass(
 
     fun swapBuffers() {
         temporalShader.swapPipelineDataCapturing(filterOutput.newVal) {
-            oldAlbedo = gbuffers.oldVal.albedoEmission
-            newAlbedo = gbuffers.newVal.albedoEmission
-            oldMeta = gbuffers.oldVal.objectIds
-            newMeta = gbuffers.newVal.objectIds
+            val newGbuffer = gbuffers.newVal
+            val oldGbuffer = gbuffers.oldVal
+
+            newDepth = newGbuffer.depth
+            oldAlbedo = oldGbuffer.albedoEmission
+            newAlbedo = newGbuffer.albedoEmission
+            oldMeta = oldGbuffer.objectIds
+            newMeta = newGbuffer.objectIds
             oldFilter = filterOutput.oldVal
             newFilter = filterOutput.newVal
             frameI = Time.frameCount
+
+            objModelMats = newGbuffer.objModelMatsGpu
+            camData.set {
+                set(it.invViewProj, camera.invViewProj)
+                set(it.camNear, camera.clipNear)
+            }
         }
     }
 }
@@ -68,12 +78,12 @@ class TemporalFilterShader(
     var newAlbedo by bindTexture2d("newAlbedo")
     var oldMeta by bindTexture2d("oldMeta")
     var newMeta by bindTexture2d("newMeta")
+    var newDepth by bindTexture2d("newDepth")
 
-//    var oldDepth by bindTexture2d("oldDepth")
-//    var newDepth by bindTexture2d("newDepth")
-//    var camData = bindUniformStruct("camData", NewOldCamDataStruct)
+    var objModelMats by bindStorage("objModelMats")
+    var camData = bindUniformStruct("camData", FilterCamDataStruct)
 
-    var oldFilter by bindStorageTexture2d("oldFilter")
+    var oldFilter by bindTexture2d("oldFilter", defaultSampler = SamplerSettings().clamped().linear())
     var newFilter by bindStorageTexture2d("newFilter")
     var filterState by bindStorageTexture2d("filterState", filterState)
 
@@ -90,12 +100,13 @@ class TemporalFilterShader(
             val newAlbedo = texture2d("newAlbedo")
             val oldMeta = texture2dInt("oldMeta")
             val newMeta = texture2dInt("newMeta")
+            val newDepth = texture2d("newDepth", isUnfilterable = true)
 
-            val oldFilter = if (filterStorageFmt.channels == 3) {
-                storageTexture2d<KslFloat3>("oldFilter", filterStorageFmt)
-            } else {
-                storageTexture2d<KslFloat4>("oldFilter", filterStorageFmt)
-            }
+            val invModelMatStruct = struct(ObjModelMatLayout)
+            val objModelMats = storage("objModelMats", invModelMatStruct)
+//            val oldObjModelMats = storage("oldObjModelMats", invModelMatStruct)
+
+            val oldFilter = texture2d("oldFilter")
             val newFilter = if (filterStorageFmt.channels == 3) {
                 storageTexture2d<KslFloat3>("newFilter", filterStorageFmt)
             } else {
@@ -106,9 +117,7 @@ class TemporalFilterShader(
 
             val frameI = uniformInt1("frameI")
 
-//            val oldDepth = texture2d("oldDepth", isUnfilterable = true)
-//            val newDepth = texture2d("newDepth", isUnfilterable = true)
-//            val camData = uniformStruct("camData", NewOldCamDataStruct)
+            val camData = uniformStruct("camData", FilterCamDataStruct)
 
             val metaEqual = functionBool1("fnMetaEqual") {
                 val meta1 = paramInt1()
@@ -125,50 +134,63 @@ class TemporalFilterShader(
 
             main {
                 val baseCoord by inGlobalInvocationId.xy.toInt2()
-//                val uv by baseCoordToUv(baseCoord, lightingOutput.size())
-                val state by (filterState.load(baseCoord).r * 255f.const).toInt1()
-//                val filterNoise by noise31(uint3Value(inGlobalInvocationId.xy, frameI.toUint1()))
-
-//                val camNear = camData[NewOldCamDataStruct.newCam][DeferredCamDataStruct.camNear]
-//                val invProj = camData[NewOldCamDataStruct.newCam][DeferredCamDataStruct.invProj]
-//                val invView = camData[NewOldCamDataStruct.newCam][DeferredCamDataStruct.invView]
-//                val newWorldPos by unprojectUv(newDepth, baseCoord, camNear, invProj, invView).xyz
-
-                val curAlbedo by newAlbedo.load(baseCoord).rgb
                 val curMeta by newMeta.load(baseCoord).r
-                val colorDiff by length(curAlbedo - oldAlbedo.load(baseCoord).rgb)
-                val sameColorThresh = 0.08f.const //+ filterNoise * 0.01f.const
-                val sameColor by colorDiff lt sameColorThresh
-                val sameMeta by metaEqual(curMeta, oldMeta.load(baseCoord).r)
-                val filterHit by sameColor and sameMeta
+                val id by curMeta and 0xffffff.const
 
-                val wasEdge by state and 1.const gt 0.const
+                val oldUv by (baseCoord.toFloat2() + 0.5f.const2) / oldFilter.size().toFloat2()
+                val oldBaseCoord by baseCoord
+                `if`(id ne 0.const) {
+                    val camNear = camData[FilterCamDataStruct.camNear]
+                    val invViewProj = camData[FilterCamDataStruct.invViewProj]
+                    val worldPos by unprojectBaseCoord(newDepth, baseCoord, camNear, invViewProj)
+                    val objModelMat = structVar(objModelMats[id])
+                    val oldProj by objModelMat[ObjModelMatLayout.reprojectMat] * worldPos
+                    oldUv set oldProj.xy / oldProj.w * float2Value(0.5f, -0.5f) + 0.5f.const
+                    oldBaseCoord set (oldUv * oldFilter.size().toFloat2()).toInt2()
+                }
+
+                val oldStateCa by (oldUv * oldFilter.size().toFloat2() + float2Value(0.5f, 0.5f)).toInt2()
+                val oldStateCb by (oldUv * oldFilter.size().toFloat2() + float2Value(0.5f, -0.5f)).toInt2()
+                val oldStateCc by (oldUv * oldFilter.size().toFloat2() + float2Value(-0.5f, -0.5f)).toInt2()
+                val oldStateCd by (oldUv * oldFilter.size().toFloat2() + float2Value(-0.5f, 0.5f)).toInt2()
+                val oldState by (filterState.load(oldStateCa).r * 255f.const).toInt1() or
+                    (filterState.load(oldStateCb).r * 255f.const).toInt1() or
+                    (filterState.load(oldStateCc).r * 255f.const).toInt1() or
+                    (filterState.load(oldStateCd).r * 255f.const).toInt1()
+                val wasEdge by oldState and 1.const gt 0.const
+
+                val sameColorThresh = 0.25f.const
+                val curAlbedo by float4Var(newAlbedo.load(baseCoord))
+                val colorDiff by length(curAlbedo - oldAlbedo.sample(oldUv))
+                val sameColor by colorDiff lt sameColorThresh
+                val filterHit by sameColor
                 val isEdge by false.const
                 `if`(!filterHit or wasEdge) {
-                    val da by length(curAlbedo - oldAlbedo.load(baseCoord + int2Value(-1, -1)).rgb)
-                    val db by length(curAlbedo - oldAlbedo.load(baseCoord + int2Value(1, 1)).rgb)
-                    val dc by length(curAlbedo - oldAlbedo.load(baseCoord + int2Value(1, -1)).rgb)
-                    val dd by length(curAlbedo - oldAlbedo.load(baseCoord + int2Value(-1, 1)).rgb)
+//                    val depth0 by 1f.const / newDepth.load(baseCoord, lod = 0.const).x
+//                    val da by depthEdge(depth0, newDepth.load(baseCoord + int2Value(-1, -1)).x)
+//                    val db by depthEdge(depth0, newDepth.load(baseCoord + int2Value(1, 1)).x)
+//                    val dc by depthEdge(depth0, newDepth.load(baseCoord + int2Value(1, -1)).x)
+//                    val dd by depthEdge(depth0, newDepth.load(baseCoord + int2Value(-1, 1)).x)
+//                    isEdge set (da or db or dc or dd)
+
+                    val oldPxSz by 1f.const2 / oldFilter.size().toFloat2()
+                    val da by length(curAlbedo - oldAlbedo.sample(oldUv + float2Value(-1f, -1f) * oldPxSz))
+                    val db by length(curAlbedo - oldAlbedo.sample(oldUv + float2Value(1f, 1f) * oldPxSz))
+                    val dc by length(curAlbedo - oldAlbedo.sample(oldUv + float2Value(1f, -1f) * oldPxSz))
+                    val dd by length(curAlbedo - oldAlbedo.sample(oldUv + float2Value(-1f, 1f) * oldPxSz))
 
                     val minD = min(colorDiff, min(min(da, db), min(dc, dd)))
                     val maxD = max(colorDiff, max(max(da, db), max(dc, dd)))
                     isEdge set ((minD lt sameColorThresh) and (maxD gt sameColorThresh))
-
-                    val ma by metaEqual(curMeta, oldMeta.load(baseCoord + int2Value(-1, -1)).r)
-                    val mb by metaEqual(curMeta, oldMeta.load(baseCoord + int2Value(1, 1)).r)
-                    val mc by metaEqual(curMeta, oldMeta.load(baseCoord + int2Value(1, -1)).r)
-                    val md by metaEqual(curMeta, oldMeta.load(baseCoord + int2Value(-1, 1)).r)
-
-                    val anyMtrue by ma or mb or mc or md
-                    val anyMfalse by !(ma and mb and mc and md)
-                    isEdge set (isEdge or (anyMtrue and anyMfalse))
                 }
-                state set isEdge.toInt1()
-                filterState.store(baseCoord, float4Value(state.toFloat1() / 255f.const, 0f.const, 0f.const, 0f.const))
 
+                oldState set isEdge.toInt1()
+                filterState.store(baseCoord, float4Value(oldState.toFloat1() / 255f.const, 0f.const, 0f.const, 0f.const))
+
+//                val filterNoise by noise31(uint3Value(inGlobalInvocationId.xy, frameI.toUint1()))
 //                val w by 4f.const
-                val w by 8f.const //- filterNoise * filterNoise * filterNoise * 4f.const
-//                val w by 16f.const - filterNoise * filterNoise * filterNoise * 14f.const
+//                val w by 8f.const //- filterNoise * filterNoise * filterNoise * 4f.const
+                val w by 16f.const //- filterNoise * filterNoise * filterNoise * 14f.const
 //                val w by 32f.const - filterNoise * filterNoise * filterNoise * 16f.const
 //                val w by 100f.const - filterNoise * filterNoise * filterNoise * 75f.const
 
@@ -177,26 +199,17 @@ class TemporalFilterShader(
                 }
 
                 val curColor by lightingOutput.load(baseCoord).rgb
+                val oldColor by oldFilter.sample(oldUv).rgb
                 val curSrgb by convertColorSpace(curColor, ColorSpaceConversion.LinearToSrgb())
-                val oldSrgb by convertColorSpace(oldFilter.load(baseCoord).rgb, ColorSpaceConversion.LinearToSrgb())
+                val oldSrgb by convertColorSpace(oldColor, ColorSpaceConversion.LinearToSrgb())
                 val weighted by (oldSrgb * w + curSrgb) / (w + 1f.const)
                 val filtered by convertColorSpace(weighted, ColorSpaceConversion.SrgbToLinear())
 
                 `if`(any(isNan(filtered))) {
                     filtered set curSrgb
                 }
-
-//                val filteredColor by (old * w + curColor) / (w + 1f.const)
                 newFilter[baseCoord] = float4Value(filtered, 1f)
-//                newFilter[baseCoord] = float4Value(current, 1f)
 
-//                val x1 by (curMeta shr 16.const) and 0xff.const
-//                val y1 by (curMeta shr 24.const) and 0xff.const
-//                newFilter[baseCoord] = float4Value(x1.toFloat1() / 127f.const, y1.toFloat1() / 127f.const, 0f.const, 1f.const)
-
-//                newFilter[baseCoord] = float4Value(mix(curColor, curAlbedo, 0.5f.const), 1f)
-
-//                newFilter[baseCoord] = float4Value(colorDiff, colorDiff, colorDiff, 1f.const)
 //                `if`(wasEdge and !isEdge) {
 //                    newFilter[baseCoord] = Color.RED.const
 //                }
@@ -211,7 +224,13 @@ class TemporalFilterShader(
     }
 }
 
-object NewOldCamDataStruct : Struct("NewOldCamData", MemoryLayout.Std140) {
-    val oldCam = struct(DeferredCamDataStruct)
-    val newCam = struct(DeferredCamDataStruct)
+context(scope: KslScopeBuilder)
+private fun depthEdge(baseDepthLin: KslExprFloat1, cmpDepth: KslExprFloat1): KslExprBool1 {
+    val cmpDepthLin = float1Var(1f.const / cmpDepth)
+    return min(baseDepthLin, cmpDepthLin) / max(baseDepthLin, cmpDepthLin) lt 0.99f.const
+}
+
+object FilterCamDataStruct : Struct("FilterCamData", MemoryLayout.Std140) {
+    val invViewProj = mat4("invViewProj")
+    val camNear = float1("camClipNear")
 }
