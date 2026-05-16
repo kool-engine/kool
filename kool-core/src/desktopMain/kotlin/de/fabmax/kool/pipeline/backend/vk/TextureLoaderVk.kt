@@ -251,4 +251,18 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         storageTexture.gpuTexture?.release()
         storageTexture.gpuTexture = storageImage
     }
+
+    internal fun createStorageTextureIfNeeded(storageTexture: StorageTexture, commandBuffer: VkCommandBuffer?) {
+        val tex = storageTexture.asTexture
+        val gpu = storageTexture.asTexture.gpuTexture
+        if (gpu == null || gpu.width != tex.width || gpu.height != tex.height || gpu.depth != tex.depth) {
+            if (commandBuffer != null) {
+                createStorageTexture(storageTexture, tex.width, tex.height, tex.depth, commandBuffer)
+            } else {
+                backend.commandPool.singleShotCommands { commandBuffer ->
+                    createStorageTexture(storageTexture, tex.width, tex.height, tex.depth, commandBuffer)
+                }
+            }
+        }
+    }
 }

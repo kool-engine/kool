@@ -169,6 +169,9 @@ sealed class WgpuPipeline(
     private fun <T: ImageData> Texture<T>.checkLoadingState(): Boolean {
         checkIsNotReleased()
         uploadData?.let { backend.textureLoader.loadTexture(this) }
+        if (!isLoaded && this is StorageTexture) {
+            backend.textureLoader.createStorageTextureIfNeeded(this)
+        }
         return isLoaded
     }
 
