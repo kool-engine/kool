@@ -13,8 +13,10 @@ fun MemoryStack.allocVec2(x: Float, y: Float) = b2Vec2.createAt(this, MemoryStac
 
 fun MemoryStack.allocVec2Array(points: List<Vec2f>) =
     b2Vec2Array.createAt(this, MemoryStack::nmalloc, points.size).also {
+        val point = allocVec2(0f, 0f)
         for (i in points.indices) {
-            val point = allocVec2(points[i].x, points[i].y)
+            point.x = points[i].x
+            point.y = points[i].y
             it.set(i, point)
         }
     }
