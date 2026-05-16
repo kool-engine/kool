@@ -275,6 +275,14 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         storageTexture.gpuTexture = backend.createTexture(texDesc)
     }
 
+    internal fun createStorageTextureIfNeeded(storageTexture: StorageTexture) {
+        val tex = storageTexture.asTexture
+        val gpu = storageTexture.asTexture.gpuTexture
+        if (gpu == null || gpu.width != tex.width || gpu.height != tex.height || gpu.depth != tex.depth) {
+            createStorageTexture(storageTexture, tex.width, tex.height, tex.depth)
+        }
+    }
+
     private val ImageData.gpuImageDataLayout: GPUImageDataLayout get() {
         return when (this) {
             is BufferedImageData1d -> gpuImageDataLayout

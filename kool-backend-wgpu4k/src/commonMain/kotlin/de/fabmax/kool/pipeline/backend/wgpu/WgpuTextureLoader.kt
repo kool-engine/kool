@@ -252,6 +252,14 @@ internal class WgpuTextureLoader(val backend: GPUBackend) {
         storageTexture.gpuTexture = backend.createTexture(texDesc)
     }
 
+    internal fun createStorageTextureIfNeeded(storageTexture: StorageTexture) {
+        val tex = storageTexture.asTexture
+        val gpu = storageTexture.asTexture.gpuTexture
+        if (gpu == null || gpu.width != tex.width || gpu.height != tex.height || gpu.depth != tex.depth) {
+            createStorageTexture(storageTexture, tex.width, tex.height, tex.depth)
+        }
+    }
+
     inner class MipmapGenerator {
         private val shaderModule = device.createShaderModule("""
             var<private> pos: array<vec2f, 4> = array<vec2f, 4>(

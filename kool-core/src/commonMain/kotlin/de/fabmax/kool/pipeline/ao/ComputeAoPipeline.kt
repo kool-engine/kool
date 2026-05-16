@@ -94,7 +94,7 @@ class ComputeAoPass(
     private val scaledWidth: Int get() = (fullWidth / 2).coerceAtLeast(1)
     private val scaledHeight: Int get() = (fullHeight / 2).coerceAtLeast(1)
 
-    val scaledNormals = StorageTexture2d(scaledWidth, scaledHeight, TexFormat.R_I32, mipMapping = MipMapping.Limited(SCALE_LEVELS), name = "normalOutput")
+    val scaledNormals = StorageTexture2d(scaledWidth, scaledHeight, TexFormat.RGBA, mipMapping = MipMapping.Limited(SCALE_LEVELS), name = "normalOutput")
     val scaledDists = StorageTexture2d(scaledWidth, scaledHeight, distFormat, mipMapping = MipMapping.Limited(SCALE_LEVELS), name = "distOutput")
     val aoNoisy = StorageTexture2d(scaledWidth, scaledHeight, TexFormat.R, name = "aoOutputNoisy")
     val filteredAo = StorageTexture2d(scaledWidth, scaledHeight, TexFormat.R, name = "filteredAo")
@@ -175,7 +175,7 @@ class ComputeAoPass(
             if (!isConfigured || finalAo.width != 8 || finalAo.height != 8) {
                 finalAo.resize(8, 8)
                 SyncedScope.launch {
-                    tasks.toList().forEach { removeAndReleaseTask(it) }
+                    clearAndReleaseTasks()
                     makeClearPass()
                 }
             }
@@ -190,7 +190,7 @@ class ComputeAoPass(
             finalAo.resize(fullWidth, fullHeight)
 
             SyncedScope.launch {
-                tasks.toList().forEach { removeAndReleaseTask(it) }
+                clearAndReleaseTasks()
                 makeDownSamplePass()
                 makeDownSampleLowerPasses()
                 makeAoPass()
@@ -314,27 +314,27 @@ class ComputeAoPass(
 
     private fun downSamplingShader() = KslComputeShader("down-sample-shader") {
         computeStage(8, 8) {
-            val normalInput = texture2dInt("normalInput")
+            val normalInput = texture2d("normalInput")
             val distInput = texture2d("distInput", isUnfilterable = true)
-            val normalOutput = storageTexture2d<KslInt1>("normalOutput", TexFormat.R_I32)
+            val normalOutput = storageTexture2d<KslFloat4>("normalOutput", TexFormat.RGBA)
             val distOutput = storageTexture2d<KslFloat1>("distOutput", distFormat)
             val camNear = uniformFloat1("camNear")
 
             main {
                 val baseCoord by inGlobalInvocationId.xy.toInt2()
                 val loadCoord by baseCoord * 2.const
-                val normal by 0.const
+                val normal by 0f.const4
                 val maxDepth by 1f.const
                 val samplePos = listOf(Vec2i(0, 0), Vec2i(1, 0), Vec2i(0, 1), Vec2i(1, 1))
                 samplePos.forEach { sample ->
                     val sampleDepth = float1Var(distInput.load(loadCoord + sample.const).x)
                     `if`(sampleDepth lt maxDepth) {
                         maxDepth set sampleDepth
-                        normal set normalInput.load(loadCoord + sample.const).x
+                        normal set normalInput.load(loadCoord + sample.const)
                     }
                 }
                 val linearDepth by getLinearDepthReversed(maxDepth, camNear)
-                normalOutput.store(baseCoord, int4Value(normal, 0.const, 0.const, 0.const))
+                normalOutput.store(baseCoord, normal)
                 distOutput.store(baseCoord, float4Value(linearDepth, 0f.const, 0f.const, 0f.const))
             }
         }
@@ -364,7 +364,7 @@ class ComputeAoPass(
 
     private fun aoShader() = KslComputeShader("ao-shader") {
         computeStage(8, 8) {
-            val normalInput = texture2dInt("normalInput")
+            val normalInput = texture2d("normalInput")
             val distInput = texture2d("distInput")
             val noiseTex = texture2d("noiseTex")
             val aoOutput = storageTexture2d<KslFloat1>("aoOutput", aoNoisy.format)
@@ -381,13 +381,13 @@ class ComputeAoPass(
             main {
                 val baseCoord by inGlobalInvocationId.xy.toInt2()
                 val uv by (baseCoord.toFloat2() + 0.5f.const) / normalInput.size().toFloat2()
-                val encodedNormal by normalInput.load(baseCoord).x
+                val encodedNormal = float4Var(normalInput.load(baseCoord))
                 val occlFac by 1f.const
 
-                val isValid = isValidEncodedNormal(encodedNormal)
+                val isValid = encodedNormal.a gt 0f.const
                 `if`(isValid) {
                     val depth by distInput.load(baseCoord).x
-                    val normal by decodeNormal(encodedNormal)
+                    val normal by decodeNormalRgb(encodedNormal.rgb)
 
                     val sampleR by uRadius
                     `if`(sampleR lt 0f.const) {
@@ -421,7 +421,7 @@ class ComputeAoPass(
                             sampleLod set clamp(sampleLod, 0f.const, (SCALE_LEVELS-1).toFloat().const)
                             val sampleScreenDepth by distInput.sample(sampleUv, sampleLod).x
 
-                            val occlusionDistance by clamp((sampleDepth - sampleScreenDepth - 0.05f.const) * 10f.const, 0f.const, 1f.const)
+                            val occlusionDistance by clamp((sampleDepth - sampleScreenDepth) * 10f.const, 0f.const, 1f.const)
                             val occlusionFalloff by 1f.const - smoothStep(0f.const, 1f.const, abs(depth - sampleScreenDepth) / (4f.const * sampleR))
                             occlusion += occlusionDistance * occlusionFalloff
                         }
@@ -439,7 +439,7 @@ class ComputeAoPass(
     private fun denoiseShader() = KslComputeShader("ao-denoise-shader") {
         val noisyAo = texture2d("noisyAo")
         val distInput = texture2d("distInput")
-        val normalInput = texture2dInt("normalInput")
+        val normalInput = texture2d("normalInput")
         val uRadius = uniformFloat1("uRadius")
         val filteredAo = storageTexture2d<KslFloat1>("filteredAo", filteredAo.format)
 
@@ -449,7 +449,7 @@ class ComputeAoPass(
                 val dim = NOISE_TEX_SZ / 2
 
                 val baseDist by distInput.load(baseCoord).x
-                val baseNormal by decodeNormal(normalInput.load(baseCoord).x)
+                val baseNormal by decodeNormalRgb(normalInput.load(baseCoord).rgb)
                 val ao by noisyAo.load(baseCoord).x
                 val sumWeight by 1f.const
 
@@ -463,7 +463,7 @@ class ComputeAoPass(
                             val coord = int2Var(baseCoord + Vec2i(x, y).const)
                             val dist = float1Var(distInput.load(coord).x)
                             val distWeight = float1Var(1f.const - smoothStep(0f.const, sampleR, abs(dist - baseDist)))
-                            val normalWeight = float1Var(saturate(dot(decodeNormal(normalInput.load(coord).x), baseNormal)))
+                            val normalWeight = float1Var(saturate(dot(decodeNormalRgb(normalInput.load(coord).rgb), baseNormal)))
                             val weight = float1Var(0.0001f.const + distWeight * normalWeight)
                             ao += noisyAo.load(coord).x * weight
                             sumWeight += weight

@@ -60,7 +60,7 @@ class BloomPass(
                     downSampleTex.resize(requiredWidth, requiredHeight, MipMapping.Limited(levels))
                 }
 
-                tasks.toList().forEach { removeAndReleaseTask(it) }
+                clearAndReleaseTasks()
                 makeDownSamplePasses()
                 makeUpSamplePasses()
             }

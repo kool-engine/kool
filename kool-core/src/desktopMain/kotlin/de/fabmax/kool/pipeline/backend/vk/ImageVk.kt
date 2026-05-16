@@ -6,16 +6,16 @@ import de.fabmax.kool.pipeline.backend.vk.ImageVk.Companion.dstAccessMaskForLayo
 import de.fabmax.kool.pipeline.backend.vk.ImageVk.Companion.dstStageMaskForLayout
 import de.fabmax.kool.pipeline.backend.vk.ImageVk.Companion.srcAccessMaskForLayout
 import de.fabmax.kool.pipeline.backend.vk.ImageVk.Companion.srcStageMaskForLayout
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.logW
-import de.fabmax.kool.util.scopedMem
+import de.fabmax.kool.util.*
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.KHRCopyCommands2.vkCmdBlitImage2KHR
 import org.lwjgl.vulkan.KHRSynchronization2.vkCmdPipelineBarrier2KHR
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VK13.*
+import org.lwjgl.vulkan.VkClearColorValue
+import org.lwjgl.vulkan.VkClearDepthStencilValue
 import org.lwjgl.vulkan.VkCommandBuffer
+import org.lwjgl.vulkan.VkImageSubresourceRange
 import kotlin.math.max
 
 class ImageVk(
@@ -170,6 +170,113 @@ class ImageVk(
             src.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, src.lastKnownLayout, commandBuffer, stack = this)
             transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dstLayout, commandBuffer, stack = this)
         }
+    }
+
+    fun clearColor(
+        dstLayout: Int,
+        commandBuffer: VkCommandBuffer,
+        clearColor: Color = Color.BLACK,
+        baseMipLevel: Int = 0,
+        mipLevels: Int = this.mipLevels,
+        baseArrayLayer: Int = 0,
+        arrayLayers: Int = this.arrayLayers,
+        stack: MemoryStack? = null
+    ) = scopedMem(parent = stack) {
+        val clearValue = callocVkClearColorValue {
+            float32(0, clearColor.r)
+            float32(1, clearColor.g)
+            float32(2, clearColor.b)
+            float32(3, clearColor.a)
+        }
+        clearColor(commandBuffer, dstLayout, baseMipLevel, mipLevels, baseArrayLayer, arrayLayers, clearValue)
+    }
+
+    fun clearColorInt(
+        dstLayout: Int,
+        commandBuffer: VkCommandBuffer,
+        r: Int = 0,
+        g: Int = 0,
+        b: Int = 0,
+        a: Int = 0,
+        baseMipLevel: Int = 0,
+        mipLevels: Int = this.mipLevels,
+        baseArrayLayer: Int = 0,
+        arrayLayers: Int = this.arrayLayers,
+        stack: MemoryStack? = null
+    ) = scopedMem(parent = stack) {
+        val clearValue = callocVkClearColorValue {
+            int32(0, r)
+            int32(1, g)
+            int32(2, b)
+            int32(3, a)
+        }
+        clearColor(commandBuffer, dstLayout, baseMipLevel, mipLevels, baseArrayLayer, arrayLayers, clearValue)
+    }
+
+    fun clearDepthStencil(
+        dstLayout: Int,
+        commandBuffer: VkCommandBuffer,
+        depth: Float = 0f,
+        stencil: Int = 0,
+        baseMipLevel: Int = 0,
+        mipLevels: Int = this.mipLevels,
+        baseArrayLayer: Int = 0,
+        arrayLayers: Int = this.arrayLayers,
+        stack: MemoryStack? = null
+    ) = scopedMem(stack) {
+        if (imageInfo.aspectMask and (VK_IMAGE_ASPECT_DEPTH_BIT or VK_IMAGE_ASPECT_STENCIL_BIT) == 0) {
+            logE { "Image ${imageInfo.label} is not a depth / stencil image" }
+            return@scopedMem
+        }
+        if (imageInfo.usage and VK_IMAGE_USAGE_TRANSFER_DST_BIT == 0) {
+            logE { "Image ${imageInfo.label} misses transfer dst usage flag" }
+        }
+
+        transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBuffer, baseMipLevel, mipLevels, baseArrayLayer, arrayLayers, this)
+        val clear = VkClearDepthStencilValue.calloc(this).depth(depth).stencil(stencil)
+        val range = clearRange(baseMipLevel, mipLevels, baseArrayLayer, arrayLayers)
+        vkCmdClearDepthStencilImage(commandBuffer, vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, clear, range)
+        if (dstLayout != VK_IMAGE_LAYOUT_UNDEFINED) {
+            transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dstLayout, commandBuffer, baseMipLevel, mipLevels, baseArrayLayer, arrayLayers, this)
+        }
+    }
+
+    private fun MemoryStack.clearColor(
+        commandBuffer: VkCommandBuffer,
+        dstLayout: Int,
+        baseMipLevel: Int,
+        mipLevels: Int,
+        baseArrayLayer: Int,
+        arrayLayers: Int,
+        clearValue: VkClearColorValue
+    ) {
+        if (imageInfo.aspectMask and VK_IMAGE_ASPECT_COLOR_BIT == 0) {
+            logE { "Image ${imageInfo.label} is not a color image" }
+            return
+        }
+        if (imageInfo.usage and VK_IMAGE_USAGE_TRANSFER_DST_BIT == 0) {
+            logE { "Image ${imageInfo.label} misses transfer dst usage flag" }
+        }
+
+        transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBuffer, baseMipLevel, mipLevels, baseArrayLayer, arrayLayers, this)
+        val range = clearRange(baseMipLevel, mipLevels, baseArrayLayer, arrayLayers)
+        vkCmdClearColorImage(commandBuffer, vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, clearValue, range)
+        if (dstLayout != VK_IMAGE_LAYOUT_UNDEFINED) {
+            transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dstLayout, commandBuffer, baseMipLevel, mipLevels, baseArrayLayer, arrayLayers, this)
+        }
+    }
+
+    private fun MemoryStack.clearRange(
+        baseMipLevel: Int,
+        mipLevels: Int,
+        baseArrayLayer: Int,
+        arrayLayers: Int
+    ): VkImageSubresourceRange = callocVkImageSubresourceRange {
+        aspectMask(imageInfo.aspectMask)
+        baseMipLevel(baseMipLevel)
+        levelCount(mipLevels)
+        baseArrayLayer(baseArrayLayer)
+        layerCount(arrayLayers)
     }
 
     fun transitionLayout(
