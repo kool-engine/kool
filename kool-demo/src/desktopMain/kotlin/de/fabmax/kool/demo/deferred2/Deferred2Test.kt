@@ -10,6 +10,7 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
 import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.pipeline.BloomPass
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.pipeline.swapPipelineDataCapturing
@@ -112,7 +113,7 @@ suspend fun KoolApplication.deferred2Test() {
         val lighting = Lighting().apply {
             singlePointLight {
                 setup(Vec3f(1.2f, 1.2f, 2f))
-                setColor(Color.WHITE, intensity = 25f)
+                setColor(Color.WHITE, intensity = 50f)
             }
         }
         val deferred2Pipeline = Deferred2Pipeline(content, lighting, this)
@@ -120,6 +121,15 @@ suspend fun KoolApplication.deferred2Test() {
         content.apply {
             val orbitCam = orbitCamera(deferred2Pipeline.camera) { }
             addNode(orbitCam)
+        }
+
+        val bloomPass = BloomPass(deferred2Pipeline.filterPass.filterOutput.newVal)
+        addComputePass(bloomPass)
+        deferred2Pipeline.onSwap {
+            val filterOutput = deferred2Pipeline.filterPass.filterOutput.newVal
+            bloomPass.inputShader.swapPipelineDataCapturing(filterOutput) {
+                bloomPass.inputTexture = filterOutput
+            }
         }
 
         addTextureMesh {
@@ -132,9 +142,9 @@ suspend fun KoolApplication.deferred2Test() {
                 fragmentStage {
                     main {
                         val output = texture2d("deferredOutput")
+                        val bloom = texture2d("bloomOutput")
                         val uvi = (uv.output * output.size().toFloat2() + 0.5f.const2).toInt2()
-                        val color by output.load(uvi).rgb
-
+                        val color by output.load(uvi).rgb + bloom.sample(uv.output).rgb
 
                         val ditherTex = texture2d("ditherPattern")
                         val ditherC by uvi % ditherTex.size()
@@ -147,10 +157,12 @@ suspend fun KoolApplication.deferred2Test() {
             }
 
             outShader.bindTexture2d("ditherPattern", makeDitherPattern())
+            outShader.bindTexture2d("bloomOutput", bloomPass.bloomMap)
             var inputTex by outShader.bindTexture2d("deferredOutput", deferred2Pipeline.gbuffers.a.encodedNormals)
             onUpdate {
-                outShader.swapPipelineDataCapturing(deferred2Pipeline.filterPass.filterOutput.newVal) {
-                    inputTex = deferred2Pipeline.filterPass.filterOutput.newVal
+                val filterOutput = deferred2Pipeline.filterPass.filterOutput.newVal
+                outShader.swapPipelineDataCapturing(filterOutput) {
+                    inputTex = filterOutput
                 }
             }
 

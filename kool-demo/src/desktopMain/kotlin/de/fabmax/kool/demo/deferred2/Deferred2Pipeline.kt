@@ -8,8 +8,10 @@ import de.fabmax.kool.scene.Lighting
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.KoolDispatchers
 import de.fabmax.kool.util.Uint8Buffer
+import de.fabmax.kool.util.forEachUpdated
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
@@ -29,8 +31,7 @@ class Deferred2Pipeline(
         GbufferPass(content, camera, scene.renderSize, "deferred2-gbuffer-pass-$suff")
     }
 
-    // fixme: think of something better for providing a camera
-    //val sceneCam get() = gbufferPass.camera
+    private val swapListeners = BufferedList<() -> Unit>()
 
     val lightingPass = LightingPass(
         gbuffers = gbuffers,
@@ -68,10 +69,9 @@ class Deferred2Pipeline(
                 while (true) {
                     lightingPass.swapBuffers()
                     filterPass.swapBuffers()
-
+                    swapListeners.forEachUpdated { it() }
 
                     gbuffers.newVal.objModelMatsGpu.uploadData(gbuffers.newVal.objModelMats)
-//                    gbuffers.oldVal.objModelMatsGpu.uploadData(gbuffers.oldVal.objModelMats)
 
                     // this is called after update, newVal was enabled and updated, disable it and enable oldVal for next frame
                     gbuffers.newVal.isEnabled = false
@@ -80,6 +80,10 @@ class Deferred2Pipeline(
                 }
             }
         }
+    }
+
+    fun onSwap(block: () -> Unit) {
+        swapListeners += block
     }
 
     private val Scene.renderSize: Vec2i get() = Vec2i(
