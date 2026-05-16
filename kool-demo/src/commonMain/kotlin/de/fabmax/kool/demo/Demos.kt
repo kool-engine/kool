@@ -57,7 +57,6 @@ object Demos {
         entry("phys-joints", "Chain Drive") { JointsDemo() }
         entry("physics", "Rigid Bodies") { CollisionDemo() }
         entry("mixer2d", "2D Mixer") { MixerDemo() }
-        entry("platformer2d", "2D Platformer") { PlatformerDemo() }
     }
 
     val graphicsDemos = Category("Graphics", false, 0.25f, 0.45f).apply {
@@ -100,6 +99,7 @@ object Demos {
         entry("tex-array-test", "Array Textures Test") { ArrayTexturesTest() }
         entry("struct-test", "Hello Structs") { HelloStructs() }
         entry("launched-effect-test", "Launched Effect Test") { LaunchedEffectTest() }
+        entry("platformer2d", "2D Platformer") { PlatformerDemo() }
     }
 
     val categories = mutableListOf(physicsDemos, graphicsDemos, techDemos, hiddenDemos)
