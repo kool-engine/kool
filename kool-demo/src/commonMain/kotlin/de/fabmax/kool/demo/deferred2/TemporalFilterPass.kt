@@ -206,7 +206,8 @@ class TemporalFilterShader(
 //                val w by 100f.const - filterNoise * filterNoise * filterNoise * 75f.const
 
                 val w by filterWeight
-                `if`((!filterHit and !isEdge) or (wasEdge and !isEdge)) {
+                val isReprojectOutOfScreen by (oldUv.x lt 0f.const) or (oldUv.y lt 0f.const) or (oldUv.x gt 1f.const) or (oldUv.y gt 1f.const)
+                `if`((!filterHit and !isEdge) or (wasEdge and !isEdge) or isReprojectOutOfScreen) {
                     w set 0f.const
                 }
 

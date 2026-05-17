@@ -18,7 +18,7 @@ class DistributionGgx(parentScope: KslScopeBuilder) :
             val nDotH = float1Var(max(dot(n, h), 0f.const))
             val nDotH2 = float1Var(nDotH * nDotH)
 
-            val denom = float1Var(nDotH2 * (a2 - 1f.const) + 1f.const)
+            val denom = float1Var(max(nDotH2 * (a2 - 1f.const) + 1f.const, 0.001f.const))
             denom set PI.const * denom * denom
 
             return@body a2 / denom

@@ -30,8 +30,8 @@ class GbufferPass(
         addColor(TexFormat.RGBA, filterMethod = FilterMethod.NEAREST)
         // metal, roughness, ao, [empty: a, flags maybe?]
         addColor(TexFormat.RGBA, filterMethod = FilterMethod.NEAREST)
-        // normals (view space), alpha almost free
-        addColor(TexFormat.RGBA, filterMethod = FilterMethod.NEAREST, clearColor = ClearColorFill(Color.ZERO))
+        // encoded normals (view space)
+        addColor(TexFormat.R_I32, filterMethod = FilterMethod.NEAREST, clearColor = ClearColorFill(Color.ZERO))
         // object-ids, meta
         addColor(TexFormat.R_I32, filterMethod = FilterMethod.NEAREST)
         defaultDepth()
@@ -160,14 +160,10 @@ class GbufferShader(val config: GbufferShaderConfig) : KslShader("deferred2-gbuf
                 val metallic = float1Port("metallic", fragmentPropertyBlock(config.metallicCfg).outProperty)
                 val aoFactor = float1Port("aoFactor", fragmentPropertyBlock(config.aoCfg).outProperty)
 
-                val normalHashX by clamp(((normal.x + 1f.const) * 8f.const).toInt1(), 0.const, 15.const)
-                val normalHashY by clamp(((normal.y + 1f.const) * 8f.const).toInt1(), 0.const, 15.const)
-                val meta by (normalHashX shl 28.const) or (normalHashY shl 24.const) or objectId.output
-
                 colorOutput(float4Value(baseColor.rgb, emissionStrength), location = 0)
                 colorOutput(float4Value(metallic, roughness, aoFactor, 0f.const), location = 1)
-                colorOutput(encodeNormalRgb(normal), location = 2)
-                intOutput(int4Value(meta, 0.const, 0.const, 0.const), location = 3)
+                intOutput(int4Value(encodeNormalInt(normal), 0.const, 0.const, 0.const), location = 2)
+                intOutput(int4Value(objectId.output, 0.const, 0.const, 0.const), location = 3)
             }
         }
     }

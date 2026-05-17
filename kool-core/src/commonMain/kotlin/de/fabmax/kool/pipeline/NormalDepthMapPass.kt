@@ -20,7 +20,7 @@ import de.fabmax.kool.util.releaseDelayed
 class NormalDepthMapPass(
     drawNode: Node,
     attachmentConfig: AttachmentConfig = AttachmentConfig.singleColorDefaultDepth(
-        texFormat = TexFormat.RGBA,
+        texFormat = TexFormat.R_I32,
         clearColor = ClearColorFill(Color.ZERO)
     ),
     initialSize: Vec2i = Vec2i(128, 128),
@@ -134,8 +134,9 @@ class NormalDepthShader(
                         discard()
                     }
                 }
-                val encoded by encodeNormalRgb(normalize(viewNormal.output))
-                colorOutput(encoded, 1f.const)
+                val viewNormal by normalize(viewNormal.output)
+                val encoded by encodeNormalInt(viewNormal)
+                intOutput(int4Value(encoded, 0.const, 0.const, 0.const))
             }
         }
     }
@@ -161,5 +162,16 @@ fun encodeNormalRgb(normal: KslExprFloat3): KslExprFloat3 = float3Var(normal * 0
 context(scope: KslScopeBuilder)
 fun decodeNormalRgb(encoded: KslExprFloat3): KslExprFloat3 = float3Var(encoded * 2f.const - 1f.const)
 
-fun KslScopeBuilder.isValidEncodedNormal(encoded: KslExprInt1): KslExprBool1 =
-    encoded and 0x80000000.toInt().const ne 0.const
+context(scope: KslScopeBuilder)
+fun encodeNormalInt(normal: KslExprFloat3): KslExprInt1 = int1Var(
+    (clamp(((normal.z + 1f.const) * 512f.const).toInt1(), 0.const, 1023.const) shl 22.const) or
+    (clamp(((normal.y + 1f.const) * 1024f.const).toInt1(), 0.const, 2047.const) shl 11.const) or
+    clamp(((normal.x + 1f.const) * 1024f.const).toInt1(), 0.const, 2047.const)
+)
+
+context(scope: KslScopeBuilder)
+fun decodeNormalInt(encoded: KslExprInt1): KslExprFloat3 = float3Var(
+    (encoded and 0x7ff.const).toFloat1() / 1024f.const - 1f.const,
+    ((encoded shr 11.const) and 0x7ff.const).toFloat1() / 1024f.const - 1f.const,
+    ((encoded shr 22.const) and 0x3ff.const).toFloat1() / 512f.const - 1f.const,
+)

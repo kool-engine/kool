@@ -69,8 +69,8 @@ class Deferred2Pipeline(
     private val prevViewProj = MutableMat4f()
 
     init {
-        aoPass.kernelSize = 16
-        aoPass.radius = AoRadius.relativeRadius(0.05f)
+        aoPass.kernelSize = 8
+        aoPass.radius = AoRadius.relativeRadius(1 / 20f)
         aoPass.temporalKernels = tsaa.size
 
         scene.addOffscreenPass(gbuffers.a)
@@ -169,24 +169,24 @@ class Deferred2Pipeline(
         )
         val TSAA_16 = listOf(
             Vec2f(1 * s, 1 * s),
-            Vec2f(-5 * s, -2 * s),
-            Vec2f(-2 * s, 6 * s),
-            Vec2f(-8 * s, 0 * s),
-
-            Vec2f(-1 * s, -3 * s),
-            Vec2f(2 * s, 5 * s),
-            Vec2f(0 * s, -7 * s),
+            Vec2f(-7 * s, -8 * s),
+            Vec2f(4 * s, -1 * s),
             Vec2f(7 * s, -4 * s),
 
-            Vec2f(-3 * s, 2 * s),
-            Vec2f(5 * s, 3 * s),
-            Vec2f(-4 * s, -6 * s),
+            Vec2f(-2 * s, 6 * s),
+            Vec2f(-8 * s, 0 * s),
+            Vec2f(-1 * s, -3 * s),
             Vec2f(6 * s, 7 * s),
 
-            Vec2f(4 * s, -1 * s),
+            Vec2f(-3 * s, 2 * s),
             Vec2f(3 * s, -5 * s),
+            Vec2f(-5 * s, -2 * s),
+            Vec2f(2 * s, 5 * s),
+
             Vec2f(-6 * s, 4 * s),
-            Vec2f(-7 * s, -8 * s),
+            Vec2f(0 * s, -7 * s),
+            Vec2f(-4 * s, -6 * s),
+            Vec2f(5 * s, 3 * s),
         )
     }
 }
