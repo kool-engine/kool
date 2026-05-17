@@ -96,7 +96,7 @@ suspend fun KoolApplication.deferred2Test() {
                 }
                 addColorMesh {
                     generate {
-                        translate(0f, -1.5f, 0f)
+                        translate(0f, -0.5f, 0f)
                         color = Color.WHITE
                         grid {
                             sizeX = 50f
@@ -112,7 +112,7 @@ suspend fun KoolApplication.deferred2Test() {
 
         val lighting = Lighting().apply {
             singlePointLight {
-                setup(Vec3f(1.2f, 1.2f, 2f))
+                setup(Vec3f(1.2f, 3.2f, 2f))
                 setColor(Color.WHITE, intensity = 50f)
             }
         }
@@ -158,7 +158,7 @@ suspend fun KoolApplication.deferred2Test() {
 
             outShader.bindTexture2d("ditherPattern", makeDitherPattern())
             outShader.bindTexture2d("bloomOutput", bloomPass.bloomMap)
-            var inputTex by outShader.bindTexture2d("deferredOutput", deferred2Pipeline.gbuffers.a.encodedNormals)
+            var inputTex by outShader.bindTexture2d("deferredOutput")
             onUpdate {
                 val filterOutput = deferred2Pipeline.filterPass.filterOutput.newVal
                 outShader.swapPipelineDataCapturing(filterOutput) {
@@ -171,12 +171,4 @@ suspend fun KoolApplication.deferred2Test() {
     }
 
     ctx.scenes += debugOverlay()
-}
-
-class AlternatingPair<out T>(factory: (Boolean) -> T) {
-    val a: T = factory(true)
-    val b: T = factory(false)
-
-    val newVal: T get() = if (Time.frameCount % 2 == 0) a else b
-    val oldVal: T get() = if (Time.frameCount % 2 == 0) b else a
 }

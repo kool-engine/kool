@@ -49,7 +49,7 @@ class LightingPass(
         val newGbuffer = gbuffers.newVal
         lightingShader.swapPipelineDataCapturing(newGbuffer) {
             depthTex = newGbuffer.depth
-            encodedNormals = newGbuffer.encodedNormals
+            encodedNormals = newGbuffer.normals
             albedoEmissionTex = newGbuffer.albedoEmission
             metalRoughnessAoTex = newGbuffer.metalRoughnessAo
             frameI = Time.frameCount
@@ -142,7 +142,6 @@ class DeferredLightingShader : KslShader("deferred2-lighting") {
 
 object DeferredCamDataStruct : Struct("DeferredCameraData", MemoryLayout.Std140) {
     val proj = mat4("projMat")
-//    val invProj = mat4("invProjMat")
     val invView = mat4("invView")
     val invViewProj = mat4("invViewProjMat")
     val viewport = float4("viewport")
