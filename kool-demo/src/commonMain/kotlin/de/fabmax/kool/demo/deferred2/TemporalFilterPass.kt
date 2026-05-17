@@ -27,8 +27,15 @@ class TemporalFilterPass(
 
     private val temporalShader = TemporalFilterShader(filterStorageFmt, lightingOutput, filterState)
 
+    var filterWeight by temporalShader.bindUniformFloat1("uFilterWeight", 8f)
+
     init {
         setupPasses()
+        onRelease {
+            filterOutput.a.release()
+            filterOutput.b.release()
+            filterState.release()
+        }
     }
 
     fun resize(size: Vec2i) {
@@ -111,8 +118,10 @@ class TemporalFilterShader(
             }
 
             val filterState = storageTexture2d<KslFloat1>("filterState", TexFormat.R)
-            val frameI = uniformInt1("frameI")
+//            val frameI = uniformInt1("frameI")
             val camData = uniformStruct("camData", FilterCamDataStruct)
+
+            val filterWeight = uniformFloat1("uFilterWeight")
 
             main {
                 val baseCoord by inGlobalInvocationId.xy.toInt2()
@@ -182,10 +191,11 @@ class TemporalFilterShader(
 //                val filterNoise by noise31(uint3Value(inGlobalInvocationId.xy, frameI.toUint1()))
 //                val w by 4f.const
 //                val w by 8f.const //- filterNoise * filterNoise * filterNoise * 4f.const
-                val w by 16f.const //- filterNoise * filterNoise * filterNoise * 14f.const
+//                val w by 16f.const //- filterNoise * filterNoise * filterNoise * 14f.const
 //                val w by 32f.const - filterNoise * filterNoise * filterNoise * 16f.const
 //                val w by 100f.const - filterNoise * filterNoise * filterNoise * 75f.const
 
+                val w by filterWeight
                 `if`((!filterHit and !isEdge) or (wasEdge and !isEdge)) {
                     w set 0f.const
                 }

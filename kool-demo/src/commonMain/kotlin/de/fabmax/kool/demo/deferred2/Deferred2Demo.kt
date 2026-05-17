@@ -1,27 +1,33 @@
 package de.fabmax.kool.demo.deferred2
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.DemoScene
+import de.fabmax.kool.demo.*
+import de.fabmax.kool.demo.menu.DemoMenu
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
 import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.BloomPass
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
+import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.swapPipelineDataCapturing
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.*
 
 class Deferred2Demo : DemoScene("Deferred2 Demo") {
 
     private val albedoMap by texture2d("materials/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_COL_2K_METALNESS.jpg")
     private val normalMap by texture2d("materials/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_NRM_2K_METALNESS.jpg")
     //private val uvChecker by texture2d("materials/uv_checker_map.jpg")
+
+    private lateinit var pipeline: Deferred2Pipeline
+    private val filterWeight = mutableStateOf(16)
+    private val bloom = mutableStateOf(true)
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         val content = deferredContent()
@@ -31,17 +37,21 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
                 setColor(Color.WHITE, intensity = 50f)
             }
         }
-        val deferred2Pipeline = Deferred2Pipeline(content, lighting, this)
+        pipeline = Deferred2Pipeline(content, lighting, this)
+        pipeline.renderScale = 0.5f
+        filterWeight.value = pipeline.filterPass.filterWeight.toInt()
+        filterWeight.onChange { _, value -> pipeline.filterPass.filterWeight = value.toFloat() }
 
         content.apply {
-            val orbitCam = orbitCamera(deferred2Pipeline.camera) { }
+            val orbitCam = orbitCamera(pipeline.camera) { }
             addNode(orbitCam)
         }
 
-        val bloomPass = BloomPass(deferred2Pipeline.filterPass.filterOutput.newVal)
+        val bloomPass = BloomPass(pipeline.filterPass.filterOutput.newVal)
         addComputePass(bloomPass)
-        deferred2Pipeline.onSwap {
-            val filterOutput = deferred2Pipeline.filterPass.filterOutput.newVal
+        bloom.onChange { _, value -> bloomPass.isEnabled = value }
+        pipeline.onSwap {
+            val filterOutput = pipeline.filterPass.filterOutput.newVal
             bloomPass.inputShader.swapPipelineDataCapturing(filterOutput) {
                 bloomPass.inputTexture = filterOutput
             }
@@ -51,38 +61,86 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
             generate {
                 generateFullscreenQuad()
             }
-            val outShader = KslShader("deferred2-output") {
-                val uv = interStageFloat2()
-                fullscreenQuadVertexStage(uv)
-                fragmentStage {
-                    main {
-                        val output = de.fabmax.kool.modules.ksl.lang.texture2d("deferredOutput")
-                        val bloom = de.fabmax.kool.modules.ksl.lang.texture2d("bloomOutput")
-                        val uvi = (uv.output * output.size().toFloat2() + 0.5f.const2).toInt2()
-                        val color by output.load(uvi).rgb + bloom.sample(uv.output).rgb
-
-                        val ditherTex = de.fabmax.kool.modules.ksl.lang.texture2d("ditherPattern")
-                        val ditherC by uvi % ditherTex.size()
-                        val ditherNoise by ditherTex.load(ditherC).r
-                        val srgb by convertColorSpace(color, ColorSpaceConversion.LinearToSrgbHdr()) + (ditherNoise - 0.5f.const) / 255f.const
-                        colorOutput(srgb)
-//                        colorOutput(color)
-                    }
-                }
-            }
-
-            outShader.bindTexture2d("ditherPattern", makeDitherPattern())
-            outShader.bindTexture2d("bloomOutput", bloomPass.bloomMap)
-            var inputTex by outShader.bindTexture2d("deferredOutput")
-            onUpdate {
-                val filterOutput = deferred2Pipeline.filterPass.filterOutput.newVal
-                outShader.swapPipelineDataCapturing(filterOutput) {
-                    inputTex = filterOutput
-                }
-            }
-
-            shader = outShader
+            shader = deferredOutputShader(pipeline, bloomPass)
         }
+    }
+
+    override fun createMenu(menu: DemoMenu, ctx: KoolContext): UiSurface = menuSurface {
+        LabeledSwitch("Bloom", bloom) { }
+        MenuSlider1("Filter", filterWeight.use().toFloat(), 0f, 32f, { "${it.toInt()}" }) {
+            filterWeight.set(it.toInt())
+        }
+        MenuRow {
+            var tsaaIndex by remember(2)
+            Text("Temporal AA".l) { labelStyle(120.dp) }
+            ComboBox {
+                modifier
+                    .width(Grow.Std)
+                    .margin(start = sizes.largeGap)
+                    .items(TsaaItem.items.map { it.label })
+                    .selectedIndex(tsaaIndex)
+                    .onItemSelected {
+                        tsaaIndex = it
+                        pipeline.tsaa = TsaaItem.items[it].tsaa
+                    }
+            }
+        }
+        MenuRow {
+            var scaleIndex by remember(2)
+            Text("Render scale".l) { labelStyle(120.dp) }
+            ComboBox {
+                modifier
+                    .width(Grow.Std)
+                    .margin(start = sizes.largeGap)
+                    .items(ScaleItem.items.map { it.label })
+                    .selectedIndex(scaleIndex)
+                    .onItemSelected {
+                        scaleIndex = it
+                        pipeline.renderScale = ScaleItem.items[it].scale
+                    }
+            }
+        }
+    }
+
+    private fun deferredOutputShader(
+        deferred2Pipeline: Deferred2Pipeline,
+        bloomPass: BloomPass
+    ): KslShader {
+        val outputShader = KslShader("deferred2-output") {
+            val uv = interStageFloat2()
+            fullscreenQuadVertexStage(uv)
+            fragmentStage {
+                main {
+                    val output = de.fabmax.kool.modules.ksl.lang.texture2d("deferredOutput")
+                    val bloom = de.fabmax.kool.modules.ksl.lang.texture2d("bloomOutput")
+                    val uvi = (uv.output * output.size().toFloat2() + 0.5f.const2).toInt2()
+                    val color by output.load(uvi).rgb + bloom.sample(uv.output).rgb
+
+                    val ditherTex = de.fabmax.kool.modules.ksl.lang.texture2d("ditherPattern")
+                    val ditherC by uvi % ditherTex.size()
+                    val ditherNoise by ditherTex.load(ditherC).r
+                    val srgb by convertColorSpace(color, ColorSpaceConversion.LinearToSrgbHdr()) + (ditherNoise - 0.5f.const) / 255f.const
+                    colorOutput(srgb)
+//                        colorOutput(color)
+                }
+            }
+        }
+
+        val ditherTex = makeDitherPattern()
+        ditherTex.releaseWith(mainScene)
+
+        outputShader.bindTexture2d("ditherPattern", ditherTex)
+        var bloomTex by outputShader.bindTexture2d("bloomOutput", bloomPass.bloomMap)
+        var inputTex by outputShader.bindTexture2d("deferredOutput")
+        val noBloom = SingleColorTexture(Color.BLACK)
+        deferred2Pipeline.onSwap {
+            val filterOutput = deferred2Pipeline.filterPass.filterOutput.newVal
+            outputShader.swapPipelineDataCapturing(filterOutput) {
+                inputTex = filterOutput
+                bloomTex = if (bloom.value) bloomPass.bloomMap else noBloom
+            }
+        }
+        return outputShader
     }
 
     private fun deferredContent() = Node("deferred content").apply {
@@ -158,5 +216,29 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
                 }
             }
         }
+    }
+}
+
+private data class TsaaItem(val label: String, val tsaa: List<Vec2f>) {
+    companion object {
+        val items = listOf(
+            TsaaItem("None", Deferred2Pipeline.TSAA_NONE),
+            TsaaItem("2x", Deferred2Pipeline.TSAA_2),
+            TsaaItem("4x", Deferred2Pipeline.TSAA_4),
+            TsaaItem("8x", Deferred2Pipeline.TSAA_8),
+            TsaaItem("16x", Deferred2Pipeline.TSAA_16)
+        )
+    }
+}
+
+private data class ScaleItem(val label: String, val scale: Float) {
+    companion object {
+        val items = listOf(
+            ScaleItem("0.1x", 0.1f),
+            ScaleItem("0.25x", 0.25f),
+            ScaleItem("0.5x", 0.5f),
+            ScaleItem("0.75x", 0.75f),
+            ScaleItem("1x", 1f),
+        )
     }
 }

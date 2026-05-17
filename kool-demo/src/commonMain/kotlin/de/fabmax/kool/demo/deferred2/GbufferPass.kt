@@ -1,7 +1,6 @@
 package de.fabmax.kool.demo.deferred2
 
 import de.fabmax.kool.math.MutableMat4f
-import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.BasicVertexConfig
 import de.fabmax.kool.modules.ksl.KslShader
@@ -14,15 +13,18 @@ import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.vertexAttrib
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.StructBuffer
+import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.asStorageBuffer
 
-object ObjModelMatLayout : Struct("obj_model_mat", MemoryLayout.Std140) {
-    val reprojectMat = mat4("reprojectMat")
-}
-
-private val prevViewProjMats = List(1024) { MutableMat4f() }
-
-class GbufferPass(content: Node, camera: Camera, initialSize: Vec2i, name: String) : OffscreenPass2d(
+class GbufferPass(
+    content: Node,
+    camera: Camera,
+    initialSize: Vec2i,
+    name: String,
+    val pipeline: Deferred2Pipeline,
+) : OffscreenPass2d(
     drawNode = content,
     attachmentConfig = AttachmentConfig {
         // albedo, a * 255 = emission strength
@@ -53,9 +55,12 @@ class GbufferPass(content: Node, camera: Camera, initialSize: Vec2i, name: Strin
 
         val offsetMat = MutableMat4f()
         camera.onCameraUpdated += {
-            val offset = tsaa[Time.frameCount % tsaa.size]
-            offsetMat.setIdentity().translate(offset.x / width, offset.y / height, 0f).mul(camera.proj)
-            camera.proj.set(offsetMat)
+            val tsaa = pipeline.tsaa
+            if (tsaa.isNotEmpty()) {
+                val offset = tsaa[Time.frameCount % tsaa.size]
+                offsetMat.setIdentity().translate(offset.x / width, offset.y / height, 0f).mul(camera.proj)
+                camera.proj.set(offsetMat)
+            }
         }
 
         val inverseBuf = MutableMat4f()
@@ -65,7 +70,7 @@ class GbufferPass(content: Node, camera: Camera, initialSize: Vec2i, name: Strin
                 (cmd.mesh.shader as? GbufferShader)?.let { gbufferShader ->
                     val id = gbufferShader.objectId
                     objModelMats.set(id) {
-                        val prevViewProj = prevViewProjMats[id]
+                        val prevViewProj = pipeline.prevViewProjMats[id]
                         inverseBuf.set(cmd.modelMatF).invert()
                         reprojectBuf.set(prevViewProj).mul(inverseBuf)
                         set(it.reprojectMat, reprojectBuf)
@@ -74,48 +79,8 @@ class GbufferPass(content: Node, camera: Camera, initialSize: Vec2i, name: Strin
                 }
             }
         }
-    }
 
-    companion object {
-        private val s = 1f/16f
-        val TSAA_PATTERN_NONE = listOf(Vec2f.ZERO)
-        val TSAA_PATTERN_4 = listOf(
-            Vec2f(-2 * s, -6 * s),
-            Vec2f(6 * s, -2 * s),
-            Vec2f(-6 * s, -2 * s),
-            Vec2f(2 * s, 6 * s),
-        )
-        val TSAA_PATTERN_8 = listOf(
-            Vec2f(1 * s, -3 * s),
-            Vec2f(7 * s, -7 * s),
-            Vec2f(-1 * s, 3 * s),
-            Vec2f(5 * s, 1 * s),
-            Vec2f(3 * s, 7 * s),
-            Vec2f(-3 * s, -5 * s),
-            Vec2f(-7 * s, -1 * s),
-            Vec2f(-5 * s, -5 * s),
-        )
-        val TSAA_PATTERN_16 = listOf(
-            Vec2f(1 * s, 1 * s),
-            Vec2f(-5 * s, -2 * s),
-            Vec2f(-2 * s, 6 * s),
-            Vec2f(-8 * s, 0 * s),
-
-            Vec2f(-1 * s, -3 * s),
-            Vec2f(2 * s, 5 * s),
-            Vec2f(0 * s, -7 * s),
-            Vec2f(7 * s, -4 * s),
-
-            Vec2f(-3 * s, 2 * s),
-            Vec2f(5 * s, 3 * s),
-            Vec2f(-4 * s, -6 * s),
-            Vec2f(6 * s, 7 * s),
-
-            Vec2f(4 * s, -1 * s),
-            Vec2f(3 * s, -5 * s),
-            Vec2f(-6 * s, 4 * s),
-            Vec2f(-7 * s, -8 * s),
-        )
+        onRelease { objModelMatsGpu.release() }
     }
 }
 
