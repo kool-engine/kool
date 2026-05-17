@@ -1,5 +1,7 @@
 package de.fabmax.kool.demo.deferred2
 
+import de.fabmax.kool.math.MutableMat4f
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.BufferedImageData2d
 import de.fabmax.kool.pipeline.TexFormat
@@ -13,19 +15,18 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 
-private const val renderScale = 0.5f
-val tsaa = GbufferPass.TSAA_PATTERN_8
-
 class Deferred2Pipeline(
     val content: Node,
     val lighting: Lighting = Lighting(),
     scene: Scene,
+    var renderScale: Float = 1f,
+    var tsaa: List<Vec2f> = TSAA_4,
 ) {
     val camera = PerspectiveCamera()
 
     val gbuffers = AlternatingPair {
         val suff = if (it) "A" else "B"
-        GbufferPass(content, camera, scene.renderSize, "deferred2-gbuffer-pass-$suff")
+        GbufferPass(content, camera, scene.renderSize, "deferred2-gbuffer-pass-$suff", this)
     }
 
     private val swapListeners = BufferedList<() -> Unit>()
@@ -43,6 +44,9 @@ class Deferred2Pipeline(
         size = scene.renderSize,
     )
 
+    internal val prevViewProjMats = List(1024) { MutableMat4f() }
+
+
     init {
         scene.addOffscreenPass(gbuffers.a)
         scene.addOffscreenPass(gbuffers.b)
@@ -53,6 +57,7 @@ class Deferred2Pipeline(
         scene.onRenderScene += {
             val newSize = scene.renderSize
             if (size != newSize) {
+                logD { "Resizing to ${newSize.x}x${newSize.y}" }
                 size = newSize
                 gbuffers.a.setSize(size.x, size.y)
                 gbuffers.b.setSize(size.x, size.y)
@@ -87,6 +92,52 @@ class Deferred2Pipeline(
         (mainRenderPass.viewport.width * renderScale).toInt().coerceAtLeast(1),
         (mainRenderPass.viewport.height * renderScale).toInt().coerceAtLeast(1)
     )
+
+    companion object {
+        private val s = 1f/16f
+        val TSAA_NONE = listOf(Vec2f.ZERO)
+        val TSAA_2 = listOf(
+            Vec2f(4 * s, 4 * s),
+            Vec2f(-4 * s, -4 * s),
+        )
+        val TSAA_4 = listOf(
+            Vec2f(-2 * s, -6 * s),
+            Vec2f(6 * s, -2 * s),
+            Vec2f(-6 * s, -2 * s),
+            Vec2f(2 * s, 6 * s),
+        )
+        val TSAA_8 = listOf(
+            Vec2f(1 * s, -3 * s),
+            Vec2f(7 * s, -7 * s),
+            Vec2f(-1 * s, 3 * s),
+            Vec2f(5 * s, 1 * s),
+            Vec2f(3 * s, 7 * s),
+            Vec2f(-3 * s, -5 * s),
+            Vec2f(-7 * s, -1 * s),
+            Vec2f(-5 * s, -5 * s),
+        )
+        val TSAA_16 = listOf(
+            Vec2f(1 * s, 1 * s),
+            Vec2f(-5 * s, -2 * s),
+            Vec2f(-2 * s, 6 * s),
+            Vec2f(-8 * s, 0 * s),
+
+            Vec2f(-1 * s, -3 * s),
+            Vec2f(2 * s, 5 * s),
+            Vec2f(0 * s, -7 * s),
+            Vec2f(7 * s, -4 * s),
+
+            Vec2f(-3 * s, 2 * s),
+            Vec2f(5 * s, 3 * s),
+            Vec2f(-4 * s, -6 * s),
+            Vec2f(6 * s, 7 * s),
+
+            Vec2f(4 * s, -1 * s),
+            Vec2f(3 * s, -5 * s),
+            Vec2f(-6 * s, 4 * s),
+            Vec2f(-7 * s, -8 * s),
+        )
+    }
 }
 
 fun makeDitherPattern(): Texture2d {
@@ -123,4 +174,8 @@ class AlternatingPair<out T>(factory: (Boolean) -> T) {
 
     val newVal: T get() = if (Time.frameCount % 2 == 0) a else b
     val oldVal: T get() = if (Time.frameCount % 2 == 0) b else a
+}
+
+object ObjModelMatLayout : Struct("obj_model_mat", MemoryLayout.Std140) {
+    val reprojectMat = mat4("reprojectMat")
 }
