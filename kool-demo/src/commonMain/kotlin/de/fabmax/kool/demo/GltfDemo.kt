@@ -10,6 +10,7 @@ import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.ao.AoPipeline
+import de.fabmax.kool.pipeline.ao.AoRadius
 import de.fabmax.kool.pipeline.deferred.DeferredOutputShader
 import de.fabmax.kool.pipeline.deferred.DeferredPipeline
 import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
@@ -119,13 +120,13 @@ class GltfDemo : DemoScene("glTF Models") {
         }
         deferredPipeline = DeferredPipeline(mainScene, defCfg)
         deferredPipeline.aoPipeline?.apply {
-            radius = 0.2f
+            radius = AoRadius.absoluteRadius(0.2f)
         }
         ssrMapSize.set(deferredPipeline.reflectionMapSize)
 
         // create forward pipeline
         aoPipelineForward = AoPipeline.createForward(mainScene).apply {
-            radius = 0.2f
+            radius = AoRadius.absoluteRadius(0.2f)
         }
         shadowsForward += listOf(
             SimpleShadowMap(mainScene, mainScene.lighting.lights[0], contentGroupForward, mapSize = 2048),

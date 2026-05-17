@@ -17,6 +17,7 @@ class TemporalFilterPass(
     val lightingOutput: Texture2d,
     val gbuffers: AlternatingPair<GbufferPass>,
     val camera: Camera,
+    val pipeline: Deferred2Pipeline,
     private var size: Vec2i,
     filterStorageFmt: TexFormat = TexFormat.RGBA_F16,
 ) : ComputePass("deferred2-lighting-pass") {
@@ -27,7 +28,7 @@ class TemporalFilterPass(
 
     private val temporalShader = TemporalFilterShader(filterStorageFmt, lightingOutput, filterState)
 
-    var filterWeight by temporalShader.bindUniformFloat1("uFilterWeight", 8f)
+    var filterWeight = 8f
 
     init {
         setupPasses()
@@ -65,11 +66,13 @@ class TemporalFilterPass(
             oldFilter = filterOutput.oldVal
             newFilter = filterOutput.newVal
             frameI = Time.frameCount
+            filterW = filterWeight
 
             objModelMats = newGbuffer.objModelMatsGpu
             camData.set {
                 set(it.invViewProj, camera.invViewProj)
                 set(it.camNear, camera.clipNear)
+                set(it.oldViewProj, pipeline.oldViewProj)
             }
         }
     }
@@ -94,6 +97,7 @@ class TemporalFilterShader(
     var filterState by bindStorageTexture2d("filterState", filterState)
 
     var frameI by bindUniformInt1("frameI")
+    var filterW by bindUniformFloat1("uFilterWeight")
 
     init {
         program.program()
@@ -127,22 +131,28 @@ class TemporalFilterShader(
                 val baseCoord by inGlobalInvocationId.xy.toInt2()
                 val curMeta by newMeta.load(baseCoord).r
                 val id by curMeta and 0xffffff.const
-                val oldSize by oldFilter.size().toFloat2()
+                val size by newDepth.size()
+                val sizeF by size.toFloat2()
 
                 val camNear = camData[FilterCamDataStruct.camNear]
                 val invViewProj = camData[FilterCamDataStruct.invViewProj]
-                val worldPos by unprojectBaseCoord(newDepth, baseCoord, camNear, invViewProj)
+                val depth by newDepth.load(baseCoord).x
+                val worldPos by unprojectBaseCoord(depth, baseCoord, size, camNear, invViewProj)
 
-                val oldUv by (baseCoord.toFloat2() + 0.5f.const2) / oldSize
+                val oldUv by 0f.const2
                 val oldBaseCoord by baseCoord
                 `if`(id ne 0.const) {
                     val objModelMat = structVar(objModelMats[id])
                     val oldProj by objModelMat[ObjModelMatLayout.reprojectMat] * worldPos
                     oldUv set oldProj.xy / oldProj.w * float2Value(0.5f, -0.5f) + 0.5f.const
-                    oldBaseCoord set (oldUv * oldSize).toInt2()
+                    oldBaseCoord set (oldUv * sizeF).toInt2()
+                }.`else` {
+                    val oldProj by camData[FilterCamDataStruct.oldViewProj] * worldPos
+                    oldUv set oldProj.xy / oldProj.w * float2Value(0.5f, -0.5f) + 0.5f.const
+                    oldBaseCoord set (oldUv * sizeF).toInt2()
                 }
 
-                val oldStateBaseUv by oldUv * oldSize
+                val oldStateBaseUv by oldUv * sizeF
                 val oldState by
                     (filterState.load((oldStateBaseUv + float2Value(0.5f, 0.5f)).toInt2()).r * 255f.const).toInt1() or
                     (filterState.load((oldStateBaseUv + float2Value(0.5f, -0.5f)).toInt2()).r * 255f.const).toInt1() or
@@ -151,7 +161,7 @@ class TemporalFilterShader(
                 val wasEdge by oldState and 1.const gt 0.const
 
                 val near by camData[FilterCamDataStruct.camNear]
-                val refDepth by getLinearDepthReversed(newDepth.load(baseCoord).x, near)
+                val refDepth by getLinearDepthReversed(depth, near)
                 val depthA by getLinearDepthReversed(newDepth.load(baseCoord + int2Value(1, 1)).x, near)
                 val depthB by getLinearDepthReversed(newDepth.load(baseCoord + int2Value(-1, -1)).x, near)
                 val depthC by getLinearDepthReversed(newDepth.load(baseCoord + int2Value(-1, 0)).x, near)
@@ -231,5 +241,6 @@ class TemporalFilterShader(
 
 object FilterCamDataStruct : Struct("FilterCamData", MemoryLayout.Std140) {
     val invViewProj = mat4("invViewProj")
+    val oldViewProj = mat4("oldViewProj")
     val camNear = float1("camClipNear")
 }

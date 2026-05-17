@@ -20,6 +20,7 @@ import de.fabmax.kool.physics.util.CharacterTrackingCamRig
 import de.fabmax.kool.pipeline.GradientTexture
 import de.fabmax.kool.pipeline.SamplerSettings
 import de.fabmax.kool.pipeline.ao.AoPipeline
+import de.fabmax.kool.pipeline.ao.AoRadius
 import de.fabmax.kool.pipeline.ao.ForwardAoPipeline
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.*
@@ -229,7 +230,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
         ssao = AoPipeline.createForwardLegacy(this).apply {
             // negative radius is used to set radius relative to camera distance
-            radius = -0.05f
+            radius = AoRadius.relativeRadius(0.05f)
             isEnabled = isSsao.value
             kernelSize = 8
         }

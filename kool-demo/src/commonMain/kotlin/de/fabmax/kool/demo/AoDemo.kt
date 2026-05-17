@@ -13,10 +13,7 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.ClearColorDontCare
 import de.fabmax.kool.pipeline.DepthCompareOp
-import de.fabmax.kool.pipeline.ao.AoPipeline
-import de.fabmax.kool.pipeline.ao.ComputeAoPipeline
-import de.fabmax.kool.pipeline.ao.ForwardAoPipeline
-import de.fabmax.kool.pipeline.ao.LegacyAoPipeline
+import de.fabmax.kool.pipeline.ao.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.RectProps
 import de.fabmax.kool.toString
@@ -48,7 +45,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
     private val showAoMapValues = listOf("None", "Filtered", "Noisy")
     private val showAoMapIndex = mutableStateOf(0)
 
-    private val aoRadius = mutableStateOf(1f).onChange { _, new -> aoPipeline.radius = new }
+    private val aoRadius = mutableStateOf(1f).onChange { _, new -> aoPipeline.radius = AoRadius.absoluteRadius(new) }
     private val aoFalloff = mutableStateOf(1f).onChange { _, new -> aoPipeline.falloff = new }
     private val aoStrength = mutableStateOf(1f).onChange { _, new -> aoPipeline.strength = new }
     private val aoSamples = mutableStateOf(16).onChange { _, new -> aoPipeline.kernelSize = new }
@@ -79,7 +76,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
 
         aoPipeline = AoPipeline.createForward(mainScene)
         aoMapSize.set((aoPipeline as? ForwardAoPipeline)?.mapSize ?: 0.5f)
-        aoRadius.set(aoPipeline.radius)
+        aoRadius.set(aoPipeline.radius.radius)
         aoFalloff.set(aoPipeline.falloff)
         aoStrength.set(aoPipeline.strength)
         aoSamples.set(aoPipeline.kernelSize)

@@ -11,6 +11,7 @@ import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Releasable
 import de.fabmax.kool.util.Uint8Buffer
+import kotlin.jvm.JvmInline
 import kotlin.math.*
 import kotlin.random.Random
 
@@ -18,7 +19,7 @@ interface AoPipeline : Releasable {
     val aoMap: Texture2d
     var isEnabled: Boolean
 
-    var radius: Float
+    var radius: AoRadius
     var strength: Float
     var falloff: Float
     var kernelSize: Int
@@ -47,21 +48,27 @@ interface AoPipeline : Releasable {
         }
 
         fun createDeferred(deferredPipeline: DeferredPipeline) = DeferredAoPipeline(deferredPipeline)
-    }
-}
 
-internal fun generateAoSampleDirs(numDirs: Int): List<Vec3f> {
-    val scales = (0 until numDirs).map { lerp(0.1f, 1f, (it.toFloat() / (numDirs-1)).pow(2)) }
+        fun generateAoSampleDirs(numDirs: Int, numTemporal: Int = 1): List<Vec3f> {
+            val scales = (0 until numDirs).map { lerp(0.1f, 1f, (it.toFloat() / (numDirs-1)).pow(2)) }
+            val r = Random(12345)
+            val dirs = (0 until numDirs * numTemporal).map { i ->
+                hammersley(i, numDirs * numTemporal)
+            }.shuffled(r)
 
-    return buildList {
-        repeat(numDirs) { i ->
-            val xi = hammersley(i, numDirs)
-            val phi = 2f * PI.toFloat() * xi.x
-            val cosTheta = sqrt((1f - xi.y))
-            val sinTheta = sqrt(1f - cosTheta * cosTheta)
+            return buildList {
+                repeat(numTemporal) { t ->
+                    repeat(numDirs) { i ->
+                        val xi = dirs[i + t * numDirs]
+                        val phi = 2f * PI.toFloat() * xi.x
+                        val cosTheta = sqrt((1f - xi.y))
+                        val sinTheta = sqrt(1f - cosTheta * cosTheta)
 
-            val k = MutableVec3f(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta)
-            add(k.norm().mul(scales[i]))
+                        val k = MutableVec3f(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta + 0.1f).norm()
+                        add(k.mul(scales[i]))
+                    }
+                }
+            }
         }
     }
 }
@@ -100,4 +107,20 @@ internal fun generateFilterNoiseTex(size: Int): Texture2d {
 
     val data = BufferedImageData2d(buf, size, size, TexFormat.RG)
     return Texture2d(TexFormat.RG, MipMapping.Off, SamplerSettings().nearest(), "ao_noise_tex") { data }
+}
+
+@JvmInline
+value class AoRadius(val radius: Float) {
+    companion object {
+        /**
+         * Absolute radius in world space units.
+         */
+        fun absoluteRadius(radius: Float) = AoRadius(abs(radius))
+
+        /**
+         * Relative radius depending on screen depth. E.g., a relative radius of 0.05 resolves to a world space radius
+         * of 1 unit in 20 units distance.
+         */
+        fun relativeRadius(radius: Float) = AoRadius(-abs(radius))
+    }
 }

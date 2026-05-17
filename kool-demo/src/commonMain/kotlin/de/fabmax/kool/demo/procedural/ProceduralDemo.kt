@@ -9,6 +9,7 @@ import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.DepthCompareOp
+import de.fabmax.kool.pipeline.ao.AoRadius
 import de.fabmax.kool.pipeline.deferred.DeferredPipeline
 import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
 import de.fabmax.kool.scene.Scene
@@ -62,7 +63,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
             outputDepthTest = DepthCompareOp.ALWAYS
         }
         val deferredPipeline = DeferredPipeline(this@setupMainScene, deferredCfg).apply {
-            aoPipeline?.radius = 0.6f
+            aoPipeline?.radius = AoRadius.absoluteRadius(0.6f)
 
             sceneContent.apply {
                 addNode(Glass(ibl, shadowMap).also { onSwap += it })

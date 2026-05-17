@@ -15,7 +15,6 @@ import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.vertexAttrib
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.StructBuffer
-import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.asStorageBuffer
 
 class GbufferPass(
@@ -52,17 +51,6 @@ class GbufferPass(
 
     init {
         this.camera = camera
-
-        val offsetMat = MutableMat4f()
-        camera.onCameraUpdated += {
-            val tsaa = pipeline.tsaa
-            if (tsaa.isNotEmpty()) {
-                val offset = tsaa[Time.frameCount % tsaa.size]
-                offsetMat.setIdentity().translate(offset.x / width, offset.y / height, 0f).mul(camera.proj)
-                camera.proj.set(offsetMat)
-            }
-        }
-
         val inverseBuf = MutableMat4f()
         val reprojectBuf = MutableMat4f()
         onAfterCollectDrawCommands += { viewData ->
