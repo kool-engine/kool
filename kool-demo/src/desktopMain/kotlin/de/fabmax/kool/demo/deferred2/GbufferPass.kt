@@ -29,7 +29,7 @@ class GbufferPass(content: Node, camera: Camera, initialSize: Vec2i, name: Strin
         addColor(TexFormat.RGBA, filterMethod = FilterMethod.NEAREST)
         // metal, roughness, ao, [empty: a, flags maybe?]
         addColor(TexFormat.RGBA, filterMethod = FilterMethod.NEAREST)
-        // encoded normals, alpha almost free
+        // normals (view space), alpha almost free
         addColor(TexFormat.RGBA, filterMethod = FilterMethod.NEAREST, clearColor = ClearColorFill(Color.ZERO))
         // object-ids, meta
         addColor(TexFormat.R_I32, filterMethod = FilterMethod.NEAREST)
@@ -40,7 +40,7 @@ class GbufferPass(content: Node, camera: Camera, initialSize: Vec2i, name: Strin
 ) {
     val albedoEmission get() = colorTextures[0]
     val metalRoughnessAo get() = colorTextures[1]
-    val encodedNormals get() = colorTextures[2]
+    val normals get() = colorTextures[2]
     val objectIds get() = colorTextures[3]
 
     val depth get() = depthTexture!!

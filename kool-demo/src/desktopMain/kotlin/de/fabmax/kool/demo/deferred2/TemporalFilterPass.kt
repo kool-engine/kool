@@ -5,6 +5,7 @@ import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
+import de.fabmax.kool.modules.ksl.blocks.getLinearDepthReversed
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Camera
@@ -22,7 +23,7 @@ class TemporalFilterPass(
     val filterOutput = AlternatingPair {
         StorageTexture2d(size.x, size.y, filterStorageFmt, samplerSettings = SamplerSettings().clamped())
     }
-    private val filterState = StorageTexture2d(size.x, size.y, TexFormat.R, samplerSettings = SamplerSettings().clamped().nearest())
+    val filterState = StorageTexture2d(size.x, size.y, TexFormat.R, samplerSettings = SamplerSettings().clamped().nearest())
 
     private val temporalShader = TemporalFilterShader(filterStorageFmt, lightingOutput, filterState)
 
@@ -51,8 +52,7 @@ class TemporalFilterPass(
             val oldGbuffer = gbuffers.oldVal
 
             newDepth = newGbuffer.depth
-            oldAlbedo = oldGbuffer.albedoEmission
-            newAlbedo = newGbuffer.albedoEmission
+            oldDepth = oldGbuffer.depth
             oldMeta = oldGbuffer.objectIds
             newMeta = newGbuffer.objectIds
             oldFilter = filterOutput.oldVal
@@ -74,11 +74,10 @@ class TemporalFilterShader(
     filterState: StorageTexture2d,
 ) : KslComputeShader("deferred2-temporal-filter") {
     var lightingOutput by bindTexture2d("lightingOutput", lightingOutput)
-    var oldAlbedo by bindTexture2d("oldAlbedo")
-    var newAlbedo by bindTexture2d("newAlbedo")
     var oldMeta by bindTexture2d("oldMeta")
     var newMeta by bindTexture2d("newMeta")
     var newDepth by bindTexture2d("newDepth")
+    var oldDepth by bindTexture2d("oldDepth")
 
     var objModelMats by bindStorage("objModelMats")
     var camData = bindUniformStruct("camData", FilterCamDataStruct)
@@ -96,15 +95,13 @@ class TemporalFilterShader(
     private fun KslProgram.program() {
         computeStage(workGroupSizeX = 8, workGroupSizeY = 8) {
             val lightingOutput = texture2d("lightingOutput")
-            val oldAlbedo = texture2d("oldAlbedo")
-            val newAlbedo = texture2d("newAlbedo")
             val oldMeta = texture2dInt("oldMeta")
             val newMeta = texture2dInt("newMeta")
             val newDepth = texture2d("newDepth", isUnfilterable = true)
+            val oldDepth = texture2d("oldDepth", isUnfilterable = true)
 
             val invModelMatStruct = struct(ObjModelMatLayout)
             val objModelMats = storage("objModelMats", invModelMatStruct)
-//            val oldObjModelMats = storage("oldObjModelMats", invModelMatStruct)
 
             val oldFilter = texture2d("oldFilter")
             val newFilter = if (filterStorageFmt.channels == 3) {
@@ -114,74 +111,69 @@ class TemporalFilterShader(
             }
 
             val filterState = storageTexture2d<KslFloat1>("filterState", TexFormat.R)
-
             val frameI = uniformInt1("frameI")
-
             val camData = uniformStruct("camData", FilterCamDataStruct)
-
-            val metaEqual = functionBool1("fnMetaEqual") {
-                val meta1 = paramInt1()
-                val meta2 = paramInt1()
-
-                body {
-                    val x1 by (meta1 shr 24.const) and 0xf.const
-                    val y1 by (meta1 shr 28.const) and 0xf.const
-                    val x2 by (meta2 shr 24.const) and 0xf.const
-                    val y2 by (meta2 shr 28.const) and 0xf.const
-                    (abs(x1 - x2) le 3.const) and (abs(y1 - y2) le 3.const)
-                }
-            }
 
             main {
                 val baseCoord by inGlobalInvocationId.xy.toInt2()
                 val curMeta by newMeta.load(baseCoord).r
                 val id by curMeta and 0xffffff.const
+                val oldSize by oldFilter.size().toFloat2()
 
-                val oldUv by (baseCoord.toFloat2() + 0.5f.const2) / oldFilter.size().toFloat2()
+                val camNear = camData[FilterCamDataStruct.camNear]
+                val invViewProj = camData[FilterCamDataStruct.invViewProj]
+                val worldPos by unprojectBaseCoord(newDepth, baseCoord, camNear, invViewProj)
+
+                val oldUv by (baseCoord.toFloat2() + 0.5f.const2) / oldSize
                 val oldBaseCoord by baseCoord
                 `if`(id ne 0.const) {
-                    val camNear = camData[FilterCamDataStruct.camNear]
-                    val invViewProj = camData[FilterCamDataStruct.invViewProj]
-                    val worldPos by unprojectBaseCoord(newDepth, baseCoord, camNear, invViewProj)
                     val objModelMat = structVar(objModelMats[id])
                     val oldProj by objModelMat[ObjModelMatLayout.reprojectMat] * worldPos
                     oldUv set oldProj.xy / oldProj.w * float2Value(0.5f, -0.5f) + 0.5f.const
-                    oldBaseCoord set (oldUv * oldFilter.size().toFloat2()).toInt2()
+                    oldBaseCoord set (oldUv * oldSize).toInt2()
                 }
 
-                val oldStateCa by (oldUv * oldFilter.size().toFloat2() + float2Value(0.5f, 0.5f)).toInt2()
-                val oldStateCb by (oldUv * oldFilter.size().toFloat2() + float2Value(0.5f, -0.5f)).toInt2()
-                val oldStateCc by (oldUv * oldFilter.size().toFloat2() + float2Value(-0.5f, -0.5f)).toInt2()
-                val oldStateCd by (oldUv * oldFilter.size().toFloat2() + float2Value(-0.5f, 0.5f)).toInt2()
-                val oldState by (filterState.load(oldStateCa).r * 255f.const).toInt1() or
-                    (filterState.load(oldStateCb).r * 255f.const).toInt1() or
-                    (filterState.load(oldStateCc).r * 255f.const).toInt1() or
-                    (filterState.load(oldStateCd).r * 255f.const).toInt1()
+                val oldStateBaseUv by oldUv * oldSize
+                val oldState by
+                    (filterState.load((oldStateBaseUv + float2Value(0.5f, 0.5f)).toInt2()).r * 255f.const).toInt1() or
+                    (filterState.load((oldStateBaseUv + float2Value(0.5f, -0.5f)).toInt2()).r * 255f.const).toInt1() or
+                    (filterState.load((oldStateBaseUv + float2Value(-0.5f, -0.5f)).toInt2()).r * 255f.const).toInt1() or
+                    (filterState.load((oldStateBaseUv + float2Value(-0.5f, 0.5f)).toInt2()).r * 255f.const).toInt1()
                 val wasEdge by oldState and 1.const gt 0.const
 
-                val sameColorThresh = 0.25f.const
-                val curAlbedo by float4Var(newAlbedo.load(baseCoord))
-                val colorDiff by length(curAlbedo - oldAlbedo.sample(oldUv))
-                val sameColor by colorDiff lt sameColorThresh
-                val filterHit by sameColor
+                val near by camData[FilterCamDataStruct.camNear]
+                val refDepth by getLinearDepthReversed(newDepth.load(baseCoord).x, near)
+                val depthA by getLinearDepthReversed(newDepth.load(baseCoord + int2Value(1, 1)).x, near)
+                val depthB by getLinearDepthReversed(newDepth.load(baseCoord + int2Value(-1, -1)).x, near)
+                val depthC by getLinearDepthReversed(newDepth.load(baseCoord + int2Value(-1, 0)).x, near)
+                val depthD by getLinearDepthReversed(newDepth.load(baseCoord + int2Value(1, 0)).x, near)
+                val depthDab by min(abs(refDepth - depthA), abs(refDepth - depthB)) + (refDepth * 0.01f.const)
+                val depthDcd by min(abs(refDepth - depthC), abs(refDepth - depthD)) + (refDepth * 0.01f.const)
+
+                val oldDepth by getLinearDepthReversed(oldDepth.load(oldBaseCoord).x, near)
+                val depthHit by abs(refDepth - oldDepth) lt (max(depthDab, depthDcd) * 2f.const)
+                val idHit by id eq (oldMeta.load(oldBaseCoord).r and 0xffffff.const)
+                val filterHit by idHit and depthHit
                 val isEdge by false.const
                 `if`(!filterHit or wasEdge) {
-//                    val depth0 by 1f.const / newDepth.load(baseCoord, lod = 0.const).x
-//                    val da by depthEdge(depth0, newDepth.load(baseCoord + int2Value(-1, -1)).x)
-//                    val db by depthEdge(depth0, newDepth.load(baseCoord + int2Value(1, 1)).x)
-//                    val dc by depthEdge(depth0, newDepth.load(baseCoord + int2Value(1, -1)).x)
-//                    val dd by depthEdge(depth0, newDepth.load(baseCoord + int2Value(-1, 1)).x)
-//                    isEdge set (da or db or dc or dd)
+                    val hitA by abs(refDepth - depthA) lt depthDab * 2f.const
+                    val hitB by abs(refDepth - depthB) lt depthDab * 2f.const
+                    val hitC by abs(refDepth - depthC) lt depthDcd * 2f.const
+                    val hitD by abs(refDepth - depthD) lt depthDcd * 2f.const
+                    val anyYes by hitA or hitB or hitC or hitD
+                    val anyNo by !hitA or !hitB or !hitC or !hitD
+                    val depthEdge by anyYes and anyNo
 
-                    val oldPxSz by 1f.const2 / oldFilter.size().toFloat2()
-                    val da by length(curAlbedo - oldAlbedo.sample(oldUv + float2Value(-1f, -1f) * oldPxSz))
-                    val db by length(curAlbedo - oldAlbedo.sample(oldUv + float2Value(1f, 1f) * oldPxSz))
-                    val dc by length(curAlbedo - oldAlbedo.sample(oldUv + float2Value(1f, -1f) * oldPxSz))
-                    val dd by length(curAlbedo - oldAlbedo.sample(oldUv + float2Value(-1f, 1f) * oldPxSz))
-
-                    val minD = min(colorDiff, min(min(da, db), min(dc, dd)))
-                    val maxD = max(colorDiff, max(max(da, db), max(dc, dd)))
-                    isEdge set ((minD lt sameColorThresh) and (maxD gt sameColorThresh))
+                    val borderCoords = listOf(Vec2i(-1, -1), Vec2i(1, 1), Vec2i(1, -1), Vec2i(-1, 1))
+                    val anyEq by false.const
+                    val anyNe by false.const
+                    borderCoords.forEach { bc ->
+                        val sampleId = int1Var(newMeta.load(baseCoord + bc.const).r and 0xffffff.const)
+                        anyEq set (anyEq or (sampleId eq id))
+                        anyNe set (anyNe or (sampleId ne id))
+                    }
+                    val idEdge by anyEq and anyNe
+                    isEdge set (depthEdge or idEdge)
                 }
 
                 oldState set isEdge.toInt1()
@@ -208,26 +200,23 @@ class TemporalFilterShader(
                 `if`(any(isNan(filtered))) {
                     filtered set curSrgb
                 }
-                newFilter[baseCoord] = float4Value(filtered, 1f)
 
 //                `if`(wasEdge and !isEdge) {
-//                    newFilter[baseCoord] = Color.RED.const
+//                    filtered set Color.RED.const.rgb
 //                }
 //                `if`(isEdge) {
-//                    newFilter[baseCoord] = Color.YELLOW.const
+//                    filtered set Color.YELLOW.const.rgb
+//                }
+//                `if`(!filterHit) {
+//                    filtered set Color.CYAN.const.rgb
 //                }
 //                `if`(w eq 0f.const) {
 //                    newFilter[baseCoord] = Color.CYAN.const
 //                }
+                newFilter[baseCoord] = float4Value(filtered, 1f)
             }
         }
     }
-}
-
-context(scope: KslScopeBuilder)
-private fun depthEdge(baseDepthLin: KslExprFloat1, cmpDepth: KslExprFloat1): KslExprBool1 {
-    val cmpDepthLin = float1Var(1f.const / cmpDepth)
-    return min(baseDepthLin, cmpDepthLin) / max(baseDepthLin, cmpDepthLin) lt 0.99f.const
 }
 
 object FilterCamDataStruct : Struct("FilterCamData", MemoryLayout.Std140) {

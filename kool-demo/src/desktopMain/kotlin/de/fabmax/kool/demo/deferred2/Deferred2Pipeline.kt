@@ -8,16 +8,13 @@ import de.fabmax.kool.scene.Lighting
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.BufferedList
-import de.fabmax.kool.util.KoolDispatchers
-import de.fabmax.kool.util.Uint8Buffer
-import de.fabmax.kool.util.forEachUpdated
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 
 private const val renderScale = 0.5f
-val tsaa = GbufferPass.TSAA_PATTERN_4
+val tsaa = GbufferPass.TSAA_PATTERN_8
 
 class Deferred2Pipeline(
     val content: Node,
@@ -118,4 +115,12 @@ fun makeDitherPattern(): Texture2d {
 
     val data = BufferedImageData2d(buf, 4, 4, TexFormat.R)
     return Texture2d(data)
+}
+
+class AlternatingPair<out T>(factory: (Boolean) -> T) {
+    val a: T = factory(true)
+    val b: T = factory(false)
+
+    val newVal: T get() = if (Time.frameCount % 2 == 0) a else b
+    val oldVal: T get() = if (Time.frameCount % 2 == 0) b else a
 }

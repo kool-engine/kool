@@ -34,7 +34,14 @@ class BloomPass(
     var radius = 2f
     var strength = 1f
 
-    val bloomMap = StorageTexture2d(idealWidth, idealHeight, TexFormat.RG11B10_F, MipMapping.Limited(levels), name = "bloomMap")
+    val bloomMap = StorageTexture2d(
+        width = idealWidth,
+        height = idealHeight,
+        format = TexFormat.RG11B10_F,
+        mipMapping = MipMapping.Limited(levels),
+        name = "bloomMap",
+        samplerSettings = SamplerSettings().clamped()
+    )
     val downSampleTex = if (inPlace) bloomMap else StorageTexture2d(
         width = idealWidth,
         height = idealHeight,
