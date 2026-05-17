@@ -1,9 +1,14 @@
 package de.fabmax.kool.demo.deferred2
 
+import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShader
-import de.fabmax.kool.modules.ksl.blocks.*
+import de.fabmax.kool.modules.ksl.NormalLightRange
+import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
+import de.fabmax.kool.modules.ksl.blocks.pbrMaterialBlock
+import de.fabmax.kool.modules.ksl.blocks.sceneLightData
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
@@ -12,7 +17,6 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.Struct
-import de.fabmax.kool.util.Time
 
 class LightingPass(
     val gbuffers: AlternatingPair<GbufferPass>,
@@ -43,7 +47,6 @@ class LightingPass(
             shader = lightingShader
         }
         drawNode.addNode(outputMesh)
-
         drawNode.addNode(Skybox.cube(ibl.reflectionMap, 2f, colorSpaceConversion = ColorSpaceConversion.AsIs))
     }
 
@@ -55,8 +58,8 @@ class LightingPass(
             albedoEmissionTex = newGbuffer.albedoEmission
             metalRoughnessAoTex = newGbuffer.metalRoughnessAo
             irradianceMap = ibl.irradianceMap
+            reflectionMap = ibl.reflectionMap
             aoMap = ssaoMap
-            frameI = Time.frameCount
 
             camData.set {
                 set(it.proj, camera.proj)
@@ -65,9 +68,6 @@ class LightingPass(
                 set(it.viewport, Vec4f(0f, 0f, width.toFloat(), height.toFloat()))
                 set(it.position, camera.globalPos)
                 set(it.camNear, camera.clipNear)
-            }
-            lightData.set {
-                setLightData(lighting, maxLightCount = 4, it)
             }
         }
     }
@@ -79,13 +79,12 @@ class DeferredLightingShader : KslShader("deferred2-lighting") {
     var albedoEmissionTex by bindTexture2d("albedoEmission")
     var metalRoughnessAoTex by bindTexture2d("metalRoughnessAo")
     var irradianceMap by bindTextureCube("irradiance")
+    var reflectionMap by bindTextureCube("reflection")
+    var brdf by bindTexture2d("brdf", KoolSystem.requireContext().defaultPbrBrdfLut)
     var aoMap by bindTexture2d("aoMap")
 
     val camData = bindUniformStruct("deferredCamData", DeferredCamDataStruct)
-    private val lightDataStruct = LightDataStruct(4)
-    val lightData = bindUniformStruct("lightData", lightDataStruct)
-
-    var frameI by bindUniformInt1("frameI")
+    var ambientMapOrientation: Mat3f by bindUniformMat3("uAmbientTextureOri", Mat3f.IDENTITY)
 
     init {
         pipelineConfig = PipelineConfig(
@@ -101,54 +100,74 @@ class DeferredLightingShader : KslShader("deferred2-lighting") {
         fullscreenQuadVertexStage(uv)
         fragmentStage {
             val depth = texture2d("depth", isUnfilterable = true)
-            val encodedNormals = texture2d("encodedNormals")
+            val encodedNormals = texture2dInt("encodedNormals")
             val albedoEmission = texture2d("albedoEmission")
             val metalRoughnessAo = texture2d("metalRoughnessAo")
+            val reflection = textureCube("reflection")
             val irradiance = textureCube("irradiance")
+            val brdf = texture2d("brdf")
             val aoMap = texture2d("aoMap")
 
+            val ambientOri = uniformMat3("uAmbientTextureOri")
             val camData = uniformStruct("deferredCamData", DeferredCamDataStruct)
-            val lightData = uniformStruct("lightData", lightDataStruct)
-
-            val frameI = uniformInt1("frameI")
 
             main {
-                val baseCoord = (uv.output * depth.size().toFloat2()).toInt2()
-                val camNear = camData[DeferredCamDataStruct.camNear]
-                val invView = camData[DeferredCamDataStruct.invView]
-                val invViewProj = camData[DeferredCamDataStruct.invViewProj]
+                val baseCoord by (uv.output * depth.size().toFloat2()).toInt2()
                 val depthSample by depth.load(baseCoord, lod = 0.const).x
+                `if` (depthSample eq 0f.const) {
+                    discard()
+                }
+
+                val camNear by camData[DeferredCamDataStruct.camNear]
+                val camPos by camData[DeferredCamDataStruct.position]
+                val invView by camData[DeferredCamDataStruct.invView]
+                val invViewProj by camData[DeferredCamDataStruct.invViewProj]
                 val size by depth.size()
                 val worldPos by unprojectBaseCoord(depthSample, baseCoord, size, camNear, invViewProj).xyz
                 val ssao by aoMap.load(baseCoord, lod = 0.const).x
 
-                val viewNormal by decodeNormalRgb(encodedNormals.load(baseCoord, lod = 0.const).xyz)
-                val worldNormal by (invView * float4Value(viewNormal, 0f.const)).xyz
+                val encodedNormal by encodedNormals.load(baseCoord, lod = 0.const).x
+                val viewNormal by decodeNormalInt(encodedNormal)
+                val worldNormal by normalize((invView * float4Value(viewNormal, 0f.const)).xyz)
 
-                val albedoEmission = float4Var(albedoEmission.load(baseCoord, lod = 0.const))
-                val albedo = albedoEmission.xyz
-                val emission = albedoEmission.w
+                val albedoEmission by float4Var(albedoEmission.load(baseCoord, lod = 0.const))
+                val albedo by albedoEmission.xyz
+                val emission by albedoEmission.w
 
                 val metalRoughnessAo by metalRoughnessAo.load(baseCoord, lod = 0.const).xyz
-                val metallic = metalRoughnessAo.x
-                val roughness = metalRoughnessAo.y
-                val ao = metalRoughnessAo.z
+                val metallic by metalRoughnessAo.x
+                val roughness by metalRoughnessAo.y
+                val ao by metalRoughnessAo.z
 
-                val lightPos by lightData[lightDataStruct.encodedPositions][0.const]
-                val lightDir by lightData[lightDataStruct.encodedDirections][0.const]
-                val lightColor by lightData[lightDataStruct.encodedColors][0.const]
-                val dirToLight by normalize(getLightDirectionFromFragPos(worldPos, lightPos))
-                val radiance by getLightRadiance(worldPos, lightPos, lightDir, lightColor)
-
-                //val ambient by 0.04f.const
                 val ambient by irradiance.sample(worldNormal).rgb * ssao
-                val diffuse by albedo * ambient + albedo * radiance * saturate(dot(dirToLight, worldNormal))
-                colorOutput(diffuse)
-//                colorOutput(float3Value(ssao, ssao, ssao))
-                outDepth set depthSample
 
-//                val filterNoise by noise31(float3Value(uv.output, frameI.toFloat1())) * 0.7f.const + 0.3f.const
-//                colorOutput(diffuse * filterNoise)
+                // todo: config max lights
+                val maxNumberOfLights = 4
+                val normalLightRange = NormalLightRange.ZeroToOne
+                val shadowFactors = float1Array(maxNumberOfLights, 1f.const)
+                val lightData = sceneLightData(maxNumberOfLights)
+                val material = pbrMaterialBlock(maxNumberOfLights, listOf(reflection), brdf, normalLightRange) {
+                    inCamPos(camPos)
+                    inNormal(worldNormal)
+                    inFragmentPos(worldPos)
+                    inBaseColor(float4Value(albedo, 1f.const))
+
+                    inRoughness(roughness)
+                    inMetallic(metallic)
+
+                    inIrradiance(ambient)
+                    inAoFactor(ao)
+                    inAmbientOrientation(ambientOri)
+
+                    inReflectionMapWeights(float2Value(1f, 0f))
+                    inReflectionStrength(1f.const3)
+
+                    setLightData(lightData, shadowFactors, 1f.const)
+                }
+                colorOutput(material.outColor)
+                outDepth set depthSample
+//                colorOutput(viewNormal * 0.5f.const + 0.5f.const)
+//                colorOutput(float3Value(ssao, ssao, ssao))
             }
         }
     }

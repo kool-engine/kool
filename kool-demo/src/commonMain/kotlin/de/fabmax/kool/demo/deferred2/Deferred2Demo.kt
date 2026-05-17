@@ -15,15 +15,22 @@ import de.fabmax.kool.pipeline.BloomPass
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.pipeline.SingleColorTexture
+import de.fabmax.kool.pipeline.ao.AoRadius
 import de.fabmax.kool.pipeline.swapPipelineDataCapturing
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 
 class Deferred2Demo : DemoScene("Deferred2 Demo") {
 
-    val ibl by hdriImage("hdri/newport_loft.rgbe.png")
+    //val ibl by hdriImage("hdri/newport_loft.rgbe.png")
+    //val ibl by hdriImage("hdri/shanghai_bund_1k.rgbe.png")
+    val ibl by hdriImage("hdri/circus_arena_1k.rgbe.png")
+
     private val albedoMap by texture2d("materials/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_COL_2K_METALNESS.jpg")
     private val normalMap by texture2d("materials/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_NRM_2K_METALNESS.jpg")
+    private val metallicMap by texture2d("materials/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_METALNESS_2K_METALNESS.jpg")
+    private val roughnessMap by texture2d("materials/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_ROUGHNESS_2K_METALNESS.jpg")
+    private val aoMap by texture2d("materials/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_AO_2K_METALNESS.jpg")
 
     private lateinit var pipeline: Deferred2Pipeline
     private val filterWeight = mutableStateOf(16)
@@ -40,6 +47,7 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
 
         pipeline = Deferred2Pipeline(content, scene = this, ibl, lighting)
         pipeline.renderScale = 0.5f
+        pipeline.aoPass.radius = AoRadius.relativeRadius(1/20f)
         filterWeight.value = pipeline.filterPass.filterWeight.toInt()
         filterWeight.onChange { _, value -> pipeline.filterPass.filterWeight = value.toFloat() }
 
@@ -126,6 +134,7 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
                 }
                 shader = gbufferShader(objectId = 1) {
                     color { vertexColor() }
+                    roughness { constProperty(0.15f) }
                 }
             }
             addTextureMesh(isNormalMapped = true) {
@@ -140,16 +149,17 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
                         .translate(2.5f, 0f, 0f)
                 }
                 shader = gbufferShader(objectId = 2) {
-                    color {
-                        textureColor(albedoMap)
-                    }
-                    normalMapping {
-                        useNormalMap(normalMap)
-                    }
+                    color { textureColor(albedoMap) }
+                    normalMapping { useNormalMap(normalMap) }
+                    metallic { textureProperty(metallicMap) }
+                    roughness { textureProperty(roughnessMap) }
+                    ao { textureProperty(aoMap) }
                 }.apply {
-//                    bindTexture2d("tbaseColor", uvChecker)
                     bindTexture2d("tbaseColor", albedoMap)
                     bindTexture2d("tNormalMap", normalMap)
+                    bindTexture2d("tmetallic", metallicMap)
+                    bindTexture2d("troughness", roughnessMap)
+                    bindTexture2d("tao", aoMap)
                 }
             }
             addColorMesh {
@@ -237,11 +247,11 @@ private data class TsaaItem(val label: String, val tsaa: List<Vec2f>, val numSam
 private data class ScaleItem(val label: String, val scale: Float) {
     companion object {
         val items = listOf(
-            ScaleItem("0.1x", 0.1f),
-            ScaleItem("0.25x", 0.25f),
-            ScaleItem("0.5x", 0.5f),
-            ScaleItem("0.75x", 0.75f),
-            ScaleItem("1x", 1f),
+            ScaleItem("10 %", 0.1f),
+            ScaleItem("25 %", 0.25f),
+            ScaleItem("50 %", 0.5f),
+            ScaleItem("75 %", 0.75f),
+            ScaleItem("100 %", 1f),
         )
     }
 }
