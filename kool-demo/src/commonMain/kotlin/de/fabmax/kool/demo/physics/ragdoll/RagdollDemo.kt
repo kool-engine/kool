@@ -21,6 +21,7 @@ import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.geometry.CylinderGeometry
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.pipeline.ao.AoPipeline
+import de.fabmax.kool.pipeline.ao.AoRadius
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
@@ -57,7 +58,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
     override suspend fun loadResources(ctx: KoolContext) {
         ao = AoPipeline.createForward(mainScene).apply {
-            radius = 0.5f
+            radius = AoRadius.absoluteRadius(0.5f)
         }
         shadows += SimpleShadowMap(mainScene, mainScene.lighting.lights[0], mapSize = 4096).apply {
             setDefaultDepthOffset(true)

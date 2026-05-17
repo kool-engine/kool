@@ -11,17 +11,18 @@ fun baseCoordToUv(baseCoord: KslExprInt2, viewSize: KslExprInt2): KslExprFloat2 
 }
 
 class UnprojectBaseCoord(
-    depth: KslUniform<KslColorSampler2d>,
     parentScope: KslScopeBuilder
 ) : KslFunction<KslFloat4>("fnUnprojectBaseCoord", KslFloat4, parentScope.parentStage) {
     init {
+        val depth = paramFloat1("depth")
         val baseCoord = paramInt2("baseCoord")
+        val size = paramInt2("size")
         val camNear = paramFloat1("camNear")
         val invViewProj = paramMat4("invProj")
 
         body {
-            val uv by baseCoordToUv(baseCoord, depth.size())
-            val viewDepth by getLinearDepthReversed(depth.load(baseCoord, lod = 0.const).x, camNear)
+            val uv by baseCoordToUv(baseCoord, size)
+            val viewDepth by getLinearDepthReversed(depth, camNear)
             val viewProjXy by (uv * 2f.const - 1f.const) * viewDepth
             val viewProjPos by float4Value(viewProjXy, camNear, viewDepth)
             val worldPos by invViewProj * viewProjPos
@@ -31,13 +32,14 @@ class UnprojectBaseCoord(
 }
 
 fun KslScopeBuilder.unprojectBaseCoord(
-    depth: KslUniform<KslColorSampler2d>,
+    depth: KslExprFloat1,
     baseCoord: KslExprInt2,
+    size: KslExprInt2,
     camNear: KslExprFloat1,
     invViewProj: KslExprMat4,
 ): KslExprFloat4 {
-    val func = parentStage.getOrCreateFunction("fnUnprojectBaseCoord") { UnprojectBaseCoord(depth, this) }
-    return func(baseCoord, camNear, invViewProj)
+    val func = parentStage.getOrCreateFunction("fnUnprojectBaseCoord") { UnprojectBaseCoord(this) }
+    return func(depth, baseCoord, size, camNear, invViewProj)
 }
 
 

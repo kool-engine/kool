@@ -20,11 +20,11 @@ abstract class LegacyAoPipeline : AoPipeline, BaseReleasable() {
 
     override val aoMap: Texture2d get() = denoisePass.colorTexture!!
 
-    override var radius: Float
-        get() = aoPass.radius
+    override var radius: AoRadius
+        get() = AoRadius(aoPass.radius)
         set(value) {
-            aoPass.radius = value
-            denoisePass.radius = value
+            aoPass.radius = value.radius
+            denoisePass.radius = value.radius
         }
 
     override var strength: Float

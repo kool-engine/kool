@@ -21,9 +21,9 @@ import de.fabmax.kool.util.*
 
 class Deferred2Demo : DemoScene("Deferred2 Demo") {
 
+    val ibl by hdriImage("hdri/newport_loft.rgbe.png")
     private val albedoMap by texture2d("materials/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_COL_2K_METALNESS.jpg")
     private val normalMap by texture2d("materials/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_NRM_2K_METALNESS.jpg")
-    //private val uvChecker by texture2d("materials/uv_checker_map.jpg")
 
     private lateinit var pipeline: Deferred2Pipeline
     private val filterWeight = mutableStateOf(16)
@@ -34,10 +34,11 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
         val lighting = Lighting().apply {
             singlePointLight {
                 setup(Vec3f(1.2f, 3.2f, 2f))
-                setColor(Color.WHITE, intensity = 50f)
+                setColor(Color.WHITE, intensity = 5f)
             }
         }
-        pipeline = Deferred2Pipeline(content, lighting, this)
+
+        pipeline = Deferred2Pipeline(content, scene = this, ibl, lighting)
         pipeline.renderScale = 0.5f
         filterWeight.value = pipeline.filterPass.filterWeight.toInt()
         filterWeight.onChange { _, value -> pipeline.filterPass.filterWeight = value.toFloat() }
@@ -61,7 +62,7 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
             generate {
                 generateFullscreenQuad()
             }
-            shader = deferredOutputShader(pipeline, bloomPass)
+            shader = deferredOutputShader(this@Deferred2Demo, pipeline, bloomPass)
         }
     }
 
@@ -82,6 +83,7 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
                     .onItemSelected {
                         tsaaIndex = it
                         pipeline.tsaa = TsaaItem.items[it].tsaa
+                        pipeline.aoPass.temporalKernels = TsaaItem.items[it].numSamples
                     }
             }
         }
@@ -100,47 +102,6 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
                     }
             }
         }
-    }
-
-    private fun deferredOutputShader(
-        deferred2Pipeline: Deferred2Pipeline,
-        bloomPass: BloomPass
-    ): KslShader {
-        val outputShader = KslShader("deferred2-output") {
-            val uv = interStageFloat2()
-            fullscreenQuadVertexStage(uv)
-            fragmentStage {
-                main {
-                    val output = de.fabmax.kool.modules.ksl.lang.texture2d("deferredOutput")
-                    val bloom = de.fabmax.kool.modules.ksl.lang.texture2d("bloomOutput")
-                    val uvi = (uv.output * output.size().toFloat2() + 0.5f.const2).toInt2()
-                    val color by output.load(uvi).rgb + bloom.sample(uv.output).rgb
-
-                    val ditherTex = de.fabmax.kool.modules.ksl.lang.texture2d("ditherPattern")
-                    val ditherC by uvi % ditherTex.size()
-                    val ditherNoise by ditherTex.load(ditherC).r
-                    val srgb by convertColorSpace(color, ColorSpaceConversion.LinearToSrgbHdr()) + (ditherNoise - 0.5f.const) / 255f.const
-                    colorOutput(srgb)
-//                        colorOutput(color)
-                }
-            }
-        }
-
-        val ditherTex = makeDitherPattern()
-        ditherTex.releaseWith(mainScene)
-
-        outputShader.bindTexture2d("ditherPattern", ditherTex)
-        var bloomTex by outputShader.bindTexture2d("bloomOutput", bloomPass.bloomMap)
-        var inputTex by outputShader.bindTexture2d("deferredOutput")
-        val noBloom = SingleColorTexture(Color.BLACK)
-        deferred2Pipeline.onSwap {
-            val filterOutput = deferred2Pipeline.filterPass.filterOutput.newVal
-            outputShader.swapPipelineDataCapturing(filterOutput) {
-                inputTex = filterOutput
-                bloomTex = if (bloom.value) bloomPass.bloomMap else noBloom
-            }
-        }
-        return outputShader
     }
 
     private fun deferredContent() = Node("deferred content").apply {
@@ -219,14 +180,56 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
     }
 }
 
-private data class TsaaItem(val label: String, val tsaa: List<Vec2f>) {
+private fun deferredOutputShader(
+    demo: Deferred2Demo,
+    deferred2Pipeline: Deferred2Pipeline,
+    bloomPass: BloomPass
+): KslShader {
+    val outputShader = KslShader("deferred2-output") {
+        val uv = interStageFloat2()
+        fullscreenQuadVertexStage(uv)
+        fragmentStage {
+            main {
+                val output = texture2d("deferredOutput")
+                val bloom = texture2d("bloomOutput")
+                val uvi = (uv.output * output.size().toFloat2()).toInt2()
+                val color by output.load(uvi).rgb + bloom.sample(uv.output).rgb
+
+                val ditherTex = texture2d("ditherPattern")
+                val ditherC by uvi % ditherTex.size()
+                val ditherNoise by ditherTex.load(ditherC).r
+                val srgb by convertColorSpace(color, ColorSpaceConversion.LinearToSrgbHdr()) + (ditherNoise - 0.5f.const) / 255f.const
+                colorOutput(srgb)
+//                colorOutput(color)
+            }
+        }
+    }
+
+    val ditherTex = makeDitherPattern()
+    ditherTex.releaseWith(demo.mainScene)
+
+    outputShader.bindTexture2d("ditherPattern", ditherTex)
+    var bloomTex by outputShader.bindTexture2d("bloomOutput", bloomPass.bloomMap)
+    var inputTex by outputShader.bindTexture2d("deferredOutput")
+    val noBloom = SingleColorTexture(Color.BLACK)
+    deferred2Pipeline.onSwap {
+        val filterOutput = deferred2Pipeline.filterPass.filterOutput.newVal
+        outputShader.swapPipelineDataCapturing(filterOutput) {
+            inputTex = filterOutput
+            bloomTex = if (bloomPass.isEnabled) bloomPass.bloomMap else noBloom
+        }
+    }
+    return outputShader
+}
+
+private data class TsaaItem(val label: String, val tsaa: List<Vec2f>, val numSamples: Int) {
     companion object {
         val items = listOf(
-            TsaaItem("None", Deferred2Pipeline.TSAA_NONE),
-            TsaaItem("2x", Deferred2Pipeline.TSAA_2),
-            TsaaItem("4x", Deferred2Pipeline.TSAA_4),
-            TsaaItem("8x", Deferred2Pipeline.TSAA_8),
-            TsaaItem("16x", Deferred2Pipeline.TSAA_16)
+            TsaaItem("None", Deferred2Pipeline.TSAA_NONE, 1),
+            TsaaItem("2x", Deferred2Pipeline.TSAA_2, 2),
+            TsaaItem("4x", Deferred2Pipeline.TSAA_4, 4),
+            TsaaItem("8x", Deferred2Pipeline.TSAA_8, 8),
+            TsaaItem("16x", Deferred2Pipeline.TSAA_16, 16)
         )
     }
 }

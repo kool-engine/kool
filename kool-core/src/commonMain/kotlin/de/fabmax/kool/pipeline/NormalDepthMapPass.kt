@@ -27,7 +27,8 @@ class NormalDepthMapPass(
     name: String = UniqueId.nextId("normal-depth-map-pass")
 ) : OffscreenPass2d(drawNode, attachmentConfig, initialSize, name) {
 
-    val encodedNormalMap: Texture2d get() = colorTexture!!
+    val depth: Texture2d get() = depthTexture!!
+    val viewSpaceNormals: Texture2d get() = colorTexture!!
 
     var cullMethod: CullMethod? = null
 

@@ -58,7 +58,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         protected set
 
     val proj = MutableMat4f()
-    private val lazyInvProj = LazyMat4f { proj.invert(it) }
+    val lazyInvProj = LazyMat4f { proj.invert(it) }
     val invProj: Mat4f get() = lazyInvProj.get()
 
     val dataF = DataF()

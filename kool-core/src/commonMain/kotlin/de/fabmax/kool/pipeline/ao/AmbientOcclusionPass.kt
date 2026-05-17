@@ -77,7 +77,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
 
     private fun generateKernels(nKernels: Int) {
         val n = min(nKernels, MAX_KERNEL_SIZE)
-        generateAoSampleDirs(n).forEachIndexed { i, k ->
+        AoPipeline.generateAoSampleDirs(n).forEachIndexed { i, k ->
             aoPassShader.uKernel[i] = k
         }
         aoPassShader.uKernelSize = n
