@@ -300,3 +300,11 @@ class GbufferShaderConfig(builder: Builder) {
         open fun build() = GbufferShaderConfig(this)
     }
 }
+
+fun gbufferShader(objectId: Int, block: GbufferShaderConfig.Builder.() -> Unit): GbufferShader {
+    val cfg = GbufferShaderConfig.Builder().apply{
+        this.objectId = objectId
+        block()
+    }.build()
+    return GbufferShader(cfg)
+}
