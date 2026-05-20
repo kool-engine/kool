@@ -199,7 +199,7 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
                     val reflectionMaps = if (cfg.isTextureReflection) {
                         List(2) { textureCube("tReflectionMap_$it") }
                     } else {
-                        null
+                        emptyList()
                     }
 
                     val material = pbrMaterialBlock(cfg.lightingConfig.maxNumberOfLights, reflectionMaps, brdfLut, cfg.lightingConfig.normalLightRange) {
@@ -217,12 +217,12 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
 
                         inReflectionMapWeights(uniformFloat2("uReflectionWeights"))
                         inReflectionStrength(reflectionStrength)
-                        inReflectionColor(reflectionColor)
-                        inReflectionWeight(reflectionWeight)
 
                         setLightData(lightData, shadowFactors, cfg.lightingConfig.lightStrength.const)
                     }
-                    colorOutput(material.outColor + emissive)
+                    val finalReflectionColor by mix(material.outSpecular, clamp(reflectionColor, Vec3f.ZERO.const, Vec3f(5f).const), reflectionWeight)
+                    val finalColor by material.outAmbient + material.outLight + finalReflectionColor * material.outSpecularFactor + emissive
+                    colorOutput(finalColor)
                     outDepth set texture2d("depth", isUnfilterable = true).sample(uv).r
                 }
             }

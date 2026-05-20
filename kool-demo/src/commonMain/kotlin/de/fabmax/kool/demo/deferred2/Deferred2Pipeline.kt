@@ -9,7 +9,7 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ao.AoRadius
 import de.fabmax.kool.pipeline.ao.ComputeAoPass
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
-import de.fabmax.kool.pipeline.swapPipelineDataCapturing
+import de.fabmax.kool.pipeline.swapPipelineData
 import de.fabmax.kool.scene.Lighting
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
@@ -23,6 +23,7 @@ class Deferred2Pipeline(
     val content: Node,
     private val scene: Scene,
     val ibl: EnvironmentMap,
+    val isScreenSpaceReflections: Boolean,
     val lighting: Lighting = Lighting(),
     var renderScale: Float = 1f,
     var tsaa: List<Vec2f> = TSAA_4,
@@ -42,7 +43,8 @@ class Deferred2Pipeline(
         camera = camera,
         inputDepth = gbuffers.a.depth,
         inputNormals = gbuffers.a.normals,
-        initialSize = size
+        initialSize = size,
+        distFormat = TexFormat.R_F32,
     )
 
     private val swapListeners = BufferedList<() -> Unit>()
@@ -55,6 +57,7 @@ class Deferred2Pipeline(
         size = size,
         ssaoMap = aoPass.aoMap,
         ibl = ibl,
+        pipeline = this,
     )
     val filterPass = TemporalFilterPass(
         lightingOutput = lightingPass.lightingOutput,
@@ -76,8 +79,16 @@ class Deferred2Pipeline(
         scene.addOffscreenPass(gbuffers.a)
         scene.addOffscreenPass(gbuffers.b)
         scene.addComputePass(aoPass)
+//        reflectionPass?.let { scene.addComputePass(it) }
         scene.addOffscreenPass(lightingPass)
         scene.addComputePass(filterPass)
+
+
+        gbuffers.a.isProfileGpu = true
+        gbuffers.b.isProfileGpu = true
+        lightingPass.isProfileGpu = true
+        filterPass.isProfileGpu = true
+        aoPass.isProfileGpu = true
 
         val offsetMat = MutableMat4f()
         camera.onCameraUpdated += {
@@ -101,6 +112,7 @@ class Deferred2Pipeline(
                 gbuffers.a.setSize(size.x, size.y)
                 gbuffers.b.setSize(size.x, size.y)
                 aoPass.resize(size.x, size.y)
+//                reflectionPass?.resize(size)
                 lightingPass.setSize(size.x, size.y)
                 filterPass.resize(size)
                 resizeListeners.forEachUpdated { it(size) }
@@ -110,30 +122,34 @@ class Deferred2Pipeline(
         scene.coroutineScope.launch {
             withContext(KoolDispatchers.Synced) {
                 while (true) {
-                    oldViewProj.set(prevViewProj)
-                    prevViewProj.set(camera.viewProj)
-
-                    lightingPass.swapBuffers()
-                    filterPass.swapBuffers()
-
-                    val currentGbuffer = gbuffers.newVal
-                    aoPass.inputShader.swapPipelineDataCapturing(currentGbuffer) {
-                        aoPass.inputDepth = currentGbuffer.depth
-                        aoPass.inputNormals = currentGbuffer.normals
-                        //aoPass.captureCamera()
-                    }
-
-                    swapListeners.forEachUpdated { it() }
-
-                    gbuffers.newVal.objModelMatsGpu.uploadData(gbuffers.newVal.objModelMats)
-
-                    // this is called after update, newVal was enabled and updated, disable it and enable oldVal for next frame
-                    gbuffers.newVal.isEnabled = false
-                    gbuffers.oldVal.isEnabled = true
+                    swapBuffers()
                     yield()
                 }
             }
         }
+    }
+
+    private fun swapBuffers() {
+        oldViewProj.set(prevViewProj)
+        prevViewProj.set(camera.viewProj)
+
+        lightingPass.swapBuffers()
+        filterPass.swapBuffers()
+//        reflectionPass?.swapBuffers()
+
+        val currentGbuffer = gbuffers.newVal
+        aoPass.inputShader.swapPipelineData(currentGbuffer) {
+            aoPass.inputDepth = currentGbuffer.depth
+            aoPass.inputNormals = currentGbuffer.normals
+        }
+
+        swapListeners.forEachUpdated { it() }
+
+        gbuffers.newVal.objModelMatsGpu.uploadData(gbuffers.newVal.objModelMats)
+
+        // this is called after update, newVal was enabled and updated, disable it and enable oldVal for next frame
+        gbuffers.newVal.isEnabled = false
+        gbuffers.oldVal.isEnabled = true
     }
 
     fun onResize(block: (Vec2i) -> Unit) {
@@ -193,9 +209,9 @@ class Deferred2Pipeline(
 
 fun makeDitherPattern(): Texture2d {
     val buf = Uint8Buffer(16)
-    fun u(i: Int): UByte = (255f * i.toFloat() / (buf.capacity - 1)).toInt().toUByte()
+    fun u(i: Int): UByte = (255f * (i-1).toFloat() / (buf.capacity - 1)).toInt().toUByte()
 
-    buf[0] = u(0)
+    buf[0] = u(1)
     buf[1] = u(9)
     buf[2] = u(3)
     buf[3] = u(11)

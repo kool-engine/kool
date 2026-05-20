@@ -9,9 +9,8 @@ import de.fabmax.kool.util.logW
  * @author fabmax
  */
 class Lighting {
-    private val _lights = mutableListOf<Light>()
     val lights: List<Light>
-        get() = _lights
+        field = mutableListOf<Light>()
 
     var maxNumberOfLights = 4
 
@@ -31,16 +30,16 @@ class Lighting {
     }
 
     fun addLight(light: Light) {
-        if (light in _lights) {
+        if (light in lights) {
             logW { "light is already present in lights list" }
             return
         }
-        if (_lights.size >= maxNumberOfLights) {
+        if (lights.size >= maxNumberOfLights) {
             logW { "Unable to add light: Maximum number of lights (${maxNumberOfLights}) reached. Consider increasing Scene.lighting.maxNumberOfLights" }
             return
         }
         light.lightIndex = lights.size
-        _lights += light
+        lights += light
     }
 
     inline fun addDirectionalLight(block: Light.Directional.() -> Unit): Light.Directional {
@@ -65,7 +64,7 @@ class Lighting {
     }
 
     fun removeLight(light: Light) {
-        _lights -= light
+        lights -= light
         light.lightIndex = -1
         lights.forEachIndexed { i, it ->
             it.lightIndex = i
@@ -74,7 +73,7 @@ class Lighting {
 
     fun clear() {
         lights.forEach { it.lightIndex = -1 }
-        _lights.clear()
+        lights.clear()
     }
 
     fun singleDirectionalLight(block: Light.Directional.() -> Unit): Light.Directional {

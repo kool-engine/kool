@@ -76,7 +76,7 @@ fun KslScopeBuilder.noise41(p: KslExprFloat4): KslExprFloat1 = noise41(p.toUintB
 @JvmName("noise42f")
 fun KslScopeBuilder.noise42(p: KslExprFloat4): KslExprFloat2 = noise42(p.toUintBits())
 @JvmName("noise43f")
-fun KslScopeBuilder.noise423(p: KslExprFloat4): KslExprFloat3 = noise43(p.toUintBits())
+fun KslScopeBuilder.noise43(p: KslExprFloat4): KslExprFloat3 = noise43(p.toUintBits())
 @JvmName("noise44f")
 fun KslScopeBuilder.noise44(p: KslExprFloat4): KslExprFloat4 = noise44(p.toUintBits())
 

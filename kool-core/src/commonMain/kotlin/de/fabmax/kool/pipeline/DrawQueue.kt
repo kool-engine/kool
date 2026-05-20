@@ -46,12 +46,17 @@ class DrawQueue() {
     private val lazyInvProj = LazyMat4f { projMat.invert(it) }
     private val lazyInvViewF = LazyMat4f { viewMatF.invert(it) }
     private val lazyInvViewD = LazyMat4d { viewMatD.invert(it) }
+    private val lazyInvViewProjF = LazyMat4f { viewProjMatF.invert(it) }
+    private val lazyInvViewProjD = LazyMat4d { viewProjMatD.invert(it) }
 
     val invProjMat: Mat4f get() = lazyInvProj.get()
 
     val invViewMatF: Mat4f get() = lazyInvViewF.get()
 
     val invViewMatD: Mat4d get() = lazyInvViewD.get()
+
+    val invViewProjMatF: Mat4f get() = lazyInvViewProjF.get()
+    val invViewProjMatD: Mat4d get() = lazyInvViewProjD.get()
 
     private val commandPool = mutableListOf<DrawCommand>()
 
@@ -99,6 +104,8 @@ class DrawQueue() {
         lazyInvProj.isDirty = true
         lazyInvViewF.isDirty = true
         lazyInvViewD.isDirty = true
+        lazyInvViewProjF.isDirty = true
+        lazyInvViewProjD.isDirty = true
     }
 
     private fun getOrderedQueue(): OrderedQueue {
