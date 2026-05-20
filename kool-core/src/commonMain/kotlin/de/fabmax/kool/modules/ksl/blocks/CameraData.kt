@@ -10,7 +10,7 @@ import de.fabmax.kool.util.Time
 
 context(program: KslProgram)
 fun cameraData(): CameraData {
-    return (program.dataBlocks.find { it is CameraData } as? CameraData) ?: CameraData(program)
+    return program.dataBlocks.filterIsInstance<CameraData>().firstOrNull() ?: CameraData(program)
 }
 
 fun KslScopeBuilder.depthToViewSpacePos(linearDepth: KslExprFloat1, clipSpaceXy: KslExprFloat2, camData: CameraData): KslExprFloat3 {
@@ -25,8 +25,11 @@ class CameraData(program: KslProgram) : KslDataBlock("CameraData", program), Ksl
     private val camUniform = uniformStruct("uCameraData", CamDataStruct, BindGroupScope.VIEW)
 
     val viewProjMat: KslExprMat4 get() = camUniform[CamDataStruct.viewProj]
+    val invViewProjMat: KslExprMat4 get() = camUniform[CamDataStruct.invViewProj]
     val viewMat: KslExprMat4 get() = camUniform[CamDataStruct.view]
+    val invViewMat: KslExprMat4 get() = camUniform[CamDataStruct.invView]
     val projMat: KslExprMat4 get() = camUniform[CamDataStruct.proj]
+    val invProjMat: KslExprMat4 get() = camUniform[CamDataStruct.invProj]
 
     val viewport: KslExprFloat4 get() = camUniform[CamDataStruct.viewport]
     val viewParams: KslExprFloat4 get() = camUniform[CamDataStruct.viewParams]
@@ -67,8 +70,11 @@ class CameraData(program: KslProgram) : KslDataBlock("CameraData", program), Ksl
             val cam = q.view.camera
             binding.set {
                 set(it.viewProj, q.viewProjMatF)
+                set(it.invViewProj, q.invViewProjMatF)
                 set(it.view, q.viewMatF)
+                set(it.invView, q.invViewMatF)
                 set(it.proj, q.projMat)
+                set(it.invProj, q.invProjMat)
                 set(it.viewport, viewportVec.set(vp.x.toFloat(), vp.y.toFloat(), vp.width.toFloat(), vp.height.toFloat()))
                 set(it.viewParams, cam.viewParams)
                 set(it.position, cam.globalPos)
@@ -81,8 +87,11 @@ class CameraData(program: KslProgram) : KslDataBlock("CameraData", program), Ksl
 
     object CamDataStruct : Struct("CameraData", MemoryLayout.Std140) {
         val viewProj = mat4("viewProjMat")
+        val invViewProj = mat4("invViewProjMat")
         val view = mat4("viewMat")
+        val invView = mat4("invViewMat")
         val proj = mat4("projMat")
+        val invProj = mat4("invProjMat")
         val viewport = float4("viewport")
         val viewParams = float4("viewParams")
         val position = float3("position")

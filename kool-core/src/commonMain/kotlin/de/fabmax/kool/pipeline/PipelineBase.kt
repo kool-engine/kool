@@ -74,6 +74,13 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
     }
 }
 
+inline fun <T: ShaderBase<*>> T.swapPipelineData(key: Any?, block: T.() -> Unit) {
+    createdPipeline?.let {
+        it.swapPipelineData(key)
+        block()
+    }
+}
+
 inline fun PipelineBase.swapPipelineDataCapturing(key: Any?, block: () -> Unit) {
     swapPipelineData(key)
     block()

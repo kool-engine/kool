@@ -9,7 +9,7 @@ import kotlin.math.PI
 context(builder: KslScopeBuilder)
 fun pbrMaterialBlock(
     maxNumberOfLights: Int,
-    reflectionMaps: List<KslExpression<KslColorSamplerCube>>?,
+    reflectionMaps: List<KslExpression<KslColorSamplerCube>>,
     brdfLut: KslExpression<KslColorSampler2d>,
     normalLightRange: NormalLightRange,
     block: PbrMaterialBlock.() -> Unit
@@ -29,7 +29,7 @@ fun pbrMaterialBlock(
 class PbrMaterialBlock(
     maxNumberOfLights: Int,
     name: String,
-    reflectionMaps: List<KslExpression<KslColorSamplerCube>>?,
+    reflectionMaps: List<KslExpression<KslColorSamplerCube>>,
     brdfLut: KslExpression<KslColorSampler2d>,
     normalLightRange: NormalLightRange,
     parentScope: KslScopeBuilder,
@@ -41,13 +41,15 @@ class PbrMaterialBlock(
     // environment reflection map(s)
     val inReflectionMapWeights = inFloat2("inReflectionMapWeights", float2Value(1f, 0f))
     val inReflectionStrength = inFloat3("inReflectionStrength", float3Value(1f, 1f, 1f))
-    // screen-space reflection
-    val inReflectionColor = inFloat3("inReflectionColor", float3Value(1f, 1f, 1f))
-    val inReflectionWeight = inFloat1("inReflectionWeight", 0f.const)
 
     val inAmbientOrientation = inMat3("inAmbientOrientation")
     val inIrradiance = inFloat3("inIrradiance")
     val inAoFactor = inFloat1("inAoFactor", 0f.const)
+
+    val outSpecular = outFloat3("outSpecular")
+    val outSpecularFactor = outFloat3("outSpecularFactor")
+    val outAmbient = outFloat3("outAmbient")
+    val outLight = outFloat3("outLight")
 
     init {
         body.apply {
@@ -86,7 +88,7 @@ class PbrMaterialBlock(
             // use irradiance / ambient color as fallback reflection color in case no reflection map is used
             // ambient color is supposed to be uniform in this case because reflection direction is not considered
             val reflectionColor by inIrradiance
-            if (reflectionMaps != null) {
+            if (reflectionMaps.isNotEmpty()) {
                 // sample reflection map in reflection direction
                 val r = inAmbientOrientation * reflect(-viewDir, inNormal)
                 val mipLevel by (1f.const - pow(1f.const - roughness, 1.25f.const)) * (ReflectionMapPass.REFLECTION_MIP_LEVELS - 1).toFloat().const
@@ -99,14 +101,12 @@ class PbrMaterialBlock(
             }
             reflectionColor set reflectionColor * inReflectionStrength
 
-            // screen-space reflection
-            reflectionColor set mix(reflectionColor, clamp(inReflectionColor, Vec3f.ZERO.const, Vec3f(5f).const), inReflectionWeight)
-
             val brdf by brdfLut.sample(float2Value(normalDotView, roughness)).rg
-            val specular by reflectionColor * (fAmbient * brdf.r + brdf.g) / inBaseColor.a
-            val ambient by kDAmbient * diffuse * inAoFactor
-            val reflection by specular * inAoFactor
-            outColor set ambient + lo + reflection
+            outSpecular set reflectionColor
+            outSpecularFactor set (fAmbient * brdf.r + brdf.g) / inBaseColor.a * inAoFactor
+            outAmbient set kDAmbient * diffuse * inAoFactor
+            outLight set lo
+            outColor set outAmbient + outLight + outSpecular * outSpecularFactor
         }
     }
 }

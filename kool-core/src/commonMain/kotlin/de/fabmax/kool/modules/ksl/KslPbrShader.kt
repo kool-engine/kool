@@ -135,7 +135,7 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
             val reflectionMaps = if (cfg.isTextureReflection) {
                 List(2) { textureCube("tReflectionMap_$it") }
             } else {
-                null
+                emptyList()
             }
 
             val material = pbrMaterialBlock(cfg.lightingCfg.maxNumberOfLights, reflectionMaps, brdfLut, cfg.lightingCfg.normalLightRange) {

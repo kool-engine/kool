@@ -3,20 +3,16 @@ package de.fabmax.kool.demo.deferred2
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Vec2i
-import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.NormalLightRange
-import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
-import de.fabmax.kool.modules.ksl.blocks.pbrMaterialBlock
-import de.fabmax.kool.modules.ksl.blocks.sceneLightData
+import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.MemoryLayout
-import de.fabmax.kool.util.Struct
+import de.fabmax.kool.util.ColorGradient
 
 class LightingPass(
     val gbuffers: AlternatingPair<GbufferPass>,
@@ -25,6 +21,7 @@ class LightingPass(
     size: Vec2i,
     var ssaoMap: Texture2d,
     private val ibl: EnvironmentMap,
+    val pipeline: Deferred2Pipeline,
 ) : OffscreenPass2d(
     drawNode = Node(),
     attachmentConfig = AttachmentConfig {
@@ -36,7 +33,7 @@ class LightingPass(
 ) {
     val lightingOutput: Texture2d get() = colorTexture!!
 
-    private val lightingShader = DeferredLightingShader()
+    private val lightingShader = DeferredLightingShader(pipeline.isScreenSpaceReflections)
 
     init {
         this.camera = camera
@@ -52,29 +49,23 @@ class LightingPass(
 
     fun swapBuffers() {
         val newGbuffer = gbuffers.newVal
-        lightingShader.swapPipelineDataCapturing(newGbuffer) {
+        lightingShader.swapPipelineData(newGbuffer) {
             depthTex = newGbuffer.depth
+            depthSmall = pipeline.aoPass.scaledDists
             encodedNormals = newGbuffer.normals
             albedoEmissionTex = newGbuffer.albedoEmission
             metalRoughnessAoTex = newGbuffer.metalRoughnessAo
             irradianceMap = ibl.irradianceMap
             reflectionMap = ibl.reflectionMap
             aoMap = ssaoMap
-
-            camData.set {
-                set(it.proj, camera.proj)
-                set(it.invView, camera.invView)
-                set(it.invViewProj, camera.invViewProj)
-                set(it.viewport, Vec4f(0f, 0f, width.toFloat(), height.toFloat()))
-                set(it.position, camera.globalPos)
-                set(it.camNear, camera.clipNear)
-            }
+            oldColor = pipeline.filterPass.filterOutput.oldVal
         }
     }
 }
 
-class DeferredLightingShader : KslShader("deferred2-lighting") {
+class DeferredLightingShader(isScreenSpaceReflections: Boolean) : KslShader("deferred2-lighting") {
     var depthTex by bindTexture2d("depth")
+    var depthSmall by bindTexture2d("depthSmall")
     var encodedNormals by bindTexture2d("encodedNormals")
     var albedoEmissionTex by bindTexture2d("albedoEmission")
     var metalRoughnessAoTex by bindTexture2d("metalRoughnessAo")
@@ -83,7 +74,8 @@ class DeferredLightingShader : KslShader("deferred2-lighting") {
     var brdf by bindTexture2d("brdf", KoolSystem.requireContext().defaultPbrBrdfLut)
     var aoMap by bindTexture2d("aoMap")
 
-    val camData = bindUniformStruct("deferredCamData", DeferredCamDataStruct)
+    var oldColor by bindTexture2d("oldColor")
+
     var ambientMapOrientation: Mat3f by bindUniformMat3("uAmbientTextureOri", Mat3f.IDENTITY)
 
     init {
@@ -92,14 +84,17 @@ class DeferredLightingShader : KslShader("deferred2-lighting") {
             cullMethod = CullMethod.NO_CULLING,
             depthTest = DepthCompareOp.ALWAYS
         )
-        program.program()
+        program.program(isScreenSpaceReflections)
+
+        bindTexture1d("tgradient", GradientTexture(ColorGradient.ROCKET))
     }
 
-    private fun KslProgram.program() {
+    private fun KslProgram.program(isScreenSpaceReflections: Boolean) {
         val uv = interStageFloat2()
         fullscreenQuadVertexStage(uv)
         fragmentStage {
             val depth = texture2d("depth", isUnfilterable = true)
+            val depthSmall = texture2d("depthSmall", isUnfilterable = true)
             val encodedNormals = texture2dInt("encodedNormals")
             val albedoEmission = texture2d("albedoEmission")
             val metalRoughnessAo = texture2d("metalRoughnessAo")
@@ -109,7 +104,7 @@ class DeferredLightingShader : KslShader("deferred2-lighting") {
             val aoMap = texture2d("aoMap")
 
             val ambientOri = uniformMat3("uAmbientTextureOri")
-            val camData = uniformStruct("deferredCamData", DeferredCamDataStruct)
+            val camData = cameraData()
 
             main {
                 val baseCoord by (uv.output * depth.size().toFloat2()).toInt2()
@@ -118,10 +113,10 @@ class DeferredLightingShader : KslShader("deferred2-lighting") {
                     discard()
                 }
 
-                val camNear by camData[DeferredCamDataStruct.camNear]
-                val camPos by camData[DeferredCamDataStruct.position]
-                val invView by camData[DeferredCamDataStruct.invView]
-                val invViewProj by camData[DeferredCamDataStruct.invViewProj]
+                val camNear by camData.clipNear
+                val camPos by camData.position
+                val invView by camData.invViewMat
+                val invViewProj by camData.invViewProjMat
                 val size by depth.size()
                 val worldPos by unprojectBaseCoord(depthSample, baseCoord, size, camNear, invViewProj).xyz
                 val ssao by aoMap.load(baseCoord, lod = 0.const).x
@@ -159,25 +154,134 @@ class DeferredLightingShader : KslShader("deferred2-lighting") {
                     inAoFactor(ao)
                     inAmbientOrientation(ambientOri)
 
-                    inReflectionMapWeights(float2Value(1f, 0f))
-                    inReflectionStrength(1f.const3)
-
                     setLightData(lightData, shadowFactors, 1f.const)
                 }
-                colorOutput(material.outColor)
+
+                if (isScreenSpaceReflections) {
+                    val oldColor = texture2d("oldColor")
+                    val screenReflection by screenReflect(material, viewNormal, depthSmall, oldColor)
+                    val finalColor by material.outAmbient + material.outLight + screenReflection //+ emissive
+                    colorOutput(finalColor)
+//                    colorOutput(screenReflection)
+                } else {
+                    colorOutput(material.outColor)
+                }
+
                 outDepth set depthSample
-//                colorOutput(viewNormal * 0.5f.const + 0.5f.const)
-//                colorOutput(float3Value(ssao, ssao, ssao))
             }
         }
     }
 }
 
-object DeferredCamDataStruct : Struct("DeferredCameraData", MemoryLayout.Std140) {
-    val proj = mat4("projMat")
-    val invView = mat4("invView")
-    val invViewProj = mat4("invViewProjMat")
-    val viewport = float4("viewport")
-    val position = float3("position")
-    val camNear = float1("camClipNear")
+context(_: KslProgram, _: KslShaderStage)
+fun KslScopeBuilder.screenReflect(
+    material: PbrMaterialBlock,
+    viewNormal: KslExprFloat3,
+    viewDists: KslUniform<KslColorSampler2d>,
+    oldColor: KslUniform<KslColorSampler2d>,
+): KslExprFloat3 {
+    val camData = cameraData()
+
+    val fnProjViewPos = functionFloat2("fnProiViewPos") {
+        val viewPos = paramFloat3("viewPos")
+        body {
+            val p by camData.projMat * float4Value(viewPos, 1f)
+            p.xy / p.w * float2Value(0.5f, -0.5f) + 0.5f.const
+        }
+    }
+
+    val fnDepthDelta = functionFloat1("fnDepthDelta") {
+        val uv = paramFloat2("uv")
+        val refDepth = paramFloat1("refDepth")
+        body {
+            val texSz by viewDists.size().toFloat2()
+            val uvi by (uv * texSz).toInt2()
+            viewDists.load(uvi, lod = 0.const).x - refDepth
+        }
+    }
+
+    val fnCastRay = functionFloat3("fnCastRay") {
+        val origin = paramFloat3("origin")
+        val rayDir = paramFloat3("rayDir")
+        val noise = paramFloat3("noise")
+
+        body {
+            val baseDist by -origin.z
+            val dError by 0f.const
+            val stepUv by 0f.const2
+            val isHit by false.const
+            val step by baseDist * 0.025f.const + noise.x * 0.01f.const
+            val prevStep by 0f.const
+            val stepScale by 1f.const
+            val maxIncrease by 4f.const
+            val directionFac by abs(dot(rayDir, normalize(origin)))
+
+            val numSteps by 0.const
+
+            repeat(16.const) {
+                numSteps += 1.const
+                val prevStepSize by abs(step - prevStep)
+                val stepPos by origin + rayDir * step
+                stepUv set fnProjViewPos(stepPos)
+                dError set fnDepthDelta(stepUv, -stepPos.z) * stepScale
+                `if`(abs(dError) lt step / 50f.const) {
+                    isHit set true.const
+                    `break`()
+                }
+                `if`((stepUv.x lt 0f.const) or (stepUv.x gt 1f.const) or (stepUv.y lt 0f.const) or (stepUv.y gt 1f.const)) {
+                    `break`()
+                }
+
+                val nextStep by clamp(dError * (0.75f.const + noise.y * 0.5f.const), -prevStepSize * maxIncrease, prevStepSize * maxIncrease)
+                val foregroundObjThresh by max(prevStepSize, baseDist * 0.05f.const / directionFac)
+                `if`(-nextStep gt foregroundObjThresh) {
+                    prevStep set step
+                    step += prevStepSize
+                }.elseIf(step + nextStep lt prevStep) {
+                    stepScale *= 0.5f.const
+                }.`else` {
+                    prevStep set step
+                    step += nextStep
+                }
+            }
+
+            val result by 0f.const3
+            `if`(isHit) {
+                result set float3Value(stepUv, 1f.const)
+            }
+            result
+
+//            texture1d("tgradient").sample(numSteps.toFloat1() / 16f.const).rgb
+        }
+    }
+
+    val reflectionColorOut by material.outSpecular
+    `if`(material.inRoughness lt 0.9f.const) {
+        val viewPos by (camData.viewMat * float4Value(material.inFragmentPos, 1f)).xyz
+        val noise1 by noise43(float4Value(viewPos, camData.frameIndex.toFloat1()))
+        val noise2 by noise13(noise1.x)
+        val reflectionColor by 0f.const3
+        val reflectionWeight by 0f.const
+        val rayDir by reflect(normalize(viewPos), viewNormal)
+
+        val rayDir1 by normalize(rayDir + (noise1 - 0.5f.const) * material.inRoughness * 0.35f.const)
+        val rayResult1 by fnCastRay(viewPos, rayDir1, noise1)
+        `if`(rayResult1.z gt 0f.const) {
+            reflectionColor += oldColor.sample(rayResult1.xy).rgb * rayResult1.z
+            reflectionWeight += rayResult1.z
+        }
+        val rayDir2 by normalize(rayDir + (noise2 - 0.5f.const) * material.inRoughness * 0.35f.const)
+        val rayResult2 by fnCastRay(viewPos, rayDir2, noise2)
+        `if`(rayResult2.z gt 0f.const) {
+            reflectionColor += oldColor.sample(rayResult2.xy).rgb * rayResult2.z
+            reflectionWeight += rayResult2.z
+        }
+
+        val roughWeight by 1f.const - smoothStep(0.85f.const, 0.9f.const, material.inRoughness)
+        `if`(reflectionWeight gt 0f.const) {
+            reflectionColorOut set mix(material.outSpecular, reflectionColor / reflectionWeight, saturate(reflectionWeight) * roughWeight)
+        }
+//        reflectionColorOut set rayResult1
+    }
+    return reflectionColorOut * material.outSpecularFactor
 }

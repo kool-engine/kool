@@ -55,7 +55,7 @@ class TemporalFilterPass(
     }
 
     fun swapBuffers() {
-        temporalShader.swapPipelineDataCapturing(filterOutput.newVal) {
+        temporalShader.swapPipelineData(filterOutput.newVal) {
             val newGbuffer = gbuffers.newVal
             val oldGbuffer = gbuffers.oldVal
 
