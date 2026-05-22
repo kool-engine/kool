@@ -83,6 +83,8 @@ class SdlWindow(internal val handle: Long, width: Int, height: Int, title: Strin
 
     var isCloseRequested = false; private set
 
+    private var isIconSet = false
+
     init {
         if (KoolSystem.platform.isMacOs) {
             // workaround for https://github.com/libsdl-org/SDL/issues/13920
@@ -101,11 +103,6 @@ class SdlWindow(internal val handle: Long, width: Int, height: Int, title: Strin
             parentScreenScale = SDL_GetWindowDisplayScale(handle)
         }
         updateSizesAndScales()
-
-        val iconList = KoolSystem.configJvm.windowIcon.ifEmpty { KoolWindowJvm.loadDefaultWindowIconSet() }
-        if (iconList.isNotEmpty()) {
-            setWindowIcon(iconList)
-        }
     }
 
     override fun setSizeOnScreen(size: Vec2i) {
@@ -188,8 +185,6 @@ class SdlWindow(internal val handle: Long, width: Int, height: Int, title: Strin
         when (window.type) {
             SdlEventType.WINDOW_MOUSE_ENTER -> isMouseOverWindow = true
             SdlEventType.WINDOW_MOUSE_LEAVE -> isMouseOverWindow = false
-            SdlEventType.WINDOW_SHOWN -> flags = flags.copy(isVisible = true)
-            SdlEventType.WINDOW_HIDDEN -> flags = flags.copy(isVisible = true)
             SdlEventType.WINDOW_MINIMIZED -> flags = flags.copy(isMinimized = true)
             SdlEventType.WINDOW_MAXIMIZED -> flags = flags.copy(isMaximized = true)
             SdlEventType.WINDOW_RESTORED -> flags = flags.copy(isMinimized = false, isMaximized = false)
@@ -204,7 +199,22 @@ class SdlWindow(internal val handle: Long, width: Int, height: Int, title: Strin
             SdlEventType.WINDOW_PIXEL_SIZE_CHANGED -> updateFramebufferSize(window)
             SdlEventType.WINDOW_DISPLAY_SCALE_CHANGED -> updateScreenScale()
             SdlEventType.WINDOW_CLOSE_REQUESTED -> { isCloseRequested = true }
+            SdlEventType.WINDOW_HIDDEN -> flags = flags.copy(isVisible = true)
+            SdlEventType.WINDOW_SHOWN -> {
+                flags = flags.copy(isVisible = true)
+                if (!isIconSet) {
+                    isIconSet = true
+                    initWindowIcon()
+                }
+            }
             else -> logD { "Unhandled window event: ${window.name}" }
+        }
+    }
+
+    private fun initWindowIcon() {
+        val iconList = KoolSystem.configJvm.windowIcon.ifEmpty { KoolWindowJvm.loadDefaultWindowIconSet() }
+        if (iconList.isNotEmpty()) {
+            setWindowIcon(iconList)
         }
     }
 
