@@ -28,23 +28,23 @@ import kotlin.math.round
 
 class Deferred2Demo : DemoScene("Deferred2 Demo") {
 
-    val ibl by hdriImage("hdri/newport_loft.rgbe.png")
-//    val ibl by hdriImage("hdri/shanghai_bund_1k.rgbe.png")
-//    val ibl by hdriImage("hdri/circus_arena_1k.rgbe.png")
-//    val ibl by hdriImage("hdri/syferfontein_0d_clear_1k.rgbe.png")
-//    val ibl by hdriImage("hdri/colorful_studio_1k.rgbe.png")
-//    val ibl by hdriImage("hdri/spruit_sunrise_1k.rgbe.png")
-//    val ibl by hdriImage("hdri/mossy_forest_1k.rgbe.png")
+    val ibl by hdriImage("${DemoLoader.hdriPath}/newport_loft.rgbe.png")
+//    val ibl by hdriImage("${DemoLoader.hdriPath}/shanghai_bund_1k.rgbe.png")
+//    val ibl by hdriImage("${DemoLoader.hdriPath}/circus_arena_1k.rgbe.png")
+//    val ibl by hdriImage("${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png")
+//    val ibl by hdriImage("${DemoLoader.hdriPath}/colorful_studio_1k.rgbe.png")
+//    val ibl by hdriImage("${DemoLoader.hdriPath}/spruit_sunrise_1k.rgbe.png")
+//    val ibl by hdriImage("${DemoLoader.hdriPath}/mossy_forest_1k.rgbe.png")
 
-    val teapot by model("models/teapot.gltf.gz", GltfLoadConfig(applyMaterials = false))
+    val teapot by model("${DemoLoader.modelPath}/teapot.gltf.gz", GltfLoadConfig(applyMaterials = false))
 
-    private val albedoMap by texture2d("materials/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_COL_2K_METALNESS.jpg")
-    private val normalMap by texture2d("materials/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_NRM_2K_METALNESS.jpg")
-    private val metallicMap by texture2d("materials/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_METALNESS_2K_METALNESS.jpg")
-    private val roughnessMap by texture2d("materials/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_ROUGHNESS_2K_METALNESS.jpg")
-    private val aoMap by texture2d("materials/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_AO_2K_METALNESS.jpg")
-    //private val uvChecker by texture2d("materials/uv_checker_map.jpg")
-    private val uvChecker by texture2d("materials/kool-test-tex.png")
+    private val albedoMap by texture2d("${DemoLoader.materialPath}/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_COL_2K_METALNESS.jpg")
+    private val normalMap by texture2d("${DemoLoader.materialPath}/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_NRM_2K_METALNESS.jpg")
+    private val metallicMap by texture2d("${DemoLoader.materialPath}/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_METALNESS_2K_METALNESS.jpg")
+    private val roughnessMap by texture2d("${DemoLoader.materialPath}/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_ROUGHNESS_2K_METALNESS.jpg")
+    private val aoMap by texture2d("${DemoLoader.materialPath}/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_AO_2K_METALNESS.jpg")
+//    private val uvChecker by texture2d("${DemoLoader.materialPath}/uv_checker_map.jpg")
+    private val uvChecker by texture2d("${DemoLoader.materialPath}/kool-test-tex.png")
 
     private lateinit var pipeline: Deferred2Pipeline
     private lateinit var bloomPass: BloomPass
