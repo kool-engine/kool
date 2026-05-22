@@ -21,7 +21,7 @@ class LightingPass(
     size: Vec2i,
     var ssaoMap: Texture2d,
     private val ibl: EnvironmentMap,
-    val pipeline: Deferred2Pipeline,
+    private val pipeline: Deferred2Pipeline,
 ) : OffscreenPass2d(
     drawNode = Node(),
     attachmentConfig = AttachmentConfig {
@@ -216,10 +216,7 @@ fun KslScopeBuilder.screenReflect(
             val maxIncrease by 4f.const
             val directionFac by abs(dot(rayDir, normalize(origin)))
 
-            val numSteps by 0.const
-
             repeat(16.const) {
-                numSteps += 1.const
                 val prevStepSize by abs(step - prevStep)
                 val stepPos by origin + rayDir * step
                 stepUv set fnProjViewPos(stepPos)
@@ -244,68 +241,61 @@ fun KslScopeBuilder.screenReflect(
                     step += nextStep
                 }
             }
-
-            val result by 0f.const3
-            `if`(isHit) {
-                result set float3Value(stepUv, 1f.const)
-            }
-            result
+            float3Value(stepUv, isHit.toFloat1())
         }
     }
 
-    val reflectionColorOut by material.outSpecular * material.outSpecularFactor * material.inAoFactor
-    `if`(material.inRoughness lt 0.9f.const) {
-        val viewPos by (camData.viewMat * float4Value(material.inFragmentPos, 1f)).xyz
-        val reflectionColor by 0f.const3
-        val reflectionWeight by 0f.const
-        val numHits by 0f.const
-        val numRays by 0f.const
-        val rayDir by reflect(normalize(viewPos), viewNormal)
+    val specFactor by material.outSpecularFactor
+    val roughFactor by material.inRoughness
+    val envReflectionColor by material.outSpecular * specFactor * material.inAoFactor
 
-        val minColor by 1000f.const3
-        val maxColor by 0f.const3
+    val viewPos by (camData.viewMat * float4Value(material.inFragmentPos, 1f)).xyz
+    val reflectionWeight by 0f.const
+    val numRays by 0f.const
+    val rayDir by reflect(normalize(viewPos), viewNormal)
+    val noise by noise33(viewPos * (camData.frameIndex % 32.const + 1.const).toFloat1())
 
-        val noise by noise33(viewPos * (camData.frameIndex % 32.const + 1.const).toFloat1())
-        repeat(3.const) {
-            val scatterOffset by (noise - 0.5f.const) * material.inRoughness * 0.5f.const
-            val scatteredRayDir by normalize(rayDir + scatterOffset)
-            val rayResult by fnCastRay(viewPos, scatteredRayDir, noise)
-            `if`(rayResult.z gt 0f.const) {
-                val sampleColor by oldColor.sample(rayResult.xy).rgb * rayResult.z * material.outSpecularFactor
-                reflectionColor += sampleColor
-                reflectionWeight += rayResult.z
-                numHits += 1f.const
-                minColor set min(minColor, sampleColor)
-                maxColor set max(maxColor, sampleColor)
-            }.`else` {
-                minColor set min(minColor, reflectionColorOut)
-                maxColor set max(maxColor, reflectionColorOut)
-            }
-            noise set noise13(noise.x)
-            numRays += 1f.const
+    val reflectionColorOut by 0f.const3
+    val minColor by 1000f.const3
+    val maxColor by 0f.const3
+    val initialRays by clamp((roughFactor * length(specFactor) * 20f.const).toInt1(), 1.const, 4.const)
+    repeat(initialRays) {
+        numRays += 1f.const
+        val scatterOffset by (noise - 0.5f.const) * roughFactor * 0.5f.const
+        val scatteredRayDir by normalize(rayDir + scatterOffset)
+        val rayResult by fnCastRay(viewPos, scatteredRayDir, noise)
+        `if`(rayResult.z gt 0f.const) {
+            val sampleColor by oldColor.sample(rayResult.xy).rgb * rayResult.z * specFactor
+            reflectionColorOut += sampleColor
+            reflectionWeight += rayResult.z
+            minColor set min(minColor, sampleColor)
+            maxColor set max(maxColor, sampleColor)
+        }.`else` {
+            reflectionColorOut += envReflectionColor
+            reflectionWeight += 1f.const
+            minColor set min(minColor, envReflectionColor)
+            maxColor set max(maxColor, envReflectionColor)
         }
-
-        `if`(numHits gt 0f.const) {
-            val thresh by length(maxColor - minColor)
-            `while`((thresh gt 0.1f.const) and (numRays lt 6f.const)) {
-                val scatterOffset by (noise - 0.5f.const) * material.inRoughness * 0.5f.const
-                val scatteredRayDir by normalize(rayDir + scatterOffset)
-                val rayResult by fnCastRay(viewPos, scatteredRayDir, noise)
-                `if`(rayResult.z gt 0f.const) {
-                    reflectionColor += oldColor.sample(rayResult.xy).rgb * rayResult.z * material.outSpecularFactor
-                    reflectionWeight += rayResult.z
-                    numHits += 1f.const
-                    thresh -= 0.1f.const
-                }
-                noise set noise13(noise.x)
-                numRays += 1f.const
-            }
-        }
-
-        val roughWeight by 1f.const - smoothStep(0.85f.const, 0.9f.const, material.inRoughness)
-        `if`(reflectionWeight gt 0f.const) {
-            reflectionColorOut set mix(reflectionColorOut, reflectionColor / reflectionWeight, saturate(reflectionWeight / numRays) * roughWeight)
-        }
+        noise set noise13(noise.x)
     }
+
+    val thresh by length(maxColor - minColor)
+    `while`((thresh gt 0.1f.const) and (numRays lt 6f.const)) {
+        numRays += 1f.const
+        val scatterOffset by (noise - 0.5f.const) * roughFactor * 0.5f.const
+        val scatteredRayDir by normalize(rayDir + scatterOffset)
+        val rayResult by fnCastRay(viewPos, scatteredRayDir, noise)
+        `if`(rayResult.z gt 0f.const) {
+            reflectionColorOut += oldColor.sample(rayResult.xy).rgb * rayResult.z * specFactor
+            reflectionWeight += rayResult.z
+            thresh -= 0.1f.const
+        }.`else` {
+            reflectionColorOut += envReflectionColor
+            reflectionWeight += 1f.const
+        }
+        noise set noise13(noise.x)
+    }
+
+    reflectionColorOut set reflectionColorOut / reflectionWeight
     return reflectionColorOut
 }
