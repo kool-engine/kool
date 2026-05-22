@@ -103,10 +103,10 @@ class PbrMaterialBlock(
 
             val brdf by brdfLut.sample(float2Value(normalDotView, roughness)).rg
             outSpecular set reflectionColor
-            outSpecularFactor set (fAmbient * brdf.r + brdf.g) / inBaseColor.a * inAoFactor
+            outSpecularFactor set (fAmbient * brdf.r + brdf.g)
             outAmbient set kDAmbient * diffuse * inAoFactor
             outLight set lo
-            outColor set outAmbient + outLight + outSpecular * outSpecularFactor
+            outColor set outAmbient + outLight + outSpecular * outSpecularFactor * inAoFactor / inBaseColor.a
         }
     }
 }

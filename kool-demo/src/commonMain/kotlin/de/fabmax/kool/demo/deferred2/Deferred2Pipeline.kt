@@ -79,7 +79,6 @@ class Deferred2Pipeline(
         scene.addOffscreenPass(gbuffers.a)
         scene.addOffscreenPass(gbuffers.b)
         scene.addComputePass(aoPass)
-//        reflectionPass?.let { scene.addComputePass(it) }
         scene.addOffscreenPass(lightingPass)
         scene.addComputePass(filterPass)
 
@@ -112,7 +111,6 @@ class Deferred2Pipeline(
                 gbuffers.a.setSize(size.x, size.y)
                 gbuffers.b.setSize(size.x, size.y)
                 aoPass.resize(size.x, size.y)
-//                reflectionPass?.resize(size)
                 lightingPass.setSize(size.x, size.y)
                 filterPass.resize(size)
                 resizeListeners.forEachUpdated { it(size) }
@@ -135,7 +133,6 @@ class Deferred2Pipeline(
 
         lightingPass.swapBuffers()
         filterPass.swapBuffers()
-//        reflectionPass?.swapBuffers()
 
         val currentGbuffer = gbuffers.newVal
         aoPass.inputShader.swapPipelineData(currentGbuffer) {
