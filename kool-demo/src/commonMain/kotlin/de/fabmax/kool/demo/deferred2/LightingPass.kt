@@ -127,7 +127,7 @@ class DeferredLightingShader(isScreenSpaceReflections: Boolean) : KslShader("def
 
                 val albedoEmission by float4Var(albedoEmission.load(baseCoord, lod = 0.const))
                 val albedo by albedoEmission.xyz
-                val emission by albedoEmission.w
+                val emissiveStrength by albedoEmission.w * 64f.const
 
                 val metalRoughnessAo by metalRoughnessAo.load(baseCoord, lod = 0.const).xyz
                 val metallic by metalRoughnessAo.x
@@ -160,7 +160,7 @@ class DeferredLightingShader(isScreenSpaceReflections: Boolean) : KslShader("def
                 if (isScreenSpaceReflections) {
                     val oldColor = texture2d("oldColor")
                     val screenReflection by screenReflect(material, viewNormal, depthSmall, oldColor)
-                    val finalColor by material.outAmbient + material.outLight + screenReflection //+ emissive
+                    val finalColor by material.outAmbient + material.outLight + screenReflection + albedo * emissiveStrength
                     colorOutput(finalColor)
 //                    colorOutput(screenReflection)
                 } else {
@@ -250,38 +250,62 @@ fun KslScopeBuilder.screenReflect(
                 result set float3Value(stepUv, 1f.const)
             }
             result
-
-//            texture1d("tgradient").sample(numSteps.toFloat1() / 16f.const).rgb
         }
     }
 
-    val reflectionColorOut by material.outSpecular
+    val reflectionColorOut by material.outSpecular * material.outSpecularFactor * material.inAoFactor
     `if`(material.inRoughness lt 0.9f.const) {
         val viewPos by (camData.viewMat * float4Value(material.inFragmentPos, 1f)).xyz
-        val noise1 by noise43(float4Value(viewPos, camData.frameIndex.toFloat1()))
-        val noise2 by noise13(noise1.x)
         val reflectionColor by 0f.const3
         val reflectionWeight by 0f.const
+        val numHits by 0f.const
+        val numRays by 0f.const
         val rayDir by reflect(normalize(viewPos), viewNormal)
 
-        val rayDir1 by normalize(rayDir + (noise1 - 0.5f.const) * material.inRoughness * 0.35f.const)
-        val rayResult1 by fnCastRay(viewPos, rayDir1, noise1)
-        `if`(rayResult1.z gt 0f.const) {
-            reflectionColor += oldColor.sample(rayResult1.xy).rgb * rayResult1.z
-            reflectionWeight += rayResult1.z
+        val minColor by 1000f.const3
+        val maxColor by 0f.const3
+
+        val noise by noise33(viewPos * (camData.frameIndex % 32.const + 1.const).toFloat1())
+        repeat(3.const) {
+            val scatterOffset by (noise - 0.5f.const) * material.inRoughness * 0.5f.const
+            val scatteredRayDir by normalize(rayDir + scatterOffset)
+            val rayResult by fnCastRay(viewPos, scatteredRayDir, noise)
+            `if`(rayResult.z gt 0f.const) {
+                val sampleColor by oldColor.sample(rayResult.xy).rgb * rayResult.z * material.outSpecularFactor
+                reflectionColor += sampleColor
+                reflectionWeight += rayResult.z
+                numHits += 1f.const
+                minColor set min(minColor, sampleColor)
+                maxColor set max(maxColor, sampleColor)
+            }.`else` {
+                minColor set min(minColor, reflectionColorOut)
+                maxColor set max(maxColor, reflectionColorOut)
+            }
+            noise set noise13(noise.x)
+            numRays += 1f.const
         }
-        val rayDir2 by normalize(rayDir + (noise2 - 0.5f.const) * material.inRoughness * 0.35f.const)
-        val rayResult2 by fnCastRay(viewPos, rayDir2, noise2)
-        `if`(rayResult2.z gt 0f.const) {
-            reflectionColor += oldColor.sample(rayResult2.xy).rgb * rayResult2.z
-            reflectionWeight += rayResult2.z
+
+        `if`(numHits gt 0f.const) {
+            val thresh by length(maxColor - minColor)
+            `while`((thresh gt 0.1f.const) and (numRays lt 6f.const)) {
+                val scatterOffset by (noise - 0.5f.const) * material.inRoughness * 0.5f.const
+                val scatteredRayDir by normalize(rayDir + scatterOffset)
+                val rayResult by fnCastRay(viewPos, scatteredRayDir, noise)
+                `if`(rayResult.z gt 0f.const) {
+                    reflectionColor += oldColor.sample(rayResult.xy).rgb * rayResult.z * material.outSpecularFactor
+                    reflectionWeight += rayResult.z
+                    numHits += 1f.const
+                    thresh -= 0.1f.const
+                }
+                noise set noise13(noise.x)
+                numRays += 1f.const
+            }
         }
 
         val roughWeight by 1f.const - smoothStep(0.85f.const, 0.9f.const, material.inRoughness)
         `if`(reflectionWeight gt 0f.const) {
-            reflectionColorOut set mix(material.outSpecular, reflectionColor / reflectionWeight, saturate(reflectionWeight) * roughWeight)
+            reflectionColorOut set mix(reflectionColorOut, reflectionColor / reflectionWeight, saturate(reflectionWeight / numRays) * roughWeight)
         }
-//        reflectionColorOut set rayResult1
     }
-    return reflectionColorOut * material.outSpecularFactor
+    return reflectionColorOut
 }
