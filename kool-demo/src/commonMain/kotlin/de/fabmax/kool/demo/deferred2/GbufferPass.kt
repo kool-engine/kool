@@ -26,7 +26,7 @@ class GbufferPass(
 ) : OffscreenPass2d(
     drawNode = content,
     attachmentConfig = AttachmentConfig {
-        // albedo, a * 255 = emission strength
+        // albedo, a * 64 = emission strength
         addColor(TexFormat.RGBA, filterMethod = FilterMethod.NEAREST)
         // metal, roughness, ao, [empty: a, flags maybe?]
         addColor(TexFormat.RGBA, filterMethod = FilterMethod.NEAREST)
@@ -160,7 +160,7 @@ class GbufferShader(val config: GbufferShaderConfig) : KslShader("deferred2-gbuf
                 val metallic = float1Port("metallic", fragmentPropertyBlock(config.metallicCfg).outProperty)
                 val aoFactor = float1Port("aoFactor", fragmentPropertyBlock(config.aoCfg).outProperty)
 
-                colorOutput(float4Value(baseColor.rgb, emissionStrength), location = 0)
+                colorOutput(float4Value(baseColor.rgb, emissionStrength / 64f.const), location = 0)
                 colorOutput(float4Value(metallic, roughness, aoFactor, 0f.const), location = 1)
                 intOutput(int4Value(encodeNormalInt(normal), 0.const, 0.const, 0.const), location = 2)
                 intOutput(int4Value(objectId.output, 0.const, 0.const, 0.const), location = 3)

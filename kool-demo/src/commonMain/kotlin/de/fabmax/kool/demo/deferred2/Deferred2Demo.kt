@@ -8,6 +8,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
 import de.fabmax.kool.modules.ksl.lang.*
@@ -22,6 +23,8 @@ import de.fabmax.kool.pipeline.swapPipelineData
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
+import kotlin.math.ceil
+import kotlin.math.round
 
 class Deferred2Demo : DemoScene("Deferred2 Demo") {
 
@@ -69,7 +72,9 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
         filterWeight.onChange { _, value -> pipeline.filterPass.filterWeight = value.toFloat() }
 
         content.apply {
-            val orbitCam = orbitCamera(pipeline.camera) { }
+            val orbitCam = orbitCamera(pipeline.camera) {
+                setRotation(100f, -7f)
+            }
             addNode(orbitCam)
         }
 
@@ -114,6 +119,7 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
             addColorMesh {
                 generate {
                     color = MdColor.PINK.toLinear()
+//                    color = Color.WHITE
                     cube { origin.set(-2.5f, 0f, 0f)}
                     color = MdColor.LIGHT_BLUE.toLinear()
                     cube {
@@ -122,8 +128,23 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
                     }
                 }
                 shader = gbufferShader(objectId = 1) {
-                    color { vertexColor() }
+                    color {
+                        vertexColor()
+                        uniformColor(uniformName = "uBaseCol", blendMode = ColorBlockConfig.BlendMode.Multiply)
+                    }
                     roughness { constProperty(0.15f) }
+                    emission { uniformProperty(10f, "uEmi") }
+                }.apply {
+                    var baseColFac by bindUniformColor("uBaseCol")
+                    var emi by bindUniformFloat1("uEmi")
+                    onUpdate {
+                        val str = 10f //(sin(Time.gameTime.toFloat() * 4f) + 1f) * 16f
+                        var e = str
+                        e = ceil(e * 4f) / 4f
+                        val b = if (e > 0f) round(str / e * 255f) / 255f else 0f
+                        baseColFac = Color(b, b, b)
+                        emi = e
+                    }
                 }
             }
             addColorMesh {
@@ -206,7 +227,7 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
             }
 
             val modelMesh = teapot.meshes.values.first().apply {
-                transform.translate(0f, -0.5f, 5f).scale(0.5f)
+                transform.translate(0f, -0.5f, 5f).scale(0.5f).rotate(20f.deg, Vec3f.Y_AXIS)
                 shader = gbufferShader(objectId = 5) {
                     color {
                         constColor(MdColor.LIME toneLin 500)
@@ -259,11 +280,12 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
         MenuSlider1("Roughness", groundRoughness.use(), 0f, 1f) {
             groundRoughness.set(it)
         }
+        Text("Timings".l) { sectionTitleStyle() }
         MenuRow {
             Column(width = Grow.Std) {
                 Text("G-Buffer:") { }
                 Text("Ambient Occlusion:") { }
-                Text("Lighting:") { }
+                Text("Lighting + Reflections:") { }
                 Text("Filter:") { }
                 Text("Bloom:") { }
             }
