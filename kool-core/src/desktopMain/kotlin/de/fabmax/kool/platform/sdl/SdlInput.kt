@@ -66,7 +66,7 @@ class SdlInput(val window: SdlWindow) : PlatformInput {
     }
 
     internal fun handleMouseMotion(event: SdlEvent.Motion) {
-        val baseScale = if (KoolSystem.platform.isMacOs /*|| isWayland*/) window.parentScreenScale else 1f
+        val baseScale = if (KoolSystem.platform.isMacOs || KoolSystem.platform.isWayland) window.parentScreenScale else 1f
         val scale = baseScale * window.renderResolutionFactor
 
         if (cursorMode == CursorMode.NORMAL) {
