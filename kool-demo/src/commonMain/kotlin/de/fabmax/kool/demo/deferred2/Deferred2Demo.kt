@@ -23,6 +23,7 @@ import de.fabmax.kool.pipeline.swapPipelineData
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
+import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.round
 
@@ -263,7 +264,10 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
             }
         }
         MenuRow {
-            var scaleIndex by remember(2)
+            var scaleIndex by remember {
+                val initialScale = ScaleItem.items.minBy { abs(1f - it.scale * UiScale.windowScale.value) }
+                mutableStateOf(ScaleItem.items.indexOf(initialScale))
+            }
             Text("Render scale".l) { labelStyle(120.dp) }
             ComboBox {
                 modifier

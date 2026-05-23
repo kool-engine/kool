@@ -3,6 +3,7 @@ package de.fabmax.kool.demo.deferred2
 import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.BufferedImageData2d
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture2d
@@ -28,17 +29,18 @@ class Deferred2Pipeline(
     var renderScale: Float = 1f,
     var tsaa: List<Vec2f> = TSAA_4,
 ) {
-    val camera = PerspectiveCamera()
     val size: Vec2i get() = Vec2i(
         (scene.mainRenderPass.viewport.width * renderScale).toInt().coerceAtLeast(16),
         (scene.mainRenderPass.viewport.height * renderScale).toInt().coerceAtLeast(16)
     )
+    val camera = PerspectiveCamera()
+    private val camDataBuffer = StructBuffer(DeferredCamDataLayout, 1)
+    val camData = camDataBuffer.asStorageBuffer()
 
     val gbuffers = AlternatingPair {
         val suff = if (it) "A" else "B"
-        GbufferPass(content, camera, size, "deferred2-gbuffer-pass-$suff", this)
+        GbufferPass(size, "deferred2-gbuffer-pass-$suff", this)
     }
-
     val aoPass: ComputeAoPass = ComputeAoPass(
         camera = camera,
         inputDepth = gbuffers.a.depth,
@@ -46,30 +48,14 @@ class Deferred2Pipeline(
         initialSize = size,
         distFormat = TexFormat.R_F32,
     )
+    val lightingPass = LightingPass(size = size, pipeline = this)
+    val filterPass = TemporalFilterPass(size = size, pipeline = this)
 
     private val swapListeners = BufferedList<() -> Unit>()
     private val resizeListeners = BufferedList<(Vec2i) -> Unit>()
 
-    val lightingPass = LightingPass(
-        gbuffers = gbuffers,
-        camera = camera,
-        lighting = lighting,
-        size = size,
-        ssaoMap = aoPass.aoMap,
-        ibl = ibl,
-        pipeline = this,
-    )
-    val filterPass = TemporalFilterPass(
-        lightingOutput = lightingPass.lightingOutput,
-        gbuffers = gbuffers,
-        camera = camera,
-        size = size,
-        pipeline = this,
-    )
-
     internal val prevViewProjMats = List(1024) { MutableMat4f() }
-    internal val oldViewProj = MutableMat4f()
-    private val prevViewProj = MutableMat4f()
+    private val oldViewProj = MutableMat4f()
 
     init {
         aoPass.kernelSize = 8
@@ -81,7 +67,6 @@ class Deferred2Pipeline(
         scene.addComputePass(aoPass)
         scene.addOffscreenPass(lightingPass)
         scene.addComputePass(filterPass)
-
 
         gbuffers.a.isProfileGpu = true
         gbuffers.b.isProfileGpu = true
@@ -128,8 +113,18 @@ class Deferred2Pipeline(
     }
 
     private fun swapBuffers() {
-        oldViewProj.set(prevViewProj)
-        prevViewProj.set(camera.viewProj)
+        camDataBuffer.set(0) {
+            set(it.proj, camera.proj)
+            set(it.view, camera.view)
+            set(it.invView, camera.invView)
+            set(it.invViewProj, camera.invViewProj)
+            set(it.oldViewProj, oldViewProj)
+            set(it.camPosition, camera.globalPos)
+            set(it.camNear, camera.clipNear)
+            set(it.frameIdx, Time.frameCount)
+        }
+        camData.uploadData(camDataBuffer)
+        oldViewProj.set(camera.viewProj)
 
         lightingPass.swapBuffers()
         filterPass.swapBuffers()
@@ -243,3 +238,31 @@ class AlternatingPair<out T>(factory: (Boolean) -> T) {
 object ObjModelMatLayout : Struct("obj_model_mat", MemoryLayout.Std140) {
     val reprojectMat = mat4("reprojectMat")
 }
+
+object DeferredCamDataLayout : Struct("deferred_cam_data", MemoryLayout.Std140) {
+    val proj = mat4("proj")
+    val view = mat4("view")
+    val invView = mat4("invView")
+    val invViewProj = mat4("invViewProj")
+    val oldViewProj = mat4("oldViewProj")
+    val camPosition = float3("camPosition")
+    val camNear = float1("camClipNear")
+    val frameIdx = int1("frameIdx")
+}
+
+context(_: KslScopeBuilder)
+val KslStructStorage<DeferredCamDataLayout>.proj: KslExprMat4 get() = this[0.const][DeferredCamDataLayout.proj]
+context(_: KslScopeBuilder)
+val KslStructStorage<DeferredCamDataLayout>.view: KslExprMat4 get() = this[0.const][DeferredCamDataLayout.view]
+context(_: KslScopeBuilder)
+val KslStructStorage<DeferredCamDataLayout>.invView: KslExprMat4 get() = this[0.const][DeferredCamDataLayout.invView]
+context(_: KslScopeBuilder)
+val KslStructStorage<DeferredCamDataLayout>.invViewProj: KslExprMat4 get() = this[0.const][DeferredCamDataLayout.invViewProj]
+context(_: KslScopeBuilder)
+val KslStructStorage<DeferredCamDataLayout>.oldViewProj: KslExprMat4 get() = this[0.const][DeferredCamDataLayout.oldViewProj]
+context(_: KslScopeBuilder)
+val KslStructStorage<DeferredCamDataLayout>.camPosition: KslExprFloat3 get() = this[0.const][DeferredCamDataLayout.camPosition]
+context(_: KslScopeBuilder)
+val KslStructStorage<DeferredCamDataLayout>.camNear: KslExprFloat1 get() = this[0.const][DeferredCamDataLayout.camNear]
+context(_: KslScopeBuilder)
+val KslStructStorage<DeferredCamDataLayout>.frameIdx: KslExprInt1 get() = this[0.const][DeferredCamDataLayout.frameIdx]

@@ -6,6 +6,7 @@ import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.SsaoComponentData
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ao.AoPipeline
+import de.fabmax.kool.pipeline.ao.AoRadius
 import de.fabmax.kool.pipeline.ao.ForwardAoPipeline
 import de.fabmax.kool.pipeline.ao.LegacyAoPipeline
 import de.fabmax.kool.scene.Camera
@@ -61,7 +62,7 @@ class SsaoComponent(
         aoPipeline?.apply {
             (this as? LegacyAoPipeline)?.mapSize = ssaoSettings.mapSize
             kernelSize = ssaoSettings.samples
-            radius = ssaoSettings.radius * radiusSign
+            radius = AoRadius(ssaoSettings.radius * radiusSign)
             strength = ssaoSettings.strength
             falloff = ssaoSettings.power
         }
