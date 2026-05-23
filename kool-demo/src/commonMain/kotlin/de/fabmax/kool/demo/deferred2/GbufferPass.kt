@@ -9,8 +9,6 @@ import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shading.AlphaMode
-import de.fabmax.kool.scene.Camera
-import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.vertexAttrib
 import de.fabmax.kool.util.Color
@@ -18,13 +16,11 @@ import de.fabmax.kool.util.StructBuffer
 import de.fabmax.kool.util.asStorageBuffer
 
 class GbufferPass(
-    content: Node,
-    camera: Camera,
     initialSize: Vec2i,
     name: String,
     val pipeline: Deferred2Pipeline,
 ) : OffscreenPass2d(
-    drawNode = content,
+    drawNode = pipeline.content,
     attachmentConfig = AttachmentConfig {
         // albedo, a * 64 = emission strength
         addColor(TexFormat.RGBA, filterMethod = FilterMethod.NEAREST)
@@ -50,7 +46,7 @@ class GbufferPass(
     val objModelMatsGpu = objModelMats.asStorageBuffer()
 
     init {
-        this.camera = camera
+        camera = pipeline.camera
         val inverseBuf = MutableMat4f()
         val reprojectBuf = MutableMat4f()
         onAfterCollectDrawCommands += { viewData ->

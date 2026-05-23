@@ -64,14 +64,3 @@ class UnprojectUv(
         }
     }
 }
-
-fun KslScopeBuilder.unprojectUv(
-    depth: KslUniform<KslColorSampler2d>,
-    uv: KslExprFloat2,
-    camNear: KslExprFloat1,
-    invProj: KslExprMat4,
-    invView: KslExprMat4,
-): KslExprFloat4 {
-    val func = parentStage.getOrCreateFunction("fnUnprojectUv") { UnprojectUv(depth, this) }
-    return func(uv, camNear, invProj, invView)
-}

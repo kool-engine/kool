@@ -10,17 +10,14 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.pipeline.ibl.EnvironmentMap
-import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.Skybox
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.util.ColorGradient
 
 class LightingPass(
-    val gbuffers: AlternatingPair<GbufferPass>,
-    camera: Camera,
-    lighting: Lighting?,
     size: Vec2i,
-    var ssaoMap: Texture2d,
-    private val ibl: EnvironmentMap,
     private val pipeline: Deferred2Pipeline,
 ) : OffscreenPass2d(
     drawNode = Node(),
@@ -36,28 +33,29 @@ class LightingPass(
     private val lightingShader = DeferredLightingShader(pipeline.isScreenSpaceReflections)
 
     init {
-        this.camera = camera
-        this.lighting = lighting
+        camera = pipeline.camera
+        lighting = pipeline.lighting
 
         val outputMesh = Mesh(VertexLayouts.PositionTexCoord).apply {
             generateFullscreenQuad()
             shader = lightingShader
         }
         drawNode.addNode(outputMesh)
-        drawNode.addNode(Skybox.cube(ibl.reflectionMap, 2f, colorSpaceConversion = ColorSpaceConversion.AsIs))
+        drawNode.addNode(Skybox.cube(pipeline.ibl.reflectionMap, 2f, colorSpaceConversion = ColorSpaceConversion.AsIs))
     }
 
     fun swapBuffers() {
-        val newGbuffer = gbuffers.newVal
+        val newGbuffer = pipeline.gbuffers.newVal
         lightingShader.swapPipelineData(newGbuffer) {
             depthTex = newGbuffer.depth
             depthSmall = pipeline.aoPass.scaledDists
             encodedNormals = newGbuffer.normals
             albedoEmissionTex = newGbuffer.albedoEmission
             metalRoughnessAoTex = newGbuffer.metalRoughnessAo
-            irradianceMap = ibl.irradianceMap
-            reflectionMap = ibl.reflectionMap
-            aoMap = ssaoMap
+            irradianceMap = pipeline.ibl.irradianceMap
+            reflectionMap = pipeline.ibl.reflectionMap
+            aoMap = pipeline.aoPass.aoMap
+            camData = pipeline.camData
             oldColor = pipeline.filterPass.filterOutput.oldVal
         }
     }
@@ -73,6 +71,7 @@ class DeferredLightingShader(isScreenSpaceReflections: Boolean) : KslShader("def
     var reflectionMap by bindTextureCube("reflection")
     var brdf by bindTexture2d("brdf", KoolSystem.requireContext().defaultPbrBrdfLut)
     var aoMap by bindTexture2d("aoMap")
+    var camData by bindStorage("camData")
 
     var oldColor by bindTexture2d("oldColor")
 
@@ -104,7 +103,8 @@ class DeferredLightingShader(isScreenSpaceReflections: Boolean) : KslShader("def
             val aoMap = texture2d("aoMap")
 
             val ambientOri = uniformMat3("uAmbientTextureOri")
-            val camData = cameraData()
+            val camDataLayout = struct(DeferredCamDataLayout)
+            val camData = storage("camData", camDataLayout)
 
             main {
                 val baseCoord by (uv.output * depth.size().toFloat2()).toInt2()
@@ -113,10 +113,10 @@ class DeferredLightingShader(isScreenSpaceReflections: Boolean) : KslShader("def
                     discard()
                 }
 
-                val camNear by camData.clipNear
-                val camPos by camData.position
-                val invView by camData.invViewMat
-                val invViewProj by camData.invViewProjMat
+                val camNear by camData.camNear
+                val camPos by camData.camPosition
+                val invView by camData.invView
+                val invViewProj by camData.invViewProj
                 val size by depth.size()
                 val worldPos by unprojectBaseCoord(depthSample, baseCoord, size, camNear, invViewProj).xyz
                 val ssao by aoMap.load(baseCoord, lod = 0.const).x
@@ -159,7 +159,7 @@ class DeferredLightingShader(isScreenSpaceReflections: Boolean) : KslShader("def
 
                 if (isScreenSpaceReflections) {
                     val oldColor = texture2d("oldColor")
-                    val screenReflection by screenReflect(material, viewNormal, depthSmall, oldColor)
+                    val screenReflection by screenReflect(material, viewNormal, depthSmall, oldColor, camData)
                     val finalColor by material.outAmbient + material.outLight + screenReflection + albedo * emissiveStrength
                     colorOutput(finalColor)
 //                    colorOutput(screenReflection)
@@ -179,13 +179,12 @@ fun KslScopeBuilder.screenReflect(
     viewNormal: KslExprFloat3,
     viewDists: KslUniform<KslColorSampler2d>,
     oldColor: KslUniform<KslColorSampler2d>,
+    camData: KslStructStorage<DeferredCamDataLayout>
 ): KslExprFloat3 {
-    val camData = cameraData()
-
     val fnProjViewPos = functionFloat2("fnProiViewPos") {
         val viewPos = paramFloat3("viewPos")
         body {
-            val p by camData.projMat * float4Value(viewPos, 1f)
+            val p by camData.proj * float4Value(viewPos, 1f)
             p.xy / p.w * float2Value(0.5f, -0.5f) + 0.5f.const
         }
     }
@@ -249,11 +248,11 @@ fun KslScopeBuilder.screenReflect(
     val roughFactor by material.inRoughness
     val envReflectionColor by material.outSpecular * specFactor * material.inAoFactor
 
-    val viewPos by (camData.viewMat * float4Value(material.inFragmentPos, 1f)).xyz
+    val viewPos by (camData.view * float4Value(material.inFragmentPos, 1f)).xyz
     val reflectionWeight by 0f.const
     val numRays by 0f.const
     val rayDir by reflect(normalize(viewPos), viewNormal)
-    val noise by noise33(viewPos * (camData.frameIndex % 32.const + 1.const).toFloat1())
+    val noise by noise33(viewPos * (camData.frameIdx % 64.const + 1.const).toFloat1())
 
     val reflectionColorOut by 0f.const3
     val minColor by 1000f.const3
