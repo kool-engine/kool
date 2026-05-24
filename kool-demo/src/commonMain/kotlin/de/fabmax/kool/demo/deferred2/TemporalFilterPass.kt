@@ -60,7 +60,7 @@ class TemporalFilterPass(
             newFilter = filterOutput.newVal
             filterW = filterWeight
 
-            objModelMats = newGbuffer.objModelMatsGpu
+            reprojectMats = pipeline.reprojectMatrixComputePass.reprojectMats
             camData = pipeline.camData
         }
     }
@@ -80,7 +80,7 @@ class TemporalFilterShader(
     var newFilter by bindStorageTexture2d("newFilter")
     var filterState by bindStorageTexture2d("filterState", filterState)
 
-    var objModelMats by bindStorage("objModelMats")
+    var reprojectMats by bindStorage("reprojectMats")
     var camData by bindStorage("camData")
     var filterW by bindUniformFloat1("uFilterWeight")
 
@@ -95,18 +95,16 @@ class TemporalFilterShader(
             val newMeta = texture2dInt("newMeta")
             val newDepth = texture2d("newDepth", isUnfilterable = true)
             val oldDepth = texture2d("oldDepth", isUnfilterable = true)
-
-            val invModelMatStruct = struct(ObjModelMatLayout)
-            val objModelMats = storage("objModelMats", invModelMatStruct)
-
             val oldFilter = texture2d("oldFilter")
             val newFilter = if (filterStorageFmt.channels == 3) {
                 storageTexture2d<KslFloat3>("newFilter", filterStorageFmt)
             } else {
                 storageTexture2d<KslFloat4>("newFilter", filterStorageFmt)
             }
-
             val filterState = storageTexture2d<KslFloat1>("filterState", TexFormat.R)
+
+            val matStruct = struct(StorageMatLayout)
+            val reprojectMats = storage("reprojectMats", matStruct)
             val camDataLayout = struct(DeferredCamDataLayout)
             val camData = storage("camData", camDataLayout)
 
@@ -127,8 +125,8 @@ class TemporalFilterShader(
                 val oldUv by 0f.const2
                 val oldBaseCoord by baseCoord
                 `if`(id ne 0.const) {
-                    val objModelMat = structVar(objModelMats[id])
-                    val oldProj by objModelMat[ObjModelMatLayout.reprojectMat] * worldPos
+                    val reprojectMat = mat4Var(reprojectMats[id][StorageMatLayout.mat])
+                    val oldProj by reprojectMat * worldPos
                     oldUv set oldProj.xy / oldProj.w * float2Value(0.5f, -0.5f) + 0.5f.const
                     oldBaseCoord set (oldUv * sizeF).toInt2()
                 }.`else` {
@@ -182,13 +180,6 @@ class TemporalFilterShader(
                 oldState set isEdge.toInt1()
                 filterState.store(baseCoord, float4Value(oldState.toFloat1() / 255f.const, 0f.const, 0f.const, 0f.const))
 
-//                val filterNoise by noise31(uint3Value(inGlobalInvocationId.xy, frameI.toUint1()))
-//                val w by 4f.const
-//                val w by 8f.const //- filterNoise * filterNoise * filterNoise * 4f.const
-//                val w by 16f.const //- filterNoise * filterNoise * filterNoise * 14f.const
-//                val w by 32f.const - filterNoise * filterNoise * filterNoise * 16f.const
-//                val w by 100f.const - filterNoise * filterNoise * filterNoise * 75f.const
-
                 val w by filterWeight
                 val isReprojectOutOfScreen by (oldUv.x lt 0f.const) or (oldUv.y lt 0f.const) or (oldUv.x gt 1f.const) or (oldUv.y gt 1f.const)
                 `if`((!filterHit and !isEdge) or (wasEdge and !isEdge) or isReprojectOutOfScreen) {
@@ -205,19 +196,6 @@ class TemporalFilterShader(
                 `if`(any(isNan(filtered))) {
                     filtered set curSrgb
                 }
-
-//                `if`(wasEdge and !isEdge) {
-//                    filtered set Color.RED.const.rgb
-//                }
-//                `if`(isEdge) {
-//                    filtered set Color.YELLOW.const.rgb
-//                }
-//                `if`(!filterHit) {
-//                    filtered set Color.CYAN.const.rgb
-//                }
-//                `if`(w eq 0f.const) {
-//                    newFilter[baseCoord] = Color.CYAN.const
-//                }
                 newFilter[baseCoord] = float4Value(filtered, 1f)
             }
         }

@@ -48,7 +48,7 @@ class LightingPass(
         val newGbuffer = pipeline.gbuffers.newVal
         lightingShader.swapPipelineData(newGbuffer) {
             depthTex = newGbuffer.depth
-            depthSmall = pipeline.aoPass.scaledDists
+            scaledViewZ = pipeline.aoPass.scaledDists
             encodedNormals = newGbuffer.normals
             albedoEmissionTex = newGbuffer.albedoEmission
             metalRoughnessAoTex = newGbuffer.metalRoughnessAo
@@ -63,7 +63,7 @@ class LightingPass(
 
 class DeferredLightingShader(isScreenSpaceReflections: Boolean) : KslShader("deferred2-lighting") {
     var depthTex by bindTexture2d("depth")
-    var depthSmall by bindTexture2d("depthSmall")
+    var scaledViewZ by bindTexture2d("scaledViewZ")
     var encodedNormals by bindTexture2d("encodedNormals")
     var albedoEmissionTex by bindTexture2d("albedoEmission")
     var metalRoughnessAoTex by bindTexture2d("metalRoughnessAo")
@@ -93,7 +93,7 @@ class DeferredLightingShader(isScreenSpaceReflections: Boolean) : KslShader("def
         fullscreenQuadVertexStage(uv)
         fragmentStage {
             val depth = texture2d("depth", isUnfilterable = true)
-            val depthSmall = texture2d("depthSmall", isUnfilterable = true)
+            val scaledViewZ = texture2d("scaledViewZ", isUnfilterable = true)
             val encodedNormals = texture2dInt("encodedNormals")
             val albedoEmission = texture2d("albedoEmission")
             val metalRoughnessAo = texture2d("metalRoughnessAo")
@@ -159,7 +159,7 @@ class DeferredLightingShader(isScreenSpaceReflections: Boolean) : KslShader("def
 
                 if (isScreenSpaceReflections) {
                     val oldColor = texture2d("oldColor")
-                    val screenReflection by screenReflect(material, viewNormal, depthSmall, oldColor, camData)
+                    val screenReflection by screenReflect(material, viewNormal, scaledViewZ, oldColor, camData)
                     val finalColor by material.outAmbient + material.outLight + screenReflection + albedo * emissiveStrength
                     colorOutput(finalColor)
 //                    colorOutput(screenReflection)
@@ -177,7 +177,7 @@ context(_: KslProgram, _: KslShaderStage)
 fun KslScopeBuilder.screenReflect(
     material: PbrMaterialBlock,
     viewNormal: KslExprFloat3,
-    viewDists: KslUniform<KslColorSampler2d>,
+    viewZ: KslUniform<KslColorSampler2d>,
     oldColor: KslUniform<KslColorSampler2d>,
     camData: KslStructStorage<DeferredCamDataLayout>
 ): KslExprFloat3 {
@@ -193,9 +193,9 @@ fun KslScopeBuilder.screenReflect(
         val uv = paramFloat2("uv")
         val refDepth = paramFloat1("refDepth")
         body {
-            val texSz by viewDists.size().toFloat2()
+            val texSz by viewZ.size().toFloat2()
             val uvi by (uv * texSz).toInt2()
-            viewDists.load(uvi, lod = 0.const).x - refDepth
+            viewZ.load(uvi, lod = 0.const).x - refDepth
         }
     }
 

@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo.deferred2
 
-import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.BasicVertexConfig
 import de.fabmax.kool.modules.ksl.KslShader
@@ -12,8 +11,6 @@ import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.vertexAttrib
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.StructBuffer
-import de.fabmax.kool.util.asStorageBuffer
 
 class GbufferPass(
     initialSize: Vec2i,
@@ -39,32 +36,21 @@ class GbufferPass(
     val metalRoughnessAo get() = colorTextures[1]
     val normals get() = colorTextures[2]
     val objectIds get() = colorTextures[3]
-
     val depth get() = depthTexture!!
-
-    val objModelMats = StructBuffer(ObjModelMatLayout, 1024)
-    val objModelMatsGpu = objModelMats.asStorageBuffer()
 
     init {
         camera = pipeline.camera
-        val inverseBuf = MutableMat4f()
-        val reprojectBuf = MutableMat4f()
         onAfterCollectDrawCommands += { viewData ->
+            val upload = pipeline.reprojectMatrixComputePass.uploadData.newVal
+            upload.viewProjMat.set(viewData.drawQueue.viewProjMatF)
+
             viewData.drawQueue.forEach { cmd ->
                 (cmd.mesh.shader as? GbufferShader)?.let { gbufferShader ->
-                    val id = gbufferShader.objectId
-                    objModelMats.set(id) {
-                        val prevViewProj = pipeline.prevViewProjMats[id]
-                        inverseBuf.set(cmd.modelMatF).invert()
-                        reprojectBuf.set(prevViewProj).mul(inverseBuf)
-                        set(it.reprojectMat, reprojectBuf)
-                        prevViewProj.set(viewData.drawQueue.viewProjMatF).mul(cmd.modelMatF)
-                    }
+                    upload.modelMats.position = gbufferShader.objectId * 16
+                    cmd.modelMatF.putTo(upload.modelMats)
                 }
             }
         }
-
-        onRelease { objModelMatsGpu.release() }
     }
 }
 
