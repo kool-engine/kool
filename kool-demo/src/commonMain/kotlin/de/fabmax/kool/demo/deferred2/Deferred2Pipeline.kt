@@ -28,16 +28,18 @@ class Deferred2Pipeline(
     val lighting: Lighting = Lighting(),
     var renderScale: Float = 1f,
     var tsaa: List<Vec2f> = TSAA_4,
+    maxObjects: Int = 16384
 ) {
     val size: Vec2i get() = Vec2i(
         (scene.mainRenderPass.viewport.width * renderScale).toInt().coerceAtLeast(16),
         (scene.mainRenderPass.viewport.height * renderScale).toInt().coerceAtLeast(16)
     )
     val camera = PerspectiveCamera()
+    val idAllocator: ObjectIdAllocator = DefaultObjectIdAllocator(maxObjects)
     private val camDataBuffer = StructBuffer(DeferredCamDataLayout, 1)
     val camData = camDataBuffer.asStorageBuffer()
 
-    val reprojectMatrixComputePass = ReprojectComputePass()
+    val reprojectMatrixComputePass = ReprojectComputePass(maxObjects, this)
 
     val gbuffers = AlternatingPair {
         val suff = if (it) "A" else "B"
@@ -57,7 +59,7 @@ class Deferred2Pipeline(
     private val resizeListeners = BufferedList<(Vec2i) -> Unit>()
 
     init {
-        aoPass.kernelSize = 8
+        aoPass.kernelSize = 4
         aoPass.radius = AoRadius.relativeRadius(1 / 20f)
         aoPass.temporalKernels = tsaa.size
 

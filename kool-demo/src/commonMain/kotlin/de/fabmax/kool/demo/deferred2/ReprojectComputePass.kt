@@ -10,7 +10,8 @@ import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.Struct
 
 class ReprojectComputePass(
-    val maxObjects: Int = 65536
+    val maxObjects: Int = 65536,
+    private val pipeline: Deferred2Pipeline
 ) : ComputePass("deferred2-reproject-compute-pass") {
 
     val uploadData = AlternatingPair {
@@ -38,9 +39,10 @@ class ReprojectComputePass(
         val newUpload = uploadData.newVal
         modelMats.newVal.uploadData(newUpload.modelMats)
         shader.swapPipelineData(newUpload) {
-            shader.inputOldViewProj = uploadData.oldVal.viewProjMat
-            shader.oldModelMats = modelMats.oldVal
-            shader.newModelMats = modelMats.newVal
+            inputOldViewProj = uploadData.oldVal.viewProjMat
+            oldModelMats = modelMats.oldVal
+            newModelMats = modelMats.newVal
+            numMatrices = pipeline.idAllocator.size
         }
     }
 }
@@ -53,6 +55,7 @@ private class ReprojectComputeShader(
     reprojectMats: GpuBuffer,
 ) : KslComputeShader("reproject-compute") {
 
+    var numMatrices by bindUniformInt1("numMatrices")
     var inputOldViewProj by bindUniformMat4("oldViewProj")
     var oldModelMats by bindStorage("oldModelMats")
     var newModelMats by bindStorage("newModelMats")
@@ -63,8 +66,8 @@ private class ReprojectComputeShader(
     }
 
     private fun KslProgram.program() {
-        dumpCode = true
         computeStage(workGroupSizeX = 64) {
+            val numMatrices = uniformInt1("numMatrices")
             val oldViewProj = uniformMat4("oldViewProj")
             val matStruct = struct(StorageMatLayout)
             val oldModelMats = storage("oldModelMats", matStruct)
@@ -73,6 +76,9 @@ private class ReprojectComputeShader(
 
             main {
                 val idx by inGlobalInvocationId.x.toInt1()
+                `if`(idx ge numMatrices) {
+                    `return`()
+                }
 
                 val model = mat4Var(newModelMats[idx][StorageMatLayout.mat])
                 val det by model.run {
