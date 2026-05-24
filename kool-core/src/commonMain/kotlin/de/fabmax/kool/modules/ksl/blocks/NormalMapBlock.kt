@@ -77,6 +77,15 @@ data class NormalMapConfig(
         var arrayIndex = -1
         val strengthCfg: PropertyBlockConfig.Builder = PropertyBlockConfig.Builder("${normalMapName}_strength").constProperty(1f)
 
+        fun set(other: NormalMapConfig) {
+            isNormalMapped = other.isNormalMapped
+            defaultNormalMap = other.defaultNormalMap
+            defaultArrayNormalMap = other.defaultArrayNormalMap
+            arrayIndex = other.normalMapArrayIndex
+            strengthCfg.propertySources.clear()
+            strengthCfg.propertySources.addAll(other.strengthCfg.propertySources)
+        }
+
         fun clearNormalMap(): Builder {
             isNormalMapped = false
             defaultNormalMap = null

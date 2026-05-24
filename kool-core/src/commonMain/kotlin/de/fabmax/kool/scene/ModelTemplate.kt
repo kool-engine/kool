@@ -549,11 +549,14 @@ class ModelTemplate(val scene: GltfScene, val gltfFile: GltfFile) : BaseReleasab
                 vertexCfg.displacementCfg.primaryTexture?.defaultTexture?.let { textures[it.name] = it }
             }
 
-            val shader = if (isDeferred) {
-                pbrConfig.pipelineCfg.blendMode = BlendMode.DISABLED
-                DeferredKslPbrShader(pbrConfig.build())
-            } else {
-                KslPbrShader(pbrConfig.build())
+            val shaderFactory = cfg.materialConfig.shaderFactory
+            val shader = when {
+                shaderFactory != null -> shaderFactory(pbrConfig.build())
+                isDeferred -> {
+                    pbrConfig.pipelineCfg.blendMode = BlendMode.DISABLED
+                    DeferredKslPbrShader(pbrConfig.build())
+                }
+                else -> KslPbrShader(pbrConfig.build())
             }
             val depthShader = if (pbrConfig.alphaMode is AlphaMode.Mask) {
                 DepthShader.Config.forMesh(

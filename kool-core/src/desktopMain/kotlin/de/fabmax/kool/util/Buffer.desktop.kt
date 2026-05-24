@@ -24,6 +24,8 @@ abstract class GenericBuffer<B: NioBuffer>(
     protected val buffer: B,
     isAutoLimit: Boolean
 ) : Buffer {
+    @PublishedApi
+    internal var modCount = 0
 
     override var isAutoLimit: Boolean = isAutoLimit
         set(value) {
@@ -70,8 +72,13 @@ abstract class GenericBuffer<B: NioBuffer>(
     }
 
     inline fun <R> useRaw(block: (B) -> R): R {
+        val modBefore = modCount
         val result = block(getRawBuffer())
         finishRawBuffer()
+        val modAfter = modCount
+        if (modBefore != modAfter) {
+            logE { "Buffer was modified while used raw" }
+        }
         return result
     }
 }
@@ -203,17 +210,20 @@ class Float32BufferImpl(buffer: FloatBuffer, isAutoLimit: Boolean = false) :
 
     override fun set(i: Int, value: Float) {
         buffer.put(i, value)
+        modCount++
     }
 
     override fun put(value: Float): Float32Buffer {
         buffer.put(value)
         pos++
+        modCount++
         return this
     }
 
     override fun put(data: FloatArray, offset: Int, len: Int): Float32Buffer {
         buffer.put(data, offset, len)
         pos += len
+        modCount++
         return this
     }
 
@@ -222,6 +232,7 @@ class Float32BufferImpl(buffer: FloatBuffer, isAutoLimit: Boolean = false) :
             buffer.put(it)
             pos += data.limit
         }
+        modCount++
         return this
     }
 }
