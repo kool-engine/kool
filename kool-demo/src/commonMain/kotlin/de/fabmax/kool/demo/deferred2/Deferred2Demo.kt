@@ -53,8 +53,8 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
     private val groundRoughness = mutableStateOf(0.5f)
     private val bloom = mutableStateOf(true)
 
-    private val gpuTimes = mutableStateOf(GpuTimes(0.0, 0.0, 0.0, 0.0, 0.0))
-    private var gpuTimesAccu = GpuTimes(0.0, 0.0, 0.0, 0.0, 0.0)
+    private val gpuTimes = mutableStateOf(GpuTimes())
+    private var gpuTimesAccu = GpuTimes()
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         val content = deferredContent()
@@ -100,11 +100,12 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
         val nAccu = 50
         onUpdate {
             gpuTimesAccu = GpuTimes(
-                gpuTimesAccu.gbuffer + pipeline.gbuffers.a.tGpu.inWholeMicroseconds / 1000.0 / nAccu,
-                gpuTimesAccu.ao + pipeline.aoPass.tGpu.inWholeMicroseconds / 1000.0 / nAccu,
-                gpuTimesAccu.lighting + pipeline.lightingPass.tGpu.inWholeMicroseconds / 1000.0 / nAccu,
-                gpuTimesAccu.filter + pipeline.filterPass.tGpu.inWholeMicroseconds / 1000.0 / nAccu,
-                gpuTimesAccu.bloom + bloomPass.tGpu.inWholeMicroseconds / 1000.0 / nAccu,
+                reproj = gpuTimesAccu.reproj + pipeline.reprojectMatrixComputePass.tGpu.inWholeMicroseconds / 1000.0 / nAccu,
+                gbuffer = gpuTimesAccu.gbuffer + pipeline.gbuffers.a.tGpu.inWholeMicroseconds / 1000.0 / nAccu,
+                ao = gpuTimesAccu.ao + pipeline.aoPass.tGpu.inWholeMicroseconds / 1000.0 / nAccu,
+                lighting = gpuTimesAccu.lighting + pipeline.lightingPass.tGpu.inWholeMicroseconds / 1000.0 / nAccu,
+                filter = gpuTimesAccu.filter + pipeline.filterPass.tGpu.inWholeMicroseconds / 1000.0 / nAccu,
+                bloom = gpuTimesAccu.bloom + bloomPass.tGpu.inWholeMicroseconds / 1000.0 / nAccu,
             )
             if (Time.frameCount % nAccu == 0) {
                 gpuTimes.set(gpuTimesAccu)
@@ -287,6 +288,7 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
         Text("Timings".l) { sectionTitleStyle() }
         MenuRow {
             Column(width = Grow.Std) {
+                Text("Reproject Matrices:") { }
                 Text("G-Buffer:") { }
                 Text("Ambient Occlusion:") { }
                 Text("Lighting + Reflections:") { }
@@ -295,6 +297,7 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
             }
             Column {
                 val t = gpuTimes.use()
+                Text("${t.reproj.toString(2)} ms") {  }
                 Text("${t.gbuffer.toString(2)} ms") {  }
                 Text("${t.ao.toString(2)} ms") {  }
                 Text("${t.lighting.toString(2)} ms") {  }
@@ -371,4 +374,11 @@ private data class ScaleItem(val label: String, val scale: Float) {
     }
 }
 
-private data class GpuTimes(val gbuffer: Double, val ao: Double, val lighting: Double, val filter: Double, val bloom: Double)
+private data class GpuTimes(
+    val reproj: Double = 0.0,
+    val gbuffer: Double = 0.0,
+    val ao: Double = 0.0,
+    val lighting: Double = 0.0,
+    val filter: Double = 0.0,
+    val bloom: Double = 0.0,
+)

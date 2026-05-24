@@ -37,6 +37,8 @@ class Deferred2Pipeline(
     private val camDataBuffer = StructBuffer(DeferredCamDataLayout, 1)
     val camData = camDataBuffer.asStorageBuffer()
 
+    val reprojectMatrixComputePass = ReprojectComputePass()
+
     val gbuffers = AlternatingPair {
         val suff = if (it) "A" else "B"
         GbufferPass(size, "deferred2-gbuffer-pass-$suff", this)
@@ -54,25 +56,26 @@ class Deferred2Pipeline(
     private val swapListeners = BufferedList<() -> Unit>()
     private val resizeListeners = BufferedList<(Vec2i) -> Unit>()
 
-    internal val prevViewProjMats = List(1024) { MutableMat4f() }
-    private val oldViewProj = MutableMat4f()
-
     init {
         aoPass.kernelSize = 8
         aoPass.radius = AoRadius.relativeRadius(1 / 20f)
         aoPass.temporalKernels = tsaa.size
 
+        scene.addComputePass(reprojectMatrixComputePass)
         scene.addOffscreenPass(gbuffers.a)
         scene.addOffscreenPass(gbuffers.b)
         scene.addComputePass(aoPass)
         scene.addOffscreenPass(lightingPass)
         scene.addComputePass(filterPass)
 
+        reprojectMatrixComputePass.isProfileGpu = true
         gbuffers.a.isProfileGpu = true
         gbuffers.b.isProfileGpu = true
         lightingPass.isProfileGpu = true
         filterPass.isProfileGpu = true
         aoPass.isProfileGpu = true
+
+        lightingPass.onRelease { camData.release() }
 
         val offsetMat = MutableMat4f()
         camera.onCameraUpdated += {
@@ -118,26 +121,22 @@ class Deferred2Pipeline(
             set(it.view, camera.view)
             set(it.invView, camera.invView)
             set(it.invViewProj, camera.invViewProj)
-            set(it.oldViewProj, oldViewProj)
+            set(it.oldViewProj, reprojectMatrixComputePass.uploadData.oldVal.viewProjMat)
             set(it.camPosition, camera.globalPos)
             set(it.camNear, camera.clipNear)
             set(it.frameIdx, Time.frameCount)
         }
         camData.uploadData(camDataBuffer)
-        oldViewProj.set(camera.viewProj)
 
+        reprojectMatrixComputePass.swapBuffers()
         lightingPass.swapBuffers()
         filterPass.swapBuffers()
-
         val currentGbuffer = gbuffers.newVal
         aoPass.inputShader.swapPipelineData(currentGbuffer) {
             aoPass.inputDepth = currentGbuffer.depth
             aoPass.inputNormals = currentGbuffer.normals
         }
-
         swapListeners.forEachUpdated { it() }
-
-        gbuffers.newVal.objModelMatsGpu.uploadData(gbuffers.newVal.objModelMats)
 
         // this is called after update, newVal was enabled and updated, disable it and enable oldVal for next frame
         gbuffers.newVal.isEnabled = false
@@ -233,10 +232,6 @@ class AlternatingPair<out T>(factory: (Boolean) -> T) {
 
     val newVal: T get() = if (Time.frameCount % 2 == 0) a else b
     val oldVal: T get() = if (Time.frameCount % 2 == 0) b else a
-}
-
-object ObjModelMatLayout : Struct("obj_model_mat", MemoryLayout.Std140) {
-    val reprojectMat = mat4("reprojectMat")
 }
 
 object DeferredCamDataLayout : Struct("deferred_cam_data", MemoryLayout.Std140) {
