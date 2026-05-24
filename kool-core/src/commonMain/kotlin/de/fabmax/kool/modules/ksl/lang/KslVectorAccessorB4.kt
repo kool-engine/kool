@@ -22,3 +22,8 @@ val KslExpression<KslBool4>.gb get() = bool2("gb")
 
 val KslExpression<KslBool4>.xyz get() = bool3("xyz")
 val KslExpression<KslBool4>.rgb get() = bool3("rgb")
+
+operator fun KslExprBool4.component1(): KslExprBool1 = x
+operator fun KslExprBool4.component2(): KslExprBool1 = y
+operator fun KslExprBool4.component3(): KslExprBool1 = z
+operator fun KslExprBool4.component4(): KslExprBool1 = w

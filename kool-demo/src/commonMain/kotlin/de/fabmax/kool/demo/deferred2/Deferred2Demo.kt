@@ -25,6 +25,7 @@ import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.round
 import kotlin.math.sin
+import kotlin.random.Random
 
 class Deferred2Demo : DemoScene("Deferred2 Demo") {
 
@@ -56,7 +57,8 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
     private var gpuTimesAccu = GpuTimes()
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        val content = deferredContent()
+        val deferredLights = DeferredLights()
+        val content = deferredContent(deferredLights)
         val lighting = Lighting().apply {
             clear()
 //            singlePointLight {
@@ -71,13 +73,6 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
         filterWeight.value = pipeline.filterPass.filterWeight.toInt()
         filterWeight.onChange { _, value -> pipeline.filterPass.filterWeight = value.toFloat() }
 
-        content.apply {
-            val orbitCam = orbitCamera(pipeline.camera) {
-                setRotation(100f, -7f)
-            }
-            addNode(orbitCam)
-        }
-
         bloomPass = BloomPass(pipeline.filterPass.filterOutput.newVal)
         bloomPass.isProfileGpu = true
         addComputePass(bloomPass)
@@ -86,6 +81,32 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
             val filterOutput = pipeline.filterPass.filterOutput.newVal
             bloomPass.inputShader.swapPipelineData(filterOutput) {
                 bloomPass.inputTexture = filterOutput
+            }
+        }
+
+        content.apply {
+            val orbitCam = orbitCamera(pipeline.camera) {
+                setRotation(100f, -7f)
+            }
+            addNode(orbitCam)
+            //addNode(pointLights)
+        }
+
+        pipeline.onSwap {
+            deferredLights.swapPipelineData(pipeline)
+        }
+        val r = Random(1234)
+        repeat(50) {
+            deferredLights.addPointLight {
+                color.set(MdColor.PALETTE.random(r).toLinear())
+                position.set(Vec3f(r.randomF(-15f, 15f), 1.5f, r.randomF(-15f, 15f)))
+                strengthByIntensity(r.randomF(5f, 20f))
+            }
+            deferredLights.addSpotLight {
+                color.set(MdColor.PALETTE.random(r).toLinear())
+                position.set(Vec3f(r.randomF(-15f, 15f), r.randomF(2f, 5f), r.randomF(-15f, 15f)))
+                setDirection(Vec3f(r.randomF(-1f, 1f), -1f, r.randomF(-1f, 1f)))
+                strengthByIntensity(r.randomF(30f, 50f))
             }
         }
 
@@ -113,10 +134,10 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
         }
     }
 
-    private fun deferredContent() = Node("deferred content").apply {
+    private fun deferredContent(pointLights: DeferredLights) = Node("deferred content").apply {
         addGroup {
             transform.rotate(45f.deg, Vec3f.Y_AXIS)
-
+            addNode(pointLights)
             addColorMesh {
                 generate {
                     color = MdColor.PINK.toLinear()

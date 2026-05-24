@@ -20,8 +20,9 @@ class GetLightRadiance(parentScope: KslScopeBuilder, isFiniteSoi: Boolean) :
 
             }.`else` {
                 // spot or point light
-                val dist = float1Var(length(fragPos - encLightPos.xyz))
-                val strength = float1Var(1f.const / (dist * dist + 1f.const))
+                val lightToFrag by fragPos - encLightPos.xyz
+                val dist by length(lightToFrag)
+                val strength by 1f.const / (dist * dist + 1f.const)
                 if (isFiniteSoi) {
                     strength *= clamp((lightRadius - dist) / lightRadius, 0f.const, 1f.const)
                 }
@@ -30,12 +31,12 @@ class GetLightRadiance(parentScope: KslScopeBuilder, isFiniteSoi: Boolean) :
                     radiance set encLightColor.rgb * strength
                 }.`else` {
                     // spot light
-                    val lightDirToFrag = float3Var((fragPos - encLightPos.xyz) / dist)
-                    val outerAngle = encLightDir.w
-                    val innerFac = encLightColor.w
-                    val innerAngle = float1Var(outerAngle + (1f.const - outerAngle) * (1f.const - innerFac))
-                    val angle = float1Var(dot(lightDirToFrag, encLightDir.xyz))
-                    val angleStrength = 1f.const - smoothStep(innerAngle, outerAngle, angle)
+                    val lightDirToFrag by lightToFrag / dist
+                    val outerAngle by encLightDir.w
+                    val innerFac by encLightColor.w
+                    val innerAngle by outerAngle + (1f.const - outerAngle) * (1f.const - innerFac)
+                    val angle by dot(lightDirToFrag, encLightDir.xyz)
+                    val angleStrength by 1f.const - smoothStep(innerAngle, outerAngle, angle)
                     radiance set encLightColor.rgb * strength * angleStrength
                 }
             }

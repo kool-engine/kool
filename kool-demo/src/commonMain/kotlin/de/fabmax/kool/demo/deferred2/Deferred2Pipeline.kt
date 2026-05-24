@@ -121,6 +121,7 @@ class Deferred2Pipeline(
         camDataBuffer.set(0) {
             set(it.proj, camera.proj)
             set(it.view, camera.view)
+            set(it.viewProj, camera.viewProj)
             set(it.invView, camera.invView)
             set(it.invViewProj, camera.invViewProj)
             set(it.oldViewProj, reprojectMatrixComputePass.uploadData.oldVal.viewProjMat)
@@ -239,6 +240,7 @@ class AlternatingPair<out T>(factory: (Boolean) -> T) {
 object DeferredCamDataLayout : Struct("deferred_cam_data", MemoryLayout.Std140) {
     val proj = mat4("proj")
     val view = mat4("view")
+    val viewProj = mat4("viewProj")
     val invView = mat4("invView")
     val invViewProj = mat4("invViewProj")
     val oldViewProj = mat4("oldViewProj")
@@ -251,6 +253,8 @@ context(_: KslScopeBuilder)
 val KslStructStorage<DeferredCamDataLayout>.proj: KslExprMat4 get() = this[0.const][DeferredCamDataLayout.proj]
 context(_: KslScopeBuilder)
 val KslStructStorage<DeferredCamDataLayout>.view: KslExprMat4 get() = this[0.const][DeferredCamDataLayout.view]
+context(_: KslScopeBuilder)
+val KslStructStorage<DeferredCamDataLayout>.viewProj: KslExprMat4 get() = this[0.const][DeferredCamDataLayout.viewProj]
 context(_: KslScopeBuilder)
 val KslStructStorage<DeferredCamDataLayout>.invView: KslExprMat4 get() = this[0.const][DeferredCamDataLayout.invView]
 context(_: KslScopeBuilder)
