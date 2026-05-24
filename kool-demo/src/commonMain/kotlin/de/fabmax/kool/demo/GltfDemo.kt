@@ -2,6 +2,9 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.deferred2.Deferred2Pipeline
+import de.fabmax.kool.demo.deferred2.defaultOutputQuad
+import de.fabmax.kool.demo.deferred2.gbufferShader
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
@@ -11,10 +14,6 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.ao.AoRadius
-import de.fabmax.kool.pipeline.deferred.DeferredOutputShader
-import de.fabmax.kool.pipeline.deferred.DeferredPipeline
-import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
-import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.generateNormals
@@ -74,7 +73,7 @@ class GltfDemo : DemoScene("glTF Models") {
 
     private val envMap by hdriImage("${DemoLoader.hdriPath}/shanghai_bund_1k.rgbe.png")
 
-    private lateinit var orbitTransform: OrbitInputTransform
+//    private lateinit var orbitTransform: OrbitInputTransform
     private var camTranslationTarget: Vec3d? = null
     private var trackModel = false
 
@@ -82,7 +81,7 @@ class GltfDemo : DemoScene("glTF Models") {
     private var aoPipelineForward: AoPipeline? = null
     private val contentGroupForward = Node()
 
-    private lateinit var deferredPipeline: DeferredPipeline
+    private lateinit var deferredPipeline: Deferred2Pipeline
     private val contentGroupDeferred = Node()
 
     private var animationDeltaTime = 0f
@@ -96,10 +95,10 @@ class GltfDemo : DemoScene("glTF Models") {
         setupPipelines(isDeferredShading.value, new)
     }
     private val isSsr: MutableStateValue<Boolean> = mutableStateOf(true).onChange { _, new ->
-        deferredPipeline.isSsrEnabled = new
+        //deferredPipeline.isSsrEnabled = new
         setupPipelines(isDeferredShading.value, isAo.value)
     }
-    private val ssrMapSize = mutableStateOf(0.5f).onChange { _, new -> deferredPipeline.reflectionMapSize = new }
+    private val ssrMapSize = mutableStateOf(0.5f)//.onChange { _, new -> deferredPipeline.reflectionMapSize = new }
 
     override fun lateInit(ctx: KoolContext) {
         currentModel.isVisible = true
@@ -110,19 +109,18 @@ class GltfDemo : DemoScene("glTF Models") {
         mainScene.setupLighting()
 
         // create deferred pipeline
-        val defCfg = DeferredPipelineConfig().apply {
-            isWithAmbientOcclusion = true
-            isWithScreenSpaceReflections = true
-            baseReflectionStep = 0.02f
-            maxGlobalLights = 2
-            isWithVignette = true
-            useImageBasedLighting(envMap)
-        }
-        deferredPipeline = DeferredPipeline(mainScene, defCfg)
-        deferredPipeline.aoPipeline?.apply {
-            radius = AoRadius.absoluteRadius(0.2f)
-        }
-        ssrMapSize.set(deferredPipeline.reflectionMapSize)
+//        val defCfg = DeferredPipelineConfig().apply {
+//            isWithAmbientOcclusion = true
+//            isWithScreenSpaceReflections = true
+//            baseReflectionStep = 0.02f
+//            maxGlobalLights = 2
+//            isWithVignette = true
+//            useImageBasedLighting(envMap)
+//        }
+        deferredPipeline = Deferred2Pipeline(Node(), mainScene, envMap, isScreenSpaceReflections = true)
+        deferredPipeline.renderScale = 1f / UiScale.windowScale.value
+        deferredPipeline.aoPass.radius = AoRadius.absoluteRadius(0.2f)
+        //ssrMapSize.set(deferredPipeline.reflectionMapSize)
 
         // create forward pipeline
         aoPipelineForward = AoPipeline.createForward(mainScene).apply {
@@ -168,8 +166,8 @@ class GltfDemo : DemoScene("glTF Models") {
         aoPipelineForward?.isEnabled = fwdState && isAo
 
         contentGroupDeferred.isVisible = isDeferred
-        deferredPipeline.isEnabled = isDeferred
-        deferredPipeline.isAoEnabled = isAo
+        //deferredPipeline.isEnabled = isDeferred
+        //deferredPipeline.isAoEnabled = isAo
     }
 
     private fun Scene.makeForwardContent() {
@@ -178,20 +176,21 @@ class GltfDemo : DemoScene("glTF Models") {
     }
 
     private fun Scene.makeDeferredContent() {
-        deferredPipeline.sceneContent.setupContentGroup(true)
+        deferredPipeline.content.setupContentGroup(true)
 
         // main scene only contains a quad used to draw the deferred shading output
         contentGroupDeferred.apply {
             isFrustumChecked = false
-            val outputMesh = deferredPipeline.createDefaultOutputQuad()
-            (outputMesh.shader as? DeferredOutputShader)?.setupVignette(0f)
+            val outputMesh = deferredPipeline.defaultOutputQuad(null)
+            //(outputMesh.shader as? DeferredOutputShader)?.setupVignette(0f)
             addNode(outputMesh)
         }
         addNode(contentGroupDeferred)
     }
 
     private fun Scene.setupCamera() {
-        orbitTransform = orbitCamera {
+        //orbitTransform = orbitCamera {
+        val cam = orbitCamera(deferredPipeline.camera) {
             setRotation(0f, -30f)
             zoom = currentModel.zoom
             translation.set(currentModel.lookAt)
@@ -217,6 +216,7 @@ class GltfDemo : DemoScene("glTF Models") {
                 }
             }
         }
+        deferredPipeline.content.addNode(cam)
     }
 
     private fun Scene.setupLighting() {
@@ -249,20 +249,19 @@ class GltfDemo : DemoScene("glTF Models") {
                 roundCylinder(4.1f, 0.2f)
             }
 
-            fun KslPbrShader.Config.Builder.materialConfig() {
-                color { textureColor(colorMap) }
-                normalMapping { useNormalMap(normalMap) }
-                ao { textureProperty(aoMap) }
-                roughness { textureProperty(roughnessMap) }
-            }
-
             shader = if (isDeferredShading) {
-                deferredKslPbrShader {
-                    materialConfig()
+                gbufferShader {
+                    color { textureColor(colorMap) }
+                    normalMapping { useNormalMap(normalMap) }
+                    ao { textureProperty(aoMap) }
+                    roughness { textureProperty(roughnessMap) }
                 }
             } else {
                 KslPbrShader {
-                    materialConfig()
+                    color { textureColor(colorMap) }
+                    normalMapping { useNormalMap(normalMap) }
+                    ao { textureProperty(aoMap) }
+                    roughness { textureProperty(roughnessMap) }
                     lighting {
                         enableSsao(aoPipelineForward?.aoMap)
                         addShadowMaps(shadowsForward)
@@ -287,7 +286,7 @@ class GltfDemo : DemoScene("glTF Models") {
         prevModel.isVisible = false
 
         newModel.isVisible = true
-        orbitTransform.zoom = newModel.zoom
+        //orbitTransform.zoom = newModel.zoom
         camTranslationTarget = newModel.lookAt
         trackModel = newModel.trackModel
     }
@@ -387,10 +386,24 @@ class GltfDemo : DemoScene("glTF Models") {
 
         suspend fun load(isDeferredShading: Boolean): Model {
             val materialCfg = GltfMaterialConfig(
-                shadowMaps = if (isDeferredShading) deferredPipeline.shadowMaps else shadowsForward,
-                scrSpcAmbientOcclusionMap = if (isDeferredShading) deferredPipeline.aoPipeline?.aoMap else aoPipelineForward?.aoMap,
+//                shadowMaps = if (isDeferredShading) deferredPipeline.shadowMaps else shadowsForward,
+//                scrSpcAmbientOcclusionMap = if (isDeferredShading) deferredPipeline.aoPipeline?.aoMap else aoPipelineForward?.aoMap,
                 environmentMap = envMap,
-                isDeferredShading = isDeferredShading
+                //isDeferredShading = isDeferredShading
+                shaderFactory = { pbrConfig ->
+                    if (isDeferredShading) {
+                        gbufferShader {
+                            vertexCfg.modelMatrixComposition = pbrConfig.vertexCfg.modelMatrixComposition
+                            colorCfg.colorSources.addAll(pbrConfig.colorCfg.colorSources)
+                            normalMapCfg.set(pbrConfig.normalMapCfg)
+                            roughnessCfg.propertySources.addAll(pbrConfig.roughnessCfg.propertySources)
+                            metallicCfg.propertySources.addAll(pbrConfig.metallicCfg.propertySources)
+                            aoCfg.propertySources.addAll(pbrConfig.aoCfg.propertySources)
+                        }
+                    } else {
+                        KslPbrShader(pbrConfig)
+                    }
+                }
             )
             val modelCfg = GltfLoadConfig(
                 generateNormals = generateNormals,

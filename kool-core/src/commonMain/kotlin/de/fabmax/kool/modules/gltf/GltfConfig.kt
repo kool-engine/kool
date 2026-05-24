@@ -2,8 +2,10 @@ package de.fabmax.kool.modules.gltf
 
 import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.ModelMatrixComposition
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.deferred.DeferredKslPbrShader
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.Struct
@@ -22,7 +24,7 @@ data class GltfLoadConfig(
     val sortNodesByAlpha: Boolean = true,
     val instanceLayout: Struct? = null,
     val assetLoader: AssetLoader? = null,
-    val pbrBlock: (KslPbrShader.Config.Builder.(GltfMesh.Primitive) -> Unit)? = null
+    val pbrBlock: (KslPbrShader.Config.Builder.(GltfMesh.Primitive) -> Unit)? = null,
 )
 
 data class GltfMaterialConfig(
@@ -32,5 +34,6 @@ data class GltfMaterialConfig(
     val isDeferredShading: Boolean = false,
     val maxNumberOfLights: Int = 4,
     val fixedNumberOfJoints: Int = 0,
-    val modelMatrixComposition: List<ModelMatrixComposition> = emptyList()
+    val modelMatrixComposition: List<ModelMatrixComposition> = emptyList(),
+    val shaderFactory: ((DeferredKslPbrShader.Config) -> KslShader)? = null,
 )
