@@ -30,7 +30,7 @@ class LightingPass(
 ) {
     val lightingOutput: Texture2d get() = colorTexture!!
 
-    private val lightingShader = DeferredLightingShader(pipeline.isScreenSpaceReflections)
+    private val lightingShader = DeferredLightingShader(pipeline.isScreenSpaceReflections, pipeline.maxGlobalLights)
 
     init {
         camera = pipeline.camera
@@ -72,7 +72,10 @@ class LightingPass(
     }
 }
 
-class DeferredLightingShader(isScreenSpaceReflections: Boolean) : KslShader("deferred2-lighting") {
+class DeferredLightingShader(
+    isScreenSpaceReflections: Boolean,
+    maxGlobalLights: Int,
+) : KslShader("deferred2-lighting") {
     var depthTex by bindTexture2d("depth")
     var scaledViewZ by bindTexture2d("scaledViewZ")
     var encodedNormals by bindTexture2d("encodedNormals")
@@ -94,12 +97,15 @@ class DeferredLightingShader(isScreenSpaceReflections: Boolean) : KslShader("def
             cullMethod = CullMethod.NO_CULLING,
             depthTest = DepthCompareOp.ALWAYS
         )
-        program.program(isScreenSpaceReflections)
+        program.program(isScreenSpaceReflections, maxGlobalLights)
 
         bindTexture1d("tgradient", GradientTexture(ColorGradient.ROCKET))
     }
 
-    private fun KslProgram.program(isScreenSpaceReflections: Boolean) {
+    private fun KslProgram.program(
+        isScreenSpaceReflections: Boolean,
+        maxGlobalLights: Int,
+    ) {
         val uv = interStageFloat2()
         fullscreenQuadVertexStage(uv)
         fragmentStage {
@@ -147,12 +153,10 @@ class DeferredLightingShader(isScreenSpaceReflections: Boolean) : KslShader("def
 
                 val ambient by irradiance.sample(worldNormal).rgb * ssao
 
-                // todo: config max lights
-                val maxNumberOfLights = 4
                 val normalLightRange = NormalLightRange.ZeroToOne
-                val shadowFactors = float1Array(maxNumberOfLights, 1f.const)
-                val lightData = sceneLightData(maxNumberOfLights)
-                val material = pbrMaterialBlock(maxNumberOfLights, listOf(reflection), brdf, normalLightRange) {
+                val shadowFactors = float1Array(maxGlobalLights, 1f.const)
+                val lightData = sceneLightData(maxGlobalLights)
+                val material = pbrMaterialBlock(maxGlobalLights, listOf(reflection), brdf, normalLightRange) {
                     inCamPos(camPos)
                     inNormal(worldNormal)
                     inFragmentPos(worldPos)
@@ -173,9 +177,8 @@ class DeferredLightingShader(isScreenSpaceReflections: Boolean) : KslShader("def
                     val screenReflection by screenReflect(material, viewNormal, scaledViewZ, oldColor, camData)
                     val finalColor by material.outAmbient + material.outLight + screenReflection + albedo * emissiveStrength
                     colorOutput(finalColor)
-//                    colorOutput(screenReflection)
                 } else {
-                    colorOutput(material.outColor)
+                    colorOutput(material.outColor + albedo * emissiveStrength)
                 }
 
                 outDepth set depthSample

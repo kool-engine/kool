@@ -7,7 +7,11 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.*
 import kotlin.math.*
 
-class DeferredLights(val isDynamic: Boolean = true, name: String = "deferred-lights") : Node(name) {
+class DeferredLights(
+    pipeline: Deferred2Pipeline,
+    val isDynamic: Boolean = true,
+    name: String = "deferred-lights",
+) : Node(name) {
     val pointLights: List<DynamicPointLight>
         field = mutableListOf<DynamicPointLight>()
     val spotLights: Map<AngleF, List<DynamicSpotLight>>
@@ -18,8 +22,8 @@ class DeferredLights(val isDynamic: Boolean = true, name: String = "deferred-lig
 
     val lightShader = DeferredLightShader()
 
-    private val spotLightMeshes = mutableMapOf<AngleF, SpotLightMesh>()
-    private val pointLightMesh = Mesh(
+    val spotLightMeshes = mutableMapOf<AngleF, SpotLightMesh>()
+    val pointLightMesh = Mesh(
         layout = VertexLayouts.Position,
         instances = pointLightInstances,
         name = "DeferredPointLights"
@@ -29,13 +33,24 @@ class DeferredLights(val isDynamic: Boolean = true, name: String = "deferred-lig
     }
 
     init {
+        pipeline.onSwap { swapPipelineData(pipeline) }
         addNode(pointLightMesh)
         if (isDynamic) {
-            onUpdate { updateLightData() }
+            onUpdate { updateLightInstanceData() }
         }
     }
 
-    fun updateLightData() {
+    fun clear() {
+        pointLights.clear()
+        pointLightInstances.clear()
+        spotLights.clear()
+        spotLightMeshes.values.forEach {
+            it.lights.clear()
+            it.instances.clear()
+        }
+    }
+
+    fun updateLightInstanceData() {
         pointLightInstances.clear()
         pointLightInstances.addInstances(pointLights.size) { buf ->
             for (i in 0 until pointLights.size) {
@@ -78,8 +93,6 @@ class DeferredLights(val isDynamic: Boolean = true, name: String = "deferred-lig
         modelMat.scale(light.radius)
         set(DeferredLightInstanceLayout.modelMat, modelMat)
 
-        //println(cos(min(light.maxSpotAngle.rad, light.spotAngle.rad) / 2f))
-
         set(DeferredLightInstanceLayout.lightType, Light.Spot.ENCODING)
         set(DeferredLightInstanceLayout.encodedSpotAngle, cos(min(light.maxSpotAngle.rad, light.spotAngle.rad) / 2f))
         set(DeferredLightInstanceLayout.lightColor,
@@ -102,6 +115,7 @@ class DeferredLights(val isDynamic: Boolean = true, name: String = "deferred-lig
     }
 
     fun removePointLight(light: DynamicPointLight) {
+        // fixme this is very slow for many lights
         pointLights -= light
     }
 
@@ -121,7 +135,9 @@ class DeferredLights(val isDynamic: Boolean = true, name: String = "deferred-lig
     }
 
     fun removeSpotLight(light: DynamicSpotLight) {
+        // fixme this is very slow for many lights
         spotLights[light.maxSpotAngle]?.remove(light)
+        spotLightMeshes[light.maxSpotAngle]?.lights?.remove(light)
     }
 
     fun swapPipelineData(pipeline: Deferred2Pipeline) {
@@ -135,7 +151,7 @@ class DeferredLights(val isDynamic: Boolean = true, name: String = "deferred-lig
         }
     }
 
-    private inner class SpotLightMesh(angle: AngleF) {
+    inner class SpotLightMesh(angle: AngleF) {
         val lights = mutableListOf<DynamicSpotLight>()
         val instances = MeshInstanceList(DeferredLightInstanceLayout)
         val mesh = Mesh(
