@@ -42,6 +42,17 @@ class LightingPass(
         }
         drawNode.addNode(outputMesh)
         drawNode.addNode(Skybox.cube(pipeline.ibl.reflectionMap, 2f, colorSpaceConversion = ColorSpaceConversion.AsIs))
+
+        onAfterCollectDrawCommands += { viewData ->
+            val ctx = KoolSystem.requireContext()
+            val gbuffer = pipeline.gbuffers.newVal
+            for (i in gbuffer.lightMeshes.indices) {
+                val mesh = gbuffer.lightMeshes[i]
+                mesh.getOrCreatePipeline(ctx)?.let { pipeline ->
+                    viewData.drawQueue.addMesh(mesh, pipeline)
+                }
+            }
+        }
     }
 
     fun swapBuffers() {
@@ -107,7 +118,8 @@ class DeferredLightingShader(isScreenSpaceReflections: Boolean) : KslShader("def
             val camData = storage("camData", camDataLayout)
 
             main {
-                val baseCoord by (uv.output * depth.size().toFloat2()).toInt2()
+                val size by depth.size()
+                val baseCoord by (uv.output * size.toFloat2()).toInt2()
                 val depthSample by depth.load(baseCoord, lod = 0.const).x
                 `if` (depthSample eq 0f.const) {
                     discard()
@@ -117,7 +129,6 @@ class DeferredLightingShader(isScreenSpaceReflections: Boolean) : KslShader("def
                 val camPos by camData.camPosition
                 val invView by camData.invView
                 val invViewProj by camData.invViewProj
-                val size by depth.size()
                 val worldPos by unprojectBaseCoord(depthSample, baseCoord, size, camNear, invViewProj).xyz
                 val ssao by aoMap.load(baseCoord, lod = 0.const).x
 

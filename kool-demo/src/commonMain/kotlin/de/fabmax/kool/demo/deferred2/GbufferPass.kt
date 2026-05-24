@@ -34,34 +34,56 @@ class GbufferPass(
     val objectIds get() = colorTextures[3]
     val depth get() = depthTexture!!
 
+    internal val alphaMeshes = mutableListOf<Mesh<*>>()
+    internal val lightMeshes = mutableListOf<Mesh<*>>()
+
     init {
         camera = pipeline.camera
         onAfterCollectDrawCommands += { viewData ->
             val upload = pipeline.reprojectMatrixComputePass.uploadData.newVal
             upload.viewProjMat.set(viewData.drawQueue.viewProjMatF)
-
             upload.modelMats.limit = 0
-            viewData.drawQueue.forEach { cmd ->
-                val mesh = cmd.mesh
-                (mesh.shader as? GbufferShader)?.let { gbufferShader ->
-                    val idRange = pipeline.idAllocator.getIdRange(cmd.mesh)
-                    val bufferPos = idRange.from * 16
-                    gbufferShader.objectId = idRange.from
-                    upload.modelMats.limit = max(upload.modelMats.limit, bufferPos + idRange.size * 16)
+            alphaMeshes.clear()
+            lightMeshes.clear()
 
-                    val instances = mesh.instances
-                    if (instances != null) {
-                        val matrixExtractor = gbufferShader.config.instanceModelMatExtractor ?: DefaultInstanceModelMatrixExtractor
-                        if (instances.numInstances > idRange.size) {
-                            logE { "Mesh ${mesh.name} number of instances exceeds ID range: ${instances.numInstances} > ${idRange.size}" }
+            val drawQueue = viewData.drawQueue
+            val it = drawQueue.iterator()
+            while (it.hasNext()) {
+                val cmd = it.next()
+                val mesh = cmd.mesh
+                if (!mesh.isOpaque) {
+                    alphaMeshes += cmd.mesh
+                    it.remove()
+                    drawQueue.recycleDrawCommand(cmd)
+
+                } else {
+                    when (val shader = mesh.shader) {
+                        is GbufferShader -> {
+                            val idRange = pipeline.idAllocator.getIdRange(cmd.mesh)
+                            val bufferPos = idRange.from * 16
+                            shader.objectId = idRange.from
+                            upload.modelMats.limit = max(upload.modelMats.limit, bufferPos + idRange.size * 16)
+
+                            val instances = mesh.instances
+                            if (instances != null) {
+                                val matrixExtractor = shader.config.instanceModelMatExtractor ?: DefaultInstanceModelMatrixExtractor
+                                if (instances.numInstances > idRange.size) {
+                                    logE { "Mesh ${mesh.name} number of instances exceeds ID range: ${instances.numInstances} > ${idRange.size}" }
+                                }
+                                for (i in 0 until instances.numInstances.coerceAtMost(idRange.size)) {
+                                    upload.modelMats.position = bufferPos + i * 16
+                                    matrixExtractor.getModelMatrix(i, mesh, upload.modelMats)
+                                }
+                            } else {
+                                upload.modelMats.position = bufferPos
+                                cmd.modelMatF.putTo(upload.modelMats)
+                            }
                         }
-                        for (i in 0 until instances.numInstances.coerceAtMost(idRange.size)) {
-                            upload.modelMats.position = bufferPos + i * 16
-                            matrixExtractor.getModelMatrix(i, mesh, upload.modelMats)
+                        is DeferredLightShader -> {
+                            lightMeshes += cmd.mesh
+                            it.remove()
+                            drawQueue.recycleDrawCommand(cmd)
                         }
-                    } else {
-                        upload.modelMats.position = bufferPos
-                        cmd.modelMatF.putTo(upload.modelMats)
                     }
                 }
             }

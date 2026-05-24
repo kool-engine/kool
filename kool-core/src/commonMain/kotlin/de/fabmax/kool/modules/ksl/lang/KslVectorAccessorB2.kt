@@ -15,3 +15,6 @@ val KslExpression<KslBool2>.yx get() = bool2("yx")
 val KslExpression<KslBool2>.rr get() = bool2("rr")
 val KslExpression<KslBool2>.gg get() = bool2("gg")
 val KslExpression<KslBool2>.gr get() = bool2("gr")
+
+operator fun KslExprBool2.component1(): KslExprBool1 = x
+operator fun KslExprBool2.component2(): KslExprBool1 = y
