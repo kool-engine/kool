@@ -3,9 +3,7 @@ package de.fabmax.kool.demo.deferred2
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.deg
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
@@ -26,6 +24,7 @@ import de.fabmax.kool.util.*
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.round
+import kotlin.math.sin
 
 class Deferred2Demo : DemoScene("Deferred2 Demo") {
 
@@ -121,7 +120,6 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
             addColorMesh {
                 generate {
                     color = MdColor.PINK.toLinear()
-//                    color = Color.WHITE
                     cube { origin.set(-2.5f, 0f, 0f)}
                     color = MdColor.LIGHT_BLUE.toLinear()
                     cube {
@@ -129,7 +127,7 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
                         size.set(0.25f, 1f, 0.25f)
                     }
                 }
-                shader = gbufferShader(objectId = 1) {
+                shader = gbufferShader {
                     color {
                         vertexColor()
                         uniformColor(uniformName = "uBaseCol", blendMode = ColorBlockConfig.BlendMode.Multiply)
@@ -158,7 +156,7 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
                         radius = 0.5f
                     }
                 }
-                shader = gbufferShader(objectId = 6) {
+                shader = gbufferShader {
                     color { vertexColor() }
                     metallic { constProperty(1f) }
                     roughness { constProperty(0f) }
@@ -171,20 +169,15 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
                 onUpdate {
                     transform
                         .setIdentity()
-//                        .rotate(90f.deg * Time.gameTime.toFloat(), Vec3f.Y_AXIS)
-                        //.rotate(20f.deg, Vec3f.Y_AXIS)
+                        .rotate(90f.deg * Time.gameTime.toFloat(), Vec3f.Y_AXIS)
                         .translate(2.5f, 0f, 0f)
                 }
-                shader = gbufferShader(objectId = 2) {
+                shader = gbufferShader {
                     color { textureColor(albedoMap) }
                     normalMapping { useNormalMap(normalMap) }
                     metallic { textureProperty(metallicMap) }
                     roughness { textureProperty(roughnessMap) }
                     ao { textureProperty(aoMap) }
-
-//                    color { constColor(Color.WHITE) }
-//                    metallic { constProperty(1f) }
-//                    roughness { constProperty(0f) }
                 }.apply {
                     bindTexture2d("tbaseColor", albedoMap)
                     bindTexture2d("tNormalMap", normalMap)
@@ -193,15 +186,36 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
                     bindTexture2d("tao", aoMap)
                 }
             }
-            addColorMesh {
+
+            val colorCubeInstances = MeshInstanceList(InstanceLayouts.ModelMat)
+            addColorMesh(instances = colorCubeInstances) {
                 generate {
                     cube { colored() }
                 }
-                onUpdate {
-                    transform.rotate(90f.deg * Time.deltaT, Vec3f.Y_AXIS)
-                }
-                shader = gbufferShader(objectId = 3) {
+                shader = gbufferShader {
+                    vertices { instancedModelMatrix() }
                     color { vertexColor() }
+                }
+                transform.translate(0f, 0f, -5f)
+                val modelMat = MutableMat4f()
+                onUpdate {
+                    colorCubeInstances.clear()
+                    colorCubeInstances.addInstances(9) { buffer ->
+                        var i = 0
+                        for (x in -1..1) {
+                            for (y in -1..1) {
+                                buffer.set(i++) {
+                                    val xRot = sin(Time.gameTime + i * 31).toFloat().rad * 2.7f
+                                    val yRot = sin(Time.gameTime * 0.73 + i * 17).toFloat().rad * 2.7f
+                                    modelMat.setIdentity()
+                                        .translate(x * 2f, y * 2f + 3f, 0f)
+                                        .rotate(xRot, Vec3f.X_AXIS)
+                                        .rotate(yRot, Vec3f.Y_AXIS)
+                                    set(it.modelMat, modelMat)
+                                }
+                            }
+                        }
+                    }
                 }
             }
             addTextureMesh {
@@ -213,16 +227,14 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
                         texCoordScale.set(10f, 10f)
                     }
                 }
-                shader = gbufferShader(objectId = 4) {
+                shader = gbufferShader {
                     color {
                         textureColor(uvChecker)
                     }
                     roughness { uniformProperty(groundRoughness.value, "uRough") }
-//                    metallic { constProperty(1f) }
 
                 }.apply {
                     bindTexture2d("tbaseColor", uvChecker)
-
                     var rough by bindUniformFloat1("uRough", groundRoughness.value)
                     groundRoughness.onChange { _, newValue -> rough = newValue }
                 }
@@ -230,13 +242,11 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
 
             val modelMesh = teapot.meshes.values.first().apply {
                 transform.translate(0f, -0.5f, 5f).scale(0.5f).rotate(20f.deg, Vec3f.Y_AXIS)
-                shader = gbufferShader(objectId = 5) {
+                shader = gbufferShader {
                     color {
                         constColor(MdColor.LIME toneLin 500)
-//                        constColor(Color.WHITE)
                     }
                     roughness { constProperty(0.1f) }
-//                    metallic { constProperty(1f) }
                 }
             }
             addNode(modelMesh)
