@@ -5,7 +5,7 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.Platform
 import de.fabmax.kool.demo.bees.BeeDemo
 import de.fabmax.kool.demo.creativecoding.CreativeCodingDemo
-import de.fabmax.kool.demo.deferred2.Deferred2Demo
+import de.fabmax.kool.demo.deferred2.Deferred2Test
 import de.fabmax.kool.demo.helloworld.*
 import de.fabmax.kool.demo.pathtracing.PathTracingDemo
 import de.fabmax.kool.demo.pbr.PbrDemo
@@ -66,7 +66,7 @@ object Demos {
         entry("gltf", "glTF Models") { GltfDemo() }
         entry("ssr", "Reflections") { ReflectionDemo() }
         entry("deferred", "Deferred Shading", NeedsComputeShaders) { DeferredDemo() }
-        entry("deferred2", "Deferred Shading 2", NeedsComputeShaders) { Deferred2Demo() }
+        entry("deferred2test", "Deferred 2 Test", NeedsComputeShaders) { Deferred2Test() }
         entry("procedural", "Procedural Roses", NeedsComputeShaders) { ProceduralDemo() }
         entry("pbr", "PBR Materials") { PbrDemo() }
     }

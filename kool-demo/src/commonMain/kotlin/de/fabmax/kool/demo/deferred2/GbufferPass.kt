@@ -64,19 +64,24 @@ class GbufferPass(
                             shader.objectId = idRange.from
                             upload.modelMats.limit = max(upload.modelMats.limit, bufferPos + idRange.size * 16)
 
-                            val instances = mesh.instances
-                            if (instances != null) {
-                                val matrixExtractor = shader.config.instanceModelMatExtractor ?: DefaultInstanceModelMatrixExtractor
-                                if (instances.numInstances > idRange.size) {
-                                    logE { "Mesh ${mesh.name} number of instances exceeds ID range: ${instances.numInstances} > ${idRange.size}" }
+                            try {
+                                val instances = mesh.instances
+                                if (instances != null) {
+                                    val matrixExtractor = shader.config.instanceModelMatExtractor ?: DefaultInstanceModelMatrixExtractor
+                                    if (instances.numInstances > idRange.size) {
+                                        logE { "Mesh ${mesh.name} number of instances exceeds ID range: ${instances.numInstances} > ${idRange.size}" }
+                                    }
+                                    for (i in 0 until instances.numInstances.coerceAtMost(idRange.size)) {
+                                        upload.modelMats.position = bufferPos + i * 16
+                                        matrixExtractor.getModelMatrix(i, mesh, upload.modelMats)
+                                    }
+                                } else {
+                                    upload.modelMats.position = bufferPos
+                                    cmd.modelMatF.putTo(upload.modelMats)
                                 }
-                                for (i in 0 until instances.numInstances.coerceAtMost(idRange.size)) {
-                                    upload.modelMats.position = bufferPos + i * 16
-                                    matrixExtractor.getModelMatrix(i, mesh, upload.modelMats)
-                                }
-                            } else {
-                                upload.modelMats.position = bufferPos
-                                cmd.modelMatF.putTo(upload.modelMats)
+                            } catch (e: Exception) {
+                                logE { "Error updating model matrices" }
+                                e.printStackTrace()
                             }
                         }
                         is DeferredLightShader -> {

@@ -21,6 +21,27 @@ fun gbufferShader(block: GbufferShaderConfig.Builder.() -> Unit): GbufferShader 
 }
 
 class GbufferShader(val config: GbufferShaderConfig) : KslShader("deferred2-gbuffer-shader") {
+    var color: Color by bindColorUniform(config.colorCfg)
+    var colorMap: Texture2d? by bindColorTexture(config.colorCfg)
+
+    var normalMap: Texture2d? by bindTexture2d(config.normalMapCfg.textureName, config.normalMapCfg.defaultNormalMap)
+    var normalMapStrength: Float by bindPropertyUniform(config.normalMapCfg.strengthCfg)
+
+    var displacement: Float by bindPropertyUniform(config.vertexCfg.displacementCfg)
+    var displacementMap: Texture2d? by bindPropertyTexture(config.vertexCfg.displacementCfg)
+
+    var emission: Float by bindPropertyUniform(config.emissionCfg)
+    var emissionMap: Texture2d? by bindPropertyTexture(config.emissionCfg)
+
+    var materialAo: Float by bindPropertyUniform(config.aoCfg)
+    var materialAoMap: Texture2d? by bindPropertyTexture(config.aoCfg)
+
+    var metallic: Float by bindPropertyUniform(config.metallicCfg)
+    var metallicMap: Texture2d? by bindPropertyTexture(config.metallicCfg)
+
+    var roughness: Float by bindPropertyUniform(config.roughnessCfg)
+    var roughnessMap: Texture2d? by bindPropertyTexture(config.roughnessCfg)
+
     var objectId: Int by bindUniformInt1("uObjectId")
 
     init {

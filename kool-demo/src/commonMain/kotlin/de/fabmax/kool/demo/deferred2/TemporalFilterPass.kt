@@ -112,6 +112,12 @@ class TemporalFilterShader(
 
             main {
                 val baseCoord by inGlobalInvocationId.xy.toInt2()
+                val newColor by lightingOutput.load(baseCoord).rgb
+                `if` (filterWeight eq 0f.const) {
+                    newFilter[baseCoord] = float4Value(newColor, 1f)
+                    `return`()
+                }
+
                 val curMeta by newMeta.load(baseCoord).r
                 val id by curMeta and 0xffffff.const
                 val size by newDepth.size()
@@ -186,9 +192,8 @@ class TemporalFilterShader(
                     w set 0f.const
                 }
 
-                val curColor by lightingOutput.load(baseCoord).rgb
                 val oldColor by oldFilter.sample(oldUv).rgb
-                val curSrgb by convertColorSpace(curColor, ColorSpaceConversion.LinearToSrgb())
+                val curSrgb by convertColorSpace(newColor, ColorSpaceConversion.LinearToSrgb())
                 val oldSrgb by convertColorSpace(oldColor, ColorSpaceConversion.LinearToSrgb())
                 val weighted by (oldSrgb * w + curSrgb) / (w + 1f.const)
                 val filtered by convertColorSpace(weighted, ColorSpaceConversion.SrgbToLinear())

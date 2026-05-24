@@ -5,29 +5,23 @@ import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
-import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
-import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
-import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
-import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.BloomPass
-import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
-import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.pipeline.SamplerSettings
-import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.ao.AoRadius
-import de.fabmax.kool.pipeline.swapPipelineData
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.l
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.round
 import kotlin.math.sin
 import kotlin.random.Random
 
-class Deferred2Demo : DemoScene("Deferred2 Demo") {
+class Deferred2Test : DemoScene("Deferred2 Test") {
 
     val ibl by hdriImage("${DemoLoader.hdriPath}/newport_loft.rgbe.png")
 //    val ibl by hdriImage("${DemoLoader.hdriPath}/shanghai_bund_1k.rgbe.png")
@@ -57,44 +51,30 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
     private var gpuTimesAccu = GpuTimes()
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        val deferredLights = DeferredLights()
-        val content = deferredContent(deferredLights)
+        val content = deferredContent()
         val lighting = Lighting().apply {
             clear()
-//            singlePointLight {
-//                setup(Vec3f(1.2f, 3.2f, 2f))
-//                setColor(Color.WHITE, intensity = 5f)
-//            }
         }
 
-        pipeline = Deferred2Pipeline(content, scene = this, ibl, isScreenSpaceReflections = true, lighting)
+        pipeline = Deferred2Pipeline(content, scene = this, ibl, isScreenSpaceReflections = true, lighting = lighting)
         pipeline.renderScale = 0.5f
         pipeline.aoPass.radius = AoRadius.relativeRadius(1/20f)
         filterWeight.value = pipeline.filterPass.filterWeight.toInt()
         filterWeight.onChange { _, value -> pipeline.filterPass.filterWeight = value.toFloat() }
 
-        bloomPass = BloomPass(pipeline.filterPass.filterOutput.newVal)
+        bloomPass = pipeline.installBloomPass()
         bloomPass.isProfileGpu = true
-        addComputePass(bloomPass)
-        bloom.onChange { _, value -> bloomPass.isEnabled = value }
-        pipeline.onSwap {
-            val filterOutput = pipeline.filterPass.filterOutput.newVal
-            bloomPass.inputShader.swapPipelineData(filterOutput) {
-                bloomPass.inputTexture = filterOutput
-            }
-        }
+        addNode(pipeline.defaultOutputQuad(bloomPass))
 
+        val deferredLights = DeferredLights(pipeline)
         content.apply {
             val orbitCam = orbitCamera(pipeline.camera) {
                 setRotation(100f, -7f)
             }
             addNode(orbitCam)
-            //addNode(pointLights)
+            addNode(deferredLights)
         }
 
-        pipeline.onSwap {
-            deferredLights.swapPipelineData(pipeline)
-        }
         val r = Random(1234)
         repeat(50) {
             deferredLights.addPointLight {
@@ -108,13 +88,6 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
                 setDirection(Vec3f(r.randomF(-1f, 1f), -1f, r.randomF(-1f, 1f)))
                 strengthByIntensity(r.randomF(30f, 50f))
             }
-        }
-
-        addTextureMesh {
-            generate {
-                generateFullscreenQuad()
-            }
-            shader = deferredOutputShader(this@Deferred2Demo, pipeline, bloomPass)
         }
 
         val nAccu = 50
@@ -134,10 +107,9 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
         }
     }
 
-    private fun deferredContent(pointLights: DeferredLights) = Node("deferred content").apply {
+    private fun deferredContent() = Node("deferred content").apply {
         addGroup {
             transform.rotate(45f.deg, Vec3f.Y_AXIS)
-            addNode(pointLights)
             addColorMesh {
                 generate {
                     color = MdColor.PINK.toLinear()
@@ -154,17 +126,15 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
                         uniformColor(uniformName = "uBaseCol", blendMode = ColorBlockConfig.BlendMode.Multiply)
                     }
                     roughness { constProperty(0.15f) }
-                    emission { uniformProperty(10f, "uEmi") }
+                    emission { uniformProperty(10f) }
                 }.apply {
-                    var baseColFac by bindUniformColor("uBaseCol")
-                    var emi by bindUniformFloat1("uEmi")
                     onUpdate {
                         val str = 10f //(sin(Time.gameTime.toFloat() * 4f) + 1f) * 16f
                         var e = str
                         e = ceil(e * 4f) / 4f
                         val b = if (e > 0f) round(str / e * 255f) / 255f else 0f
-                        baseColFac = Color(b, b, b)
-                        emi = e
+                        color = Color(b, b, b)
+                        emission = e
                     }
                 }
             }
@@ -199,12 +169,6 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
                     metallic { textureProperty(metallicMap) }
                     roughness { textureProperty(roughnessMap) }
                     ao { textureProperty(aoMap) }
-                }.apply {
-                    bindTexture2d("tbaseColor", albedoMap)
-                    bindTexture2d("tNormalMap", normalMap)
-                    bindTexture2d("tmetallic", metallicMap)
-                    bindTexture2d("troughness", roughnessMap)
-                    bindTexture2d("tao", aoMap)
                 }
             }
 
@@ -252,12 +216,10 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
                     color {
                         textureColor(uvChecker)
                     }
-                    roughness { uniformProperty(groundRoughness.value, "uRough") }
+                    roughness { uniformProperty(groundRoughness.value) }
 
                 }.apply {
-                    bindTexture2d("tbaseColor", uvChecker)
-                    var rough by bindUniformFloat1("uRough", groundRoughness.value)
-                    groundRoughness.onChange { _, newValue -> rough = newValue }
+                    groundRoughness.onChange { _, newValue -> roughness = newValue }
                 }
             }
 
@@ -337,48 +299,6 @@ class Deferred2Demo : DemoScene("Deferred2 Demo") {
             }
         }
     }
-}
-
-private fun deferredOutputShader(
-    demo: Deferred2Demo,
-    deferred2Pipeline: Deferred2Pipeline,
-    bloomPass: BloomPass
-): KslShader {
-    val outputShader = KslShader("deferred2-output") {
-        val uv = interStageFloat2()
-        fullscreenQuadVertexStage(uv)
-        fragmentStage {
-            main {
-                val output = texture2d("deferredOutput")
-                val bloom = texture2d("bloomOutput")
-                val uvi = (uv.output * output.size().toFloat2()).toInt2()
-                val color by output.sample(uv.output).rgb + bloom.sample(uv.output).rgb
-
-                val ditherTex = texture2d("ditherPattern")
-                val ditherC by uvi % ditherTex.size()
-                val ditherNoise by ditherTex.load(ditherC).r
-                val srgb by convertColorSpace(color, ColorSpaceConversion.LinearToSrgbHdr()) + (ditherNoise - 0.5f.const) / 255f.const
-                colorOutput(srgb)
-//                colorOutput(color)
-            }
-        }
-    }
-
-    val ditherTex = makeDitherPattern()
-    ditherTex.releaseWith(demo.mainScene)
-
-    outputShader.bindTexture2d("ditherPattern", ditherTex)
-    var bloomTex by outputShader.bindTexture2d("bloomOutput", bloomPass.bloomMap)
-    var inputTex by outputShader.bindTexture2d("deferredOutput", defaultSampler = SamplerSettings().nearest().clamped())
-    val noBloom = SingleColorTexture(Color.BLACK)
-    deferred2Pipeline.onSwap {
-        val filterOutput = deferred2Pipeline.filterPass.filterOutput.newVal
-        outputShader.swapPipelineData(filterOutput) {
-            inputTex = filterOutput
-            bloomTex = if (bloomPass.isEnabled) bloomPass.bloomMap else noBloom
-        }
-    }
-    return outputShader
 }
 
 private data class TsaaItem(val label: String, val tsaa: List<Vec2f>, val numSamples: Int) {

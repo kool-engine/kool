@@ -3,18 +3,17 @@ package de.fabmax.kool.demo.deferred2
 import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
+import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
+import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.BufferedImageData2d
-import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.pipeline.ao.AoRadius
 import de.fabmax.kool.pipeline.ao.ComputeAoPass
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
-import de.fabmax.kool.pipeline.swapPipelineData
-import de.fabmax.kool.scene.Lighting
-import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.PerspectiveCamera
-import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -22,10 +21,11 @@ import kotlinx.coroutines.yield
 
 class Deferred2Pipeline(
     val content: Node,
-    private val scene: Scene,
+    val scene: Scene,
     val ibl: EnvironmentMap,
     val isScreenSpaceReflections: Boolean,
     val lighting: Lighting = Lighting(),
+    val maxGlobalLights: Int = 1,
     var renderScale: Float = 1f,
     var tsaa: List<Vec2f> = TSAA_4,
     maxObjects: Int = 16384
@@ -267,3 +267,63 @@ context(_: KslScopeBuilder)
 val KslStructStorage<DeferredCamDataLayout>.camNear: KslExprFloat1 get() = this[0.const][DeferredCamDataLayout.camNear]
 context(_: KslScopeBuilder)
 val KslStructStorage<DeferredCamDataLayout>.frameIdx: KslExprInt1 get() = this[0.const][DeferredCamDataLayout.frameIdx]
+
+fun Deferred2Pipeline.installBloomPass(): BloomPass {
+    val bloomPass = BloomPass(filterPass.filterOutput.newVal)
+    bloomPass.isProfileGpu = true
+    scene.addComputePass(bloomPass)
+    onSwap {
+        val filterOutput = filterPass.filterOutput.newVal
+        bloomPass.inputShader.swapPipelineData(filterOutput) {
+            bloomPass.inputTexture = filterOutput
+        }
+    }
+    return bloomPass
+}
+
+fun Deferred2Pipeline.defaultOutputQuad(bloomPass: BloomPass?): Mesh<*> {
+    val outputShader = defaultOutputShader(bloomPass)
+    return TextureMesh().apply {
+        generate {
+            generateFullscreenQuad()
+        }
+        shader = outputShader
+    }
+}
+
+fun Deferred2Pipeline.defaultOutputShader(
+    bloomPass: BloomPass?,
+): KslShader {
+    val outputShader = KslShader("deferred2-output") {
+        val uv = interStageFloat2()
+        fullscreenQuadVertexStage(uv)
+        fragmentStage {
+            val output = texture2d("deferredOutput")
+            val bloom = texture2d("bloomOutput")
+            val ditherTex = texture2d("ditherPattern")
+
+            main {
+                val uvi = (uv.output * output.size().toFloat2()).toInt2()
+                val color by output.sample(uv.output).rgb + bloom.sample(uv.output).rgb
+                val ditherC by uvi % ditherTex.size()
+                val ditherNoise by ditherTex.load(ditherC).r
+                val srgb by convertColorSpace(color, ColorSpaceConversion.LinearToSrgbHdr()) + (ditherNoise - 0.5f.const) / 255f.const
+                colorOutput(srgb)
+            }
+        }
+    }
+
+    val ditherTex = makeDitherPattern()
+    ditherTex.releaseWith(filterPass)
+    outputShader.bindTexture2d("ditherPattern", ditherTex)
+    val bloomMap = bloomPass?.bloomMap ?: SingleColorTexture(Color.BLACK)
+    outputShader.bindTexture2d("bloomOutput", bloomMap)
+    var inputTex by outputShader.bindTexture2d("deferredOutput", defaultSampler = SamplerSettings().nearest().clamped())
+    onSwap {
+        val filterOutput = filterPass.filterOutput.newVal
+        outputShader.swapPipelineData(filterOutput) {
+            inputTex = filterOutput
+        }
+    }
+    return outputShader
+}
