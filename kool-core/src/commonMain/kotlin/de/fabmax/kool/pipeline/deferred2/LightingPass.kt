@@ -1,4 +1,4 @@
-package de.fabmax.kool.demo.deferred2
+package de.fabmax.kool.pipeline.deferred2
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Mat3f
@@ -18,6 +18,7 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Skybox
 import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.util.ColorGradient
+import kotlin.math.abs
 
 class LightingPass(
     size: Vec2i,
@@ -182,7 +183,7 @@ class DeferredLightingShader(
                             val normalLightSpace = float3Var(normalize((viewProj * float4Value(worldNormal, 0f.const)).xyz))
                             lightSpaceNormalZs[subMapIdx] set normalLightSpace.z
                             lightSpacePositions[subMapIdx] set viewProj * float4Value(worldPos, 1f.const)
-                            lightSpacePositions[subMapIdx].xyz += normalLightSpace * kotlin.math.abs(subMap.shaderDepthOffset).const
+                            lightSpacePositions[subMapIdx].xyz += normalLightSpace * abs(subMap.shaderDepthOffset).const
                         }
                     }
                     // adjust light strength values by shadow maps

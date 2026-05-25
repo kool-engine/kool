@@ -1,4 +1,4 @@
-package de.fabmax.kool.demo.deferred2
+package de.fabmax.kool.pipeline.deferred2
 
 import de.fabmax.kool.modules.ksl.BasicVertexConfig
 import de.fabmax.kool.modules.ksl.KslShader

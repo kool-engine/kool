@@ -1,7 +1,6 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.deferred2.*
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
@@ -11,6 +10,7 @@ import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.toConfig
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.pipeline.deferred2.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import kotlin.math.*

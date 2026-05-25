@@ -2,10 +2,6 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.deferred2.Deferred2Pipeline
-import de.fabmax.kool.demo.deferred2.createShadowMaps
-import de.fabmax.kool.demo.deferred2.defaultOutputQuad
-import de.fabmax.kool.demo.deferred2.gbufferShader
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
@@ -16,6 +12,10 @@ import de.fabmax.kool.modules.ksl.toConfig
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.ao.AoRadius
+import de.fabmax.kool.pipeline.deferred2.Deferred2Pipeline
+import de.fabmax.kool.pipeline.deferred2.createShadowMaps
+import de.fabmax.kool.pipeline.deferred2.defaultOutputQuad
+import de.fabmax.kool.pipeline.deferred2.gbufferShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.generateNormals

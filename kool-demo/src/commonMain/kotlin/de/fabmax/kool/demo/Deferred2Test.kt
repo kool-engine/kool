@@ -1,7 +1,6 @@
-package de.fabmax.kool.demo.deferred2
+package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
@@ -9,6 +8,7 @@ import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.BloomPass
 import de.fabmax.kool.pipeline.ao.AoRadius
+import de.fabmax.kool.pipeline.deferred2.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
