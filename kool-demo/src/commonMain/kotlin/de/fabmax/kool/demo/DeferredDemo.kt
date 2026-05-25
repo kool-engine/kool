@@ -82,9 +82,8 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         val content = Node()
         content.makeContent()
 
-        pipeline = Deferred2Pipeline(content, scene = this, ibl, isScreenSpaceReflections = false, lighting = lighting)
+        pipeline = Deferred2Pipeline(content, scene = this, ibl, lighting = lighting)
         pipeline.renderScale = 1f / UiScale.windowScale.value
-        //pipeline.filterPass.filterWeight = 0f
         pipeline.aoPass.radius = AoRadius.absoluteRadius(1.5f)
 
         bloomPass = pipeline.installBloomPass()

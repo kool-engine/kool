@@ -12,7 +12,6 @@ import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.toConfig
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import kotlin.math.*
 
@@ -28,17 +27,23 @@ class ReflectionDemo : DemoScene("Reflections") {
     private val model by model("${DemoLoader.modelPath}/bunny.gltf.gz", GltfLoadConfig(generateNormals = true, applyMaterials = false))
 
     private val lights = listOf(
-            LightMesh(MdColor.CYAN),
-            LightMesh(MdColor.RED),
-            LightMesh(MdColor.AMBER),
-            LightMesh(MdColor.GREEN))
+        LightMesh(MdColor.CYAN),
+        LightMesh(MdColor.RED),
+        LightMesh(MdColor.AMBER),
+        LightMesh(MdColor.GREEN)
+    )
+    private var shadowMaps: List<ShadowMap> = emptyList()
 
     private val lightChoices = listOf("1", "2", "3", "4")
     private val lightGroup = Node("light-group")
 
-    private val isSsrEnabled = mutableStateOf(true)//.onChange { _, new -> deferredPipeline.isSsrEnabled = new }
-    private val ssrMapSize = mutableStateOf(0.5f)//.onChange { _, new -> deferredPipeline.reflectionMapSize = new }
-    private val isShowSsrMap = mutableStateOf(true)
+    private val isSsrEnabled = mutableStateOf(true).onChange { _, new ->
+        if (new) {
+            deferredPipeline.enableScreenSpaceReflections()
+        } else {
+            deferredPipeline.disableScreenSpaceReflections()
+        }
+    }
     private val lightCount = mutableStateOf(4)
     private val lightPower = mutableStateOf(500f)
     private val lightSaturation = mutableStateOf(0.4f)
@@ -59,43 +64,32 @@ class ReflectionDemo : DemoScene("Reflections") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        addNode(lightGroup)
-        lightGroup.onUpdate {
-            lightGroup.transform.rotate((-3f).deg * Time.deltaT, Vec3f.Y_AXIS)
-        }
-
         lighting.clear()
         lights.forEach {
             lighting.addLight(it.light)
             lightGroup.addNode(it)
         }
 
-        setupDeferred(this)
-    }
-
-    private fun setupDeferred(scene: Scene) {
-//        val defCfg = DeferredPipelineConfig().apply {
-//            isWithAmbientOcclusion = false
-//            isWithScreenSpaceReflections = true
-//            useImageBasedLighting(hdri)
-//        }
         val content = Node()
-        val cam = PerspectiveCamera()
-        val shadowMaps = mainScene.lighting.createShadowMaps(content, cam)
+        shadowMaps = mainScene.lighting.createShadowMaps(content, camera)
         shadowMaps.forEach { it.addToScene(mainScene) }
         deferredPipeline = Deferred2Pipeline(
             content = content,
-            scene = scene,
+            scene = this,
             ibl = hdri,
-            camera = cam,
-            isScreenSpaceReflections = true,
+            camera = camera,
             maxGlobalLights = 4,
             lighting = mainScene.lighting,
             shadowMapConfig = shadowMaps.toConfig()
         )
-        //scene.camera = deferredPipeline.camera
+        deferredPipeline.renderScale = 1f / UiScale.windowScale.value
+        deferredPipeline.enableScreenSpaceReflections()
 
-        scene += deferredPipeline.defaultOutputQuad(null)
+        addNode(deferredPipeline.defaultOutputQuad(null, writeDepth = true))
+        addNode(lightGroup)
+        lightGroup.onUpdate {
+            lightGroup.transform.rotate((-3f).deg * Time.deltaT, Vec3f.Y_AXIS)
+        }
 
         modelShader = gbufferShader {
             color { uniformColor(matColors[selectedColorIdx.value].linColor) }
@@ -103,8 +97,8 @@ class ReflectionDemo : DemoScene("Reflections") {
             metallic { uniformProperty(this@ReflectionDemo.metallic.value) }
         }
 
-        deferredPipeline.content.apply {
-            val cam = orbitCamera(deferredPipeline.camera) {
+        content.apply {
+            val camTransform = orbitCamera(camera) {
                 zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
                 setZoom(17.0, max = 50.0)
                 translation.set(0.0, 2.0, 0.0)
@@ -116,7 +110,7 @@ class ReflectionDemo : DemoScene("Reflections") {
                     }
                 }
             }
-            addNode(cam)
+            addNode(camTransform)
 
             addTextureMesh(isNormalMapped = true) {
                 generate {
@@ -146,9 +140,9 @@ class ReflectionDemo : DemoScene("Reflections") {
 
     private fun updateLighting() {
         lights.forEachIndexed { i, light ->
-//            if (i < deferredPipeline.shadowMaps.size) {
-//                deferredPipeline.shadowMaps[i].isShadowMapEnabled = false
-//            }
+            if (i < shadowMaps.size) {
+                shadowMaps[i].isShadowMapEnabled = false
+            }
             light.disable(mainScene.lighting)
         }
 
@@ -158,9 +152,9 @@ class ReflectionDemo : DemoScene("Reflections") {
             lights[i].setup(pos)
             lights[i].enable(mainScene.lighting)
             pos += step
-//            if (i < deferredPipeline.shadowMaps.size) {
-//                deferredPipeline.shadowMaps[i].isShadowMapEnabled = true
-//            }
+            if (i < shadowMaps.size) {
+                shadowMaps[i].isShadowMapEnabled = true
+            }
         }
 
         lights.forEach { it.updateVisibility() }
@@ -171,13 +165,6 @@ class ReflectionDemo : DemoScene("Reflections") {
         val txtSize = UiSizes.baseSize * 0.75f
 
         LabeledSwitch("SSR enabled".l, isSsrEnabled)
-        LabeledSwitch("Show map".l, isShowSsrMap)
-        MenuRow {
-            Text("Map size".l) { labelStyle(lblSize) }
-            MenuSlider(ssrMapSize.use(), 0.1f, 1f, { it.toString(1) }, txtWidth = txtSize) {
-                ssrMapSize.set((it * 10).roundToInt() / 10f)
-            }
-        }
 
         Text("Material".l) { sectionTitleStyle() }
         MenuRow {
@@ -229,21 +216,6 @@ class ReflectionDemo : DemoScene("Reflections") {
         }
         LabeledSwitch("Light indicators".l, isShowLightIndicators)
         LabeledSwitch("Auto rotate view".l, isAutoRotate)
-
-        if (isShowSsrMap.value) {
-            surface.popup().apply {
-                modifier
-                    .margin(sizes.gap)
-                    .align(AlignmentX.Start, AlignmentY.Bottom)
-
-//                Image(deferredPipeline.reflections?.reflectionMap) {
-//                    modifier
-//                        .height(500.dp)
-//                        .imageProvider(FlatImageProvider(deferredPipeline.reflections?.reflectionMap, true).mirrorY())
-//                        .backgroundColor(Color.BLACK)
-//                }
-            }
-        }
 
         updateLighting()
     }

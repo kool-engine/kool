@@ -51,7 +51,8 @@ class Deferred2Test : DemoScene("Deferred2 Test") {
         }
 
         //val ibl = EnvironmentMap.fromSingleColor(Color.BLACK)
-        pipeline = Deferred2Pipeline(content, scene = this, ibl, isScreenSpaceReflections = true, lighting = lighting)
+        pipeline = Deferred2Pipeline(content, scene = this, ibl, lighting = lighting)
+        pipeline.enableScreenSpaceReflections()
         pipeline.renderScale = 0.5f
         pipeline.aoPass.radius = AoRadius.relativeRadius(1/20f)
         filterWeight.value = pipeline.filterPass.filterWeight.toInt()
