@@ -2,6 +2,7 @@ package de.fabmax.kool.demo.deferred2
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Mat3f
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShader
@@ -281,7 +282,7 @@ fun KslScopeBuilder.screenReflect(
                 }
 
                 val nextStep by clamp(dError * (0.75f.const + noise.y * 0.5f.const), -prevStepSize * maxIncrease, prevStepSize * maxIncrease)
-                val foregroundObjThresh by max(prevStepSize, baseDist * 0.05f.const / directionFac)
+                val foregroundObjThresh by max(prevStepSize * reflectionRayStepIncrease, baseDist * 0.05f.const) * 0.5f.const / directionFac
                 `if`(-nextStep gt foregroundObjThresh) {
                     prevStep set step
                     step += prevStepSize
@@ -306,6 +307,8 @@ fun KslScopeBuilder.screenReflect(
     val rayDir by reflect(normalize(viewPos), viewNormal)
     val noise by noise33(viewPos * (camData.frameIdx % 64.const + 1.const).toFloat1())
 
+    val ddx by Vec2f.X_AXIS.const
+    val ddy by Vec2f.Y_AXIS.const
     val scatteringCoeff by 0.4f.const
     val reflectionColorOut by 0f.const3
     val minColor by 1000f.const3
@@ -317,7 +320,7 @@ fun KslScopeBuilder.screenReflect(
         val scatteredRayDir by normalize(rayDir + scatterOffset)
         val rayResult by fnCastRay(viewPos, scatteredRayDir, noise, reflectionRayStepIncrease)
         `if`(rayResult.z gt 0f.const) {
-            val sampleColor by oldColor.sample(rayResult.xy).rgb * rayResult.z * specFactor
+            val sampleColor by oldColor.sample(rayResult.xy, ddx, ddy).rgb * rayResult.z * specFactor
             reflectionColorOut += sampleColor
             reflectionWeight += rayResult.z
             minColor set min(minColor, sampleColor)
@@ -338,7 +341,7 @@ fun KslScopeBuilder.screenReflect(
         val scatteredRayDir by normalize(rayDir + scatterOffset)
         val rayResult by fnCastRay(viewPos, scatteredRayDir, noise, reflectionRayStepIncrease)
         `if`(rayResult.z gt 0f.const) {
-            reflectionColorOut += oldColor.sample(rayResult.xy).rgb * rayResult.z * specFactor
+            reflectionColorOut += oldColor.sample(rayResult.xy, ddx, ddy).rgb * rayResult.z * specFactor
             reflectionWeight += rayResult.z
             thresh -= 0.1f.const
         }.`else` {

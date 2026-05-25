@@ -294,16 +294,25 @@ class BindGroupDataVk(
             view?.let { backend.device.destroyImageView(it) }
             sampler?.let { backend.device.destroySampler(it) }
 
-            val maxAnisotropy = if (
-                tex.mipMapping.isMipMapped &&
-                samplerSettings.minFilter == FilterMethod.LINEAR &&
-                samplerSettings.magFilter == FilterMethod.LINEAR
-            ) samplerSettings.maxAnisotropy else 1
-
             val isDepthTex = binding.layout.sampleType == TextureSampleType.DEPTH
             val isUnfilterable = binding.layout.sampleType == TextureSampleType.UNFILTERABLE_FLOAT
             val compare = if (isDepthTex) samplerSettings.compareOp.vk else VK_COMPARE_OP_ALWAYS
 
+            val maxAnisotropy = if (
+                tex.mipMapping.isMipMapped &&
+                samplerSettings.minFilter == FilterMethod.LINEAR &&
+                samplerSettings.magFilter == FilterMethod.LINEAR &&
+                samplerSettings.mipFilter == FilterMethod.LINEAR &&
+                !isUnfilterable && !isDepthTex
+            ) samplerSettings.maxAnisotropy else 1
+
+            if (isUnfilterable && (
+                samplerSettings.magFilter != FilterMethod.NEAREST ||
+                samplerSettings.minFilter != FilterMethod.NEAREST ||
+                samplerSettings.mipFilter != FilterMethod.NEAREST
+            )) {
+                logE { "Texture ${tex.name} is marked unfilterable (in bind group ${data.layout.name}), but sampler settings specify filtering" }
+            }
             sampler = backend.device.createSampler {
                 magFilter(if (isUnfilterable) VK_FILTER_NEAREST else samplerSettings.magFilter.vk)
                 minFilter(if (isUnfilterable) VK_FILTER_NEAREST else samplerSettings.minFilter.vk)

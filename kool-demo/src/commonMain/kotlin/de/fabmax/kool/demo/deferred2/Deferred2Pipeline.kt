@@ -94,24 +94,10 @@ class Deferred2Pipeline(
             }
         }
 
-        var oldSize = size
-        scene.onRenderScene += {
-            val newSize = size
-            if (oldSize != newSize) {
-                logD { "Resizing to ${newSize.x}x${newSize.y}" }
-                oldSize = newSize
-                gbuffers.a.setSize(size.x, size.y)
-                gbuffers.b.setSize(size.x, size.y)
-                aoPass.resize(size.x, size.y)
-                lightingPass.setSize(size.x, size.y)
-                filterPass.resize(size)
-                resizeListeners.forEachUpdated { it(size) }
-            }
-        }
-
         scene.coroutineScope.launch {
             withContext(KoolDispatchers.Synced) {
                 while (true) {
+                    resizeIfNeeded()
                     swapBuffers()
                     yield()
                 }
@@ -154,6 +140,19 @@ class Deferred2Pipeline(
         // this is called after update, newVal was enabled and updated, disable it and enable oldVal for next frame
         gbuffers.newVal.isEnabled = false
         gbuffers.oldVal.isEnabled = true
+    }
+
+    private fun resizeIfNeeded() {
+        val newSize = size
+        if (lightingPass.width != newSize.x || lightingPass.height != newSize.y) {
+            logD { "Resizing to ${newSize.x}x${newSize.y}" }
+            gbuffers.a.setSize(newSize.x, newSize.y)
+            gbuffers.b.setSize(newSize.x, newSize.y)
+            aoPass.resize(newSize.x, newSize.y)
+            lightingPass.setSize(newSize.x, newSize.y)
+            filterPass.resize(newSize)
+            resizeListeners.forEachUpdated { it(newSize) }
+        }
     }
 
     fun onResize(block: (Vec2i) -> Unit) {
