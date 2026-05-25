@@ -5,7 +5,6 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.Platform
 import de.fabmax.kool.demo.bees.BeeDemo
 import de.fabmax.kool.demo.creativecoding.CreativeCodingDemo
-import de.fabmax.kool.demo.deferred2.Deferred2Test
 import de.fabmax.kool.demo.helloworld.*
 import de.fabmax.kool.demo.pathtracing.PathTracingDemo
 import de.fabmax.kool.demo.pbr.PbrDemo
