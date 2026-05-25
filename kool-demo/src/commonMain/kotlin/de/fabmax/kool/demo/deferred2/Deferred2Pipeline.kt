@@ -77,7 +77,7 @@ class Deferred2Pipeline(
         filterPass.isProfileGpu = true
         aoPass.isProfileGpu = true
 
-        lightingPass.onRelease { camData.release() }
+        lightingPass.onRelease { camData.releaseDelayed(1) }
 
         val offsetMat = MutableMat4f()
         camera.onCameraUpdated += {
@@ -294,7 +294,12 @@ fun Deferred2Pipeline.defaultOutputQuad(bloomPass: BloomPass?): Mesh<*> {
 fun Deferred2Pipeline.defaultOutputShader(
     bloomPass: BloomPass?,
 ): KslShader {
-    val outputShader = KslShader("deferred2-output") {
+    val pipelineConfig = PipelineConfig(
+        blendMode = BlendMode.DISABLED,
+        depthTest = DepthCompareOp.ALWAYS,
+        isWriteDepth = false,
+    )
+    val outputShader = KslShader("deferred2-output", pipelineConfig) {
         val uv = interStageFloat2()
         fullscreenQuadVertexStage(uv)
         fragmentStage {

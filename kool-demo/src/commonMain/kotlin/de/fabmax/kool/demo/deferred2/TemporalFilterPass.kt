@@ -17,9 +17,11 @@ class TemporalFilterPass(
     val filterOutput = AlternatingPair {
         StorageTexture2d(size.x, size.y, filterStorageFmt, samplerSettings = SamplerSettings().clamped())
     }
-    val filterState = StorageTexture2d(size.x, size.y, TexFormat.R, samplerSettings = SamplerSettings().clamped().nearest())
+    val filterState = AlternatingPair {
+        StorageTexture2d(size.x, size.y, TexFormat.R, samplerSettings = SamplerSettings().clamped().nearest())
+    }
 
-    private val temporalShader = TemporalFilterShader(filterStorageFmt, pipeline.lightingPass.lightingOutput, filterState)
+    private val temporalShader = TemporalFilterShader(filterStorageFmt, pipeline.lightingPass.lightingOutput)
 
     var filterWeight = 8f
 
@@ -28,7 +30,8 @@ class TemporalFilterPass(
         onRelease {
             filterOutput.a.release()
             filterOutput.b.release()
-            filterState.release()
+            filterState.a.release()
+            filterState.b.release()
         }
     }
 
@@ -36,7 +39,8 @@ class TemporalFilterPass(
         this.size = size
         filterOutput.a.resize(size.x, size.y)
         filterOutput.b.resize(size.x, size.y)
-        filterState.resize(size.x, size.y)
+        filterState.a.resize(size.x, size.y)
+        filterState.b.resize(size.x, size.y)
         setupPasses()
     }
 
@@ -59,6 +63,8 @@ class TemporalFilterPass(
             oldFilter = filterOutput.oldVal
             newFilter = filterOutput.newVal
             filterW = filterWeight
+            filterStateRd = filterState.oldVal
+            filterStateWr = filterState.newVal
 
             reprojectMats = pipeline.reprojectMatrixComputePass.reprojectMats
             camData = pipeline.camData
@@ -69,7 +75,6 @@ class TemporalFilterPass(
 class TemporalFilterShader(
     val filterStorageFmt: TexFormat,
     lightingOutput: Texture2d,
-    filterState: StorageTexture2d,
 ) : KslComputeShader("deferred2-temporal-filter") {
     var lightingOutput by bindTexture2d("lightingOutput", lightingOutput)
     var oldMeta by bindTexture2d("oldMeta")
@@ -78,7 +83,8 @@ class TemporalFilterShader(
     var oldDepth by bindTexture2d("oldDepth")
     var oldFilter by bindTexture2d("oldFilter", defaultSampler = SamplerSettings().clamped().linear())
     var newFilter by bindStorageTexture2d("newFilter")
-    var filterState by bindStorageTexture2d("filterState", filterState)
+    var filterStateRd by bindTexture2d("filterStateRd")
+    var filterStateWr by bindStorageTexture2d("filterStateWr")
 
     var reprojectMats by bindStorage("reprojectMats")
     var camData by bindStorage("camData")
@@ -101,7 +107,8 @@ class TemporalFilterShader(
             } else {
                 storageTexture2d<KslFloat4>("newFilter", filterStorageFmt)
             }
-            val filterState = storageTexture2d<KslFloat1>("filterState", TexFormat.R)
+            val filterStateRd = texture2d("filterStateRd")
+            val filterStateWr = storageTexture2d<KslFloat1>("filterStateWr", TexFormat.R)
 
             val matStruct = struct(StorageMatLayout)
             val reprojectMats = storage("reprojectMats", matStruct)
@@ -128,26 +135,23 @@ class TemporalFilterShader(
                 val depth by newDepth.load(baseCoord).x
                 val worldPos by unprojectBaseCoord(depth, baseCoord, size, near, invViewProj)
 
-                val oldUv by 0f.const2
-                val oldBaseCoord by baseCoord
+                val oldProj by 0f.const4
                 `if`(id ne 0.const) {
                     val reprojectMat = mat4Var(reprojectMats[id][StorageMatLayout.mat])
-                    val oldProj by reprojectMat * worldPos
-                    oldUv set oldProj.xy / oldProj.w * float2Value(0.5f, -0.5f) + 0.5f.const
-                    oldBaseCoord set (oldUv * sizeF).toInt2()
+                    oldProj set reprojectMat * worldPos
                 }.`else` {
-                    val oldProj by camData.oldViewProj * worldPos
-                    oldUv set oldProj.xy / oldProj.w * float2Value(0.5f, -0.5f) + 0.5f.const
-                    oldBaseCoord set (oldUv * sizeF).toInt2()
+                    oldProj set camData.oldViewProj * worldPos
                 }
+                val oldUv by oldProj.xy / oldProj.w * float2Value(0.5f, -0.5f) + 0.5f.const
+                val oldBaseCoord by (oldUv * sizeF).toInt2()
 
                 val oldStateBaseUv by oldUv * sizeF
                 val oldState by
-                    (filterState.load((oldStateBaseUv + float2Value(0.5f, 0.5f)).toInt2()).r * 255f.const).toInt1() or
-                    (filterState.load((oldStateBaseUv + float2Value(0.5f, -0.5f)).toInt2()).r * 255f.const).toInt1() or
-                    (filterState.load((oldStateBaseUv + float2Value(-0.5f, -0.5f)).toInt2()).r * 255f.const).toInt1() or
-                    (filterState.load((oldStateBaseUv + float2Value(-0.5f, 0.5f)).toInt2()).r * 255f.const).toInt1()
-                val wasEdge by oldState and 1.const gt 0.const
+                    (filterStateRd.load((oldStateBaseUv + float2Value(0.49f, 0.49f)).toInt2()).r * 255f.const).toInt1() or
+                    (filterStateRd.load((oldStateBaseUv + float2Value(0.49f, -0.49f)).toInt2()).r * 255f.const).toInt1() or
+                    (filterStateRd.load((oldStateBaseUv + float2Value(-0.49f, -0.49f)).toInt2()).r * 255f.const).toInt1() or
+                    (filterStateRd.load((oldStateBaseUv + float2Value(-0.49f, 0.49f)).toInt2()).r * 255f.const).toInt1()
+                val wasEdge by oldState ne 0.const
 
                 val refDepth by getLinearDepthReversed(depth, near)
                 val depthA by getLinearDepthReversed(newDepth.load(baseCoord + int2Value(1, 1)).x, near)
@@ -183,8 +187,7 @@ class TemporalFilterShader(
                     isEdge set (depthEdge or idEdge)
                 }
 
-                oldState set isEdge.toInt1()
-                filterState.store(baseCoord, float4Value(oldState.toFloat1() / 255f.const, 0f.const, 0f.const, 0f.const))
+                filterStateWr.store(baseCoord, float4Value(isEdge.toFloat1(), 0f.const, 0f.const, 0f.const))
 
                 val w by filterWeight
                 val isReprojectOutOfScreen by (oldUv.x lt 0f.const) or (oldUv.y lt 0f.const) or (oldUv.x gt 1f.const) or (oldUv.y gt 1f.const)

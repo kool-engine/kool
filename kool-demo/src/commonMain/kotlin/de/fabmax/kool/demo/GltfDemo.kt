@@ -117,7 +117,14 @@ class GltfDemo : DemoScene("glTF Models") {
 //            isWithVignette = true
 //            useImageBasedLighting(envMap)
 //        }
-        deferredPipeline = Deferred2Pipeline(Node(), mainScene, envMap, isScreenSpaceReflections = true)
+        deferredPipeline = Deferred2Pipeline(
+            content = Node(),
+            scene = mainScene,
+            ibl = envMap,
+            isScreenSpaceReflections = true,
+            maxGlobalLights = 2,
+            lighting = mainScene.lighting,
+        )
         deferredPipeline.renderScale = 1f / UiScale.windowScale.value
         deferredPipeline.aoPass.radius = AoRadius.absoluteRadius(0.2f)
         //ssrMapSize.set(deferredPipeline.reflectionMapSize)
@@ -188,8 +195,7 @@ class GltfDemo : DemoScene("glTF Models") {
         addNode(contentGroupDeferred)
     }
 
-    private fun Scene.setupCamera() {
-        //orbitTransform = orbitCamera {
+    private fun setupCamera() {
         val cam = orbitCamera(deferredPipeline.camera) {
             setRotation(0f, -30f)
             zoom = currentModel.zoom

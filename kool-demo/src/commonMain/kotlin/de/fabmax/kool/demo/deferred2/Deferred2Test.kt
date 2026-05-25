@@ -24,12 +24,6 @@ import kotlin.random.Random
 class Deferred2Test : DemoScene("Deferred2 Test") {
 
     val ibl by hdriImage("${DemoLoader.hdriPath}/newport_loft.rgbe.png")
-//    val ibl by hdriImage("${DemoLoader.hdriPath}/shanghai_bund_1k.rgbe.png")
-//    val ibl by hdriImage("${DemoLoader.hdriPath}/circus_arena_1k.rgbe.png")
-//    val ibl by hdriImage("${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png")
-//    val ibl by hdriImage("${DemoLoader.hdriPath}/colorful_studio_1k.rgbe.png")
-//    val ibl by hdriImage("${DemoLoader.hdriPath}/spruit_sunrise_1k.rgbe.png")
-//    val ibl by hdriImage("${DemoLoader.hdriPath}/mossy_forest_1k.rgbe.png")
 
     val teapot by model("${DemoLoader.modelPath}/teapot.gltf.gz", GltfLoadConfig(applyMaterials = false))
 
@@ -56,6 +50,7 @@ class Deferred2Test : DemoScene("Deferred2 Test") {
             clear()
         }
 
+        //val ibl = EnvironmentMap.fromSingleColor(Color.BLACK)
         pipeline = Deferred2Pipeline(content, scene = this, ibl, isScreenSpaceReflections = true, lighting = lighting)
         pipeline.renderScale = 0.5f
         pipeline.aoPass.radius = AoRadius.relativeRadius(1/20f)

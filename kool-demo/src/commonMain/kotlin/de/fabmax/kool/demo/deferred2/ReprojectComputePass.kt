@@ -8,6 +8,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.Struct
+import de.fabmax.kool.util.releaseDelayed
 
 class ReprojectComputePass(
     val maxObjects: Int = 65536,
@@ -29,9 +30,9 @@ class ReprojectComputePass(
         val groupsX = (maxObjects + 63) / 64
         addTask(shader, Vec3i(groupsX, 1, 1))
         onRelease {
-            modelMats.a.release()
-            modelMats.b.release()
-            reprojectMats.release()
+            modelMats.a.releaseDelayed(1)
+            modelMats.b.releaseDelayed(1)
+            reprojectMats.releaseDelayed(1)
         }
     }
 
