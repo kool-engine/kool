@@ -6,7 +6,7 @@ import de.fabmax.kool.math.spatial.NearestTraverser
 import de.fabmax.kool.math.spatial.pointKdTree
 import de.fabmax.kool.physics.RigidStatic
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
+import de.fabmax.kool.pipeline.deferred2.gbufferShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.VertexLayouts
@@ -348,14 +348,14 @@ class Track(val world: VehicleWorld) : Node() {
         albedoMap.releaseWith(trackMesh)
         roughnessMap.releaseWith(trackMesh)
 
-        trackMesh.shader = deferredKslPbrShader {
+        trackMesh.shader = gbufferShader {
             color { textureColor(albedoMap) }
             roughness { textureProperty(roughnessMap) }
         }
     }
 
     private fun makeSupportMeshShader() {
-        trackSupportMesh.shader = deferredKslPbrShader {
+        trackSupportMesh.shader = gbufferShader {
             color { vertexColor() }
             roughness { vertexProperty(TrackSupportLayout.roughness) }
         }

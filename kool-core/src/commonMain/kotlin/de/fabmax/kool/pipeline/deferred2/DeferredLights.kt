@@ -28,6 +28,7 @@ class DeferredLights(
         instances = pointLightInstances,
         name = "DeferredPointLights"
     ).apply {
+        isCastingShadow = false
         generate { makePointLightMesh() }
         shader = lightShader
     }
@@ -159,6 +160,7 @@ class DeferredLights(
             instances = instances,
             name = "DeferredPointLights"
         ).apply {
+            isCastingShadow = false
             generate { makeSpotLightMesh(angle) }
             shader = lightShader
         }

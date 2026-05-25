@@ -7,7 +7,7 @@ import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.joints.RevoluteJoint
 import de.fabmax.kool.physics.setPosition
-import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
+import de.fabmax.kool.pipeline.deferred2.gbufferShader
 import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.generateNormals
@@ -18,15 +18,15 @@ object Playground {
 
     fun makePlayground(vehicleWorld: VehicleWorld) {
         makeBoxes(MutableMat4f().translate(-20f, 0f, 30f), vehicleWorld)
-        //makeRocker(Mat4f().translate(0f, 0f, 30f), vehicleWorld)
+        //makeRocker(MutableMat4f().translate(0f, 0f, 30f), vehicleWorld)
 
-        vehicleWorld.deferredPipeline.sceneContent += ColorMesh().apply {
+        vehicleWorld.deferredPipeline.content += ColorMesh().apply {
             generate {
                 makeRamp(MutableMat4f().translate(-20f, 0f, 80f).rotate(180f.deg, Vec3f.Y_AXIS))
                 makeBumps(MutableMat4f().translate(20f, 0f, 0f))
                 makeHalfPipe(MutableMat4f().translate(-40f, 0f, 30f).rotate(90f.deg, Vec3f.NEG_Y_AXIS))
             }
-            shader = deferredKslPbrShader {
+            shader = gbufferShader {
                 color { vertexColor() }
             }
 
@@ -54,7 +54,7 @@ object Playground {
                 world.physics.addActor(body)
 
                 val color = if (i % 2 == 0) VehicleDemo.color(400) else VehicleDemo.color(200)
-                world.deferredPipeline.sceneContent += world.toPrettyMesh(body, color)
+                world.deferredPipeline.content += world.toPrettyMesh(body, color)
             }
         }
     }
@@ -70,12 +70,12 @@ object Playground {
             simulationFilterData = world.obstacleSimFilterData
             queryFilterData = world.obstacleQryFilterData
             attachShape(Shape(BoxGeometry(Vec3f(7.5f, 0.15f, 15f)), world.defaultMaterial))
-            setPosition(frame.transform(MutableVec3f(0f, 1.7f, 0f)))
+            setPosition(frame.transform(MutableVec3f(0f, 0f, 0f)))
         }
         world.physics.addActor(anchor)
         world.physics.addActor(rocker)
-        world.deferredPipeline.sceneContent += world.toPrettyMesh(anchor, VehicleDemo.color(400))
-        world.deferredPipeline.sceneContent += world.toPrettyMesh(rocker, VehicleDemo.color(200))
+        world.deferredPipeline.content += world.toPrettyMesh(anchor, VehicleDemo.color(400))
+        world.deferredPipeline.content += world.toPrettyMesh(rocker, VehicleDemo.color(200))
 
         RevoluteJoint(anchor, rocker, PoseF(Vec3f(0f, 0.85f, 0f)), PoseF(Vec3f(0f, 0f, 0.2f)))
     }

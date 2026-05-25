@@ -12,7 +12,6 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.pipeline.ao.AoRadius
 import de.fabmax.kool.pipeline.ao.ComputeAoPass
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.*
@@ -61,9 +60,8 @@ class Deferred2Pipeline(
     private val resizeListeners = BufferedList<(Vec2i) -> Unit>()
 
     init {
-        aoPass.kernelSize = 4
-        aoPass.radius = AoRadius.relativeRadius(1 / 20f)
-        aoPass.temporalKernels = tsaa.size
+        aoPass.kernelSize = 32 / tsaa.size.coerceAtLeast(2)
+        aoPass.temporalKernels = tsaa.size.coerceAtLeast(1)
 
         scene.addComputePass(reprojectMatrixComputePass)
         scene.addOffscreenPass(gbuffers.a)

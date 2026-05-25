@@ -178,9 +178,13 @@ class GbufferShaderConfig(builder: Builder) {
             metallicCfg.block()
         }
 
+        fun metallic(constValue: Float) = metallic { uniformProperty(constValue) }
+
         inline fun roughness(block: PropertyBlockConfig.Builder.() -> Unit) {
             roughnessCfg.block()
         }
+
+        fun roughness(constValue: Float) = roughness { uniformProperty(constValue) }
 
         inline fun ao(block: PropertyBlockConfig.Builder.() -> Unit) {
             aoCfg.block()

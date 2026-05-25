@@ -37,6 +37,7 @@ class LightingPass(
     private val lightingShader = DeferredLightingShader(pipeline.maxGlobalLights, pipeline.shadowMapConfig)
     var numReflectionRays: Int = lightingShader.numReflectionRays
     var reflectionRayStepIncrease: Float = lightingShader.reflectionRayStepIncrease
+    var ambientShadowFactor: Float = lightingShader.ambientShadowFactor
 
     init {
         camera = pipeline.camera
@@ -63,7 +64,9 @@ class LightingPass(
 
     fun swapBuffers() {
         val newGbuffer = pipeline.gbuffers.newVal
-        lightingShader.swapPipelineData(newGbuffer) {
+        // swap pipeline data for next frame. copy bindings from previous data because it contains the updated
+        // light space matrices for shadows
+        lightingShader.swapPipelineData(newGbuffer, copyBindings = true) {
             depthTex = newGbuffer.depth
             scaledViewZ = pipeline.aoPass.scaledDists
             encodedNormals = newGbuffer.normals
@@ -76,6 +79,7 @@ class LightingPass(
             oldColor = pipeline.filterPass.filterOutput.oldVal
             numReflectionRays = this@LightingPass.numReflectionRays
             reflectionRayStepIncrease = this@LightingPass.reflectionRayStepIncrease
+            ambientShadowFactor = this@LightingPass.ambientShadowFactor
         }
     }
 }
@@ -97,6 +101,7 @@ class DeferredLightingShader(
 
     var numReflectionRays by bindUniformInt1("numReflectionRays")
     var reflectionRayStepIncrease by bindUniformFloat1("reflectionRayStepIncrease", 1.5f)
+    var ambientShadowFactor by bindUniformFloat1("ambientShadowFactor", 0f)
 
     var oldColor by bindTexture2d("oldColor")
 
@@ -315,6 +320,7 @@ fun KslScopeBuilder.screenReflect(
     val minColor by 1000f.const3
     val maxColor by 0f.const3
     val initialRays by clamp((roughFactor * length(specFactor) * 20f.const).toInt1(), 1.const, numReflectionRays)
+    val hit by false.const
     repeat(initialRays) {
         numRays += 1.const
         val scatterOffset by (noise - 0.5f.const) * roughFactor * scatteringCoeff
@@ -326,6 +332,7 @@ fun KslScopeBuilder.screenReflect(
             reflectionWeight += rayResult.z
             minColor set min(minColor, sampleColor)
             maxColor set max(maxColor, sampleColor)
+            hit set true.const
         }.`else` {
             reflectionColorOut += envReflectionColor
             reflectionWeight += 1f.const

@@ -6,7 +6,6 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.InstanceLayouts
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.*
-import kotlin.math.max
 
 class GbufferPass(
     initialSize: Vec2i,
@@ -42,7 +41,7 @@ class GbufferPass(
         onAfterCollectDrawCommands += { viewData ->
             val upload = pipeline.reprojectMatrixComputePass.uploadData.newVal
             upload.viewProjMat.set(viewData.drawQueue.viewProjMatF)
-            upload.modelMats.limit = 0
+            // fixme: upload.modelMats.limit = 0
             alphaMeshes.clear()
             lightMeshes.clear()
 
@@ -62,7 +61,7 @@ class GbufferPass(
                             val idRange = pipeline.idAllocator.getIdRange(cmd.mesh)
                             val bufferPos = idRange.from * 16
                             shader.objectId = idRange.from
-                            upload.modelMats.limit = max(upload.modelMats.limit, bufferPos + idRange.size * 16)
+                            // fixme: upload.modelMats.limit = max(upload.modelMats.limit, bufferPos + idRange.size * 16)
 
                             try {
                                 val instances = mesh.instances
