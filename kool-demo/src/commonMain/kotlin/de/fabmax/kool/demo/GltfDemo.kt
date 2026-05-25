@@ -19,12 +19,10 @@ import de.fabmax.kool.pipeline.ao.AoRadius
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.generateNormals
-import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.async
 import kotlin.math.PI
 import kotlin.math.cos
-import kotlin.math.roundToInt
 import kotlin.math.sin
 
 class GltfDemo : DemoScene("glTF Models") {
@@ -97,10 +95,13 @@ class GltfDemo : DemoScene("glTF Models") {
         setupPipelines(isDeferredShading.value, new)
     }
     private val isSsr: MutableStateValue<Boolean> = mutableStateOf(true).onChange { _, new ->
-        //deferredPipeline.isSsrEnabled = new
+        if (new) {
+            deferredPipeline.enableScreenSpaceReflections()
+        } else {
+            deferredPipeline.disableScreenSpaceReflections()
+        }
         setupPipelines(isDeferredShading.value, isAo.value)
     }
-    private val ssrMapSize = mutableStateOf(0.5f)//.onChange { _, new -> deferredPipeline.reflectionMapSize = new }
 
     override fun lateInit(ctx: KoolContext) {
         currentModel.isVisible = true
@@ -119,15 +120,14 @@ class GltfDemo : DemoScene("glTF Models") {
             content = sceneContent,
             scene = mainScene,
             ibl = envMap,
-            isScreenSpaceReflections = true,
             maxGlobalLights = 2,
             camera = camera,
             lighting = mainScene.lighting,
             shadowMapConfig = shadows.toConfig()
         )
+        deferredPipeline.enableScreenSpaceReflections()
         deferredPipeline.renderScale = 1f / UiScale.windowScale.value
         deferredPipeline.aoPass.radius = AoRadius.absoluteRadius(0.2f)
-        //ssrMapSize.set(deferredPipeline.reflectionMapSize)
 
         // create forward pipeline
         aoPipelineForward = AoPipeline.createForward(mainScene).apply {
@@ -322,9 +322,6 @@ class GltfDemo : DemoScene("glTF Models") {
         LabeledSwitch("Ambient occlusion".l, isAo)
         if (isDeferredShading.value) {
             LabeledSwitch("Screen space reflections".l, isSsr)
-            MenuSlider2("SSR map size".l, ssrMapSize.use(), 0.1f, 1f, { it.toString(1) }) {
-                ssrMapSize.set((it * 10).roundToInt() / 10f)
-            }
         }
         LabeledSwitch("Auto rotate view".l, isAutoRotate)
     }

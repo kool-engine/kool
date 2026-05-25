@@ -3,6 +3,7 @@ package de.fabmax.kool.demo.deferred2
 import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.ShadowMapConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
@@ -24,7 +25,6 @@ class Deferred2Pipeline(
     val content: Node,
     val scene: Scene,
     val ibl: EnvironmentMap,
-    val isScreenSpaceReflections: Boolean,
     val camera: Camera = PerspectiveCamera(),
     val lighting: Lighting = Lighting(),
     val shadowMapConfig: List<ShadowMapConfig> = emptyList(),
@@ -117,6 +117,14 @@ class Deferred2Pipeline(
                 }
             }
         }
+    }
+
+    fun enableScreenSpaceReflections(numReflectionRays: Int = 3) {
+        lightingPass.numReflectionRays = numReflectionRays.clamp(1, 16)
+    }
+
+    fun disableScreenSpaceReflections() {
+        lightingPass.numReflectionRays = 0
     }
 
     private fun swapBuffers() {
@@ -304,8 +312,8 @@ fun Deferred2Pipeline.installBloomPass(): BloomPass {
     return bloomPass
 }
 
-fun Deferred2Pipeline.defaultOutputQuad(bloomPass: BloomPass?): Mesh<*> {
-    val outputShader = defaultOutputShader(bloomPass)
+fun Deferred2Pipeline.defaultOutputQuad(bloomPass: BloomPass?, writeDepth: Boolean = false): Mesh<*> {
+    val outputShader = defaultOutputShader(bloomPass, writeDepth)
     return TextureMesh().apply {
         generate {
             generateFullscreenQuad()
@@ -316,12 +324,18 @@ fun Deferred2Pipeline.defaultOutputQuad(bloomPass: BloomPass?): Mesh<*> {
 
 fun Deferred2Pipeline.defaultOutputShader(
     bloomPass: BloomPass?,
+    writeDepth: Boolean = false,
 ): KslShader {
-    val pipelineConfig = PipelineConfig(
-        blendMode = BlendMode.DISABLED,
-        depthTest = DepthCompareOp.ALWAYS,
-        isWriteDepth = false,
-    )
+    val pipelineConfig = if (writeDepth) {
+        PipelineConfig(blendMode = BlendMode.DISABLED)
+    } else {
+        PipelineConfig(
+            blendMode = BlendMode.DISABLED,
+            depthTest = DepthCompareOp.ALWAYS,
+            isWriteDepth = false,
+        )
+    }
+
     val outputShader = KslShader("deferred2-output", pipelineConfig) {
         val uv = interStageFloat2()
         fullscreenQuadVertexStage(uv)
@@ -329,6 +343,7 @@ fun Deferred2Pipeline.defaultOutputShader(
             val output = texture2d("deferredOutput")
             val bloom = texture2d("bloomOutput")
             val ditherTex = texture2d("ditherPattern")
+            val depthTex = if (writeDepth) texture2d("depth", isUnfilterable = true) else null
 
             main {
                 val uvi = (uv.output * output.size().toFloat2()).toInt2()
@@ -337,6 +352,10 @@ fun Deferred2Pipeline.defaultOutputShader(
                 val ditherNoise by ditherTex.load(ditherC).r
                 val srgb by convertColorSpace(color, ColorSpaceConversion.LinearToSrgbHdr()) + (ditherNoise - 0.5f.const) / 255f.const
                 colorOutput(srgb)
+
+                depthTex?.let {
+                    outDepth set it.load(uvi).x
+                }
             }
         }
     }
@@ -347,10 +366,14 @@ fun Deferred2Pipeline.defaultOutputShader(
     val bloomMap = bloomPass?.bloomMap ?: SingleColorTexture(Color.BLACK)
     outputShader.bindTexture2d("bloomOutput", bloomMap)
     var inputTex by outputShader.bindTexture2d("deferredOutput", defaultSampler = SamplerSettings().nearest().clamped())
+    var inputDepth by outputShader.bindTexture2d("depth")
     onSwap {
         val filterOutput = filterPass.filterOutput.newVal
         outputShader.swapPipelineData(filterOutput) {
             inputTex = filterOutput
+            if (writeDepth) {
+                inputDepth = gbuffers.newVal.depth
+            }
         }
     }
     return outputShader

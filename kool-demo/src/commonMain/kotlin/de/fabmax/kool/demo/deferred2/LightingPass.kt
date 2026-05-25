@@ -32,7 +32,9 @@ class LightingPass(
 ) {
     val lightingOutput: Texture2d get() = colorTexture!!
 
-    private val lightingShader = DeferredLightingShader(pipeline.isScreenSpaceReflections, pipeline.maxGlobalLights, pipeline.shadowMapConfig)
+    private val lightingShader = DeferredLightingShader(pipeline.maxGlobalLights, pipeline.shadowMapConfig)
+    var numReflectionRays: Int = lightingShader.numReflectionRays
+    var reflectionRayStepIncrease: Float = lightingShader.reflectionRayStepIncrease
 
     init {
         camera = pipeline.camera
@@ -70,12 +72,13 @@ class LightingPass(
             aoMap = pipeline.aoPass.aoMap
             camData = pipeline.camData
             oldColor = pipeline.filterPass.filterOutput.oldVal
+            numReflectionRays = this@LightingPass.numReflectionRays
+            reflectionRayStepIncrease = this@LightingPass.reflectionRayStepIncrease
         }
     }
 }
 
 class DeferredLightingShader(
-    isScreenSpaceReflections: Boolean,
     maxGlobalLights: Int,
     shadowMapConfig: List<ShadowMapConfig>,
 ) : KslShader("deferred2-lighting") {
@@ -90,6 +93,9 @@ class DeferredLightingShader(
     var aoMap by bindTexture2d("aoMap")
     var camData by bindStorage("camData")
 
+    var numReflectionRays by bindUniformInt1("numReflectionRays")
+    var reflectionRayStepIncrease by bindUniformFloat1("reflectionRayStepIncrease", 1.5f)
+
     var oldColor by bindTexture2d("oldColor")
 
     var ambientMapOrientation: Mat3f by bindUniformMat3("uAmbientTextureOri", Mat3f.IDENTITY)
@@ -100,13 +106,12 @@ class DeferredLightingShader(
             cullMethod = CullMethod.NO_CULLING,
             depthTest = DepthCompareOp.ALWAYS
         )
-        program.program(isScreenSpaceReflections, maxGlobalLights, shadowMapConfig)
+        program.program(maxGlobalLights, shadowMapConfig)
 
         bindTexture1d("tgradient", GradientTexture(ColorGradient.ROCKET))
     }
 
     private fun KslProgram.program(
-        isScreenSpaceReflections: Boolean,
         maxGlobalLights: Int,
         shadowMapConfig: List<ShadowMapConfig>,
     ) {
@@ -123,6 +128,8 @@ class DeferredLightingShader(
             val brdf = texture2d("brdf")
             val aoMap = texture2d("aoMap")
 
+            val numReflectionRays = uniformInt1("numReflectionRays")
+            val reflectionRayStepIncrease = uniformFloat1("reflectionRayStepIncrease")
             val ambientShadowFactor = uniformFloat1("uAmbientShadowFactor")
             val ambientOri = uniformMat3("uAmbientTextureOri")
             val camDataLayout = struct(DeferredCamDataLayout)
@@ -203,15 +210,13 @@ class DeferredLightingShader(
                     setLightData(lightData, shadowFactors, 1f.const)
                 }
 
-                if (isScreenSpaceReflections) {
+                val outColor by material.outColor + albedo * emissiveStrength
+                `if`(numReflectionRays gt 0.const) {
                     val oldColor = texture2d("oldColor")
-                    val screenReflection by screenReflect(material, viewNormal, scaledViewZ, oldColor, camData)
-                    val finalColor by material.outAmbient + material.outLight + screenReflection + albedo * emissiveStrength
-                    colorOutput(finalColor)
-                } else {
-                    colorOutput(material.outColor + albedo * emissiveStrength)
+                    val screenReflection by screenReflect(material, viewNormal, scaledViewZ, oldColor, camData, numReflectionRays, reflectionRayStepIncrease)
+                    outColor set material.outAmbient + material.outLight + screenReflection + albedo * emissiveStrength
                 }
-
+                colorOutput(outColor)
                 outDepth set depthSample
             }
         }
@@ -224,7 +229,9 @@ fun KslScopeBuilder.screenReflect(
     viewNormal: KslExprFloat3,
     viewZ: KslUniform<KslColorSampler2d>,
     oldColor: KslUniform<KslColorSampler2d>,
-    camData: KslStructStorage<DeferredCamDataLayout>
+    camData: KslStructStorage<DeferredCamDataLayout>,
+    numReflectionRays: KslExprInt1,
+    reflectionRayStepIncrease: KslExprFloat1,
 ): KslExprFloat3 {
     val fnProjViewPos = functionFloat2("fnProiViewPos") {
         val viewPos = paramFloat3("viewPos")
@@ -248,6 +255,7 @@ fun KslScopeBuilder.screenReflect(
         val origin = paramFloat3("origin")
         val rayDir = paramFloat3("rayDir")
         val noise = paramFloat3("noise")
+        val maxIncrease = paramFloat1("maxIncrease")
 
         body {
             val baseDist by -origin.z
@@ -257,7 +265,6 @@ fun KslScopeBuilder.screenReflect(
             val step by baseDist * 0.025f.const + noise.x * 0.01f.const
             val prevStep by 0f.const
             val stepScale by 1f.const
-            val maxIncrease by 1.5f.const
             val directionFac by abs(dot(rayDir, normalize(origin)))
 
             repeat(16.const) {
@@ -295,7 +302,7 @@ fun KslScopeBuilder.screenReflect(
 
     val viewPos by (camData.view * float4Value(material.inFragmentPos, 1f)).xyz
     val reflectionWeight by 0f.const
-    val numRays by 0f.const
+    val numRays by 0.const
     val rayDir by reflect(normalize(viewPos), viewNormal)
     val noise by noise33(viewPos * (camData.frameIdx % 64.const + 1.const).toFloat1())
 
@@ -303,12 +310,12 @@ fun KslScopeBuilder.screenReflect(
     val reflectionColorOut by 0f.const3
     val minColor by 1000f.const3
     val maxColor by 0f.const3
-    val initialRays by clamp((roughFactor * length(specFactor) * 20f.const).toInt1(), 1.const, 4.const)
+    val initialRays by clamp((roughFactor * length(specFactor) * 20f.const).toInt1(), 1.const, numReflectionRays)
     repeat(initialRays) {
-        numRays += 1f.const
+        numRays += 1.const
         val scatterOffset by (noise - 0.5f.const) * roughFactor * scatteringCoeff
         val scatteredRayDir by normalize(rayDir + scatterOffset)
-        val rayResult by fnCastRay(viewPos, scatteredRayDir, noise)
+        val rayResult by fnCastRay(viewPos, scatteredRayDir, noise, reflectionRayStepIncrease)
         `if`(rayResult.z gt 0f.const) {
             val sampleColor by oldColor.sample(rayResult.xy).rgb * rayResult.z * specFactor
             reflectionColorOut += sampleColor
@@ -325,11 +332,11 @@ fun KslScopeBuilder.screenReflect(
     }
 
     val thresh by length(maxColor - minColor)
-    `while`((thresh gt 0.1f.const) and (numRays lt 6f.const)) {
-        numRays += 1f.const
+    `while`((thresh gt 0.1f.const) and (numRays lt numReflectionRays * 2.const)) {
+        numRays += 1.const
         val scatterOffset by (noise - 0.5f.const) * roughFactor * scatteringCoeff
         val scatteredRayDir by normalize(rayDir + scatterOffset)
-        val rayResult by fnCastRay(viewPos, scatteredRayDir, noise)
+        val rayResult by fnCastRay(viewPos, scatteredRayDir, noise, reflectionRayStepIncrease)
         `if`(rayResult.z gt 0f.const) {
             reflectionColorOut += oldColor.sample(rayResult.xy).rgb * rayResult.z * specFactor
             reflectionWeight += rayResult.z
