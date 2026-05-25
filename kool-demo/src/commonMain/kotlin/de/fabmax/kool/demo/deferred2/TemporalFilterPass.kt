@@ -204,6 +204,22 @@ class TemporalFilterShader(
                 `if`(any(isNan(filtered))) {
                     filtered set curSrgb
                 }
+
+//                `if`((!filterHit and !isEdge)) {
+//                    filtered set Color.CYAN.const.rgb
+//                }.elseIf(!filterHit) {
+//                    filtered set Color.BLUE.const.rgb
+//                }.elseIf(wasEdge and !isEdge) {
+//                    filtered set Color.RED.const.rgb
+//                }.elseIf(isReprojectOutOfScreen) {
+//                    filtered set Color.MAGENTA.const.rgb
+//                }.elseIf(w eq 0f.const) {
+//                    filtered set Color.GREEN.const.rgb
+//                }
+//                `if`(isEdge) {
+//                    filtered set float3Value(8f, 0f, 0f)
+//                }
+
                 newFilter[baseCoord] = float4Value(filtered, 1f)
             }
         }

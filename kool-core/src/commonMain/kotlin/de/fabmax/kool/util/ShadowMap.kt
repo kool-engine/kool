@@ -16,6 +16,8 @@ sealed interface ShadowMap {
     var light: Light?
     var isShadowMapEnabled: Boolean
     val subMaps: List<SimpleShadowMap>
+
+    fun addToScene(scene: Scene)
 }
 
 class SimpleShadowMap(
@@ -39,7 +41,7 @@ class SimpleShadowMap(
     ShadowMap
 {
     constructor(scene: Scene, light: Light?, drawNode: Node = scene, mapSize: Int = 2048): this(scene.camera, drawNode, light, mapSize) {
-        scene.addOffscreenPass(this)
+        addToScene(scene)
     }
 
     val lightViewProjMat = MutableMat4f()
@@ -89,6 +91,10 @@ class SimpleShadowMap(
             camera.updateCamera(ev)
             biasMatrix.mul(camera.viewProj, lightViewProjMat)
         }
+    }
+
+    override fun addToScene(scene: Scene) {
+        scene.addOffscreenPass(this)
     }
 
     override fun setupDrawCommand(cmd: DrawCommand, ctx: KoolContext) {
@@ -216,7 +222,7 @@ class CascadedShadowMap(
         mapSizes: List<Int>? = null,
         drawNode: Node = scene
     ): this(scene.camera, drawNode, light, maxRange, numCascades, nearOffset, mapSizes) {
-        subMaps.forEach { scene.addOffscreenPass(it) }
+        addToScene(scene)
     }
 
     override var light: Light? = light
@@ -261,6 +267,10 @@ class CascadedShadowMap(
                 subMaps[i].clipFar = far + farOverlap
             }
         }
+    }
+
+    override fun addToScene(scene: Scene) {
+        subMaps.forEach { scene.addOffscreenPass(it) }
     }
 
     fun setMapRanges(vararg farRanges: Float) {

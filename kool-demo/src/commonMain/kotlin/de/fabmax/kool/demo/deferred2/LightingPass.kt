@@ -3,8 +3,10 @@ package de.fabmax.kool.demo.deferred2
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Vec2i
+import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.NormalLightRange
+import de.fabmax.kool.modules.ksl.ShadowMapConfig
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
@@ -30,7 +32,7 @@ class LightingPass(
 ) {
     val lightingOutput: Texture2d get() = colorTexture!!
 
-    private val lightingShader = DeferredLightingShader(pipeline.isScreenSpaceReflections, pipeline.maxGlobalLights)
+    private val lightingShader = DeferredLightingShader(pipeline.isScreenSpaceReflections, pipeline.maxGlobalLights, pipeline.shadowMapConfig)
 
     init {
         camera = pipeline.camera
@@ -75,6 +77,7 @@ class LightingPass(
 class DeferredLightingShader(
     isScreenSpaceReflections: Boolean,
     maxGlobalLights: Int,
+    shadowMapConfig: List<ShadowMapConfig>,
 ) : KslShader("deferred2-lighting") {
     var depthTex by bindTexture2d("depth")
     var scaledViewZ by bindTexture2d("scaledViewZ")
@@ -97,7 +100,7 @@ class DeferredLightingShader(
             cullMethod = CullMethod.NO_CULLING,
             depthTest = DepthCompareOp.ALWAYS
         )
-        program.program(isScreenSpaceReflections, maxGlobalLights)
+        program.program(isScreenSpaceReflections, maxGlobalLights, shadowMapConfig)
 
         bindTexture1d("tgradient", GradientTexture(ColorGradient.ROCKET))
     }
@@ -105,6 +108,7 @@ class DeferredLightingShader(
     private fun KslProgram.program(
         isScreenSpaceReflections: Boolean,
         maxGlobalLights: Int,
+        shadowMapConfig: List<ShadowMapConfig>,
     ) {
         val uv = interStageFloat2()
         fullscreenQuadVertexStage(uv)
@@ -119,6 +123,7 @@ class DeferredLightingShader(
             val brdf = texture2d("brdf")
             val aoMap = texture2d("aoMap")
 
+            val ambientShadowFactor = uniformFloat1("uAmbientShadowFactor")
             val ambientOri = uniformMat3("uAmbientTextureOri")
             val camDataLayout = struct(DeferredCamDataLayout)
             val camData = storage("camData", camDataLayout)
@@ -153,9 +158,35 @@ class DeferredLightingShader(
 
                 val ambient by irradiance.sample(worldNormal).rgb * ssao
 
-                val normalLightRange = NormalLightRange.ZeroToOne
-                val shadowFactors = float1Array(maxGlobalLights, 1f.const)
                 val lightData = sceneLightData(maxGlobalLights)
+                val shadowData = shadowData(shadowMapConfig)
+                val shadowFactors = float1Array(maxGlobalLights, 1f.const)
+                val avgShadow = float1Var(0f.const)
+                if (shadowData.numSubMaps > 0) {
+                    val lightSpacePositions = List(shadowData.numSubMaps) { float4Var(Vec4f.ZERO.const) }
+                    val lightSpaceNormalZs = List(shadowData.numSubMaps) { float1Var(0f.const) }
+
+                    // transform positions to light space
+                    shadowData.shadowMapInfos.forEach { mapInfo ->
+                        mapInfo.subMaps.forEachIndexed { i, subMap ->
+                            val subMapIdx = mapInfo.fromIndexIncl + i
+                            val viewProj = shadowData.shadowMapViewProjMats[subMapIdx]
+                            val normalLightSpace = float3Var(normalize((viewProj * float4Value(worldNormal, 0f.const)).xyz))
+                            lightSpaceNormalZs[subMapIdx] set normalLightSpace.z
+                            lightSpacePositions[subMapIdx] set viewProj * float4Value(worldPos, 1f.const)
+                            lightSpacePositions[subMapIdx].xyz += normalLightSpace * kotlin.math.abs(subMap.shaderDepthOffset).const
+                        }
+                    }
+                    // adjust light strength values by shadow maps
+                    fragmentShadowBlock(lightSpacePositions, lightSpaceNormalZs, shadowData, shadowFactors)
+                    fori(0.const, lightData.lightCount) { i ->
+                        avgShadow += shadowFactors[i]
+                    }
+                    avgShadow /= max(1f.const, lightData.lightCount.toFloat1())
+                }
+                ambient set ambient * (1f.const - (1f.const - avgShadow) * ambientShadowFactor)
+
+                val normalLightRange = NormalLightRange.ZeroToOne
                 val material = pbrMaterialBlock(maxGlobalLights, listOf(reflection), brdf, normalLightRange) {
                     inCamPos(camPos)
                     inNormal(worldNormal)
