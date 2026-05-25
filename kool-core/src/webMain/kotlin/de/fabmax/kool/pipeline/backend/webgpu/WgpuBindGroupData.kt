@@ -177,10 +177,18 @@ class WgpuBindGroupData(
         val samplerSettings = sampler ?: tex.samplerSettings
         val maxAnisotropy = if (tex.mipMapping.isMipMapped &&
             samplerSettings.minFilter == FilterMethod.LINEAR &&
-            samplerSettings.magFilter == FilterMethod.LINEAR
+            samplerSettings.magFilter == FilterMethod.LINEAR &&
+            samplerSettings.mipFilter == FilterMethod.LINEAR
         ) samplerSettings.maxAnisotropy else 1
         val compare = if (layout.sampleType == TextureSampleType.DEPTH) samplerSettings.compareOp.wgpu else null
 
+        if (layout.sampleType == TextureSampleType.UNFILTERABLE_FLOAT && (
+            samplerSettings.magFilter != FilterMethod.NEAREST ||
+            samplerSettings.minFilter != FilterMethod.NEAREST ||
+            samplerSettings.mipFilter != FilterMethod.NEAREST
+        )) {
+            logE { "Texture ${tex.name} is marked unfilterable (in bind group ${data.layout.name}), but sampler settings specify filtering" }
+        }
         val sampler = device.createSampler(
             addressModeU = samplerSettings.addressModeU.wgpu,
             addressModeV = samplerSettings.addressModeV.wgpu,
@@ -189,6 +197,7 @@ class WgpuBindGroupData(
             mipmapFilter = samplerSettings.mipFilter.wgpuMipFilter(tex.mipMapping.isMipMapped),
             maxAnisotropy = maxAnisotropy,
             compare = compare,
+            label = tex.name
         )
 
         textureBindings += TextureBinding(this, loadedTex)

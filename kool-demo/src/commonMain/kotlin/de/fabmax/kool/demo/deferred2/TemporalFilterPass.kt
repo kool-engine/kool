@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo.deferred2
 
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.modules.ksl.KslComputeShader
@@ -120,6 +121,8 @@ class TemporalFilterShader(
             main {
                 val baseCoord by inGlobalInvocationId.xy.toInt2()
                 val newColor by lightingOutput.load(baseCoord).rgb
+                val ddx by Vec2f.X_AXIS.const
+                val ddy by Vec2f.Y_AXIS.const
                 `if` (filterWeight eq 0f.const) {
                     newFilter[baseCoord] = float4Value(newColor, 1f)
                     `return`()
@@ -195,7 +198,7 @@ class TemporalFilterShader(
                     w set 0f.const
                 }
 
-                val oldColor by oldFilter.sample(oldUv).rgb
+                val oldColor by oldFilter.sample(oldUv, ddx, ddy).rgb
                 val curSrgb by convertColorSpace(newColor, ColorSpaceConversion.LinearToSrgb())
                 val oldSrgb by convertColorSpace(oldColor, ColorSpaceConversion.LinearToSrgb())
                 val weighted by (oldSrgb * w + curSrgb) / (w + 1f.const)
