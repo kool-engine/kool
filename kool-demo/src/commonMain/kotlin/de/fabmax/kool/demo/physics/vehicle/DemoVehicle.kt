@@ -10,10 +10,10 @@ import de.fabmax.kool.physics.setPosition
 import de.fabmax.kool.physics.setRotation
 import de.fabmax.kool.physics.vehicle.Vehicle
 import de.fabmax.kool.physics.vehicle.VehicleProperties
-import de.fabmax.kool.pipeline.deferred.DeferredKslPbrShader
-import de.fabmax.kool.pipeline.deferred.DeferredPointLights
-import de.fabmax.kool.pipeline.deferred.DeferredSpotLights
-import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
+import de.fabmax.kool.pipeline.deferred2.DynamicPointLight
+import de.fabmax.kool.pipeline.deferred2.DynamicSpotLight
+import de.fabmax.kool.pipeline.deferred2.GbufferShader
+import de.fabmax.kool.pipeline.deferred2.gbufferShader
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
@@ -41,12 +41,12 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
 
     private var previousGear = 0
 
-    private val brakeLightShader: DeferredKslPbrShader
-    private val reverseLightShader: DeferredKslPbrShader
-    private val rearLightLt: DeferredPointLights.PointLight
-    private val rearLightRt: DeferredPointLights.PointLight
-    private val headLightLt: DeferredSpotLights.SpotLight
-    private val headLightRt: DeferredSpotLights.SpotLight
+    private val brakeLightShader: GbufferShader
+    private val reverseLightShader: GbufferShader
+    private val rearLightLt: DynamicPointLight
+    private val rearLightRt: DynamicPointLight
+    private val headLightLt: DynamicSpotLight
+    private val headLightRt: DynamicSpotLight
 
     private val rearLightColorBrake = Color(1f, 0.01f, 0.01f)
     private val rearLightColorReverse = Color(1f, 1f, 1f)
@@ -72,38 +72,36 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
 
         resetVehiclePos(hard = true)
 
-        vehicleModel.meshes["mesh_head_lights_0"]?.shader = deferredKslPbrShader {
-            emission { constColor(Color(25f, 25f, 25f)) }
+        vehicleModel.meshes["mesh_head_lights_0"]?.shader = gbufferShader {
+            color { uniformColor(Color.WHITE) }
+            emission { uniformProperty(25f) }
         }
-        brakeLightShader = deferredKslPbrShader {
-            color { constColor(Color(0.5f, 0.0f, 0.0f)) }
-            emission { uniformColor(Color.BLACK) }
+        brakeLightShader = gbufferShader {
+            color { uniformColor(Color(0.5f, 0.0f, 0.0f)) }
+            emission { uniformProperty(0f) }
         }
         vehicleModel.meshes["mesh_brake_lights_0"]?.shader = brakeLightShader
-        reverseLightShader = deferredKslPbrShader {
-            color { constColor(Color(0.6f, 0.6f, 0.6f)) }
-            emission { uniformColor(Color.BLACK) }
+        reverseLightShader = gbufferShader {
+            color { uniformColor(Color(0.6f, 0.6f, 0.6f)) }
+            emission { uniformProperty(0f) }
         }
         vehicleModel.meshes["mesh_reverse_lights_0"]?.shader = reverseLightShader
 
-        headLightLt = DeferredSpotLights.SpotLight().apply {
+        val dynLights = demo.vehicleWorld.deferredLights
+        headLightLt = dynLights.addSpotLight(maxAngle = 30f.deg) {
             spotAngle = 30f.deg
             coreRatio = 0.5f
             radius = 0f
             intensity = 1000f
         }
-        headLightRt = DeferredSpotLights.SpotLight().apply {
+        headLightRt = dynLights.addSpotLight(maxAngle = 30f.deg) {
             spotAngle = 30f.deg
             coreRatio = 0.5f
             radius = 0f
             intensity = 1000f
         }
-        val headLights = world.deferredPipeline.createSpotLights(30f.deg)
-        headLights.addSpotLight(headLightLt)
-        headLights.addSpotLight(headLightRt)
-
-        rearLightLt = world.deferredPipeline.dynamicPointLights.addPointLight { }
-        rearLightRt = world.deferredPipeline.dynamicPointLights.addPointLight { }
+        rearLightLt = dynLights.addPointLight { }
+        rearLightRt = dynLights.addPointLight { }
 
         vehicleModel.onUpdate += {
             updateVehicle()
@@ -149,20 +147,20 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
                 lightColor = Color.BLACK
             }
         }
-        rearLightLt.radius = lightRadius
-        rearLightRt.radius = lightRadius
+        rearLightLt.strengthByRadius(lightRadius)
+        rearLightRt.strengthByRadius(lightRadius)
         rearLightLt.color.set(lightColor)
         rearLightRt.color.set(lightColor)
 
         if (vehicle.brakeInput > 0f) {
-            brakeLightShader.emission = Color(40f, 0.25f, 0.125f)
+            brakeLightShader.emission = 40f
         } else {
-            brakeLightShader.emission = Color.BLACK
+            brakeLightShader.emission = 0f
         }
         if (vehicle.isReverse) {
-            reverseLightShader.emission = Color(20f, 20f, 20f)
+            reverseLightShader.emission = 20f
         } else {
-            reverseLightShader.emission = Color.BLACK
+            reverseLightShader.emission = 0f
         }
 
         var maxSlip = 0f
@@ -181,9 +179,9 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         }
         previousGear = gear
 
-        rearLightLt.position.set(0.4f, 0.6f, -2.5f)
+        rearLightLt.position.set(0.4f, 0.6f, -2.7f)
         vehicle.transform.transform(rearLightLt.position)
-        rearLightRt.position.set(-0.4f, 0.6f, -2.5f)
+        rearLightRt.position.set(-0.4f, 0.6f, -2.7f)
         vehicle.transform.transform(rearLightRt.position)
 
         headLightLt.rotation.set(QuatF.IDENTITY).mul(vehicle.transform.rotation).rotate((-85f).deg, Vec3f.Y_AXIS).rotate((-7f).deg, Vec3f.Z_AXIS)
@@ -269,6 +267,9 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
 
         val vehicle = Vehicle(vehicleProps, world.physics)
         world.physics.addActor(vehicle)
+
+//        vehicleModel.meshes.forEach { println(it.value.name) }
+//        vehicleModel.printHierarchy()
 
         vehicleGroup.apply {
             transform = vehicle.transform

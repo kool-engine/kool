@@ -38,6 +38,7 @@ abstract class GenericBuffer<B: NioBuffer>(
     override var limit: Int
         get() = if (isAutoLimit) pos else buffer.limit()
         set(value) {
+            modCount++
             buffer.limit(value)
             isAutoLimit = false
         }
@@ -45,6 +46,7 @@ abstract class GenericBuffer<B: NioBuffer>(
     override var position: Int
         get() = pos
         set(value) {
+            modCount++
             buffer.position(value)
             pos = value
         }
@@ -52,6 +54,7 @@ abstract class GenericBuffer<B: NioBuffer>(
     protected var pos = 0
 
     override fun clear() {
+        modCount++
         buffer.clear()
         position = 0
     }

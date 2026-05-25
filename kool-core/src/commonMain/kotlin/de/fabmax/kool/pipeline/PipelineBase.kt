@@ -34,8 +34,13 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
         pipelineHashBuilder += bindGroupLayouts.meshScope.hash
     }
 
-    fun swapPipelineData(key: Any?) {
-        pipelineData = pipelineSwapData.getOrPut(key) { pipelineData.copy() }
+    fun swapPipelineData(key: Any?, copyBindings: Boolean = false) {
+        val old = pipelineData
+        val new = pipelineSwapData.getOrPut(key) { pipelineData.copy() }
+        if (copyBindings) {
+            old.copyTo(new)
+        }
+        pipelineData = new
     }
 
     override fun captureBuffer() {
@@ -74,21 +79,21 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
     }
 }
 
-inline fun <T: ShaderBase<*>> T.swapPipelineData(key: Any?, block: T.() -> Unit) {
+inline fun <T: ShaderBase<*>> T.swapPipelineData(key: Any?, copyBindings: Boolean = false, block: T.() -> Unit) {
     createdPipeline?.let {
-        it.swapPipelineData(key)
+        it.swapPipelineData(key, copyBindings)
         block()
     }
 }
 
-inline fun PipelineBase.swapPipelineDataCapturing(key: Any?, block: () -> Unit) {
-    swapPipelineData(key)
+inline fun PipelineBase.swapPipelineDataCapturing(key: Any?, copyBindings: Boolean = false, block: () -> Unit) {
+    swapPipelineData(key, copyBindings)
     block()
     captureBuffer()
 }
 
-inline fun <T: ShaderBase<*>> T.swapPipelineDataCapturing(key: Any?, block: T.() -> Unit) {
-    createdPipeline?.swapPipelineDataCapturing(key) {
+inline fun <T: ShaderBase<*>> T.swapPipelineDataCapturing(key: Any?, copyBindings: Boolean = false, block: T.() -> Unit) {
+    createdPipeline?.swapPipelineDataCapturing(key, copyBindings) {
         block()
     }
 }

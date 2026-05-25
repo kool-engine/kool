@@ -198,6 +198,10 @@ class TemporalFilterShader(
                     w set 0f.const
                 }
 
+                // reduce filter weight in screen regions with high motion
+                val dUv = saturate(length(oldUv - baseCoord.toFloat2() / sizeF) / 0.01f.const)
+                w *= (1f.const - dUv)
+
                 val oldColor by oldFilter.sample(oldUv, ddx, ddy).rgb
                 val curSrgb by convertColorSpace(newColor, ColorSpaceConversion.LinearToSrgb())
                 val oldSrgb by convertColorSpace(oldColor, ColorSpaceConversion.LinearToSrgb())
@@ -207,7 +211,6 @@ class TemporalFilterShader(
                 `if`(any(isNan(filtered))) {
                     filtered set curSrgb
                 }
-
                 newFilter[baseCoord] = float4Value(filtered, 1f)
             }
         }
