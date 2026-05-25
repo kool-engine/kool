@@ -13,7 +13,7 @@ interface ObjectIdAllocator {
 }
 
 class DefaultObjectIdAllocator(val maxObjects: Int) : ObjectIdAllocator {
-    override var size: Int = 0
+    override var size: Int = 1
         private set
 
     private val objectIdRanges = mutableMapOf<NodeId, ObjectIdRange>()
@@ -27,7 +27,7 @@ class DefaultObjectIdAllocator(val maxObjects: Int) : ObjectIdAllocator {
                 var rng = searchFreeRange(numInstances)
                 if (rng == null) {
                     logW { "Failed to find free object ID range for ${mesh.name} (size: $numInstances)" }
-                    rng = ObjectIdRange(maxObjects-1, maxObjects)
+                    rng = ObjectIdRange(0, 1)
                 }
                 range = rng
             }

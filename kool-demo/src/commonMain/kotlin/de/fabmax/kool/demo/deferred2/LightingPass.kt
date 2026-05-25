@@ -226,7 +226,7 @@ fun KslScopeBuilder.screenReflect(
             val step by baseDist * 0.025f.const + noise.x * 0.01f.const
             val prevStep by 0f.const
             val stepScale by 1f.const
-            val maxIncrease by 4f.const
+            val maxIncrease by 1.5f.const
             val directionFac by abs(dot(rayDir, normalize(origin)))
 
             repeat(16.const) {
@@ -268,13 +268,14 @@ fun KslScopeBuilder.screenReflect(
     val rayDir by reflect(normalize(viewPos), viewNormal)
     val noise by noise33(viewPos * (camData.frameIdx % 64.const + 1.const).toFloat1())
 
+    val scatteringCoeff by 0.4f.const
     val reflectionColorOut by 0f.const3
     val minColor by 1000f.const3
     val maxColor by 0f.const3
     val initialRays by clamp((roughFactor * length(specFactor) * 20f.const).toInt1(), 1.const, 4.const)
     repeat(initialRays) {
         numRays += 1f.const
-        val scatterOffset by (noise - 0.5f.const) * roughFactor * 0.5f.const
+        val scatterOffset by (noise - 0.5f.const) * roughFactor * scatteringCoeff
         val scatteredRayDir by normalize(rayDir + scatterOffset)
         val rayResult by fnCastRay(viewPos, scatteredRayDir, noise)
         `if`(rayResult.z gt 0f.const) {
@@ -295,7 +296,7 @@ fun KslScopeBuilder.screenReflect(
     val thresh by length(maxColor - minColor)
     `while`((thresh gt 0.1f.const) and (numRays lt 6f.const)) {
         numRays += 1f.const
-        val scatterOffset by (noise - 0.5f.const) * roughFactor * 0.5f.const
+        val scatterOffset by (noise - 0.5f.const) * roughFactor * scatteringCoeff
         val scatteredRayDir by normalize(rayDir + scatterOffset)
         val rayResult by fnCastRay(viewPos, scatteredRayDir, noise)
         `if`(rayResult.z gt 0f.const) {
