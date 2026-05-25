@@ -124,11 +124,9 @@ class ShadowBlockFragmentStage(
             if (lightSpacePositions.isEmpty() || lightSpaceNormalZs.isEmpty()) {
                 return@apply
             }
-
             shadowData.shadowMapInfos.forEach { mapInfo ->
                 val light = requireNotNull(mapInfo.shadowMap.light) { "ShadowMap light must be set before creating a shader with it" }
                 shadowFactors[light.lightIndex] set 1f.const
-
                 when (mapInfo.shadowMap) {
                     is SimpleShadowMap -> {
                         sampleSimpleShadowMap(lightSpacePositions, lightSpaceNormalZs, mapInfo)
@@ -150,7 +148,7 @@ class ShadowBlockFragmentStage(
         val subMapIdx = mapInfo.fromIndexIncl
         val posLightSpace = lightSpacePositions[subMapIdx]
 
-        `if` (shadowData.shadowCfg.flipBacksideNormals.const or (lightSpaceNormalZs[subMapIdx] lt 0f.const)) {
+        `if` (shadowData.flipBacksideNormals.const or (lightSpaceNormalZs[subMapIdx] lt 0f.const)) {
             // normal points towards light source, compute shadow factor
             shadowFactors[light.lightIndex] set getShadowMapFactor(shadowData.depthMaps[subMapIdx], posLightSpace, mapInfo.samplePattern)
         }.`else` {
@@ -166,7 +164,7 @@ class ShadowBlockFragmentStage(
     ) {
         val lightIdx = mapInfo.shadowMap.light?.lightIndex ?: 0
 
-        `if`(shadowData.shadowCfg.flipBacksideNormals.const or (lightSpaceNormalZs[mapInfo.fromIndexIncl] lt 0f.const)) {
+        `if`(shadowData.flipBacksideNormals.const or (lightSpaceNormalZs[mapInfo.fromIndexIncl] lt 0f.const)) {
             // normal points towards light source, compute shadow factor
             val sampleW = float1Var(0f.const)
             val sampleSum = float1Var(0f.const)
@@ -181,10 +179,9 @@ class ShadowBlockFragmentStage(
                         all(projPos gt Vec3f(0f, 0f, -1f).const) and
                         all(projPos lt Vec3f(1f, 1f, 1f).const)) {
 
-                    // determine how close proj pos is to shadow map border and use that to blend
-                    // between cascades
+                    // determine how close proj pos is to shadow map border and use that to blend between cascades
                     val p = float2Var(abs((projPos.xy - 0.5f.const) * 2f.const))
-                    val c = 1f.const - clamp(max(p.x, p.y) - 0.9f.const, 0f.const, 0.05f.const) * 10f.const
+                    val c = 1f.const - (max(p.x, p.y) - 0.9f.const) * 10f.const
                     val w = float1Var(c * (1f.const - sampleW))
 
                     // projected position is inside shadow map bounds, sample shadow map

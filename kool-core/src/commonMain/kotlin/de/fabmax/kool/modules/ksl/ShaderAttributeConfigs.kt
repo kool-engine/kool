@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.ksl
 
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ksl.KslLitShader.AmbientLight
+import de.fabmax.kool.modules.ksl.ShadowMapConfig.Companion.SHADOW_SAMPLE_PATTERN_4x4
 import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
@@ -134,12 +135,12 @@ data class LightingConfig(
             return this
         }
 
-        fun addShadowMap(shadowMap: ShadowMap, samplePattern: List<Vec2f> = ShadowMapConfig.SHADOW_SAMPLE_PATTERN_4x4): Builder {
+        fun addShadowMap(shadowMap: ShadowMap, samplePattern: List<Vec2f> = SHADOW_SAMPLE_PATTERN_4x4): Builder {
             shadowMaps += ShadowMapConfig(shadowMap, samplePattern)
             return this
         }
 
-        fun addShadowMaps(shadowMaps: Collection<ShadowMap>, samplePattern: List<Vec2f> = ShadowMapConfig.SHADOW_SAMPLE_PATTERN_4x4): Builder {
+        fun addShadowMaps(shadowMaps: Collection<ShadowMap>, samplePattern: List<Vec2f> = SHADOW_SAMPLE_PATTERN_4x4): Builder {
             this.shadowMaps += shadowMaps.map { ShadowMapConfig(it, samplePattern) }
             return this
         }
@@ -197,4 +198,8 @@ data class ShadowMapConfig(val shadowMap: ShadowMap, val samplePattern: List<Vec
             }
         }
     }
+}
+
+fun List<ShadowMap>.toConfig(samplePattern: List<Vec2f> = SHADOW_SAMPLE_PATTERN_4x4): List<ShadowMapConfig> {
+    return map { ShadowMapConfig(it, samplePattern) }
 }

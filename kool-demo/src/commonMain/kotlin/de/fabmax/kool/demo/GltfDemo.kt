@@ -3,6 +3,7 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.deferred2.Deferred2Pipeline
+import de.fabmax.kool.demo.deferred2.createShadowMaps
 import de.fabmax.kool.demo.deferred2.defaultOutputQuad
 import de.fabmax.kool.demo.deferred2.gbufferShader
 import de.fabmax.kool.demo.menu.DemoMenu
@@ -11,6 +12,7 @@ import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.gltf.GltfMaterialConfig
 import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.modules.ksl.toConfig
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.ao.AoRadius
@@ -109,21 +111,19 @@ class GltfDemo : DemoScene("glTF Models") {
         mainScene.setupLighting()
 
         // create deferred pipeline
-//        val defCfg = DeferredPipelineConfig().apply {
-//            isWithAmbientOcclusion = true
-//            isWithScreenSpaceReflections = true
-//            baseReflectionStep = 0.02f
-//            maxGlobalLights = 2
-//            isWithVignette = true
-//            useImageBasedLighting(envMap)
-//        }
+        val camera = PerspectiveCamera()
+        val sceneContent = Node()
+        val shadows = mainScene.lighting.createShadowMaps(sceneContent, camera)
+        shadows.forEach { it.addToScene(mainScene) }
         deferredPipeline = Deferred2Pipeline(
-            content = Node(),
+            content = sceneContent,
             scene = mainScene,
             ibl = envMap,
             isScreenSpaceReflections = true,
             maxGlobalLights = 2,
+            camera = camera,
             lighting = mainScene.lighting,
+            shadowMapConfig = shadows.toConfig()
         )
         deferredPipeline.renderScale = 1f / UiScale.windowScale.value
         deferredPipeline.aoPass.radius = AoRadius.absoluteRadius(0.2f)
@@ -395,7 +395,6 @@ class GltfDemo : DemoScene("glTF Models") {
 //                shadowMaps = if (isDeferredShading) deferredPipeline.shadowMaps else shadowsForward,
 //                scrSpcAmbientOcclusionMap = if (isDeferredShading) deferredPipeline.aoPipeline?.aoMap else aoPipelineForward?.aoMap,
                 environmentMap = envMap,
-                //isDeferredShading = isDeferredShading
                 shaderFactory = { pbrConfig ->
                     if (isDeferredShading) {
                         gbufferShader {

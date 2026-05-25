@@ -4,6 +4,7 @@ import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.ShadowMapConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
 import de.fabmax.kool.modules.ksl.lang.*
@@ -24,7 +25,9 @@ class Deferred2Pipeline(
     val scene: Scene,
     val ibl: EnvironmentMap,
     val isScreenSpaceReflections: Boolean,
+    val camera: Camera = PerspectiveCamera(),
     val lighting: Lighting = Lighting(),
+    val shadowMapConfig: List<ShadowMapConfig> = emptyList(),
     val maxGlobalLights: Int = 1,
     var renderScale: Float = 1f,
     var tsaa: List<Vec2f> = TSAA_4,
@@ -34,7 +37,6 @@ class Deferred2Pipeline(
         (scene.mainRenderPass.viewport.width * renderScale).toInt().coerceAtLeast(16),
         (scene.mainRenderPass.viewport.height * renderScale).toInt().coerceAtLeast(16)
     )
-    val camera = PerspectiveCamera()
     val idAllocator: ObjectIdAllocator = DefaultObjectIdAllocator(maxObjects)
     private val camDataBuffer = StructBuffer(DeferredCamDataLayout, 1)
     val camData = camDataBuffer.asStorageBuffer()
@@ -199,6 +201,27 @@ class Deferred2Pipeline(
             Vec2f(5 * s, 3 * s),
         )
     }
+}
+
+fun Lighting.createShadowMaps(
+    sceneContent: Node,
+    sceneCam: Camera,
+    range: Float = 100f,
+    mapSize: Int = 2048,
+): List<ShadowMap> {
+    val shadows = mutableListOf<ShadowMap>()
+    for (light in lights) {
+        val shadowMap: ShadowMap? = when (light) {
+            is Light.Directional -> CascadedShadowMap(sceneCam, sceneContent, light, maxRange = range, mapSizes = List(3) { mapSize })
+            is Light.Spot -> SimpleShadowMap(sceneCam, sceneContent, light, mapSize)
+            is Light.Point -> {
+                logW { "Point light shadow maps not yet supported" }
+                null
+            }
+        }
+        shadowMap?.let { shadows += shadowMap }
+    }
+    return shadows
 }
 
 fun makeDitherPattern(): Texture2d {

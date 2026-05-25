@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ksl.blocks
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.LightingConfig
+import de.fabmax.kool.modules.ksl.ShadowMapConfig
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.pipeline.ShaderBase
@@ -12,10 +13,19 @@ import de.fabmax.kool.util.SimpleShadowMap
 
 context(program: KslProgram)
 fun shadowData(shadowCfg: LightingConfig): ShadowData {
-    return (program.dataBlocks.find { it is ShadowData } as? ShadowData) ?: ShadowData(shadowCfg, program)
+    return (program.dataBlocks.find { it is ShadowData } as? ShadowData) ?: ShadowData(shadowCfg.shadowMaps, shadowCfg.flipBacksideNormals, program)
 }
 
-class ShadowData(val shadowCfg: LightingConfig, program: KslProgram) : KslDataBlock(NAME, program), KslShaderListener {
+context(program: KslProgram)
+fun shadowData(shadowMapConfig: List<ShadowMapConfig>, flipBacksideNormals: Boolean = true): ShadowData {
+    return (program.dataBlocks.find { it is ShadowData } as? ShadowData) ?: ShadowData(shadowMapConfig, flipBacksideNormals, program)
+}
+
+class ShadowData(
+    val shadowMaps: List<ShadowMapConfig>,
+    val flipBacksideNormals: Boolean,
+    program: KslProgram,
+) : KslDataBlock(NAME, program), KslShaderListener {
     val shadowMapInfos: List<ShadowMapInfo>
     val subMaps: List<SimpleShadowMap>
     val numSubMaps: Int get() = subMaps.size
@@ -29,7 +39,7 @@ class ShadowData(val shadowCfg: LightingConfig, program: KslProgram) : KslDataBl
         var i = 0
         val mapInfos = mutableListOf<ShadowMapInfo>()
         val maps = mutableListOf<SimpleShadowMap>()
-        for (shadowMap in shadowCfg.shadowMaps) {
+        for (shadowMap in shadowMaps) {
             val info = ShadowMapInfo(shadowMap.shadowMap, i, shadowMap.samplePattern)
             i = info.toIndexExcl
             mapInfos += info

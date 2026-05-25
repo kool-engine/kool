@@ -1,6 +1,7 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.deferred2.*
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
@@ -8,8 +9,8 @@ import de.fabmax.kool.math.randomF
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.ksl.KslUnlitShader
+import de.fabmax.kool.modules.ksl.toConfig
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.pipeline.deferred.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
@@ -17,7 +18,7 @@ import kotlin.math.*
 
 class ReflectionDemo : DemoScene("Reflections") {
 
-    private lateinit var deferredPipeline: DeferredPipeline
+    private lateinit var deferredPipeline: Deferred2Pipeline
 
     private val hdri by hdriGradient(ColorGradient(Color.DARK_GRAY.mix(Color.BLACK, 0.75f), Color.DARK_GRAY, toLinear = true))
     private val floorAlbedo by texture2d("${DemoLoader.materialPath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg")
@@ -35,8 +36,8 @@ class ReflectionDemo : DemoScene("Reflections") {
     private val lightChoices = listOf("1", "2", "3", "4")
     private val lightGroup = Node("light-group")
 
-    private val isSsrEnabled = mutableStateOf(true).onChange { _, new -> deferredPipeline.isSsrEnabled = new }
-    private val ssrMapSize = mutableStateOf(0.5f).onChange { _, new -> deferredPipeline.reflectionMapSize = new }
+    private val isSsrEnabled = mutableStateOf(true)//.onChange { _, new -> deferredPipeline.isSsrEnabled = new }
+    private val ssrMapSize = mutableStateOf(0.5f)//.onChange { _, new -> deferredPipeline.reflectionMapSize = new }
     private val isShowSsrMap = mutableStateOf(true)
     private val lightCount = mutableStateOf(4)
     private val lightPower = mutableStateOf(500f)
@@ -51,26 +52,13 @@ class ReflectionDemo : DemoScene("Reflections") {
     private var bunnyMesh: Mesh<*>? = null
     private var groundMesh: TextureMesh? = null
 
-    private var modelShader: DeferredKslPbrShader? = null
+    private var modelShader: GbufferShader? = null
 
     override fun lateInit(ctx: KoolContext) {
         updateLighting()
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        orbitCamera {
-            zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
-            setZoom(17.0, max = 50.0)
-            translation.set(0.0, 2.0, 0.0)
-            setRotation(0f, -5f)
-            // let the camera slowly rotate around vertical axis
-            onUpdate += {
-                if (isAutoRotate.value) {
-                    verticalRotation += Time.deltaT * 3f
-                }
-            }
-        }
-
         addNode(lightGroup)
         lightGroup.onUpdate {
             lightGroup.transform.rotate((-3f).deg * Time.deltaT, Vec3f.Y_AXIS)
@@ -86,25 +74,50 @@ class ReflectionDemo : DemoScene("Reflections") {
     }
 
     private fun setupDeferred(scene: Scene) {
-        val defCfg = DeferredPipelineConfig().apply {
-            isWithAmbientOcclusion = false
-            isWithScreenSpaceReflections = true
-            useImageBasedLighting(hdri)
-        }
-        deferredPipeline = DeferredPipeline(scene, defCfg)
+//        val defCfg = DeferredPipelineConfig().apply {
+//            isWithAmbientOcclusion = false
+//            isWithScreenSpaceReflections = true
+//            useImageBasedLighting(hdri)
+//        }
+        val content = Node()
+        val cam = PerspectiveCamera()
+        val shadowMaps = mainScene.lighting.createShadowMaps(content, cam)
+        shadowMaps.forEach { it.addToScene(mainScene) }
+        deferredPipeline = Deferred2Pipeline(
+            content = content,
+            scene = scene,
+            ibl = hdri,
+            camera = cam,
+            isScreenSpaceReflections = true,
+            maxGlobalLights = 4,
+            lighting = mainScene.lighting,
+            shadowMapConfig = shadowMaps.toConfig()
+        )
+        //scene.camera = deferredPipeline.camera
 
-        scene += deferredPipeline.createDefaultOutputQuad().also {
-            (it.shader as? DeferredOutputShader)?.setupVignette(0f)
-        }
-        scene += Skybox.cube(hdri.reflectionMap, 1f)
+        scene += deferredPipeline.defaultOutputQuad(null)
 
-        modelShader = deferredKslPbrShader {
+        modelShader = gbufferShader {
             color { uniformColor(matColors[selectedColorIdx.value].linColor) }
             roughness { uniformProperty(this@ReflectionDemo.roughness.value) }
             metallic { uniformProperty(this@ReflectionDemo.metallic.value) }
         }
 
-        deferredPipeline.sceneContent.apply {
+        deferredPipeline.content.apply {
+            val cam = orbitCamera(deferredPipeline.camera) {
+                zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
+                setZoom(17.0, max = 50.0)
+                translation.set(0.0, 2.0, 0.0)
+                setRotation(0f, -5f)
+                // let the camera slowly rotate around vertical axis
+                onUpdate += {
+                    if (isAutoRotate.value) {
+                        verticalRotation += Time.deltaT * 3f
+                    }
+                }
+            }
+            addNode(cam)
+
             addTextureMesh(isNormalMapped = true) {
                 generate {
                     rect {
@@ -118,7 +131,7 @@ class ReflectionDemo : DemoScene("Reflections") {
                 isCastingShadow = false
                 groundMesh = this
 
-                shader = deferredKslPbrShader {
+                shader = gbufferShader {
                     color { textureColor(floorAlbedo) }
                     normalMapping { useNormalMap(floorNormal) }
                     roughness { textureProperty(floorRoughness) }
@@ -133,9 +146,9 @@ class ReflectionDemo : DemoScene("Reflections") {
 
     private fun updateLighting() {
         lights.forEachIndexed { i, light ->
-            if (i < deferredPipeline.shadowMaps.size) {
-                deferredPipeline.shadowMaps[i].isShadowMapEnabled = false
-            }
+//            if (i < deferredPipeline.shadowMaps.size) {
+//                deferredPipeline.shadowMaps[i].isShadowMapEnabled = false
+//            }
             light.disable(mainScene.lighting)
         }
 
@@ -145,9 +158,9 @@ class ReflectionDemo : DemoScene("Reflections") {
             lights[i].setup(pos)
             lights[i].enable(mainScene.lighting)
             pos += step
-            if (i < deferredPipeline.shadowMaps.size) {
-                deferredPipeline.shadowMaps[i].isShadowMapEnabled = true
-            }
+//            if (i < deferredPipeline.shadowMaps.size) {
+//                deferredPipeline.shadowMaps[i].isShadowMapEnabled = true
+//            }
         }
 
         lights.forEach { it.updateVisibility() }
@@ -223,12 +236,12 @@ class ReflectionDemo : DemoScene("Reflections") {
                     .margin(sizes.gap)
                     .align(AlignmentX.Start, AlignmentY.Bottom)
 
-                Image(deferredPipeline.reflections?.reflectionMap) {
-                    modifier
-                        .height(500.dp)
-                        .imageProvider(FlatImageProvider(deferredPipeline.reflections?.reflectionMap, true).mirrorY())
-                        .backgroundColor(Color.BLACK)
-                }
+//                Image(deferredPipeline.reflections?.reflectionMap) {
+//                    modifier
+//                        .height(500.dp)
+//                        .imageProvider(FlatImageProvider(deferredPipeline.reflections?.reflectionMap, true).mirrorY())
+//                        .backgroundColor(Color.BLACK)
+//                }
             }
         }
 
