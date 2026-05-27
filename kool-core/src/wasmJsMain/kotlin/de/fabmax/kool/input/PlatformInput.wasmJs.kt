@@ -351,7 +351,7 @@ internal object PlatformInputWasm : PlatformInput {
     }
 }
 
-external class GamepadEvent : Event, JsAny {
+external class GamepadEvent : Event {
     val gamepad: Gamepad
 }
 

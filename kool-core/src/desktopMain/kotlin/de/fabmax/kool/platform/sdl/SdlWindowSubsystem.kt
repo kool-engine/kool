@@ -16,8 +16,7 @@ import org.lwjgl.sdl.SDLClipboard.SDL_GetClipboardText
 import org.lwjgl.sdl.SDLClipboard.SDL_SetClipboardText
 import org.lwjgl.sdl.SDLError.SDL_ClearError
 import org.lwjgl.sdl.SDLError.SDL_GetError
-import org.lwjgl.sdl.SDLInit.SDL_INIT_VIDEO
-import org.lwjgl.sdl.SDLInit.SDL_Init
+import org.lwjgl.sdl.SDLInit.*
 import org.lwjgl.sdl.SDLVideo.*
 import org.lwjgl.sdl.SDLVulkan.SDL_Vulkan_GetInstanceExtensions
 import org.lwjgl.system.MemoryUtil
@@ -71,7 +70,7 @@ object SdlWindowSubsystem : WindowSubsystem {
             logD { "Detected macOS. Enabling AWT headless mode to mitigate AWT / GLFW compatibility issues" }
             System.setProperty("java.awt.headless", "true")
         }
-        check(SDL_Init(SDL_INIT_VIDEO)) { "Failed to initialize SDL" }
+        check(SDL_Init(SDL_INIT_VIDEO or SDL_INIT_GAMEPAD)) { "Failed to initialize SDL" }
         logSdlError("onEarlyInit")
 
         Clipboard.impl = SdlClipboard

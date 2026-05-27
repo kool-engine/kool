@@ -64,6 +64,27 @@ sealed interface SdlEvent {
 
     data object Quit : SdlEvent { override val type: SdlEventType = SdlEventType.QUIT }
 
+    data class Gamepad(
+        val which: Int,
+        override val type: SdlEventType
+    ) : SdlEvent
+
+    data class GamepadButton(
+        val button: Int,
+        val down: Boolean,
+        val which: Int,
+        override val type: SdlEventType
+    ) : SdlEvent
+
+    data class GamepadAxis(
+        val axis: Int,
+        val value: Short,
+        val which: Int,
+        override val type: SdlEventType
+    ) : SdlEvent
+
+    data object JoystickEvent : SdlEvent { override val type: SdlEventType = SdlEventType.JOYSTICK_AXIS_MOTION }
+
     data class Other(override val type: SdlEventType) : SdlEvent
 
     companion object {
@@ -105,6 +126,25 @@ sealed interface SdlEvent {
             type = SdlEventType(ev.type()),
         )
 
+        private fun Gamepad(ev: SDL_GamepadDeviceEvent): Gamepad = Gamepad(
+            which = ev.which(),
+            type = SdlEventType(ev.type())
+        )
+
+        private fun GamepadButton(ev: SDL_GamepadButtonEvent): GamepadButton = GamepadButton(
+            button = ev.button().toInt(),
+            down = ev.down(),
+            which = ev.which(),
+            type = SdlEventType(ev.type())
+        )
+
+        private fun GamepadAxis(ev: SDL_GamepadAxisEvent): GamepadAxis = GamepadAxis(
+            axis = ev.axis().toInt(),
+            value = ev.value(),
+            which = ev.which(),
+            type = SdlEventType(ev.type())
+        )
+
         private fun Window(ev: SDL_WindowEvent): Window = Window(
             data1 = ev.data1(),
             data2 = ev.data2(),
@@ -120,6 +160,20 @@ sealed interface SdlEvent {
             SdlEventType.KEY_DOWN -> Key(sdl.key())
             SdlEventType.KEY_UP -> Key(sdl.key())
             SdlEventType.TEXT_INPUT -> Text(sdl.text())
+
+            SdlEventType.GAMEPAD_ADDED -> Gamepad(sdl.gdevice())
+            SdlEventType.GAMEPAD_REMOVED -> Gamepad(sdl.gdevice())
+            SdlEventType.GAMEPAD_UPDATE_COMPLETE -> Gamepad(sdl.gdevice())
+            SdlEventType.GAMEPAD_BUTTON_UP -> GamepadButton(sdl.gbutton())
+            SdlEventType.GAMEPAD_BUTTON_DOWN -> GamepadButton(sdl.gbutton())
+            SdlEventType.GAMEPAD_AXIS_MOTION -> GamepadAxis(sdl.gaxis())
+
+            SdlEventType.JOYSTICK_AXIS_MOTION -> JoystickEvent
+            SdlEventType.JOYSTICK_BUTTON_UP -> JoystickEvent
+            SdlEventType.JOYSTICK_BUTTON_DOWN -> JoystickEvent
+            SdlEventType.JOYSTICK_BALL_MOTION -> JoystickEvent
+            SdlEventType.JOYSTICK_HAT_MOTION -> JoystickEvent
+            SdlEventType.JOYSTICK_UPDATE_COMPLETE -> JoystickEvent
 
             SdlEventType.WINDOW_SHOWN -> Window(sdl.window())
             SdlEventType.WINDOW_HIDDEN -> Window(sdl.window())

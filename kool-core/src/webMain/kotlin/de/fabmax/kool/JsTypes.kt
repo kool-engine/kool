@@ -32,6 +32,7 @@ fun Array<String>.toJsArray(): JsArray<JsString> {
 external interface Gamepad : JsAny {
     val axes: JsArray<out JsNumber>
     val buttons: JsArray<out GamepadButton>
+    val vibrationActuator: GamepadHapticActuator
     val connected: Boolean
     val id: String
     val index: Int
@@ -44,6 +45,23 @@ external interface GamepadButton : JsAny {
     val touched: Boolean
     val value: Double
 }
+
+external interface GamepadHapticActuator : JsAny {
+    fun pulse(intensity: Double, duration: Int)
+    fun playEffect(effect: String, params: GamepadHapticActuatorEffect)
+}
+
+fun GamepadHapticActuatorEffect(
+    duration: Int,
+    weakMagnitude: Float,
+    strongMagnitude: Float,
+): GamepadHapticActuatorEffect = js("""({
+    duration: duration,
+    weakMagnitude: weakMagnitude,
+    strongMagnitude: strongMagnitude
+})""")
+
+external interface GamepadHapticActuatorEffect
 
 external class AudioContext : JsAny {
     val sampleRate: Float

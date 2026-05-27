@@ -2,12 +2,12 @@ package de.fabmax.kool.demo.physics.vehicle
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.input.Controller
+import de.fabmax.kool.input.ControllerInput
 import de.fabmax.kool.input.DriveAxes
 import de.fabmax.kool.math.*
+import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.ConvexMesh
 import de.fabmax.kool.physics.geometry.ConvexMeshGeometry
-import de.fabmax.kool.physics.setPosition
-import de.fabmax.kool.physics.setRotation
 import de.fabmax.kool.physics.vehicle.Vehicle
 import de.fabmax.kool.physics.vehicle.VehicleProperties
 import de.fabmax.kool.pipeline.deferred.DeferredKslPbrShader
@@ -69,6 +69,7 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         vehicleGroupInner += vehicleModel
 
         vehicle = makeRaycastVehicle(world)
+        world.physics.registerContactListener(VehicleCrashListener())
 
         resetVehiclePos(hard = true)
 
@@ -339,5 +340,28 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
     companion object {
         private val START_POS = Vec3f(0f, 1.5f, -40f)
         private val START_HEAD = 270f
+    }
+}
+
+private class VehicleCrashListener : ContactListener {
+    override fun onTouchFound(actorA: RigidActor, actorB: RigidActor, contactPoints: List<ContactPoint>?) {
+        val minImpulse = 100f
+        var impulse = 0f
+        contactPoints?.let {
+            impulse = 0f
+            it.forEach { pt ->
+                val imp = pt.impulse.length()
+                if (imp > impulse) {
+                    impulse = imp
+                }
+            }
+        }
+
+        if (impulse > minImpulse) {
+            val intensityLow = (impulse / 30000f).clamp()
+            val intensityHigh = (impulse / 10000f).clamp()
+            val duration = 200f + intensityLow * 800f
+            ControllerInput.findDefaultController()?.rumble(intensityLow, intensityHigh, duration.toInt())
+        }
     }
 }

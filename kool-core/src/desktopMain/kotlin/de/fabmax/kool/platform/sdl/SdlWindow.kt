@@ -174,6 +174,10 @@ class SdlWindow(internal val handle: Long, width: Int, height: Int, title: Strin
                 is SdlEvent.Drop -> handleDropEvent(event)
                 is SdlEvent.Key -> input.handleKey(event)
                 is SdlEvent.Text -> input.handleText(event)
+                is SdlEvent.Gamepad -> SdlControllers.gamepadEvent(event)
+                is SdlEvent.GamepadButton -> SdlControllers.gamepadButtonEvent(event)
+                is SdlEvent.GamepadAxis -> SdlControllers.gamepadAxisEvent(event)
+                is SdlEvent.JoystickEvent -> {} // ignored
                 is SdlEvent.Window -> handleWindowEvent(event)
                 SdlEvent.Quit -> isCloseRequested = true
                 is SdlEvent.Other -> logD { "Unhandled SDL event: ${event.name}" }
