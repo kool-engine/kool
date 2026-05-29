@@ -1,7 +1,7 @@
 package de.fabmax.kool.demo.procedural
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
+import de.fabmax.kool.pipeline.deferred2.gbufferShader
 import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addGroup
@@ -62,7 +62,7 @@ class Roses : Node() {
                     geometry.removeDegeneratedTriangles()
                     geometry.generateNormals()
                 }
-                shader = deferredKslPbrShader {
+                shader = gbufferShader {
                     color { vertexColor() }
                     roughness(0.3f)
                 }
@@ -73,7 +73,7 @@ class Roses : Node() {
                     geometry.removeDegeneratedTriangles()
                     geometry.generateNormals()
                 }
-                shader = deferredKslPbrShader {
+                shader = gbufferShader {
                     color { vertexColor() }
                     roughness(0.5f)
                 }
@@ -84,7 +84,7 @@ class Roses : Node() {
                     geometry.removeDegeneratedTriangles()
                     geometry.generateNormals()
                 }
-                shader = deferredKslPbrShader {
+                shader = gbufferShader {
                     color { vertexColor() }
                     roughness(0.5f)
                 }
@@ -95,7 +95,7 @@ class Roses : Node() {
                     geometry.removeDegeneratedTriangles()
                     geometry.generateNormals()
                 }
-                shader = deferredKslPbrShader {
+                shader = gbufferShader {
                     color { vertexColor() }
                     roughness(0.8f)
                 }

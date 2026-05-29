@@ -43,6 +43,14 @@ data class BasicVertexConfig(
                 field = value
             }
 
+        fun set(other: BasicVertexConfig) {
+            isFlipBacksideNormals = other.isFlipBacksideNormals
+            maxNumberOfBones = other.maxNumberOfBones
+            morphAttributes.addAll(other.morphAttributes)
+            displacementCfg.propertySources.addAll(other.displacementCfg.propertySources)
+            modelMatrixComposition = other.modelMatrixComposition
+        }
+
         fun enableArmatureFixedNumberOfBones(fixedNumberOfBones: Int): Builder {
             this.maxNumberOfBones = fixedNumberOfBones
             return this

@@ -1,9 +1,6 @@
 package de.fabmax.kool.pipeline.deferred2
 
-import de.fabmax.kool.math.MutableMat4f
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec2i
-import de.fabmax.kool.math.clamp
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.ShadowMapConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
@@ -309,8 +306,13 @@ fun Deferred2Pipeline.installBloomPass(): BloomPass {
     return bloomPass
 }
 
-fun Deferred2Pipeline.defaultOutputQuad(bloomPass: BloomPass?, writeDepth: Boolean = false): Mesh<*> {
-    val outputShader = defaultOutputShader(bloomPass, writeDepth)
+fun Deferred2Pipeline.defaultOutputQuad(
+    bloomPass: BloomPass?,
+    writeDepth: Boolean = false,
+    vignette: Vignette? = null,
+    chromaticAberration: Vec3f? = null,
+): Mesh<*> {
+    val outputShader = defaultOutputShader(bloomPass, writeDepth, vignette, chromaticAberration)
     return TextureMesh().apply {
         generate {
             generateFullscreenQuad()
@@ -322,6 +324,8 @@ fun Deferred2Pipeline.defaultOutputQuad(bloomPass: BloomPass?, writeDepth: Boole
 fun Deferred2Pipeline.defaultOutputShader(
     bloomPass: BloomPass?,
     writeDepth: Boolean = false,
+    vignette: Vignette? = null,
+    chromaticAberration: Vec3f? = null,
 ): KslShader {
     val pipelineConfig = if (writeDepth) {
         PipelineConfig(blendMode = BlendMode.DISABLED)
@@ -341,13 +345,43 @@ fun Deferred2Pipeline.defaultOutputShader(
             val bloom = texture2d("bloomOutput")
             val ditherTex = texture2d("ditherPattern")
             val depthTex = if (writeDepth) texture2d("depth", isUnfilterable = true) else null
+            val vignetteR = if (vignette != null) uniformFloat2("vignetteR") else null
+            val aberrationCfg = if (chromaticAberration != null) uniformFloat3("aberrationCfg") else null
+
+            val fnSampleRgb = functionFloat3("fnSampleRgb") {
+                val tex = paramColorTex2d()
+                val uv = paramFloat2()
+                body {
+                    if (aberrationCfg == null) {
+                        tex.sample(uv).rgb
+                    } else {
+                        val centerUv by uv - 0.5f.const
+                        val s by length(centerUv) / 0.3f.const
+                        val str by aberrationCfg * s * s
+                        val uvR by centerUv * (1f.const + str.r)
+                        val uvG by centerUv * (1f.const + str.g)
+                        val uvB by centerUv * (1f.const + str.b)
+                        val r by tex.sample(uvR + 0.5f.const).r
+                        val g by tex.sample(uvG + 0.5f.const).g
+                        val b by tex.sample(uvB + 0.5f.const).b
+                        float3Value(r, g, b)
+                    }
+                }
+            }
 
             main {
                 val uvi = (uv.output * output.size().toFloat2()).toInt2()
-                val color by output.sample(uv.output).rgb + bloom.sample(uv.output).rgb
+                val color by fnSampleRgb(output, uv.output) + fnSampleRgb(bloom, uv.output)
                 val ditherC by uvi % ditherTex.size()
                 val ditherNoise by ditherTex.load(ditherC).r
                 val srgb by convertColorSpace(color, ColorSpaceConversion.LinearToSrgbHdr()) + (ditherNoise - 0.5f.const) / 255f.const
+
+                vignetteR?.let {
+                    val vignetteColor = uniformFloat4("vignetteColor")
+                    val uvR by length(uv.output - 0.5f.const2)
+                    val vignetteF by smoothStep(vignetteR.x, vignetteR.y, uvR) * vignetteColor.a
+                    srgb set mix(srgb, vignetteColor.rgb, vignetteF)
+                }
                 colorOutput(srgb)
 
                 depthTex?.let {
@@ -364,6 +398,13 @@ fun Deferred2Pipeline.defaultOutputShader(
     outputShader.bindTexture2d("bloomOutput", bloomMap)
     var inputTex by outputShader.bindTexture2d("deferredOutput", defaultSampler = SamplerSettings().nearest().clamped())
     var inputDepth by outputShader.bindTexture2d("depth")
+    vignette?.let {
+        outputShader.bindUniformFloat2("vignetteR", Vec2f(it.innerRadius, it.outerRadius))
+        outputShader.bindUniformColor("vignetteColor", it.vignetteColor)
+    }
+    chromaticAberration?.let {
+        outputShader.bindUniformFloat3("aberrationCfg", it)
+    }
     onSwap {
         val filterOutput = filterPass.filterOutput.newVal
         outputShader.swapPipelineData(filterOutput) {
@@ -375,3 +416,7 @@ fun Deferred2Pipeline.defaultOutputShader(
     }
     return outputShader
 }
+
+data class Vignette(val innerRadius: Float = 0.4f, val outerRadius: Float = 0.71f, val vignetteColor: Color = Color.BLACK.withAlpha(0.3f))
+
+val ChromaticAberrationDefault = Vec3f(-0.003f, 0.0f, 0.003f)

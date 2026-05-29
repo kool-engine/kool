@@ -187,9 +187,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
                 color { textureColor(albedoMap) }
                 normalMapping { useNormalMap(normalMap) }
                 roughness { textureProperty(roughnessMap) }
-                ao {
-                    textureProperty(ambientOcclusionMap)
-                }
+                ao { textureProperty(ambientOcclusionMap) }
                 lighting {
                     enableSsao(aoPipeline.aoMap)
                     imageBasedAmbientLight(ibl.irradianceMap)

@@ -6,14 +6,14 @@ import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomI
 import de.fabmax.kool.math.spatial.BoundingBoxF
-import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
+import de.fabmax.kool.modules.ksl.toConfig
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.ao.AoRadius
-import de.fabmax.kool.pipeline.deferred.DeferredPipeline
-import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
+import de.fabmax.kool.pipeline.deferred2.Deferred2Pipeline
+import de.fabmax.kool.pipeline.deferred2.defaultOutputQuad
+import de.fabmax.kool.pipeline.deferred2.installBloomPass
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.Skybox
 import de.fabmax.kool.scene.orbitCamera
 import de.fabmax.kool.util.*
 
@@ -52,33 +52,29 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
             setDefaultDepthOffset(true)
             shadowBounds = BoundingBoxF(Vec3f(-30f, 0f, -30f), Vec3f(30f, 60f, 30f))
         }
-        val deferredCfg = DeferredPipelineConfig().apply {
-            isWithScreenSpaceReflections = true
-            isWithAmbientOcclusion = true
-            maxGlobalLights = 1
-            isWithVignette = true
-            isWithBloom = true
-            useImageBasedLighting(ibl)
-            useShadowMaps(listOf(shadowMap))
-            outputDepthTest = DepthCompareOp.ALWAYS
+        val content = Node()
+        val pipeline = Deferred2Pipeline(
+            content = content,
+            scene = this,
+            ibl = ibl,
+            camera = camera,
+            lighting = lighting,
+            shadowMapConfig = listOf(shadowMap).toConfig(),
+            renderScale = 1f / UiScale.windowScale.value
+        )
+        pipeline.enableScreenSpaceReflections()
+        pipeline.aoPass.radius = AoRadius.absoluteRadius(0.6f)
+        val bloom = pipeline.installBloomPass()
+
+        content.apply {
+            addNode(Glass(ibl, shadowMap).apply { pipeline.onSwap { swapBuffers(pipeline) } })
+            addNode(Vase())
+            addNode(Table(this@ProceduralDemo))
+            roses = Roses()
+            addNode(roses)
         }
-        val deferredPipeline = DeferredPipeline(this@setupMainScene, deferredCfg).apply {
-            aoPipeline?.radius = AoRadius.absoluteRadius(0.6f)
 
-            sceneContent.apply {
-                addNode(Glass(ibl, shadowMap).also { onSwap += it })
-                addNode(Vase())
-                addNode(Table(this@ProceduralDemo))
-
-                roses = Roses()
-                addNode(roses)
-            }
-
-            lightingPassContent += Skybox.cube(ibl.reflectionMap, 1f, colorSpaceConversion = ColorSpaceConversion.AsIs)
-        }
-        shadowMap.drawNode = deferredPipeline.sceneContent
-
-        addNode(deferredPipeline.createDefaultOutputQuad())
+        addNode(pipeline.defaultOutputQuad(bloom))
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {

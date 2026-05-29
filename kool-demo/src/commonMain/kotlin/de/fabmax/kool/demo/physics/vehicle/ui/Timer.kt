@@ -21,11 +21,13 @@ class Timer(val vehicleUi: VehicleUi) : Composable {
             pipeline.tsaa = Deferred2Pipeline.TSAA_4
             pipeline.filterPass.filterWeight = 8f
             pipeline.aoPass.temporalKernels = 4
+            pipeline.aoPass.kernelSize = 8
         } else {
             pipeline.disableScreenSpaceReflections()
             pipeline.tsaa = Deferred2Pipeline.TSAA_NONE
             pipeline.filterPass.filterWeight = 0f
             pipeline.aoPass.temporalKernels = 1
+            pipeline.aoPass.kernelSize = 16
         }
     }
     private val isSound = mutableStateOf(false).onChange { _, new -> vehicleUi.onToggleSound(new) }

@@ -27,7 +27,7 @@ class LightingPass(
     drawNode = Node(),
     attachmentConfig = AttachmentConfig {
         addColor(TexFormat.RG11B10_F, filterMethod = FilterMethod.NEAREST)   // metal, roughness, ao
-        transientDepth()
+        defaultDepth()
     },
     initialSize = size,
     name = "deferred2-lighting-pass"
@@ -55,6 +55,12 @@ class LightingPass(
             val gbuffer = pipeline.gbuffers.newVal
             for (i in gbuffer.lightMeshes.indices) {
                 val mesh = gbuffer.lightMeshes[i]
+                mesh.getOrCreatePipeline(ctx)?.let { pipeline ->
+                    viewData.drawQueue.addMesh(mesh, pipeline)
+                }
+            }
+            for (i in gbuffer.alphaMeshes.indices) {
+                val mesh = gbuffer.alphaMeshes[i]
                 mesh.getOrCreatePipeline(ctx)?.let { pipeline ->
                     viewData.drawQueue.addMesh(mesh, pipeline)
                 }

@@ -15,20 +15,18 @@ class ReprojectComputePass(
     private val pipeline: Deferred2Pipeline
 ) : ComputePass("deferred2-reproject-compute-pass") {
 
-    val uploadData = AlternatingPair {
-        UploadData(maxObjects)
-    }
-
-    val modelMats = AlternatingPair {
-        StorageBuffer(GpuType.Mat4, maxObjects)
-    }
+    val uploadData = AlternatingPair { UploadData(maxObjects) }
+    val modelMats = AlternatingPair { StorageBuffer(GpuType.Mat4, maxObjects) }
     val reprojectMats = StorageBuffer(GpuType.Mat4, maxObjects)
+    private var frameCnt = 0
+    internal val isWarmedUp: Boolean get() = frameCnt > 2
 
     private val shader = ReprojectComputeShader(reprojectMats)
 
     init {
         val groupsX = (maxObjects + 63) / 64
-        addTask(shader, Vec3i(groupsX, 1, 1))
+        val task = addTask(shader, Vec3i(groupsX, 1, 1))
+        task.onAfterDispatch { frameCnt++ }
         onRelease {
             modelMats.a.releaseDelayed(1)
             modelMats.b.releaseDelayed(1)
