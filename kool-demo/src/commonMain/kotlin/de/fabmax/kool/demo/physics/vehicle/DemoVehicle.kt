@@ -268,9 +268,6 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         val vehicle = Vehicle(vehicleProps, world.physics)
         world.physics.addActor(vehicle)
 
-//        vehicleModel.meshes.forEach { println(it.value.name) }
-//        vehicleModel.printHierarchy()
-
         vehicleGroup.apply {
             transform = vehicle.transform
 

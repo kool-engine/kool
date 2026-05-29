@@ -5,7 +5,10 @@ import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.demo.physics.vehicle.ui.VehicleUi
+import de.fabmax.kool.input.KeyboardInput
+import de.fabmax.kool.input.LocalKeyCode
 import de.fabmax.kool.math.*
+import de.fabmax.kool.modules.gltf.GltfDeferredShaderFactory
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.gltf.GltfMaterialConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
@@ -26,18 +29,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
     private val groundNormal by texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
     private val vehicleModel by model(
         "${DemoLoader.modelPath}/kool-car.glb",
-        GltfLoadConfig(materialConfig = GltfMaterialConfig(
-            shaderFactory = { pbrConfig ->
-                gbufferShader {
-                    vertexCfg.modelMatrixComposition = pbrConfig.vertexCfg.modelMatrixComposition
-                    colorCfg.colorSources.addAll(pbrConfig.colorCfg.colorSources)
-                    normalMapCfg.set(pbrConfig.normalMapCfg)
-                    roughnessCfg.propertySources.addAll(pbrConfig.roughnessCfg.propertySources)
-                    metallicCfg.propertySources.addAll(pbrConfig.metallicCfg.propertySources)
-                    aoCfg.propertySources.addAll(pbrConfig.aoCfg.propertySources)
-                }
-            }
-        ))
+        GltfLoadConfig(materialConfig = GltfMaterialConfig(shaderFactory = GltfDeferredShaderFactory))
     )
 
     lateinit var vehicleWorld: VehicleWorld
@@ -77,7 +69,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
         deferredPipeline.enableScreenSpaceReflections()
         deferredPipeline.lightingPass.ambientShadowFactor = 0.3f
         val bloom = deferredPipeline.installBloomPass()
-        mainScene += deferredPipeline.defaultOutputQuad(bloom)
+        mainScene += deferredPipeline.defaultOutputQuad(bloom, vignette = Vignette())
         shadows.drawNode = deferredPipeline.content
 
         val deferredLights = DeferredLights(deferredPipeline)
@@ -99,10 +91,13 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             showLoadText("Creating Track".l())
             makeTrack(vehicleWorld)
             addNode(deferredLights)
-//            onUpdate {
-//                val w = (8f - vehicle.vehicle.linearVelocity.length()).coerceAtLeast(0f)
-//                deferredPipeline.filterPass.filterWeight = w
-//            }
+        }
+
+        val lightToggleListener = KeyboardInput.addKeyListener(LocalKeyCode('l'), "Toggle head lights", filter = { it.isPressed }) {
+            vehicle.isHeadlightsOn = !vehicle.isHeadlightsOn
+        }
+        mainScene.onRelease {
+            KeyboardInput.removeKeyListener(lightToggleListener)
         }
     }
 

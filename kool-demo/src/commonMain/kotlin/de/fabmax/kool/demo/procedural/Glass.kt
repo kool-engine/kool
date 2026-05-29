@@ -4,11 +4,11 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.deferred.DeferredPassSwapListener
-import de.fabmax.kool.pipeline.deferred.DeferredPasses
-import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
+import de.fabmax.kool.pipeline.deferred2.Deferred2Pipeline
+import de.fabmax.kool.pipeline.deferred2.gbufferShader
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.scene.*
@@ -16,7 +16,7 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.generateNormals
 import de.fabmax.kool.util.*
 
-class Glass(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), DeferredPassSwapListener {
+class Glass(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node() {
 
     private val glasShader: GlassShader = GlassShader(ibl, shadowMap)
 
@@ -29,8 +29,8 @@ class Glass(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Defer
         transform.scale(0.9f)
     }
 
-    override fun onSwap(previousPasses: DeferredPasses, currentPasses: DeferredPasses) {
-        glasShader.refractionColorMap = currentPasses.lightingPass.colorTexture
+    fun swapBuffers(pipeline: Deferred2Pipeline) {
+        glasShader.refractionColorMap = pipeline.filterPass.filterOutput.oldVal
     }
 
     private fun makeBody() = addColorMesh {
@@ -56,7 +56,6 @@ class Glass(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Defer
             geometry.removeDegeneratedTriangles()
             geometry.generateNormals()
         }
-
         isOpaque = false
         shader = glasShader
     }
@@ -68,13 +67,10 @@ class Glass(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Defer
             geometry.generateNormals()
         }
 
-        shader = deferredKslPbrShader {
+        shader = gbufferShader {
             roughness(0.0f)
             color {
-                constColor(Color(0.3f, 0f, 0.1f).mix(Color.BLACK, 0.2f).toLinear())
-            }
-            emission {
-                constColor(Color(0.3f, 0f, 0.1f).toLinear().withAlpha(0.8f))
+                constColor(Color(0.5f, 0f, 0.1f).mix(Color.BLACK, 0.2f).toLinear())
             }
         }
     }
@@ -207,6 +203,7 @@ class Glass(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Defer
                 lighting { addShadowMap(shadowMap) }
                 roughness(0f)
                 enableImageBasedLighting(ibl)
+                colorSpaceConversion = ColorSpaceConversion.AsIs
             }.build()
 
             fun glassShaderModel(cfg: Config) = Model(cfg).apply {
@@ -235,6 +232,7 @@ class Glass(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Defer
                         val refractionPos = float3Var(worldPos + refractionDir * matThickness.output)
                         val clipPos = float4Var(camData.viewProjMat * float4Value(refractionPos, 1f.const))
                         val samplePos = float2Var(clipPos.xy / clipPos.w * 0.5f.const + 0.5f.const)
+                        samplePos.y set 1f.const - samplePos.y
 
                         val refractionColor = float4Var(Vec4f.ZERO.const)
                         `if`((samplePos.x gt 0f.const) and (samplePos.x lt 1f.const) and

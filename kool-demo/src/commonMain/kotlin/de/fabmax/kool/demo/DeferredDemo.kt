@@ -4,17 +4,17 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslUnlitShader
-import de.fabmax.kool.modules.ksl.UnlitShaderConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
+import de.fabmax.kool.modules.ksl.blocks.noise13
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.BloomPass
 import de.fabmax.kool.pipeline.DepthCompareOp
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ao.AoRadius
+import de.fabmax.kool.pipeline.decodeNormalInt
 import de.fabmax.kool.pipeline.deferred2.*
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.scene.geometry.IndexedVertexList
-import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.Time
@@ -27,7 +27,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     private lateinit var pipeline: Deferred2Pipeline
     private lateinit var bloomPass: BloomPass
 
-    private lateinit var objects: ColorMesh
+    private lateinit var objects: Node
     private lateinit var objectShader: GbufferShader
 
     private lateinit var lightPositionMesh: Mesh<VertexLayouts.PositionNormal>
@@ -158,47 +158,54 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     }
 
     private fun Node.makeContent() {
-        objects = addColorMesh {
-            generate {
-                val sphereProtos = mutableListOf<IndexedVertexList<*>>()
-                for (i in 0..10) {
-                    val builder = MeshBuilder(IndexedVertexList(VertexLayouts.PositionNormalColor))
-                    sphereProtos += builder.geometry
-                    builder.apply {
-                        icoSphere {
-                            steps = 3
-                            radius = rand.randomF(0.3f, 0.4f)
-                            center.set(0f, 0.1f + radius, 0f)
-                        }
-                    }
-                }
-
-                for (x in -19..19) {
-                    for (y in -19..19) {
-                        color = Color.WHITE
-                        withTransform {
-                            translate(x.toFloat(), 0f, y.toFloat())
-                            if ((x + 100) % 2 == (y + 100) % 2) {
-                                cube {
-                                    size.set(
-                                        rand.randomF(0.6f, 0.8f),
-                                        rand.randomF(0.6f, 0.95f),
-                                        rand.randomF(0.6f, 0.8f)
-                                    )
-                                    origin.set(0f, 0.1f + size.y * 0.5f, 0f)
-                                }
-                            } else {
-                                geometry(sphereProtos[rand.randomI(sphereProtos.indices)])
-                            }
-                        }
-                    }
-                }
-            }
+        objects = addGroup {
+            val cubeInstances = MeshInstanceList(InstanceLayouts.ModelMat)
+            val sphereInstances = MeshInstanceList(InstanceLayouts.ModelMat)
             objectShader = gbufferShader {
+                vertices { instancedModelMatrix() }
                 color { vertexColor() }
                 roughness { uniformProperty(roughness.value) }
             }
-            shader = objectShader
+            addColorMesh(instances = sphereInstances) {
+                generate {
+                    color = Color.WHITE
+                    icoSphere {
+                        steps = 3
+                        center.set(0f, 1.1f, 0f)
+                    }
+                }
+                shader = objectShader
+            }
+            addColorMesh(instances = cubeInstances) {
+                generate {
+                    color = Color.WHITE
+                    cube {
+                        origin.set(0f, 0.6f, 0f)
+                    }
+                }
+                shader = objectShader
+            }
+
+            val t = MutableMat4f()
+            for (x in -19..19) {
+                for (y in -19..19) {
+                    t.setIdentity().translate(x.toFloat(), 0f, y.toFloat())
+                    if ((x + 100) % 2 == (y + 100) % 2) {
+                        cubeInstances.addInstance {
+                            val sx = rand.randomF(0.6f, 0.8f)
+                            val sy = rand.randomF(0.6f, 0.95f)
+                            val sz = rand.randomF(0.6f, 0.8f)
+                            t.scale(Vec3f(sx, sy, sz))
+                            set(it.modelMat, t)
+                        }
+                    } else {
+                        sphereInstances.addInstance {
+                            t.scale(rand.randomF(0.3f, 0.4f))
+                            set(it.modelMat, t)
+                        }
+                    }
+                }
+            }
         }
 
         lightPositionMesh = addMesh(VertexLayouts.PositionNormal, instances = lightPosInsts) {
@@ -328,20 +335,6 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             }
         }
 
-//        Text("Bloom".l) { sectionTitleStyle() }
-//        MenuRow {
-//            Text("Strength".l) { labelStyle(lblSize) }
-//            MenuSlider(bloomStrength.use(), 0f, 5f, txtWidth = txtSize) { bloomStrength.set(it) }
-//        }
-//        MenuRow {
-//            Text("Radius".l) { labelStyle(lblSize) }
-//            MenuSlider(bloomRadius.use(), 0f, 2.5f, txtWidth = txtSize) { bloomRadius.set(it) }
-//        }
-//        MenuRow {
-//            Text("Threshold".l) { labelStyle(lblSize) }
-//            MenuSlider(bloomThreshold.use(), 0f, 2f, txtWidth = txtSize) { bloomThreshold.set(it) }
-//        }
-
         Text("Objects".l) { sectionTitleStyle() }
         LabeledSwitch("Show objects".l, isObjects)
         MenuRow {
@@ -356,73 +349,79 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     .align(AlignmentX.Start, AlignmentY.Bottom)
                     .layout(ColumnLayout)
 
-//                val albedoMetal = deferredPipeline.activePass.materialPass.albedoMetal
-//                val normalRough = deferredPipeline.activePass.materialPass.normalRoughness
-//                val positionFlags = deferredPipeline.activePass.materialPass.positionFlags
-//                val bloom = deferredPipeline.activePass.bloomPass?.bloomMap
-//                val ao = deferredPipeline.aoPipeline?.aoMap
+                val albedo = pipeline.gbuffers.a.albedoEmission
+                val normals = pipeline.gbuffers.a.normals
+                val metalRoughAo = pipeline.gbuffers.a.metalRoughnessAo
+                val objectIds = pipeline.gbuffers.a.objectIds
+                val ssao = pipeline.aoPass.aoMap
+                val bloom = bloomPass.bloomMap
 
-//                Row {
-//                    modifier.margin(vertical = sizes.gap)
-//                    Image {
-//                        modifier
-//                            .imageSize(ImageSize.FixedScale(0.3f))
-//                            .imageProvider(FlatImageProvider(albedoMetal, true).mirrorY())
-//                            .margin(horizontal = sizes.gap)
-//                            .customShader(albedoMapShader.apply { colorMap = albedoMetal })
-//                        Text("Albedo".l) { imageLabelStyle() }
-//                    }
-//                    Image {
-//                        modifier
-//                            .imageSize(ImageSize.FixedScale(0.3f))
-//                            .imageProvider(FlatImageProvider(normalRough, true).mirrorY())
-//                            .margin(horizontal = sizes.gap)
-//                            .customShader(normalMapShader.apply { colorMap = normalRough })
-//                        Text("Normals".l) { imageLabelStyle() }
-//                    }
-//                }
-//                Row {
-//                    modifier.margin(vertical = sizes.gap)
-//                    Image {
-//                        modifier
-//                            .imageSize(ImageSize.FixedScale(0.3f))
-//                            .imageProvider(FlatImageProvider(positionFlags, true).mirrorY())
-//                            .margin(horizontal = sizes.gap)
-//                            .customShader(positionMapShader.apply { colorMap = positionFlags })
-//                        Text("Position".l) { imageLabelStyle() }
-//                    }
-//                    Image(ao) {
-//                        modifier
-//                            .imageSize(ImageSize.FixedScale(0.3f / deferredPipeline.aoMapSize))
-//                            .imageProvider(FlatImageProvider(ao, true).mirrorY())
-//                            .margin(horizontal = sizes.gap)
-//                            .customShader(AoDemo.aoMapShader.apply { colorMap = ao })
-//                        Text("Ambient occlusion".l) { imageLabelStyle() }
-//                    }
-//                }
-//                Row {
-//                    modifier.margin(vertical = sizes.gap)
-//                    Image(positionFlags) {
-//                        modifier
-//                            .imageSize(ImageSize.FixedScale(0.3f))
-//                            .imageProvider(FlatImageProvider(positionFlags, true).mirrorY())
-//                            .margin(horizontal = sizes.gap)
-//                            .customShader(metalRoughFlagsShader.apply {
-//                                metal = albedoMetal
-//                                rough = normalRough
-//                                flags = deferredPipeline.activePass.materialPass.positionFlags
-//                            })
-//                        Text("Metal (r), roughness (g), flags (b)".l) { imageLabelStyle() }
-//                    }
-//                    Image(bloom) {
-//                        modifier
-//                            .imageSize(ImageSize.FixedScale(0.6f * ((positionFlags.height) / bloom!!.width)))
-//                            .imageProvider(FlatImageProvider(bloom, true).mirrorY())
-//                            .margin(horizontal = sizes.gap)
-//                            .customShader(bloomMapShader.apply { colorMap = bloom })
-//                        Text("Bloom".l) { imageLabelStyle() }
-//                    }
-//                }
+                val normalShader = remember { normalShader(normals) }
+                val objectIdShader = remember { objectIdShader(objectIds) }
+
+                Row {
+                    modifier.margin(vertical = sizes.gap)
+                    Image {
+                        modifier
+                            .width(600.dp)
+                            .imageSize(ImageSize.ZoomContent)
+                            .imageProvider(FlatImageProvider(albedo, true))
+                            .margin(horizontal = sizes.gap)
+                            .customShader(albedoMapShader.apply { colorMap = albedo })
+                        Text("Albedo".l) { imageLabelStyle() }
+                    }
+                    Image {
+                        modifier
+                            .width(600.dp)
+                            .imageSize(ImageSize.ZoomContent)
+                            .imageProvider(FlatImageProvider(normals, true))
+                            .margin(horizontal = sizes.gap)
+                            .customShader(normalShader)
+                        Text("Normals".l) { imageLabelStyle() }
+                    }
+                }
+                Row {
+                    modifier.margin(vertical = sizes.gap)
+                    Image {
+                        modifier
+                            .width(600.dp)
+                            .imageSize(ImageSize.ZoomContent)
+                            .imageProvider(FlatImageProvider(metalRoughAo, true))
+                            .margin(horizontal = sizes.gap)
+                            .customShader(metalRoughAoShader.apply { colorMap = metalRoughAo })
+                        Text("Metal, roughness, AO".l) { imageLabelStyle() }
+                    }
+                    Image {
+                        modifier
+                            .width(600.dp)
+                            .imageSize(ImageSize.ZoomContent)
+                            .imageProvider(FlatImageProvider(ssao, true))
+                            .margin(horizontal = sizes.gap)
+                            .customShader(AoDemo.aoMapShader.apply { colorMap = ssao })
+                        Text("SSAO".l) { imageLabelStyle() }
+                    }
+                }
+                Row {
+                    modifier.margin(vertical = sizes.gap)
+                    Image(objectIds) {
+                        modifier
+                            .width(600.dp)
+                            .imageSize(ImageSize.ZoomContent)
+                            .imageProvider(FlatImageProvider(objectIds, true))
+                            .margin(horizontal = sizes.gap)
+                            .customShader(objectIdShader)
+                        Text("Object IDs".l) { imageLabelStyle() }
+                    }
+                    Image(bloom) {
+                        modifier
+                            .width(600.dp)
+                            .imageSize(ImageSize.ZoomContent)
+                            .imageProvider(FlatImageProvider(bloom, true))
+                            .margin(horizontal = sizes.gap)
+                            .customShader(bloomMapShader.apply { colorMap = bloom })
+                        Text("Bloom".l) { imageLabelStyle() }
+                    }
+                }
             }
         }
     }
@@ -481,10 +480,8 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     companion object {
         const val MAX_LIGHTS = 5000
 
-        private val albedoMapShader = gBufferShader(0f, 1f)
-        private val normalMapShader = gBufferShader(1f, 0.5f)
-        private val positionMapShader = gBufferShader(10f, 0.05f)
-        private val metalRoughFlagsShader = MetalRoughFlagsShader()
+        private val albedoMapShader = gBufferShader()
+        private val metalRoughAoShader = gBufferShader()
         private val bloomMapShader = KslUnlitShader {
             pipeline { depthTest = DepthCompareOp.ALWAYS }
             color { textureData() }
@@ -500,7 +497,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             }
         }
 
-        private fun gBufferShader(offset: Float, scale: Float) = KslUnlitShader {
+        private fun gBufferShader() = KslUnlitShader {
             pipeline { depthTest = DepthCompareOp.ALWAYS }
             color { textureData() }
             modelCustomizer = {
@@ -508,41 +505,54 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     main {
                         val baseColorPort = getFloat4Port("baseColor")
                         val inColor = float4Var(baseColorPort.input.input)
-                        inColor.rgb set (inColor.rgb + offset.const) * scale.const
                         baseColorPort.input(float4Value(inColor.rgb, 1f.const))
                     }
                 }
             }
         }
-    }
 
-    private class MetalRoughFlagsShader : KslUnlitShader(cfg) {
-        var flags by bindTexture2d("tFlags")
-        var rough by bindTexture2d("tRough")
-        var metal by bindTexture2d("tMetal")
-
-        companion object {
-            val cfg = UnlitShaderConfig {
-                pipeline { depthTest = DepthCompareOp.ALWAYS }
-                colorSpaceConversion = ColorSpaceConversion.AsIs
-                modelCustomizer = {
-                    val uv = interStageFloat2()
-                    vertexStage {
-                        main {
-                            uv.input set vertexAttrib(VertexLayouts.TexCoord.texCoord)
-                        }
-                    }
-                    fragmentStage {
-                        main {
-                            val metal = texture2d("tMetal").sample(uv.output).a
-                            val rough = texture2d("tRough").sample(uv.output).a
-                            val flags = texture2d("tFlags").sample(uv.output).a
-                            val color = float4Var(float4Value(metal, rough, flags, 1f.const))
-                            getFloat4Port("baseColor").input(color)
-                        }
+        private fun normalShader(normalTex: Texture2d) = KslUnlitShader {
+            pipeline { depthTest = DepthCompareOp.ALWAYS }
+            color { constColor(Color.BLACK) }
+            modelCustomizer = {
+                val uv = interStageFloat2()
+                vertexStage {
+                    main { uv.input set vertexAttrib(VertexLayouts.TexCoord.texCoord) }
+                }
+                fragmentStage {
+                    main {
+                        val normalTex = texture2dInt("normalTex")
+                        val baseColorPort = getFloat4Port("baseColor")
+                        val normalEnc by normalTex.load((uv.output * normalTex.size().toFloat2()).toInt2()).x
+                        val normalDec by decodeNormalInt(normalEnc) * 0.5f.const + 0.5f.const
+                        baseColorPort.input(float4Value(normalDec, 1f.const))
                     }
                 }
             }
+        }.apply {
+            bindTexture2d("normalTex", normalTex)
+        }
+
+        private fun objectIdShader(objectIds: Texture2d) = KslUnlitShader {
+            pipeline { depthTest = DepthCompareOp.ALWAYS }
+            color { constColor(Color.BLACK) }
+            modelCustomizer = {
+                val uv = interStageFloat2()
+                vertexStage {
+                    main { uv.input set vertexAttrib(VertexLayouts.TexCoord.texCoord) }
+                }
+                fragmentStage {
+                    main {
+                        val objectIds = texture2dInt("objectIds")
+                        val baseColorPort = getFloat4Port("baseColor")
+                        val objectId by objectIds.load((uv.output * objectIds.size().toFloat2()).toInt2()).x
+                        val objectColor by noise13(objectId.toUint1())
+                        baseColorPort.input(float4Value(objectColor, 1f.const))
+                    }
+                }
+            }
+        }.apply {
+            bindTexture2d("objectIds", objectIds)
         }
     }
 }

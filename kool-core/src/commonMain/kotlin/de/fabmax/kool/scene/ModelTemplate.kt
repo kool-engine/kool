@@ -551,7 +551,7 @@ class ModelTemplate(val scene: GltfScene, val gltfFile: GltfFile) : BaseReleasab
 
             val shaderFactory = cfg.materialConfig.shaderFactory
             val shader = when {
-                shaderFactory != null -> shaderFactory(pbrConfig.build())
+                shaderFactory != null -> shaderFactory.createShader(mesh, pbrConfig)
                 isDeferred -> {
                     pbrConfig.pipelineCfg.blendMode = BlendMode.DISABLED
                     DeferredKslPbrShader(pbrConfig.build())

@@ -6,6 +6,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.InstanceLayouts
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.*
+import kotlin.math.max
 
 class GbufferPass(
     initialSize: Vec2i,
@@ -41,9 +42,16 @@ class GbufferPass(
         onAfterCollectDrawCommands += { viewData ->
             val upload = pipeline.reprojectMatrixComputePass.uploadData.newVal
             upload.viewProjMat.set(viewData.drawQueue.viewProjMatF)
-            // fixme: upload.modelMats.limit = 0
             alphaMeshes.clear()
             lightMeshes.clear()
+
+            // This is a bit of a hack to prevent modifying data while it is uploaded to oldModelMats binding during
+            // the first frame. Later frames do not upload data to oldModelMats because of buffer swapping. Therefore,
+            // it is then safe to modify the buffer.
+            val canUpload = pipeline.reprojectMatrixComputePass.isWarmedUp
+            if (canUpload) {
+                upload.modelMats.limit = 0
+            }
 
             val drawQueue = viewData.drawQueue
             val it = drawQueue.iterator()
@@ -61,9 +69,9 @@ class GbufferPass(
                             val idRange = pipeline.idAllocator.getIdRange(cmd.mesh)
                             val bufferPos = idRange.from * 16
                             shader.objectId = idRange.from
-                            // fixme: upload.modelMats.limit = max(upload.modelMats.limit, bufferPos + idRange.size * 16)
 
-                            try {
+                            if (canUpload) {
+                                upload.modelMats.limit = max(upload.modelMats.limit, bufferPos + idRange.size * 16)
                                 val instances = mesh.instances
                                 if (instances != null) {
                                     val matrixExtractor = shader.config.instanceModelMatExtractor ?: DefaultInstanceModelMatrixExtractor
@@ -78,9 +86,6 @@ class GbufferPass(
                                     upload.modelMats.position = bufferPos
                                     cmd.modelMatF.putTo(upload.modelMats)
                                 }
-                            } catch (e: Exception) {
-                                logE { "Error updating model matrices" }
-                                e.printStackTrace()
                             }
                         }
                         is DeferredLightShader -> {

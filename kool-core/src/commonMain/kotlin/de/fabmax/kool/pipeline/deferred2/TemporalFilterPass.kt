@@ -57,7 +57,7 @@ class TemporalFilterPass(
             val newGbuffer = pipeline.gbuffers.newVal
             val oldGbuffer = pipeline.gbuffers.oldVal
 
-            newDepth = newGbuffer.depth
+            newDepth = pipeline.lightingPass.depthTexture
             oldDepth = oldGbuffer.depth
             oldMeta = oldGbuffer.objectIds
             newMeta = newGbuffer.objectIds

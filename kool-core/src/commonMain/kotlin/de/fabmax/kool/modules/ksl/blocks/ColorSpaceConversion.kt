@@ -190,7 +190,7 @@ class ToneMapLinearColorUncharted2(parentScope: KslScopeBuilder) :
 
 fun KslScopeBuilder.convertColorSpace(inputColor: KslExprFloat3, conversion: ColorSpaceConversion): KslVectorExpression<KslFloat3, KslFloat1> =
     when(conversion) {
-        ColorSpaceConversion.AsIs -> inputColor
+        ColorSpaceConversion.AsIs -> clamp(inputColor, 0f.const3, 1000f.const3)
         is ColorSpaceConversion.SrgbToLinear -> pow(inputColor, Vec3f(conversion.gamma).const)
         is ColorSpaceConversion.LinearToSrgb -> pow(inputColor, Vec3f(conversion.gamma).const)
         is ColorSpaceConversion.LinearToSrgbHdr -> {
