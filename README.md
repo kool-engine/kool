@@ -16,10 +16,11 @@ The code for all demos is available in
 the [kool-demo](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo) subproject. You can also run them locally by
 cloning this repo and running `./gradlew :kool-demo:runDesktop`
 
-- [Island](https://kool-engine.github.io/live/demos/?demo=phys-terrain): Height-map based
-  island incl. some wind-affected vegetation + a basic controllable character.
 - [Physics - Vehicle](https://kool-engine.github.io/live/demos/?demo=phys-vehicle): A drivable vehicle (W, A, S, D /
-  cursor keys, R to reset) based on the Nvidia PhysX vehicles SDK. **WebGPU only**
+  cursor keys, R to reset) based on the Nvidia PhysX vehicles SDK. Also nice showcase for deferred 
+  rendering with screen-space reflections (incl. artifacts) **WebGPU only**
+- [Island](https://kool-engine.github.io/live/demos/?demo=phys-terrain): Height-map based
+  island incl. some wind-affected vegetation and a basic controllable character.
 - [Physics - Ragdoll](https://kool-engine.github.io/live/demos/?demo=phys-ragdoll): Ragdoll physics demo.
 - [Physics - Joints](https://kool-engine.github.io/live/demos/?demo=phys-joints): Physics demo consisting of a chain
   running over two gears. Uses a lot of multi shapes and revolute joints.
@@ -169,7 +170,7 @@ the libs are resolved and added to the IntelliJ module classpath.
 - Support for physical based rendering (with metallic workflow) and image-based lighting
 - (Almost) complete support for [glTF 2.0](https://github.com/KhronosGroup/glTF) model format (including animations, morph targets and skins)
 - Skin / armature mesh animation (vertex shader based)
-- Deferred shading
+- Deferred shading with screen-space reflections and temporal filtering
 - Various tone-mapping options:
   - ACES (default)
   - Khronos PBR Neutral

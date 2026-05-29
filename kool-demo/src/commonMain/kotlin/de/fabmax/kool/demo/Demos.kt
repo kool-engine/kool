@@ -65,7 +65,6 @@ object Demos {
         entry("gltf", "glTF Models") { GltfDemo() }
         entry("ssr", "Reflections") { ReflectionDemo() }
         entry("deferred", "Deferred Shading", NeedsComputeShaders) { DeferredDemo() }
-        entry("deferred2test", "Deferred 2 Test", NeedsComputeShaders) { Deferred2Test() }
         entry("procedural", "Procedural Roses", NeedsComputeShaders) { ProceduralDemo() }
         entry("pbr", "PBR Materials") { PbrDemo() }
     }
@@ -101,6 +100,7 @@ object Demos {
         entry("struct-test", "Hello Structs") { HelloStructs() }
         entry("launched-effect-test", "Launched Effect Test") { LaunchedEffectTest() }
         entry("platformer2d", "2D Platformer") { PlatformerDemo() }
+        entry("deferred2test", "Deferred 2 Test", NeedsComputeShaders) { Deferred2Test() }
     }
 
     val categories = mutableListOf(physicsDemos, graphicsDemos, techDemos, hiddenDemos)
