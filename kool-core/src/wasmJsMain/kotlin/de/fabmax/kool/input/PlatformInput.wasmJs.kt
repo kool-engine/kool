@@ -238,7 +238,7 @@ internal object PlatformInputWasm : PlatformInput {
             LocalKeyCode(specialKey.code, specialKey.name)
         } else {
             when (key.length) {
-                1 -> LocalKeyCode(key[0].uppercaseChar().code)
+                1 -> LocalKeyCode(key[0].lowercaseChar().code)
                 else -> LocalKeyCode(0)
             }
         }
@@ -246,7 +246,7 @@ internal object PlatformInputWasm : PlatformInput {
 
     private fun KeyboardEvent.toKeyCode(): UniversalKeyCode {
         return KEY_CODE_MAP[code] ?: when (key.length) {
-            1 -> UniversalKeyCode(key[0].uppercaseChar().code)
+            1 -> UniversalKeyCode(key[0].lowercaseChar().code)
             else -> UniversalKeyCode(0)
         }
     }
