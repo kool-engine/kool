@@ -78,6 +78,10 @@ class GlfwController(id: Int) : Controller(id) {
         }
     }
 
+    override fun rumble(intensityLow: Float, intensityHigh: Float, durationMillis: Int) {
+        // Rumble isn't supported by GLFW
+    }
+
     override fun onDisconnect() {
         isConnected = false
         super.onDisconnect()

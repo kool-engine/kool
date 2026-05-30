@@ -1,22 +1,23 @@
 package de.fabmax.kool.demo.physics.vehicle
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.modules.ksl.lang.getFloat4Port
-import de.fabmax.kool.modules.ksl.lang.times
-import de.fabmax.kool.modules.ksl.lang.x
-import de.fabmax.kool.modules.ksl.lang.y
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.joints.FixedJoint
-import de.fabmax.kool.pipeline.deferred.DeferredKslPbrShader
-import de.fabmax.kool.pipeline.deferred.DeferredPointLights
+import de.fabmax.kool.pipeline.deferred2.DynamicPointLight
+import de.fabmax.kool.pipeline.deferred2.GbufferShader
+import de.fabmax.kool.pipeline.deferred2.gbufferShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.generateNormals
 import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.util.*
-import kotlin.math.*
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.max
+import kotlin.math.sin
 
 class GuardRail {
 
@@ -122,8 +123,7 @@ class GuardRail {
 
             geometry.generateNormals()
         }
-
-        shader = GuardRailShader.createShader()
+        shader = guardRailShader()
 
         onUpdate += {
             signInstances.clear()
@@ -182,7 +182,7 @@ class GuardRail {
         val emission = MutableVec2f()
         val actor: RigidDynamic
         val joint: FixedJoint
-        val pointLight: DeferredPointLights.PointLight
+        val pointLight: DynamicPointLight
 
         init {
             val signBox = BoxGeometry(Vec3f(2f, 2f, 0.3f))
@@ -197,15 +197,14 @@ class GuardRail {
             joint = FixedJoint(track.trackActor, actor, initPose.getPose(), PoseF())
             joint.enableBreakage(2e5f, 2e5f)
 
-            pointLight = world.deferredPipeline.dynamicPointLights.addPointLight {
+            pointLight = world.deferredLights.addPointLight {
                 color.set(MdColor.ORANGE toneLin 300)
             }
         }
 
         fun updateInstance(buf: StructBuffer<InstanceLayout>) {
-            pointLight.intensity = max(emission.x, emission.y) * 100f
-            pointLight.radius = sqrt(pointLight.intensity)
-            actor.transform.transform(pointLight.position.set(0f, 0.5f, 0.1f))
+            pointLight.strengthByIntensity(max(emission.x, emission.y) * 50f)
+            actor.transform.transform(pointLight.position.set(0f, 0.5f, 0.5f))
 
             buf.put {
                 set(it.modelMat, actor.transform.matrixF)
@@ -214,38 +213,31 @@ class GuardRail {
         }
     }
 
-    private class GuardRailShader(cfg: Config) : DeferredKslPbrShader(cfg) {
-        companion object {
-            fun createShader(): GuardRailShader {
-                val cfg = Config.Builder().apply {
-                    vertices { instancedModelMatrix() }
-                    color { vertexColor() }
-                    emission {
-                        constColor(VehicleDemo.color(500, false).mulRgb(20f))
-                    }
-
-                    modelCustomizer = {
-                        val emissionFactor = interStageFloat1()
-
-                        vertexStage {
-                            main {
-                                val emissionDir = vertexAttrib(VertexLayouts.TexCoord.texCoord)
-                                val emissionInst = instanceAttrib(InstanceLayout.emission)
-                                val emissionLt = emissionDir.x * emissionInst.x
-                                val emissionRt = emissionDir.y * emissionInst.y
-                                emissionFactor.input set max(emissionLt, emissionRt)
-                            }
-                        }
-                        fragmentStage {
-                            main {
-                                val emissionPort = getFloat4Port("emissionColor")
-                                val color = float4Var(emissionPort.input.input)
-                                emissionPort.input(color * emissionFactor.output)
-                            }
-                        }
-                    }
+    private fun guardRailShader(): GbufferShader = gbufferShader {
+        vertices { instancedModelMatrix() }
+        color { vertexColor() }
+        roughness(0.8f)
+        modelCustomizer = {
+            val emissionFactor = interStageFloat1()
+            vertexStage {
+                main {
+                    val emissionDir = vertexAttrib(VertexLayouts.TexCoord.texCoord)
+                    val emissionInst = instanceAttrib(InstanceLayout.emission)
+                    val emissionLt = emissionDir.x * emissionInst.x
+                    val emissionRt = emissionDir.y * emissionInst.y
+                    emissionFactor.input set max(emissionLt, emissionRt) * 50f.const
                 }
-                return GuardRailShader(cfg.build())
+            }
+            fragmentStage {
+                main {
+                    val emission = emissionFactor.output
+                    val emissionPort = getFloat1Port("emissionStrength")
+                    emissionPort.input(emission)
+
+                    val baseColorPort = getFloat4Port("baseColor")
+                    val color = float4Var(baseColorPort.input.input)
+                    baseColorPort.input(color + VehicleDemo.color(500, true).const * saturate(emission))
+                }
             }
         }
     }

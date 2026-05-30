@@ -60,7 +60,7 @@ expect val currentThreadName: String
 internal expect fun PlatformProperties(): KoolSystem.PlatformProperties
 
 sealed interface Platform {
-    data class Desktop(val os: String) : Platform {
+    data class Desktop(val os: String, override val isWayland: Boolean) : Platform {
         override val isWindows: Boolean get() = "windows" in os.lowercase()
         override val isLinux: Boolean get() = "linux" in os.lowercase()
         override val isMacOs: Boolean get() {
@@ -73,6 +73,7 @@ sealed interface Platform {
 
     val isWindows: Boolean get() = false
     val isLinux: Boolean get() = false
+    val isWayland: Boolean get() = false
     val isMacOs: Boolean get() = false
     val isAndroid: Boolean get() = this == Android
     val isJavascript: Boolean get() = this == Javascript

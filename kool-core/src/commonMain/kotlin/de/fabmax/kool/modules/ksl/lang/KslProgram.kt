@@ -10,7 +10,6 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 open class KslProgram(val name: String) {
-
     /**
      * Debug property: if true generated shader code is dumped to console
      */
@@ -69,7 +68,7 @@ open class KslProgram(val name: String) {
         stage.apply(block)
     }
 
-    fun computeStage(workGroupSizeX: Int = 1, workGroupSizeY: Int = 1, workGroupSizeZ: Int = 1, block: KslComputeStage.() -> Unit) {
+    fun computeStage(workGroupSizeX: Int, workGroupSizeY: Int = 1, workGroupSizeZ: Int = 1, block: KslComputeStage.() -> Unit) {
         contract {
             callsInPlace(block, InvocationKind.EXACTLY_ONCE)
         }
@@ -135,7 +134,7 @@ open class KslProgram(val name: String) {
         }
     }
 
-    private inline fun <reified T: KslUniform<*>> getOrCreateSampler(name: String, sampleType: TextureSampleType, create: () -> T): T {
+    internal inline fun <reified T: KslUniform<*>> getOrCreateSampler(name: String, sampleType: TextureSampleType, create: () -> T): T {
         val uniform = uniformSamplers[name]?.sampler ?: create().also { registerSampler(SamplerUniform(it, sampleType)) }
         check(uniform is T) {
             "Existing uniform with name \"$name\" has not the expected type"
@@ -157,159 +156,6 @@ open class KslProgram(val name: String) {
         return uniform as KslUniformStruct<S>
     }
 
-    fun uniformFloat1(name: String) = commonUniformBuffer.uniformFloat1(name)
-    fun uniformFloat2(name: String) = commonUniformBuffer.uniformFloat2(name)
-    fun uniformFloat3(name: String) = commonUniformBuffer.uniformFloat3(name)
-    fun uniformFloat4(name: String) = commonUniformBuffer.uniformFloat4(name)
-
-    fun uniformFloat1Array(name: String, arraySize: Int) = commonUniformBuffer.uniformFloat1Array(name, arraySize)
-    fun uniformFloat2Array(name: String, arraySize: Int) = commonUniformBuffer.uniformFloat2Array(name, arraySize)
-    fun uniformFloat3Array(name: String, arraySize: Int) = commonUniformBuffer.uniformFloat3Array(name, arraySize)
-    fun uniformFloat4Array(name: String, arraySize: Int) = commonUniformBuffer.uniformFloat4Array(name, arraySize)
-
-    fun uniformInt1(name: String) = commonUniformBuffer.uniformInt1(name)
-    fun uniformInt2(name: String) = commonUniformBuffer.uniformInt2(name)
-    fun uniformInt3(name: String) = commonUniformBuffer.uniformInt3(name)
-    fun uniformInt4(name: String) = commonUniformBuffer.uniformInt4(name)
-
-    fun uniformInt1Array(name: String, arraySize: Int) = commonUniformBuffer.uniformInt1Array(name, arraySize)
-    fun uniformInt2Array(name: String, arraySize: Int) = commonUniformBuffer.uniformInt2Array(name, arraySize)
-    fun uniformInt3Array(name: String, arraySize: Int) = commonUniformBuffer.uniformInt3Array(name, arraySize)
-    fun uniformInt4Array(name: String, arraySize: Int) = commonUniformBuffer.uniformInt4Array(name, arraySize)
-
-    fun uniformMat2(name: String) = commonUniformBuffer.uniformMat2(name)
-    fun uniformMat3(name: String) = commonUniformBuffer.uniformMat3(name)
-    fun uniformMat4(name: String) = commonUniformBuffer.uniformMat4(name)
-
-    fun uniformMat2Array(name: String, arraySize: Int) = commonUniformBuffer.uniformMat2Array(name, arraySize)
-    fun uniformMat3Array(name: String, arraySize: Int) = commonUniformBuffer.uniformMat3Array(name, arraySize)
-    fun uniformMat4Array(name: String, arraySize: Int) = commonUniformBuffer.uniformMat4Array(name, arraySize)
-
-    inline fun <reified S: Struct> uniformStruct(name: String, struct: S, scope: BindGroupScope = BindGroupScope.PIPELINE): KslUniformStruct<S> =
-        getOrCreateStructUniform(name, struct, scope)
-
-    fun texture1d(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
-        getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSampler1d, false)) }
-    fun texture2d(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
-        getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSampler2d, false)) }
-    fun texture3d(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
-        getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSampler3d, false)) }
-    fun textureCube(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
-        getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSamplerCube, false)) }
-    fun texture2dArray(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
-        getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSampler2dArray, false)) }
-    fun textureCubeArray(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
-        getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSamplerCubeArray, false)) }
-
-    fun depthTexture2d(name: String) =
-        getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSampler2d, false)) }
-    fun depthTextureCube(name: String) =
-        getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSamplerCube, false)) }
-    fun depthTexture2dArray(name: String) =
-        getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSampler2dArray, false)) }
-    fun depthTextureCubeArray(name: String) =
-        getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSamplerCubeArray, false)) }
-
-    fun <T: Struct> struct(struct: T): KslStruct<T> {
-        registerStruct(struct)
-        return KslStruct(struct)
-    }
-
-    fun <T: Struct> storage(
-        name: String,
-        structType: KslStruct<T>,
-        size: Int? = null
-    ): KslStructStorage<T> {
-        val storage: KslStorage<*> = storageBuffers[name]
-            ?: KslStructStorage(name, structType, size).also { registerStorage(it) }
-
-        check(storage is KslStructStorage<*> && storage.storageType.elemType == structType) {
-            "Existing storage buffer with name \"$name\" has not the expected type"
-        }
-        check(storage.size == size) {
-            "Existing storage buffer with name \"$name\" has not the expected dimension: ${storage.size} != $size"
-        }
-        @Suppress("UNCHECKED_CAST")
-        return storage as KslStructStorage<T>
-    }
-
-    inline fun <reified T: KslNumericType> storage(
-        name: String,
-        size: Int? = null
-    ): KslPrimitiveStorage<KslPrimitiveStorageType<T>> {
-        val type = numericTypeForT<T>()
-        val storage: KslStorage<*> = storageBuffers[name]
-            ?: KslPrimitiveStorage(name, KslPrimitiveStorageType(type), size).also { registerStorage(it) }
-
-        check(storage is KslPrimitiveStorage<*> && storage.storageType.elemType == type) {
-            "Existing storage buffer with name \"$name\" has not the expected type"
-        }
-        check(storage.size == size) {
-            "Existing storage buffer with name \"$name\" has not the expected dimension: ${storage.size} != $size"
-        }
-        check(type != KslFloat3 && type != KslInt3 && type != KslUint3) {
-            "3-dimensional storage buffer element types are not supported (use 4 dimensions instead)"
-        }
-        @Suppress("UNCHECKED_CAST")
-        return storage as KslPrimitiveStorage<KslPrimitiveStorageType<T>>
-    }
-
-    inline fun <reified T: KslNumericType> storageTexture1d(
-        name: String,
-        texFormat: TexFormat
-    ): KslStorageTexture1d<KslStorageTexture1dType<T>, T> {
-        val type = numericTypeForT<T>()
-        val storage: KslStorageTexture<*,*,*> = storageTextures[name]
-            ?: KslStorageTexture1d(name, KslStorageTexture1dType(type), texFormat).also { registerStorageTexture(it) }
-
-        checkStorageTexType<KslStorageTexture1d<KslStorageTexture1dType<T>, T>>(storage, type, texFormat)
-        @Suppress("UNCHECKED_CAST")
-        return storage as KslStorageTexture1d<KslStorageTexture1dType<T>, T>
-    }
-
-    inline fun <reified T: KslNumericType> storageTexture2d(
-        name: String,
-        texFormat: TexFormat
-    ): KslStorageTexture2d<KslStorageTexture2dType<T>, T> {
-        val type = numericTypeForT<T>()
-        val storage: KslStorageTexture<*,*,*> = storageTextures[name]
-            ?: KslStorageTexture2d(name, KslStorageTexture2dType(type), texFormat).also { registerStorageTexture(it) }
-
-        checkStorageTexType<KslStorageTexture2d<KslStorageTexture2dType<T>, T>>(storage, type, texFormat)
-        @Suppress("UNCHECKED_CAST")
-        return storage as KslStorageTexture2d<KslStorageTexture2dType<T>, T>
-    }
-
-    inline fun <reified T: KslNumericType> storageTexture3d(
-        name: String,
-        texFormat: TexFormat
-    ): KslStorageTexture3d<KslStorageTexture3dType<T>, T> {
-        val type = numericTypeForT<T>()
-        val storage: KslStorageTexture<*,*,*> = storageTextures[name]
-            ?: KslStorageTexture3d(name, KslStorageTexture3dType(type), texFormat).also { registerStorageTexture(it) }
-
-        checkStorageTexType<KslStorageTexture3d<KslStorageTexture3dType<T>, T>>(storage, type, texFormat)
-        @Suppress("UNCHECKED_CAST")
-        return storage as KslStorageTexture3d<KslStorageTexture3dType<T>, T>
-    }
-
-    @PublishedApi
-    internal inline fun <reified T: KslStorageTexture<*,*,*>> checkStorageTexType(
-        storage: KslStorageTexture<*,*,*>,
-        type: KslNumericType,
-        texFormat: TexFormat
-    ) {
-        check(storage is T && type == storage.storageType.elemType) {
-            "Existing storage texture with name \"$name\" has not the expected type"
-        }
-        check((type is KslScalar && texFormat.channels == 1) || (type is KslVector<*> && texFormat.channels == type.dimens)) {
-            "Ksl type $type does not match dimensionality of texture format $texFormat"
-        }
-        check(((texFormat.isI32 || texFormat.isU32) && type is KslIntType) || ((texFormat.isFloat || texFormat.isByte) && type is KslFloatType)) {
-            "Ksl type $type does not match channel type of texture format $texFormat"
-        }
-    }
-
     private fun registerInterStageVar(interStageVar: KslInterStageVar<*>) {
         // make sure vertex and fragment stage are created
         vertexStage {  }
@@ -325,65 +171,33 @@ open class KslProgram(val name: String) {
         }
     }
 
-    private fun <S> interStageScalar(type: S, interpolation: KslInterStageInterpolation, name: String):
+    internal fun <S> interStageScalar(type: S, interpolation: KslInterStageInterpolation, name: String):
             KslInterStageScalar<S> where S: KslType, S: KslScalar {
         val input = KslVarScalar(name, type, true)
         val output = KslVarScalar(name, type, false)
         return KslInterStageScalar(input, output, KslShaderStageType.VertexShader, interpolation).also { registerInterStageVar(it) }
     }
 
-    private fun <V, S> interStageVector(type: V, interpolation: KslInterStageInterpolation, name: String):
+    internal fun <V, S> interStageVector(type: V, interpolation: KslInterStageInterpolation, name: String):
             KslInterStageVector<V, S> where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar {
         val input = KslVarVector(name, type, true)
         val output = KslVarVector(name, type, false)
         return KslInterStageVector(input, output, KslShaderStageType.VertexShader, interpolation).also { registerInterStageVar(it) }
     }
 
-    fun interStageFloat1(name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
-        interStageScalar(KslFloat1, interpolation, name ?: nextName("interStageF1"))
-    fun interStageFloat2(name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
-        interStageVector(KslFloat2, interpolation, name ?: nextName("interStageF2"))
-    fun interStageFloat3(name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
-        interStageVector(KslFloat3, interpolation, name ?: nextName("interStageF3"))
-    fun interStageFloat4(name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
-        interStageVector(KslFloat4, interpolation, name ?: nextName("interStageF4"))
-
-    fun interStageInt1(name: String? = null) = interStageScalar(KslInt1, KslInterStageInterpolation.Flat, name ?: nextName("interStageI1"))
-    fun interStageInt2(name: String? = null) = interStageVector(KslInt2, KslInterStageInterpolation.Flat, name ?: nextName("interStageI2"))
-    fun interStageInt3(name: String? = null) = interStageVector(KslInt3, KslInterStageInterpolation.Flat, name ?: nextName("interStageI3"))
-    fun interStageInt4(name: String? = null) = interStageVector(KslInt4, KslInterStageInterpolation.Flat, name ?: nextName("interStageI4"))
-
-    private fun <S> interStageScalarArray(type: S, arraySize: Int, interpolation: KslInterStageInterpolation, name: String):
+    internal fun <S> interStageScalarArray(type: S, arraySize: Int, interpolation: KslInterStageInterpolation, name: String):
             KslInterStageScalarArray<S> where S: KslType, S: KslScalar {
         val input = KslArrayScalar(name, type, arraySize, true)
         val output = KslArrayScalar(name, type, arraySize, false)
         return KslInterStageScalarArray(input, output, KslShaderStageType.VertexShader, interpolation).also { registerInterStageVar(it) }
     }
 
-    private fun <V, S> interStageVectorArray(type: V, arraySize: Int, interpolation: KslInterStageInterpolation, name: String):
+    internal fun <V, S> interStageVectorArray(type: V, arraySize: Int, interpolation: KslInterStageInterpolation, name: String):
             KslInterStageVectorArray<V, S> where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar {
         val input = KslArrayVector(name, type, arraySize, true)
         val output = KslArrayVector(name, type, arraySize, false)
         return KslInterStageVectorArray(input, output, KslShaderStageType.VertexShader, interpolation).also { registerInterStageVar(it) }
     }
-
-    fun interStageFloat1Array(arraySize: Int, name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
-        interStageScalarArray(KslFloat1, arraySize, interpolation, name ?: nextName("interStageF1Array"))
-    fun interStageFloat2Array(arraySize: Int, name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
-        interStageVectorArray(KslFloat2, arraySize, interpolation, name ?: nextName("interStageF2Array"))
-    fun interStageFloat3Array(arraySize: Int, name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
-        interStageVectorArray(KslFloat3, arraySize, interpolation, name ?: nextName("interStageF3Array"))
-    fun interStageFloat4Array(arraySize: Int, name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
-        interStageVectorArray(KslFloat4, arraySize, interpolation, name ?: nextName("interStageF4Array"))
-
-    fun interStageInt1Array(arraySize: Int, name: String? = null) =
-        interStageScalarArray(KslInt1, arraySize, KslInterStageInterpolation.Flat, name ?: nextName("interStageI1Array"))
-    fun interStageInt2Array(arraySize: Int, name: String? = null) =
-        interStageVectorArray(KslInt2, arraySize, KslInterStageInterpolation.Flat, name ?: nextName("interStageI2Array"))
-    fun interStageInt3Array(arraySize: Int, name: String? = null) =
-        interStageVectorArray(KslInt3, arraySize, KslInterStageInterpolation.Flat, name ?: nextName("interStageI3Array"))
-    fun interStageInt4Array(arraySize: Int, name: String? = null) =
-        interStageVectorArray(KslInt4, arraySize, KslInterStageInterpolation.Flat, name ?: nextName("interStageI4Array"))
 
     fun prepareGenerate() {
         if (!isPrepared) {
@@ -408,6 +222,8 @@ open class KslProgram(val name: String) {
             storageBuffers.values.retainAll { u -> stages.any { stage -> stage.dependsOn(u) } }
         }
     }
+
+
 
     val UniformBinding1f.ksl: KslUniformScalar<KslFloat1> get() = uniformFloat1(bindingName)
     val UniformBinding2f.ksl: KslUniformVector<KslFloat2, KslFloat1> get() = uniformFloat2(bindingName)
@@ -444,3 +260,275 @@ open class KslProgram(val name: String) {
 
     data class SamplerUniform(val sampler: KslUniform<*>, val sampleType: TextureSampleType)
 }
+
+context(program: KslProgram)
+fun uniformFloat1(name: String) = program.commonUniformBuffer.uniformFloat1(name)
+context(program: KslProgram)
+fun uniformFloat2(name: String) = program.commonUniformBuffer.uniformFloat2(name)
+context(program: KslProgram)
+fun uniformFloat3(name: String) = program.commonUniformBuffer.uniformFloat3(name)
+context(program: KslProgram)
+fun uniformFloat4(name: String) = program.commonUniformBuffer.uniformFloat4(name)
+
+context(program: KslProgram)
+fun uniformFloat1Array(name: String, arraySize: Int) = program.commonUniformBuffer.uniformFloat1Array(name, arraySize)
+context(program: KslProgram)
+fun uniformFloat2Array(name: String, arraySize: Int) = program.commonUniformBuffer.uniformFloat2Array(name, arraySize)
+context(program: KslProgram)
+fun uniformFloat3Array(name: String, arraySize: Int) = program.commonUniformBuffer.uniformFloat3Array(name, arraySize)
+context(program: KslProgram)
+fun uniformFloat4Array(name: String, arraySize: Int) = program.commonUniformBuffer.uniformFloat4Array(name, arraySize)
+
+context(program: KslProgram)
+fun uniformInt1(name: String) = program.commonUniformBuffer.uniformInt1(name)
+context(program: KslProgram)
+fun uniformInt2(name: String) = program.commonUniformBuffer.uniformInt2(name)
+context(program: KslProgram)
+fun uniformInt3(name: String) = program.commonUniformBuffer.uniformInt3(name)
+context(program: KslProgram)
+fun uniformInt4(name: String) = program.commonUniformBuffer.uniformInt4(name)
+
+context(program: KslProgram)
+fun uniformInt1Array(name: String, arraySize: Int) = program.commonUniformBuffer.uniformInt1Array(name, arraySize)
+context(program: KslProgram)
+fun uniformInt2Array(name: String, arraySize: Int) = program.commonUniformBuffer.uniformInt2Array(name, arraySize)
+context(program: KslProgram)
+fun uniformInt3Array(name: String, arraySize: Int) = program.commonUniformBuffer.uniformInt3Array(name, arraySize)
+context(program: KslProgram)
+fun uniformInt4Array(name: String, arraySize: Int) = program.commonUniformBuffer.uniformInt4Array(name, arraySize)
+
+context(program: KslProgram)
+fun uniformMat2(name: String) = program.commonUniformBuffer.uniformMat2(name)
+context(program: KslProgram)
+fun uniformMat3(name: String) = program.commonUniformBuffer.uniformMat3(name)
+context(program: KslProgram)
+fun uniformMat4(name: String) = program.commonUniformBuffer.uniformMat4(name)
+
+context(program: KslProgram)
+fun uniformMat2Array(name: String, arraySize: Int) = program.commonUniformBuffer.uniformMat2Array(name, arraySize)
+context(program: KslProgram)
+fun uniformMat3Array(name: String, arraySize: Int) = program.commonUniformBuffer.uniformMat3Array(name, arraySize)
+context(program: KslProgram)
+fun uniformMat4Array(name: String, arraySize: Int) = program.commonUniformBuffer.uniformMat4Array(name, arraySize)
+
+context(program: KslProgram)
+inline fun <reified S: Struct> uniformStruct(name: String, struct: S, scope: BindGroupScope = BindGroupScope.PIPELINE): KslUniformStruct<S> =
+    program.getOrCreateStructUniform(name, struct, scope)
+
+context(program: KslProgram)
+fun texture1d(name: String, isUnfilterable: Boolean = false) =
+    program.getOrCreateSampler(name, if (isUnfilterable) TextureSampleType.UNFILTERABLE_FLOAT else TextureSampleType.FLOAT) {
+        KslUniform(KslVar(name, KslColorSampler1d, false))
+    }
+context(program: KslProgram)
+fun texture2d(name: String, isUnfilterable: Boolean = false) =
+    program.getOrCreateSampler(name, if (isUnfilterable) TextureSampleType.UNFILTERABLE_FLOAT else TextureSampleType.FLOAT) {
+        KslUniform(KslVar(name, KslColorSampler2d, false))
+    }
+context(program: KslProgram)
+fun texture3d(name: String, isUnfilterable: Boolean = false) =
+    program.getOrCreateSampler(name, if (isUnfilterable) TextureSampleType.UNFILTERABLE_FLOAT else TextureSampleType.FLOAT) {
+        KslUniform(KslVar(name, KslColorSampler3d, false))
+    }
+context(program: KslProgram)
+fun textureCube(name: String, isUnfilterable: Boolean = false) =
+    program.getOrCreateSampler(name, if (isUnfilterable) TextureSampleType.UNFILTERABLE_FLOAT else TextureSampleType.FLOAT) {
+        KslUniform(KslVar(name, KslColorSamplerCube, false))
+    }
+context(program: KslProgram)
+fun texture2dArray(name: String, isUnfilterable: Boolean = false) =
+    program.getOrCreateSampler(name, if (isUnfilterable) TextureSampleType.UNFILTERABLE_FLOAT else TextureSampleType.FLOAT) {
+        KslUniform(KslVar(name, KslColorSampler2dArray, false))
+    }
+context(program: KslProgram)
+fun textureCubeArray(name: String, isUnfilterable: Boolean = false) =
+    program.getOrCreateSampler(name, if (isUnfilterable) TextureSampleType.UNFILTERABLE_FLOAT else TextureSampleType.FLOAT) {
+        KslUniform(KslVar(name, KslColorSamplerCubeArray, false))
+    }
+
+context(program: KslProgram)
+fun texture2dInt(name: String) =
+    program.getOrCreateSampler(name, TextureSampleType.INT) { KslUniform(KslVar(name, KslIntSampler2d, false)) }
+context(program: KslProgram)
+fun texture3dInt(name: String) =
+    program.getOrCreateSampler(name, TextureSampleType.INT) { KslUniform(KslVar(name, KslIntSampler3d, false)) }
+context(program: KslProgram)
+fun texture2dArrayInt(name: String) =
+    program.getOrCreateSampler(name, TextureSampleType.INT) { KslUniform(KslVar(name, KslIntSampler2dArray, false)) }
+context(program: KslProgram)
+fun texture2dUint(name: String) =
+    program.getOrCreateSampler(name, TextureSampleType.UINT) { KslUniform(KslVar(name, KslUintSampler2d, false)) }
+context(program: KslProgram)
+fun texture3dUint(name: String) =
+    program.getOrCreateSampler(name, TextureSampleType.UINT) { KslUniform(KslVar(name, KslUintSampler3d, false)) }
+context(program: KslProgram)
+fun texture2dArrayUint(name: String) =
+    program.getOrCreateSampler(name, TextureSampleType.UINT) { KslUniform(KslVar(name, KslUintSampler2dArray, false)) }
+
+context(program: KslProgram)
+fun depthTexture2d(name: String) =
+    program.getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSampler2d, false)) }
+context(program: KslProgram)
+fun depthTextureCube(name: String) =
+    program.getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSamplerCube, false)) }
+context(program: KslProgram)
+fun depthTexture2dArray(name: String) =
+    program.getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSampler2dArray, false)) }
+context(program: KslProgram)
+fun depthTextureCubeArray(name: String) =
+    program.getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSamplerCubeArray, false)) }
+
+context(program: KslProgram)
+fun <T: Struct> struct(struct: T): KslStruct<T> {
+    program.registerStruct(struct)
+    return KslStruct(struct)
+}
+
+context(program: KslProgram)
+fun <T: Struct> storage(
+    name: String,
+    structType: KslStruct<T>,
+    size: Int? = null
+): KslStructStorage<T> {
+    val storage: KslStorage<*> = program.storageBuffers[name]
+        ?: KslStructStorage(name, structType, size).also { program.registerStorage(it) }
+
+    check(storage is KslStructStorage<*> && storage.storageType.elemType == structType) {
+        "Existing storage buffer with name \"$name\" has not the expected type"
+    }
+    check(storage.size == size) {
+        "Existing storage buffer with name \"$name\" has not the expected dimension: ${storage.size} != $size"
+    }
+    @Suppress("UNCHECKED_CAST")
+    return storage as KslStructStorage<T>
+}
+
+context(program: KslProgram)
+inline fun <reified T: KslNumericType> storage(
+    name: String,
+    size: Int? = null
+): KslPrimitiveStorage<KslPrimitiveStorageType<T>> {
+    val type = numericTypeForT<T>()
+    val storage: KslStorage<*> = program.storageBuffers[name]
+        ?: KslPrimitiveStorage(name, KslPrimitiveStorageType(type), size).also { program.registerStorage(it) }
+
+    check(storage is KslPrimitiveStorage<*> && storage.storageType.elemType == type) {
+        "Existing storage buffer with name \"$name\" has not the expected type"
+    }
+    check(storage.size == size) {
+        "Existing storage buffer with name \"$name\" has not the expected dimension: ${storage.size} != $size"
+    }
+    check(type != KslFloat3 && type != KslInt3 && type != KslUint3) {
+        "3-dimensional storage buffer element types are not supported (use 4 dimensions instead)"
+    }
+    @Suppress("UNCHECKED_CAST")
+    return storage as KslPrimitiveStorage<KslPrimitiveStorageType<T>>
+}
+
+context(program: KslProgram)
+inline fun <reified T: KslNumericType> storageTexture1d(
+    name: String,
+    texFormat: TexFormat
+): KslStorageTexture1d<KslStorageTexture1dType<T>, T> {
+    val type = numericTypeForT<T>()
+    val storage: KslStorageTexture<*,*,*> = program.storageTextures[name]
+        ?: KslStorageTexture1d(name, KslStorageTexture1dType(type), texFormat).also { program.registerStorageTexture(it) }
+
+    checkStorageTexType<KslStorageTexture1d<KslStorageTexture1dType<T>, T>>(storage, type, texFormat)
+    @Suppress("UNCHECKED_CAST")
+    return storage as KslStorageTexture1d<KslStorageTexture1dType<T>, T>
+}
+
+context(program: KslProgram)
+inline fun <reified T: KslNumericType> storageTexture2d(
+    name: String,
+    texFormat: TexFormat
+): KslStorageTexture2d<KslStorageTexture2dType<T>, T> {
+    val type = numericTypeForT<T>()
+    val storage: KslStorageTexture<*,*,*> = program.storageTextures[name]
+        ?: KslStorageTexture2d(name, KslStorageTexture2dType(type), texFormat).also { program.registerStorageTexture(it) }
+
+    checkStorageTexType<KslStorageTexture2d<KslStorageTexture2dType<T>, T>>(storage, type, texFormat)
+    @Suppress("UNCHECKED_CAST")
+    return storage as KslStorageTexture2d<KslStorageTexture2dType<T>, T>
+}
+
+context(program: KslProgram)
+inline fun <reified T: KslNumericType> storageTexture3d(
+    name: String,
+    texFormat: TexFormat
+): KslStorageTexture3d<KslStorageTexture3dType<T>, T> {
+    val type = numericTypeForT<T>()
+    val storage: KslStorageTexture<*,*,*> = program.storageTextures[name]
+        ?: KslStorageTexture3d(name, KslStorageTexture3dType(type), texFormat).also { program.registerStorageTexture(it) }
+
+    checkStorageTexType<KslStorageTexture3d<KslStorageTexture3dType<T>, T>>(storage, type, texFormat)
+    @Suppress("UNCHECKED_CAST")
+    return storage as KslStorageTexture3d<KslStorageTexture3dType<T>, T>
+}
+
+@PublishedApi
+context(program: KslProgram)
+internal inline fun <reified T: KslStorageTexture<*,*,*>> checkStorageTexType(
+    storage: KslStorageTexture<*,*,*>,
+    type: KslNumericType,
+    texFormat: TexFormat
+) {
+    check(storage is T && type == storage.storageType.elemType) {
+        "Existing storage texture with name \"${program.name}\" has not the expected type"
+    }
+    check((type is KslScalar && texFormat.channels == 1) || (type is KslVector<*> && texFormat.channels == type.dimens)) {
+        "Ksl type $type does not match dimensionality of texture format $texFormat"
+    }
+    check(((texFormat.isI32 || texFormat.isU32) && type is KslIntType) || ((texFormat.isFloat || texFormat.isByte) && type is KslFloatType)) {
+        "Ksl type $type does not match channel type of texture format $texFormat"
+    }
+}
+
+context(program: KslProgram)
+fun interStageFloat1(name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
+    program.interStageScalar(KslFloat1, interpolation, name ?: program.nextName("interStageF1"))
+context(program: KslProgram)
+fun interStageFloat2(name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
+    program.interStageVector(KslFloat2, interpolation, name ?: program.nextName("interStageF2"))
+context(program: KslProgram)
+fun interStageFloat3(name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
+    program.interStageVector(KslFloat3, interpolation, name ?: program.nextName("interStageF3"))
+context(program: KslProgram)
+fun interStageFloat4(name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
+    program.interStageVector(KslFloat4, interpolation, name ?: program.nextName("interStageF4"))
+
+context(program: KslProgram)
+fun interStageInt1(name: String? = null) = program.interStageScalar(KslInt1, KslInterStageInterpolation.Flat, name ?: program.nextName("interStageI1"))
+context(program: KslProgram)
+fun interStageInt2(name: String? = null) = program.interStageVector(KslInt2, KslInterStageInterpolation.Flat, name ?: program.nextName("interStageI2"))
+context(program: KslProgram)
+fun interStageInt3(name: String? = null) = program.interStageVector(KslInt3, KslInterStageInterpolation.Flat, name ?: program.nextName("interStageI3"))
+context(program: KslProgram)
+fun interStageInt4(name: String? = null) = program.interStageVector(KslInt4, KslInterStageInterpolation.Flat, name ?: program.nextName("interStageI4"))
+
+context(program: KslProgram)
+fun interStageFloat1Array(arraySize: Int, name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
+    program.interStageScalarArray(KslFloat1, arraySize, interpolation, name ?: program.nextName("interStageF1Array"))
+context(program: KslProgram)
+fun interStageFloat2Array(arraySize: Int, name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
+    program.interStageVectorArray(KslFloat2, arraySize, interpolation, name ?: program.nextName("interStageF2Array"))
+context(program: KslProgram)
+fun interStageFloat3Array(arraySize: Int, name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
+    program.interStageVectorArray(KslFloat3, arraySize, interpolation, name ?: program.nextName("interStageF3Array"))
+context(program: KslProgram)
+fun interStageFloat4Array(arraySize: Int, name: String? = null, interpolation: KslInterStageInterpolation = KslInterStageInterpolation.Smooth) =
+    program.interStageVectorArray(KslFloat4, arraySize, interpolation, name ?: program.nextName("interStageF4Array"))
+
+context(program: KslProgram)
+fun interStageInt1Array(arraySize: Int, name: String? = null) =
+    program.interStageScalarArray(KslInt1, arraySize, KslInterStageInterpolation.Flat, name ?: program.nextName("interStageI1Array"))
+context(program: KslProgram)
+fun interStageInt2Array(arraySize: Int, name: String? = null) =
+    program.interStageVectorArray(KslInt2, arraySize, KslInterStageInterpolation.Flat, name ?: program.nextName("interStageI2Array"))
+context(program: KslProgram)
+fun interStageInt3Array(arraySize: Int, name: String? = null) =
+    program.interStageVectorArray(KslInt3, arraySize, KslInterStageInterpolation.Flat, name ?: program.nextName("interStageI3Array"))
+context(program: KslProgram)
+fun interStageInt4Array(arraySize: Int, name: String? = null) =
+    program.interStageVectorArray(KslInt4, arraySize, KslInterStageInterpolation.Flat, name ?: program.nextName("interStageI4Array"))

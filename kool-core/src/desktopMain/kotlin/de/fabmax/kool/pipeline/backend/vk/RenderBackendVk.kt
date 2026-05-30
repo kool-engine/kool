@@ -303,6 +303,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         gpuReadbacks.filterIsInstance<ReadbackStorageBuffer>().filter { it.mapBuffer != null }.forEach { readback ->
             val mapBuffer = readback.mapBuffer!!
             val mapped = checkNotNull(mapBuffer.vkBuffer.mapped) { "readback buffer was not created mapped" }
+            memManager.invalidateBuffer(mapBuffer.vkBuffer)
             readback.resultBuffer.copyFrom(mapped)
             mapBuffer.release()
             readback.deferred.complete(Unit)
@@ -311,6 +312,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         gpuReadbacks.filterIsInstance<ReadbackTexture>().filter { it.mapBuffer != null }.forEach { readback ->
             val mapBuffer = readback.mapBuffer!!
             val mapped = checkNotNull(mapBuffer.vkBuffer.mapped) { "readback buffer was not created mapped" }
+            memManager.invalidateBuffer(mapBuffer.vkBuffer)
             val gpuTex = readback.texture.gpuTexture as ImageVk
             val format = readback.texture.format
             val dst = ImageData.createBuffer(format, gpuTex.width, gpuTex.height, gpuTex.depth)

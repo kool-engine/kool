@@ -22,3 +22,8 @@ val KslExpression<KslUint4>.gb get() = uint2("gb")
 
 val KslExpression<KslUint4>.xyz get() = uint3("xyz")
 val KslExpression<KslUint4>.rgb get() = uint3("rgb")
+
+operator fun KslExprUint4.component1(): KslExprUint1 = x
+operator fun KslExprUint4.component2(): KslExprUint1 = y
+operator fun KslExprUint4.component3(): KslExprUint1 = z
+operator fun KslExprUint4.component4(): KslExprUint1 = w

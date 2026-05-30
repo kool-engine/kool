@@ -316,11 +316,11 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
             )
         )
     {
-        var outlineColorPrimary by uniformColor("uOutlineColorPrim", Color.WHITE)
-        var outlineColorChild by uniformColor("uOutlineColorChild", Color.WHITE)
+        var outlineColorPrimary by bindUniformColor("uOutlineColorPrim", Color.WHITE)
+        var outlineColorChild by bindUniformColor("uOutlineColorChild", Color.WHITE)
 
         init {
-            texture2d("tSelectionMask", selectionMask)
+            bindTexture2d("tSelectionMask", selectionMask)
         }
 
         class Model : KslProgram("Selection outline shader") {
@@ -334,7 +334,7 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
                 fragmentStage {
                     main {
                         val mask = texture2d("tSelectionMask")
-                        val texelSz = float2Var(Vec2f(1f, 1f).const / textureSize2d(mask).toFloat2())
+                        val texelSz = float2Var(Vec2f(1f, 1f).const / mask.size().toFloat2())
 
                         val minMask = int1Var(Int.MAX_VALUE.const)
                         val maxMask = int1Var(Int.MIN_VALUE.const)
@@ -342,7 +342,7 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
                         val maxMaskCount = float1Var(0f.const)
 
                         samplePattern.forEach {
-                            val tex = float2Var(sampleTexture(mask, uv.output + it.const * texelSz).rg)
+                            val tex = float2Var(mask.sample(uv.output + it.const * texelSz).rg)
                             val maskVal = int1Var(round(tex.x * 65280f.const).toInt1() + round(tex.y * 255f.const).toInt1())
                             `if`(maskVal lt minMask) {
                                 minMask set maskVal

@@ -32,7 +32,7 @@ abstract class PhysicsWorld : BaseReleasable() {
     protected val contactListeners = mutableListOf<ContactListener>()
 
     private var registeredAtScene: Scene? = null
-    private val onRenderSceneHook = OnRenderScene { simStepper.stepPhysics() }
+    private val onRenderSceneHook = OnRenderScene { simStepper.stepPhysics(Time.deltaT) }
 
     abstract var gravity: Vec3f
     abstract val activeActors: Int

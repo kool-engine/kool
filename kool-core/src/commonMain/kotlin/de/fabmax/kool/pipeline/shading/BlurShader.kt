@@ -13,9 +13,9 @@ class BlurShader(cfg: BlurShaderConfig, model: Model = Model(cfg)) :
     KslShader(model, FullscreenShaderUtil.fullscreenShaderPipelineCfg)
 {
 
-    var blurInput by texture2d("tBlurInput")
-    var direction by uniform2f("uBlurDirection", Vec2f(0.001f, 0f))
-    var strength by uniform1f("uOutputStrength", 1f)
+    var blurInput by bindTexture2d("tBlurInput")
+    var direction by bindUniformFloat2("uBlurDirection", Vec2f(0.001f, 0f))
+    var strength by bindUniformFloat1("uOutputStrength", 1f)
 
     fun setXDirectionByTexWidth(width: Int, scale: Float = 1f) {
         direction = Vec2f(1f / width * scale, 0f)
@@ -37,12 +37,12 @@ class BlurShader(cfg: BlurShaderConfig, model: Model = Model(cfg)) :
                     val str = uniformFloat1("uOutputStrength")
                     val uv = texCoord.output
 
-                    val output = float4Var(sampleTexture(input, uv) * cfg.kernel[0].const)
+                    val output = float4Var(input.sample(uv) * cfg.kernel[0].const)
                     for (i in 1 .. cfg.kernel.lastIndex) {
                         val lt = float2Var(uv - dir * i.toFloat().const)
                         val rt = float2Var(uv + dir * i.toFloat().const)
-                        output += sampleTexture(input, lt) * cfg.kernel[i].const
-                        output += sampleTexture(input, rt) * cfg.kernel[i].const
+                        output += input.sample(lt) * cfg.kernel[i].const
+                        output += input.sample(rt) * cfg.kernel[i].const
                     }
 
                     colorOutput(convertColorSpace(output.rgb, cfg.colorSpaceConversion) * str)

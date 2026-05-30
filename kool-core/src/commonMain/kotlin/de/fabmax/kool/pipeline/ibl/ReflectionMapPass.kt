@@ -68,8 +68,8 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
 
             fragmentStage {
                 val uRoughness = uniformFloat1("uRoughness")
-                val sampleEnvMap = hdri2d?.let { environmentMapSampler2d(this@apply, "hdri2d") }
-                    ?: environmentMapSamplerCube(this@apply, "hdriCube")
+                val sampleEnvMap = hdri2d?.let { environmentMapSampler2d("hdri2d") }
+                    ?: environmentMapSamplerCube("hdriCube")
 
                 main {
                     val normal = float3Var(normalize(localPos.output))
@@ -100,9 +100,9 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
         },
         FullscreenShaderUtil.fullscreenShaderPipelineCfg
     ) {
-        var hdri2dTex by texture2d("hdri2d", hdri2d)
-        var hdriCubeTex by textureCube("hdriCube", hdriCube)
-        var uRoughness by uniform1f("uRoughness", 0f)
+        var hdri2dTex by bindTexture2d("hdri2d", hdri2d)
+        var hdriCubeTex by bindTextureCube("hdriCube", hdriCube)
+        var uRoughness by bindUniformFloat1("uRoughness", 0f)
     }
 
     companion object {

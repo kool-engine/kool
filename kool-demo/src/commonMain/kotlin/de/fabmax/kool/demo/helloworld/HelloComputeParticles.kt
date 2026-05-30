@@ -120,13 +120,13 @@ class HelloComputeParticles : DemoScene("Hello Compute Particles") {
         val particleBuffer = StorageBuffer(Particle.type, N_PARTICLES)
 
         val particleComputeShader = particleComputeShader()
-        particleComputeShader.storage("particleBuffer", particleBuffer)
-        particleComputeShader.texture1d("gradient", particleColor)
-        var simulationDeltaT by particleComputeShader.uniform1f("deltaT")
-        var simulationSeed by particleComputeShader.uniform1f("seed")
+        particleComputeShader.bindStorage("particleBuffer", particleBuffer)
+        particleComputeShader.bindTexture1d("gradient", particleColor)
+        var simulationDeltaT by particleComputeShader.bindUniformFloat1("deltaT")
+        var simulationSeed by particleComputeShader.bindUniformFloat1("seed")
 
         val particleDrawShader = particleDrawShader()
-        particleDrawShader.storage("particleBuffer", particleBuffer)
+        particleDrawShader.bindStorage("particleBuffer", particleBuffer)
 
         // add a compute pass, which runs the particle simulation
         addComputePass(ComputePass(particleComputeShader, N_PARTICLES))

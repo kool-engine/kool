@@ -39,10 +39,12 @@ object GlImpl : GlApi {
     override val INVALID_INDEX = WebGL2RenderingContext.INVALID_INDEX
     override val LINEAR = WebGLRenderingContext.LINEAR
     override val LINEAR_MIPMAP_LINEAR = WebGLRenderingContext.LINEAR_MIPMAP_LINEAR
+    override val LINEAR_MIPMAP_NEAREST = WebGLRenderingContext.LINEAR_MIPMAP_NEAREST
     override val LINES = WebGLRenderingContext.LINES
     override val LINK_STATUS = WebGLRenderingContext.LINK_STATUS
     override val MIRRORED_REPEAT = WebGLRenderingContext.MIRRORED_REPEAT
     override val NEAREST = WebGLRenderingContext.NEAREST
+    override val NEAREST_MIPMAP_LINEAR = WebGLRenderingContext.NEAREST_MIPMAP_LINEAR
     override val NEAREST_MIPMAP_NEAREST = WebGLRenderingContext.NEAREST_MIPMAP_NEAREST
     override val NONE = WebGLRenderingContext.NONE
     override val ONE = WebGLRenderingContext.ONE

@@ -56,15 +56,15 @@ class ReflectionPass(val baseReflectionStep: Float) :
     }
 
     private inner class ReflectionShader : KslShader(ssrShaderModel(), FullscreenShaderUtil.fullscreenShaderPipelineCfg) {
-        var positionFlags by texture2d("positionFlags")
-        var normalRoughness by texture2d("normalRoughness")
-        var lightingPass by texture2d("lightingPass")
-        val ssrNoise by texture2d("ssrNoise", generateNoiseTex().also { it.releaseWith(this@ReflectionPass) })
+        var positionFlags by bindTexture2d("positionFlags")
+        var normalRoughness by bindTexture2d("normalRoughness")
+        var lightingPass by bindTexture2d("lightingPass")
+        val ssrNoise by bindTexture2d("ssrNoise", generateNoiseTex().also { it.releaseWith(this@ReflectionPass) })
 
-        var roughnessThresholdLow by uniform1f("uRoughThreshLow", 0.5f)
-        var roughnessThresholdHigh by uniform1f("uRoughThreshHigh", 0.6f)
-        var maxIterations by uniform1i("uMaxIterations", 24)
-        var noiseScale by uniform2f("uNoiseScale")
+        var roughnessThresholdLow by bindUniformFloat1("uRoughThreshLow", 0.5f)
+        var roughnessThresholdHigh by bindUniformFloat1("uRoughThreshHigh", 0.6f)
+        var maxIterations by bindUniformInt1("uMaxIterations", 24)
+        var noiseScale by bindUniformFloat2("uNoiseScale")
     }
 
     private fun ssrShaderModel() = KslProgram("Screen space reflection pass").apply {
@@ -85,8 +85,8 @@ class ReflectionPass(val baseReflectionStep: Float) :
 
             main {
                 val uv = texCoord.output
-                val posFlags = float4Var(sampleTexture(positionFlags, uv))
-                val normalRoughness = float4Var(sampleTexture(normalRough, uv))
+                val posFlags = float4Var(positionFlags.sample(uv))
+                val normalRoughness = float4Var(normalRough.sample(uv))
                 val viewPos = posFlags.xyz
                 val viewNormal = normalRoughness.xyz
                 val roughness = normalRoughness.a
@@ -98,7 +98,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
 
                 val camData = deferredCameraData()
                 val noiseCoord = float2Var(uv * uNoiseScale)
-                val noise = float4Var(sampleTexture(ssrNoise, noiseCoord))
+                val noise = float4Var(ssrNoise.sample(noiseCoord))
                 val viewDir = float3Var(normalize(viewPos))
                 val reflectDir = float3Var(reflect(viewDir, normalize(viewNormal)))
                 val rayDir = float3Var(normalize(reflectDir + ((noise.xyz - 0.5f.const) * 2f.const) * roughness))
@@ -132,7 +132,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
                         `break`()
                     }
 
-                    sampleDepth set sampleTexture(positionFlags, samplePos.xy, 0f.const).z
+                    sampleDepth set positionFlags.sample(samplePos.xy, 0f.const).z
                     // set a large depth if sampleDepth is positive (clear value)
                     sampleDepth -= 1e5f.const * step(0.1f.const, sampleDepth)
 
@@ -174,7 +174,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
                             (1f.const - step(0.9999f.const, samplePos.z)) * (1f.const - smoothStep(0f.const, -rayPos.z / 10f.const, abs(dDepth)))
                 )
 
-                val reflectionColor = float3Var(sampleTexture(lightingPass, samplePos.xy, 0f.const).rgb)
+                val reflectionColor = float3Var(lightingPass.sample(samplePos.xy, 0f.const).rgb)
                 val reflectionAlpha = sampleWeight * roughnessWeight
                 val outColor = float3Var(convertColorSpace(reflectionColor, ColorSpaceConversion.LinearToSrgb()))
                 colorOutput(outColor, reflectionAlpha)

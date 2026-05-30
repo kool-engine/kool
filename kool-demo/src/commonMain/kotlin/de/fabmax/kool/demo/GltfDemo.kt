@@ -4,25 +4,27 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
+import de.fabmax.kool.modules.gltf.GltfDeferredShaderFactory
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.gltf.GltfMaterialConfig
 import de.fabmax.kool.modules.gltf.loadGltfModel
-import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.modules.ksl.toConfig
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.pipeline.ao.AoPipeline
-import de.fabmax.kool.pipeline.deferred.DeferredOutputShader
-import de.fabmax.kool.pipeline.deferred.DeferredPipeline
-import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
-import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
+import de.fabmax.kool.pipeline.ao.AoRadius
+import de.fabmax.kool.pipeline.deferred2.Deferred2Pipeline
+import de.fabmax.kool.pipeline.deferred2.createShadowMaps
+import de.fabmax.kool.pipeline.deferred2.defaultOutputQuad
+import de.fabmax.kool.pipeline.deferred2.gbufferShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.generateNormals
-import de.fabmax.kool.toString
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.l
 import kotlinx.coroutines.async
 import kotlin.math.PI
 import kotlin.math.cos
-import kotlin.math.roundToInt
 import kotlin.math.sin
 
 class GltfDemo : DemoScene("glTF Models") {
@@ -73,32 +75,23 @@ class GltfDemo : DemoScene("glTF Models") {
 
     private val envMap by hdriImage("${DemoLoader.hdriPath}/shanghai_bund_1k.rgbe.png")
 
-    private lateinit var orbitTransform: OrbitInputTransform
     private var camTranslationTarget: Vec3d? = null
     private var trackModel = false
 
-    private val shadowsForward = mutableListOf<ShadowMap>()
-    private var aoPipelineForward: AoPipeline? = null
-    private val contentGroupForward = Node()
-
-    private lateinit var deferredPipeline: DeferredPipeline
-    private val contentGroupDeferred = Node()
+    private lateinit var deferredPipeline: Deferred2Pipeline
+    //private val contentGroup = Node()
 
     private var animationDeltaTime = 0f
     private val animationSpeed = mutableStateOf(0.5f)
     private val isAutoRotate = mutableStateOf(true)
 
-    private val isDeferredShading: MutableStateValue<Boolean> = mutableStateOf(true).onChange { _, new ->
-        setupPipelines(new, isAo.value)
-    }
-    private val isAo: MutableStateValue<Boolean> = mutableStateOf(true).onChange { _, new ->
-        setupPipelines(isDeferredShading.value, new)
-    }
     private val isSsr: MutableStateValue<Boolean> = mutableStateOf(true).onChange { _, new ->
-        deferredPipeline.isSsrEnabled = new
-        setupPipelines(isDeferredShading.value, isAo.value)
+        if (new) {
+            deferredPipeline.enableScreenSpaceReflections()
+        } else {
+            deferredPipeline.disableScreenSpaceReflections()
+        }
     }
-    private val ssrMapSize = mutableStateOf(0.5f).onChange { _, new -> deferredPipeline.reflectionMapSize = new }
 
     override fun lateInit(ctx: KoolContext) {
         currentModel.isVisible = true
@@ -109,35 +102,26 @@ class GltfDemo : DemoScene("glTF Models") {
         mainScene.setupLighting()
 
         // create deferred pipeline
-        val defCfg = DeferredPipelineConfig().apply {
-            isWithAmbientOcclusion = true
-            isWithScreenSpaceReflections = true
-            baseReflectionStep = 0.02f
-            maxGlobalLights = 2
-            isWithVignette = true
-            useImageBasedLighting(envMap)
-        }
-        deferredPipeline = DeferredPipeline(mainScene, defCfg)
-        deferredPipeline.aoPipeline?.apply {
-            radius = 0.2f
-        }
-        ssrMapSize.set(deferredPipeline.reflectionMapSize)
-
-        // create forward pipeline
-        aoPipelineForward = AoPipeline.createForward(mainScene).apply {
-            radius = 0.2f
-        }
-        shadowsForward += listOf(
-            SimpleShadowMap(mainScene, mainScene.lighting.lights[0], contentGroupForward, mapSize = 2048),
-            SimpleShadowMap(mainScene, mainScene.lighting.lights[1], contentGroupForward, mapSize = 2048)
+        val camera = PerspectiveCamera()
+        val sceneContent = Node()
+        val shadows = mainScene.lighting.createShadowMaps(sceneContent, camera)
+        shadows.forEach { it.addToScene(mainScene) }
+        deferredPipeline = Deferred2Pipeline(
+            content = sceneContent,
+            scene = mainScene,
+            ibl = envMap,
+            maxGlobalLights = 2,
+            camera = camera,
+            lighting = mainScene.lighting,
+            shadowMapConfig = shadows.toConfig()
         )
+        deferredPipeline.enableScreenSpaceReflections()
+        deferredPipeline.renderScale = 1f / UiScale.windowScale.value
+        deferredPipeline.aoPass.radius = AoRadius.absoluteRadius(0.2f)
 
         // load models
         models.map {
-            it to mainScene.coroutineScope.async {
-                it.load(false)
-                it.load(true)
-            }
+            it to mainScene.coroutineScope.async { it.load() }
         }.forEach { (model, deferred) ->
             showLoadText("Loading ${model.name}")
             deferred.await()
@@ -147,11 +131,8 @@ class GltfDemo : DemoScene("glTF Models") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         setupCamera()
 
-        addNode(Skybox.cube(envMap.reflectionMap, 1.5f))
-
-        makeDeferredContent()
-        makeForwardContent()
-        setupPipelines(isDeferredShading.value, isAo.value)
+        deferredPipeline.content.setupContentGroup()
+        addNode(deferredPipeline.defaultOutputQuad(null))
 
         onUpdate {
             animationDeltaTime = Time.deltaT * animationSpeed.value
@@ -159,38 +140,8 @@ class GltfDemo : DemoScene("glTF Models") {
         }
     }
 
-    private fun setupPipelines(isDeferred: Boolean, isAo: Boolean) {
-        val fwdState = !isDeferred
-
-        contentGroupForward.isVisible = fwdState
-        shadowsForward.forEach { it.isShadowMapEnabled = fwdState }
-        aoPipelineForward?.isEnabled = fwdState && isAo
-
-        contentGroupDeferred.isVisible = isDeferred
-        deferredPipeline.isEnabled = isDeferred
-        deferredPipeline.isAoEnabled = isAo
-    }
-
-    private fun Scene.makeForwardContent() {
-        contentGroupForward.setupContentGroup(false)
-        addNode(contentGroupForward)
-    }
-
-    private fun Scene.makeDeferredContent() {
-        deferredPipeline.sceneContent.setupContentGroup(true)
-
-        // main scene only contains a quad used to draw the deferred shading output
-        contentGroupDeferred.apply {
-            isFrustumChecked = false
-            val outputMesh = deferredPipeline.createDefaultOutputQuad()
-            (outputMesh.shader as? DeferredOutputShader)?.setupVignette(0f)
-            addNode(outputMesh)
-        }
-        addNode(contentGroupDeferred)
-    }
-
-    private fun Scene.setupCamera() {
-        orbitTransform = orbitCamera {
+    private fun setupCamera() {
+        val cam = orbitCamera(deferredPipeline.camera) {
             setRotation(0f, -30f)
             zoom = currentModel.zoom
             translation.set(currentModel.lookAt)
@@ -198,9 +149,8 @@ class GltfDemo : DemoScene("glTF Models") {
             onUpdate += {
                 var translationTarget = camTranslationTarget
                 if (trackModel) {
-                    val model = currentModel.forwardModel
-                    model?.let {
-                        val center = model.globalCenter
+                    currentModel.model?.let {
+                        val center = it.globalCenter
                         translationTarget = Vec3d(center.x.toDouble(), center.y.toDouble(), center.z.toDouble())
                     }
                 } else if (isAutoRotate.value) {
@@ -216,6 +166,7 @@ class GltfDemo : DemoScene("glTF Models") {
                 }
             }
         }
+        deferredPipeline.content.addNode(cam)
     }
 
     private fun Scene.setupLighting() {
@@ -234,7 +185,7 @@ class GltfDemo : DemoScene("glTF Models") {
         }
     }
 
-    private fun Node.setupContentGroup(isDeferredShading: Boolean) {
+    private fun Node.setupContentGroup() {
         transform.rotate((-60.0).deg, Vec3d.Y_AXIS)
         onUpdate {
             if (isAutoRotate.value) {
@@ -248,36 +199,16 @@ class GltfDemo : DemoScene("glTF Models") {
                 roundCylinder(4.1f, 0.2f)
             }
 
-            fun KslPbrShader.Config.Builder.materialConfig() {
+            shader = gbufferShader {
                 color { textureColor(colorMap) }
                 normalMapping { useNormalMap(normalMap) }
                 ao { textureProperty(aoMap) }
                 roughness { textureProperty(roughnessMap) }
             }
-
-            shader = if (isDeferredShading) {
-                deferredKslPbrShader {
-                    materialConfig()
-                }
-            } else {
-                KslPbrShader {
-                    materialConfig()
-                    lighting {
-                        enableSsao(aoPipelineForward?.aoMap)
-                        addShadowMaps(shadowsForward)
-                        imageBasedAmbientLight(envMap.irradianceMap)
-                    }
-                    reflectionMap = envMap.reflectionMap
-                }
-            }
         }
 
         models.forEach { model ->
-            if (isDeferredShading) {
-                model.deferredModel?.let { addNode(it) }
-            } else {
-                model.forwardModel?.let { addNode(it) }
-            }
+            model.model?.let { addNode(it) }
         }
     }
 
@@ -286,7 +217,7 @@ class GltfDemo : DemoScene("glTF Models") {
         prevModel.isVisible = false
 
         newModel.isVisible = true
-        orbitTransform.zoom = newModel.zoom
+        //orbitTransform.zoom = newModel.zoom
         camTranslationTarget = newModel.lookAt
         trackModel = newModel.trackModel
     }
@@ -310,16 +241,7 @@ class GltfDemo : DemoScene("glTF Models") {
         if (currentModel.name == "Fox") {
             MenuSlider2("Movement speed".l, animationSpeed.use(), 0f, 1f) { animationSpeed.set(it) }
         }
-
-        Text("Settings".l) { sectionTitleStyle() }
-        LabeledSwitch("Deferred shading".l, isDeferredShading)
-        LabeledSwitch("Ambient occlusion".l, isAo)
-        if (isDeferredShading.value) {
-            LabeledSwitch("Screen space reflections".l, isSsr)
-            MenuSlider2("SSR map size".l, ssrMapSize.use(), 0.1f, 1f, { it.toString(1) }) {
-                ssrMapSize.set((it * 10).roundToInt() / 10f)
-            }
-        }
+        LabeledSwitch("Screen space reflections".l, isSsr)
         LabeledSwitch("Auto rotate view".l, isAutoRotate)
     }
 
@@ -373,9 +295,7 @@ class GltfDemo : DemoScene("glTF Models") {
         val zoom: Double,
         val normalizeBoneWeights: Boolean = false
     ) {
-
-        var forwardModel: Model? = null
-        var deferredModel: Model? = null
+        var model: Model? = null
         var isVisible: Boolean = false
 
         var animate: Model.(Float) -> Unit = { dt ->
@@ -384,12 +304,10 @@ class GltfDemo : DemoScene("glTF Models") {
 
         override fun toString() = name
 
-        suspend fun load(isDeferredShading: Boolean): Model {
+        suspend fun load(): Model {
             val materialCfg = GltfMaterialConfig(
-                shadowMaps = if (isDeferredShading) deferredPipeline.shadowMaps else shadowsForward,
-                scrSpcAmbientOcclusionMap = if (isDeferredShading) deferredPipeline.aoPipeline?.aoMap else aoPipelineForward?.aoMap,
                 environmentMap = envMap,
-                isDeferredShading = isDeferredShading
+                shaderFactory = GltfDeferredShaderFactory
             )
             val modelCfg = GltfLoadConfig(
                 generateNormals = generateNormals,
@@ -418,11 +336,7 @@ class GltfDemo : DemoScene("glTF Models") {
                     animate(animationDeltaTime)
                 }
             }
-            if (isDeferredShading) {
-                deferredModel = model
-            } else {
-                forwardModel = model
-            }
+            this@GltfModel.model = model
             return model
         }
     }

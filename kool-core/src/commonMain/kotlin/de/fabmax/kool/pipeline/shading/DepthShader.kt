@@ -24,12 +24,18 @@ fun DepthShader(cfgBlock: DepthShader.Config.() -> Unit): DepthShader {
     return DepthShader(cfg)
 }
 
-open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pipelineCfg) {
+open class DepthShader(
+    val cfg: Config,
+    vertexTransformBuilder: (KslScopeBuilder.(BasicVertexConfig) -> VertexTransformBlock)? = null
+) : KslShader(depthShaderProg(cfg, vertexTransformBuilder), cfg.pipelineCfg) {
 
-    var alphaMask by texture2d("tAlphaMask", cfg.alphaMask)
+    var alphaMask by bindTexture2d("tAlphaMask", cfg.alphaMask)
 
     companion object {
-        private fun depthShaderProg(cfg: Config) = KslProgram("Depth shader").apply {
+        private fun depthShaderProg(
+            cfg: Config,
+            vertexTransformBuilder: (KslScopeBuilder.(BasicVertexConfig) -> VertexTransformBlock)?
+        ) = KslProgram("Depth shader").apply {
             var alphaMaskUv: KslInterStageVector<KslFloat2, KslFloat1>? = null
             var viewNormal: KslInterStageVector<KslFloat3, KslFloat1>? = null
             var linearDepth: KslInterStageScalar<KslFloat1>? = null
@@ -37,7 +43,7 @@ open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pi
             vertexStage {
                 main {
                     val camData = cameraData()
-                    val vertexBlock = vertexTransformBlock(cfg.vertexCfg) {
+                    val vertexBlock = vertexTransformBuilder?.invoke(this, cfg.vertexCfg) ?: vertexTransformBlock(cfg.vertexCfg) {
                         inLocalPos(vertexAttrib(VertexLayouts.Position.position))
                         if (cfg.outputNormals) {
                             inLocalNormal(vertexAttrib(VertexLayouts.Normal.normal))
@@ -67,7 +73,7 @@ open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pi
             fragmentStage {
                 main {
                     (cfg.alphaMode as? AlphaMode.Mask)?.let { mask ->
-                        val color = sampleTexture(texture2d("tAlphaMask"), alphaMaskUv!!.output)
+                        val color = texture2d("tAlphaMask").sample(alphaMaskUv!!.output)
                         `if`(color.a lt mask.cutOff.const) {
                             discard()
                         }
@@ -98,7 +104,7 @@ open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pi
     }
 
     data class Config(
-        val pipelineCfg: PipelineConfig = PipelineConfig(),
+        val pipelineCfg: PipelineConfig = PipelineConfig(BlendMode.DISABLED),
         val vertexCfg: BasicVertexConfig = BasicVertexConfig.Builder().build(),
         val alphaMode: AlphaMode = AlphaMode.Opaque,
         val alphaMask: Texture2d? = null,

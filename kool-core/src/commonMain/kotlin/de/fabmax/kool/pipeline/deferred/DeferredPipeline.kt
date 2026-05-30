@@ -7,6 +7,7 @@ import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.ao.AoPipeline
+import de.fabmax.kool.pipeline.ao.DeferredAoPipeline
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
@@ -35,7 +36,7 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
     val onConfigChange = mutableListOf<(DeferredPipeline) -> Unit>()
 
     val lightingPassShader: PbrSceneShader
-    val aoPipeline: AoPipeline.DeferredAoPipeline?
+    val aoPipeline: DeferredAoPipeline?
     val reflections: Reflections?
     val shadowMaps: List<ShadowMap>
 

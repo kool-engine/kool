@@ -2,6 +2,7 @@ package de.fabmax.kool.physics2d
 
 import box2d.*
 import box2d.prototypes.B2_Body
+import box2d.prototypes.B2_Chain
 import box2d.prototypes.B2_Geometry
 import box2d.prototypes.B2_Shape
 import de.fabmax.kool.math.MutableVec2f
@@ -65,6 +66,20 @@ internal actual fun BodyId.addShape(geometry: Geometry, shapeDef: ShapeDef): Sha
         }
     }
     ShapeId(shapeId)
+}
+
+internal actual fun BodyId.addChain(chainDef: ChainDef): ChainId = scopedMem {
+    val b2ChainDef = allocChainDef()
+    B2_Chain.defaultChainDef(b2ChainDef)
+
+    val points = allocVec2Array(chainDef.points)
+
+    b2ChainDef.points = points.get(0)
+    b2ChainDef.count = points.length
+    b2ChainDef.isLoop = chainDef.isLoop
+
+    val chainId = B2_Chain.createChain(id, b2ChainDef)
+    ChainId(chainId)
 }
 
 internal actual fun BodyId.getPose(result: MutablePose2f) {

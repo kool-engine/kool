@@ -38,11 +38,13 @@ object GlImpl : GlApi {
     override val INVALID_INDEX = GL_INVALID_INDEX
     override val LINEAR = GL_LINEAR
     override val LINEAR_MIPMAP_LINEAR = GL_LINEAR_MIPMAP_LINEAR
+    override val LINEAR_MIPMAP_NEAREST = GL_LINEAR_MIPMAP_NEAREST
     override val LINES = GL_LINES
     override val LINK_STATUS = GL_LINK_STATUS
     override val LOWER_LEFT = GL_LOWER_LEFT
     override val MIRRORED_REPEAT = GL_MIRRORED_REPEAT
     override val NEAREST = GL_NEAREST
+    override val NEAREST_MIPMAP_LINEAR = GL_NEAREST_MIPMAP_LINEAR
     override val NEAREST_MIPMAP_NEAREST = GL_NEAREST_MIPMAP_NEAREST
     override val NEGATIVE_ONE_TO_ONE = GL_NEGATIVE_ONE_TO_ONE
     override val NONE = GL_NONE

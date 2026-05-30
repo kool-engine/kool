@@ -107,7 +107,9 @@ sealed class WgpuPipeline(
             GPUTextureSampleType.Float -> GPUSamplerBindingType.Filtering
             GPUTextureSampleType.Depth -> GPUSamplerBindingType.Comparison
             GPUTextureSampleType.UnfilterableFloat -> GPUSamplerBindingType.NonFiltering
-            else -> error("unexpected: $texSampleType")
+            GPUTextureSampleType.Sint -> GPUSamplerBindingType.NonFiltering
+            GPUTextureSampleType.Uint -> GPUSamplerBindingType.NonFiltering
+            else -> error("unexpected texture sample type: $texSampleType")
         }
 
         return listOf(
@@ -173,6 +175,9 @@ sealed class WgpuPipeline(
     private fun <T: ImageData> Texture<T>.checkLoadingState(): Boolean {
         checkIsNotReleased()
         uploadData?.let { backend.textureLoader.loadTexture(this) }
+        if (!isLoaded && this is StorageTexture) {
+            backend.textureLoader.createStorageTextureIfNeeded(this)
+        }
         return isLoaded
     }
 

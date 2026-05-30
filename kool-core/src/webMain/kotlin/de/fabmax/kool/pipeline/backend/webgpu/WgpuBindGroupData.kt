@@ -1,6 +1,9 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.BindGroupData
+import de.fabmax.kool.pipeline.FilterMethod
+import de.fabmax.kool.pipeline.GpuPass
+import de.fabmax.kool.pipeline.TextureSampleType
 import de.fabmax.kool.pipeline.backend.GpuBindGroupData
 import de.fabmax.kool.pipeline.backend.wgsl.WgslLocations
 import de.fabmax.kool.toJsNumber
@@ -37,7 +40,7 @@ class WgpuBindGroupData(
         }
         for (i in storageTextureBindings.indices) {
             val tex = storageTextureBindings[i]
-            tex.binding.storageTexture?.checkTextureSize()
+            tex.binding.storageTexture?.let { backend.textureLoader.createStorageTextureIfNeeded(it) }
             if (tex.binding.storageTexture?.asTexture?.gpuTexture !== tex.loadedTex) {
                 // underlying gpu texture has changed, e.g. because render attachment of a render pass was recreated
                 recreatedBindGroup = true
@@ -79,14 +82,6 @@ class WgpuBindGroupData(
             }
         }
         passEncoderState.setBindGroup(group, this)
-    }
-
-    private fun StorageTexture.checkTextureSize() {
-        val tex = asTexture
-        val gpu = asTexture.gpuTexture
-        if (gpu == null || gpu.width != tex.width || gpu.height != tex.height || gpu.depth != tex.depth) {
-            backend.textureLoader.createStorageTexture(this, tex.width, tex.height, tex.depth)
-        }
     }
 
     private fun createBindGroup(pass: GpuPass) {
@@ -165,6 +160,7 @@ class WgpuBindGroupData(
             addressModeU = samplerSettings.addressModeU.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
+            mipmapFilter = samplerSettings.mipFilter.wgpuMipFilter(tex.mipMapping.isMipMapped),
         )
 
         textureBindings += TextureBinding(this, loadedTex)
@@ -181,18 +177,27 @@ class WgpuBindGroupData(
         val samplerSettings = sampler ?: tex.samplerSettings
         val maxAnisotropy = if (tex.mipMapping.isMipMapped &&
             samplerSettings.minFilter == FilterMethod.LINEAR &&
-            samplerSettings.magFilter == FilterMethod.LINEAR
+            samplerSettings.magFilter == FilterMethod.LINEAR &&
+            samplerSettings.mipFilter == FilterMethod.LINEAR
         ) samplerSettings.maxAnisotropy else 1
         val compare = if (layout.sampleType == TextureSampleType.DEPTH) samplerSettings.compareOp.wgpu else null
 
+        if (layout.sampleType == TextureSampleType.UNFILTERABLE_FLOAT && (
+            samplerSettings.magFilter != FilterMethod.NEAREST ||
+            samplerSettings.minFilter != FilterMethod.NEAREST ||
+            samplerSettings.mipFilter != FilterMethod.NEAREST
+        )) {
+            logE { "Texture ${tex.name} is marked unfilterable (in bind group ${data.layout.name}), but sampler settings specify filtering" }
+        }
         val sampler = device.createSampler(
             addressModeU = samplerSettings.addressModeU.wgpu,
             addressModeV = samplerSettings.addressModeV.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
-            mipmapFilter = if (tex.mipMapping.isMipMapped) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            mipmapFilter = samplerSettings.mipFilter.wgpuMipFilter(tex.mipMapping.isMipMapped),
             maxAnisotropy = maxAnisotropy,
             compare = compare,
+            label = tex.name
         )
 
         textureBindings += TextureBinding(this, loadedTex)
@@ -220,7 +225,7 @@ class WgpuBindGroupData(
             addressModeW = samplerSettings.addressModeW.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
-            mipmapFilter = if (tex.mipMapping.isMipMapped) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            mipmapFilter = samplerSettings.mipFilter.wgpuMipFilter(tex.mipMapping.isMipMapped),
         )
 
         textureBindings += TextureBinding(this, loadedTex)
@@ -242,7 +247,7 @@ class WgpuBindGroupData(
             addressModeV = samplerSettings.addressModeV.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
-            mipmapFilter = if (tex.mipMapping.isMipMapped) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            mipmapFilter = samplerSettings.mipFilter.wgpuMipFilter(tex.mipMapping.isMipMapped),
             compare = compare,
         )
 
@@ -269,7 +274,7 @@ class WgpuBindGroupData(
             addressModeV = samplerSettings.addressModeV.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
-            mipmapFilter = if (tex.mipMapping.isMipMapped) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            mipmapFilter = samplerSettings.mipFilter.wgpuMipFilter(tex.mipMapping.isMipMapped),
             maxAnisotropy = maxAnisotropy,
             compare = compare,
         )
@@ -293,7 +298,7 @@ class WgpuBindGroupData(
             addressModeV = samplerSettings.addressModeV.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
-            mipmapFilter = if (tex.mipMapping.isMipMapped) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            mipmapFilter = samplerSettings.mipFilter.wgpuMipFilter(tex.mipMapping.isMipMapped),
             compare = compare,
         )
 
@@ -307,7 +312,7 @@ class WgpuBindGroupData(
     private fun BindGroupData.StorageTextureBindingData<*>.makeStorageTextureEntry(): GPUBindGroupEntry {
         val location = locations[layout]
         val storageTex = checkNotNull(storageTexture) { "Cannot create storage texture binding from null texture" }
-        storageTex.checkTextureSize()
+        backend.textureLoader.createStorageTextureIfNeeded(storageTex)
         val loadedTex = checkNotNull(storageTex.asTexture.gpuTexture as WgpuTextureResource?) { "Cannot create storage texture binding from null texture" }
 
         storageTextureBindings += StorageTextureBinding(this, loadedTex)

@@ -9,6 +9,7 @@ import de.fabmax.kool.demo.helloworld.*
 import de.fabmax.kool.demo.pathtracing.PathTracingDemo
 import de.fabmax.kool.demo.pbr.PbrDemo
 import de.fabmax.kool.demo.physics.box2d.mixer.MixerDemo
+import de.fabmax.kool.demo.physics.box2d.platformer.PlatformerDemo
 import de.fabmax.kool.demo.physics.collision.CollisionDemo
 import de.fabmax.kool.demo.physics.joints.JointsDemo
 import de.fabmax.kool.demo.physics.manybodies.ManyBodiesDemo
@@ -98,6 +99,8 @@ object Demos {
         entry("tex-array-test", "Array Textures Test") { ArrayTexturesTest() }
         entry("struct-test", "Hello Structs") { HelloStructs() }
         entry("launched-effect-test", "Launched Effect Test") { LaunchedEffectTest() }
+        entry("platformer2d", "2D Platformer") { PlatformerDemo() }
+        entry("deferred2test", "Deferred 2 Test", NeedsComputeShaders) { Deferred2Test() }
     }
 
     val categories = mutableListOf(physicsDemos, graphicsDemos, techDemos, hiddenDemos)

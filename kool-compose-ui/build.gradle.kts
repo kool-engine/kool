@@ -13,7 +13,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(libs.kotlin.coroutines)
-            api(compose.runtime)
+            api(libs.compose.runtime)
             api(libs.compose.mini.modifier)
             api(libs.compose.mini.modifier.composed)
             implementation(libs.compose.mini.runtime)

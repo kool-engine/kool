@@ -13,7 +13,7 @@ import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.Struct
 
 class Ui2Shader : KslShader(Model(), pipelineConfig) {
-    var fontTex by texture2d("uFontTex", noFontTex)
+    var fontTex by bindTexture2d("uFontTex", noFontTex)
 
     fun setFont(font: AtlasFont) {
         fontTex = font.getOrLoadFontMap(UiScale.measuredScale).texture
@@ -39,7 +39,7 @@ class Ui2Shader : KslShader(Model(), pipelineConfig) {
             }
             fragmentStage {
                 main {
-                    val alpha by sampleTexture(texture2d("uFontTex"), texCoords.output).r * color.output.a
+                    val alpha by texture2d("uFontTex").sample(texCoords.output).r * color.output.a
                     `if` (any(screenPos.output lt clipBounds.output.xy) or
                             any(screenPos.output gt clipBounds.output.zw)) {
                         discard()

@@ -43,6 +43,10 @@ class BindGroupData(val layout: BindGroupLayout, val name: String) : BaseReleasa
         return copy
     }
 
+    fun copyTo(other: BindGroupData) {
+        bindings.copyTo(other.bindings)
+    }
+
     override fun captureBuffer() {
         bindings.copyToIfModded(_bufferedBindingData)
         captured = true

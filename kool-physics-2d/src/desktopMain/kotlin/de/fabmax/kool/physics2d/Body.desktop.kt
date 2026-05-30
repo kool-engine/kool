@@ -34,6 +34,20 @@ internal actual fun createBody(bodyDef: BodyDef, worldId: WorldId): BodyId = sco
     BodyId(B2_Body.createBody(worldId.id, b2BodyDef))
 }
 
+internal actual fun BodyId.addChain(chainDef: ChainDef): ChainId = scopedMem {
+    val b2ChainDef = allocChainDef()
+    B2_Chain.defaultChainDef(b2ChainDef)
+
+    val points = allocVec2Array(chainDef.points)
+
+    b2ChainDef.points = points.get(0)
+    b2ChainDef.count = points.length
+    b2ChainDef.isLoop = chainDef.isLoop
+
+    val chainId = B2_Chain.createChain(id, b2ChainDef)
+    ChainId(chainId)
+}
+
 internal actual fun BodyId.destroy() = B2_Body.destroyBody(id)
 
 internal actual fun BodyId.addShape(geometry: Geometry, shapeDef: ShapeDef): ShapeId = scopedMem {

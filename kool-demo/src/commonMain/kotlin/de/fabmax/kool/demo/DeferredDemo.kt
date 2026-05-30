@@ -4,16 +4,17 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslUnlitShader
-import de.fabmax.kool.modules.ksl.UnlitShaderConfig
-import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
+import de.fabmax.kool.modules.ksl.blocks.noise13
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.pipeline.BloomPass
 import de.fabmax.kool.pipeline.DepthCompareOp
-import de.fabmax.kool.pipeline.deferred.*
+import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.ao.AoRadius
+import de.fabmax.kool.pipeline.decodeNormalInt
+import de.fabmax.kool.pipeline.deferred2.*
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.scene.geometry.IndexedVertexList
-import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.Time
@@ -23,10 +24,11 @@ import kotlin.random.Random
 
 class DeferredDemo : DemoScene("Deferred Shading") {
 
-    private lateinit var deferredPipeline: DeferredPipeline
+    private lateinit var pipeline: Deferred2Pipeline
+    private lateinit var bloomPass: BloomPass
 
-    private lateinit var objects: ColorMesh
-    private lateinit var objectShader: DeferredKslPbrShader
+    private lateinit var objects: Node
+    private lateinit var objectShader: GbufferShader
 
     private lateinit var lightPositionMesh: Mesh<VertexLayouts.PositionNormal>
     private lateinit var lightVolumeMesh: LineMesh
@@ -37,24 +39,22 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
     private val isShowMaps = mutableStateOf(false)
     private val isAutoRotate = mutableStateOf(true)
-    private val lightCount = mutableStateOf(2000)
-    private val lightPower = mutableStateOf(1f)
-    private val lightRadius = mutableStateOf(1f)
+    private val lightCount = mutableStateOf(1250)
+    private val lightPower = mutableStateOf(1.5f)
+    private val lightRadius = mutableStateOf(2f)
     private val isObjects = mutableStateOf(true).onChange { _, new -> objects.isVisible = new }
     private val isLightBodies = mutableStateOf(true).onChange { _, new -> lightPositionMesh.isVisible = new }
     private val isLightVolumes = mutableStateOf(false).onChange { _, new -> lightVolumeMesh.isVisible = new }
     private val roughness = mutableStateOf(0.15f).onChange { _, new -> objectShader.roughness = new }
-    private val bloomStrength = mutableStateOf(1f).onChange { _, new -> deferredPipeline.bloomStrength = new }
-    private val bloomRadius = mutableStateOf(1f).onChange { _, new -> deferredPipeline.bloomRadius = new }
-    private val bloomThreshold = mutableStateOf(0.5f).onChange { _, new -> deferredPipeline.bloomThreshold = new }
 
-    private val ibl by hdriSingleColor(Color(0.22f, 0.22f, 0.22f))
+    private val ibl by hdriSingleColor(Color(0.18f, 0.18f, 0.18f))
     private val groundColor by texture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-albedo1.jpg")
     private val groundNormals by texture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-normal.jpg")
     private val groundRoughness by texture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-roughness.jpg")
     private val groundMetallic by texture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-metallic.jpg")
     private val groundAo by texture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-ao.jpg")
 
+    private lateinit var deferredLights: DeferredLights
     private val lights = mutableListOf<AnimatedLight>()
 
     private val colorMap = listOf(
@@ -76,7 +76,25 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        orbitCamera {
+        // don't use any global lights
+        lighting.clear()
+
+        val content = Node()
+        content.makeContent()
+
+        pipeline = Deferred2Pipeline(content, scene = this, ibl, lighting = lighting)
+        pipeline.renderScale = 1f / UiScale.windowScale.value
+        pipeline.aoPass.radius = AoRadius.absoluteRadius(1.5f)
+
+        bloomPass = pipeline.installBloomPass()
+        bloomPass.isProfileGpu = true
+
+        deferredLights = DeferredLights(pipeline)
+        content.addNode(deferredLights)
+
+        addNode(pipeline.defaultOutputQuad(bloomPass))
+
+        val cam = orbitCamera(pipeline.camera) {
             // Set some initial rotation so that we look down on the scene
             setRotation(0f, -40f)
             setZoom(28.0, max = 50.0)
@@ -88,32 +106,8 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                 }
             }
         }
+        content.addNode(cam)
 
-        // don't use any global lights
-        lighting.clear()
-
-        val defCfg = DeferredPipelineConfig().apply {
-            maxGlobalLights = 1
-            isWithAmbientOcclusion = true
-            isWithScreenSpaceReflections = false
-            isWithImageBasedLighting = false
-            isWithBloom = true
-            isWithVignette = true
-            isWithChromaticAberration = true
-
-            // set output depth compare op to ALWAYS, so that the skybox with maximum depth value is drawn
-            outputDepthTest = DepthCompareOp.ALWAYS
-        }
-        deferredPipeline = DeferredPipeline(this, defCfg)
-        deferredPipeline.apply {
-            bloomRadius = this@DeferredDemo.bloomRadius.value
-            bloomStrength = this@DeferredDemo.bloomStrength.value
-            bloomThreshold =  this@DeferredDemo.bloomThreshold.value
-
-            lightingPassContent += Skybox.cube(ibl.reflectionMap, 1f, colorSpaceConversion = ColorSpaceConversion.AsIs)
-        }
-        deferredPipeline.sceneContent.makeContent()
-        addNode(deferredPipeline.createDefaultOutputQuad())
         makeLightOverlays()
 
         onUpdate += {
@@ -123,7 +117,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
     private fun Scene.makeLightOverlays() {
         apply {
-            lightVolumeMesh = addWireframeMesh(deferredPipeline.dynamicPointLights.mesh.geometry, instances = lightVolInsts).apply {
+            lightVolumeMesh = pipeline.lightingPass.drawNode.addWireframeMesh(deferredLights.pointLightMesh.geometry, instances = lightVolInsts).apply {
                 isFrustumChecked = false
                 isVisible = false
                 isCastingShadow = false
@@ -140,7 +134,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     lightPosInsts.clear()
                     lightVolInsts.clear()
 
-                    deferredPipeline.dynamicPointLights.lightInstances.forEach { light ->
+                    deferredLights.pointLights.forEach { light ->
                         lightModelMat.setIdentity()
                         lightModelMat.translate(light.position)
 
@@ -164,53 +158,57 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     }
 
     private fun Node.makeContent() {
-        objects = addColorMesh {
-            generate {
-                val sphereProtos = mutableListOf<IndexedVertexList<*>>()
-                for (i in 0..10) {
-                    val builder = MeshBuilder(IndexedVertexList(VertexLayouts.PositionNormalColor))
-                    sphereProtos += builder.geometry
-                    builder.apply {
-                        icoSphere {
-                            steps = 3
-                            radius = rand.randomF(0.3f, 0.4f)
-                            center.set(0f, 0.1f + radius, 0f)
-                        }
-                    }
-                }
-
-                for (x in -19..19) {
-                    for (y in -19..19) {
-                        color = Color.WHITE
-                        withTransform {
-                            translate(x.toFloat(), 0f, y.toFloat())
-                            if ((x + 100) % 2 == (y + 100) % 2) {
-                                cube {
-                                    size.set(
-                                        rand.randomF(0.6f, 0.8f),
-                                        rand.randomF(0.6f, 0.95f),
-                                        rand.randomF(0.6f, 0.8f)
-                                    )
-                                    origin.set(0f, 0.1f + size.y * 0.5f, 0f)
-                                }
-                            } else {
-                                geometry(sphereProtos[rand.randomI(sphereProtos.indices)])
-                            }
-                        }
-                    }
-                }
-            }
-            objectShader = deferredKslPbrShader {
+        objects = addGroup {
+            val cubeInstances = MeshInstanceList(InstanceLayouts.ModelMat)
+            val sphereInstances = MeshInstanceList(InstanceLayouts.ModelMat)
+            objectShader = gbufferShader {
+                vertices { instancedModelMatrix() }
                 color { vertexColor() }
-                roughness(0.15f)
+                roughness { uniformProperty(roughness.value) }
             }
-            shader = objectShader
+            addColorMesh(instances = sphereInstances) {
+                generate {
+                    color = Color.WHITE
+                    icoSphere {
+                        steps = 3
+                        center.set(0f, 1.1f, 0f)
+                    }
+                }
+                shader = objectShader
+            }
+            addColorMesh(instances = cubeInstances) {
+                generate {
+                    color = Color.WHITE
+                    cube {
+                        origin.set(0f, 0.6f, 0f)
+                    }
+                }
+                shader = objectShader
+            }
+
+            val t = MutableMat4f()
+            for (x in -19..19) {
+                for (y in -19..19) {
+                    t.setIdentity().translate(x.toFloat(), 0f, y.toFloat())
+                    if ((x + 100) % 2 == (y + 100) % 2) {
+                        cubeInstances.addInstance {
+                            val sx = rand.randomF(0.6f, 0.8f)
+                            val sy = rand.randomF(0.6f, 0.95f)
+                            val sz = rand.randomF(0.6f, 0.8f)
+                            t.scale(Vec3f(sx, sy, sz))
+                            set(it.modelMat, t)
+                        }
+                    } else {
+                        sphereInstances.addInstance {
+                            t.scale(rand.randomF(0.3f, 0.4f))
+                            set(it.modelMat, t)
+                        }
+                    }
+                }
+            }
         }
 
         lightPositionMesh = addMesh(VertexLayouts.PositionNormal, instances = lightPosInsts) {
-            isFrustumChecked = false
-            isVisible = true
-            isCastingShadow = false
             generate {
                 icoSphere {
                     steps = 1
@@ -218,12 +216,10 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     center.set(Vec3f.ZERO)
                 }
             }
-            shader = deferredKslPbrShader {
+            shader = gbufferShader {
                 vertices { instancedModelMatrix() }
-                emission {
-                    instanceColor(InstanceLayouts.ModelMatColor.color)
-                    constColor(Color(6f, 6f, 6f), blendMode = ColorBlockConfig.BlendMode.Multiply)
-                }
+                color { instanceColor(InstanceLayouts.ModelMatColor.color) }
+                emission { constProperty(6f) }
             }
         }
 
@@ -237,7 +233,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                 }
             }
 
-            shader = deferredKslPbrShader {
+            shader = gbufferShader {
                 color { textureColor(groundColor) }
                 normalMapping { useNormalMap(groundNormals) }
                 roughness { textureProperty(groundRoughness) }
@@ -263,18 +259,23 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
         if (forced) {
             lights.clear()
-            deferredPipeline.dynamicPointLights.lightInstances.clear()
+            deferredLights.clear()
         } else {
             while (lights.size > lightCount.value) {
-                lights.removeAt(lights.lastIndex)
-                deferredPipeline.dynamicPointLights.lightInstances.removeAt(deferredPipeline.dynamicPointLights.lightInstances.lastIndex)
+                val l = lights.removeAt(lights.lastIndex)
+                deferredLights.removePointLight(l.light)
             }
         }
 
         while (lights.size < lightCount.value) {
             val grp = lightGroups[rand.randomI(lightGroups.indices)]
             val x = rand.randomI(0 until grp.rows)
-            val light = deferredPipeline.dynamicPointLights.addPointLight { }
+            val r = Random(1337)
+            val light = deferredLights.addPointLight {
+                color.set(MdColor.PALETTE.random(r).toLinear())
+                position.set(Vec3f(r.randomF(-15f, 15f), 1.5f, r.randomF(-15f, 15f)))
+                strengthByIntensity(r.randomF(5f, 20f))
+            }
             val animLight = AnimatedLight(light).apply {
                 startColor = colorMap[colorMapIdx.value].getColor(lights.size).toLinear()
                 desiredColor = startColor
@@ -285,7 +286,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         }
 
         updateLightColors()
-        deferredPipeline.dynamicPointLights.lightInstances.forEach {
+        deferredLights.pointLights.forEach {
             it.radius = lightRadius.value
             it.intensity = lightPower.value
         }
@@ -334,21 +335,6 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             }
         }
 
-        Text("Bloom".l) { sectionTitleStyle() }
-        MenuRow {
-            Text("Strength".l) { labelStyle(lblSize) }
-            MenuSlider(bloomStrength.use(), 0f, 5f, txtWidth = txtSize) { bloomStrength.set(it) }
-        }
-        MenuRow {
-            Text("Radius".l) { labelStyle(lblSize) }
-            MenuSlider(bloomRadius.use(), 0f, 2.5f, txtWidth = txtSize) { bloomRadius.set(it) }
-        }
-        MenuRow {
-            Text("Threshold".l) { labelStyle(lblSize) }
-            MenuSlider(bloomThreshold.use(), 0f, 2f, txtWidth = txtSize) { bloomThreshold.set(it) }
-        }
-
-
         Text("Objects".l) { sectionTitleStyle() }
         LabeledSwitch("Show objects".l, isObjects)
         MenuRow {
@@ -363,28 +349,34 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     .align(AlignmentX.Start, AlignmentY.Bottom)
                     .layout(ColumnLayout)
 
-                val albedoMetal = deferredPipeline.activePass.materialPass.albedoMetal
-                val normalRough = deferredPipeline.activePass.materialPass.normalRoughness
-                val positionFlags = deferredPipeline.activePass.materialPass.positionFlags
-                val bloom = deferredPipeline.activePass.bloomPass?.bloomMap
-                val ao = deferredPipeline.aoPipeline?.aoMap
+                val albedo = pipeline.gbuffers.a.albedoEmission
+                val normals = pipeline.gbuffers.a.normals
+                val metalRoughAo = pipeline.gbuffers.a.metalRoughnessAo
+                val objectIds = pipeline.gbuffers.a.objectIds
+                val ssao = pipeline.aoPass.aoMap
+                val bloom = bloomPass.bloomMap
+
+                val normalShader = remember { normalShader(normals) }
+                val objectIdShader = remember { objectIdShader(objectIds) }
 
                 Row {
                     modifier.margin(vertical = sizes.gap)
                     Image {
                         modifier
-                            .imageSize(ImageSize.FixedScale(0.3f))
-                            .imageProvider(FlatImageProvider(albedoMetal, true).mirrorY())
+                            .width(600.dp)
+                            .imageSize(ImageSize.ZoomContent)
+                            .imageProvider(FlatImageProvider(albedo, true))
                             .margin(horizontal = sizes.gap)
-                            .customShader(albedoMapShader.apply { colorMap = albedoMetal })
+                            .customShader(albedoMapShader.apply { colorMap = albedo })
                         Text("Albedo".l) { imageLabelStyle() }
                     }
                     Image {
                         modifier
-                            .imageSize(ImageSize.FixedScale(0.3f))
-                            .imageProvider(FlatImageProvider(normalRough, true).mirrorY())
+                            .width(600.dp)
+                            .imageSize(ImageSize.ZoomContent)
+                            .imageProvider(FlatImageProvider(normals, true))
                             .margin(horizontal = sizes.gap)
-                            .customShader(normalMapShader.apply { colorMap = normalRough })
+                            .customShader(normalShader)
                         Text("Normals".l) { imageLabelStyle() }
                     }
                 }
@@ -392,39 +384,39 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     modifier.margin(vertical = sizes.gap)
                     Image {
                         modifier
-                            .imageSize(ImageSize.FixedScale(0.3f))
-                            .imageProvider(FlatImageProvider(positionFlags, true).mirrorY())
+                            .width(600.dp)
+                            .imageSize(ImageSize.ZoomContent)
+                            .imageProvider(FlatImageProvider(metalRoughAo, true))
                             .margin(horizontal = sizes.gap)
-                            .customShader(positionMapShader.apply { colorMap = positionFlags })
-                        Text("Position".l) { imageLabelStyle() }
+                            .customShader(metalRoughAoShader.apply { colorMap = metalRoughAo })
+                        Text("Metal, roughness, AO".l) { imageLabelStyle() }
                     }
-                    Image(ao) {
+                    Image {
                         modifier
-                            .imageSize(ImageSize.FixedScale(0.3f / deferredPipeline.aoMapSize))
-                            .imageProvider(FlatImageProvider(ao, true).mirrorY())
+                            .width(600.dp)
+                            .imageSize(ImageSize.ZoomContent)
+                            .imageProvider(FlatImageProvider(ssao, true))
                             .margin(horizontal = sizes.gap)
-                            .customShader(AoDemo.aoMapShader.apply { colorMap = ao })
-                        Text("Ambient occlusion".l) { imageLabelStyle() }
+                            .customShader(AoDemo.aoMapShader.apply { colorMap = ssao })
+                        Text("SSAO".l) { imageLabelStyle() }
                     }
                 }
                 Row {
                     modifier.margin(vertical = sizes.gap)
-                    Image(positionFlags) {
+                    Image(objectIds) {
                         modifier
-                            .imageSize(ImageSize.FixedScale(0.3f))
-                            .imageProvider(FlatImageProvider(positionFlags, true).mirrorY())
+                            .width(600.dp)
+                            .imageSize(ImageSize.ZoomContent)
+                            .imageProvider(FlatImageProvider(objectIds, true))
                             .margin(horizontal = sizes.gap)
-                            .customShader(metalRoughFlagsShader.apply {
-                                metal = albedoMetal
-                                rough = normalRough
-                                flags = deferredPipeline.activePass.materialPass.positionFlags
-                            })
-                        Text("Metal (r), roughness (g), flags (b)".l) { imageLabelStyle() }
+                            .customShader(objectIdShader)
+                        Text("Object IDs".l) { imageLabelStyle() }
                     }
                     Image(bloom) {
                         modifier
-                            .imageSize(ImageSize.FixedScale(0.6f * ((positionFlags.height) / bloom!!.width)))
-                            .imageProvider(FlatImageProvider(bloom, true).mirrorY())
+                            .width(600.dp)
+                            .imageSize(ImageSize.ZoomContent)
+                            .imageProvider(FlatImageProvider(bloom, true))
                             .margin(horizontal = sizes.gap)
                             .customShader(bloomMapShader.apply { colorMap = bloom })
                         Text("Bloom".l) { imageLabelStyle() }
@@ -452,7 +444,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         }
     }
 
-    private class AnimatedLight(val light: DeferredPointLights.PointLight) {
+    private class AnimatedLight(val light: DynamicPointLight) {
         val startPos = MutableVec3f()
         val dir = MutableVec3f()
         var speed = 1.5f
@@ -488,10 +480,8 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     companion object {
         const val MAX_LIGHTS = 5000
 
-        private val albedoMapShader = gBufferShader(0f, 1f)
-        private val normalMapShader = gBufferShader(1f, 0.5f)
-        private val positionMapShader = gBufferShader(10f, 0.05f)
-        private val metalRoughFlagsShader = MetalRoughFlagsShader()
+        private val albedoMapShader = gBufferShader()
+        private val metalRoughAoShader = gBufferShader()
         private val bloomMapShader = KslUnlitShader {
             pipeline { depthTest = DepthCompareOp.ALWAYS }
             color { textureData() }
@@ -507,7 +497,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             }
         }
 
-        private fun gBufferShader(offset: Float, scale: Float) = KslUnlitShader {
+        private fun gBufferShader() = KslUnlitShader {
             pipeline { depthTest = DepthCompareOp.ALWAYS }
             color { textureData() }
             modelCustomizer = {
@@ -515,41 +505,54 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     main {
                         val baseColorPort = getFloat4Port("baseColor")
                         val inColor = float4Var(baseColorPort.input.input)
-                        inColor.rgb set (inColor.rgb + offset.const) * scale.const
                         baseColorPort.input(float4Value(inColor.rgb, 1f.const))
                     }
                 }
             }
         }
-    }
 
-    private class MetalRoughFlagsShader : KslUnlitShader(cfg) {
-        var flags by texture2d("tFlags")
-        var rough by texture2d("tRough")
-        var metal by texture2d("tMetal")
-
-        companion object {
-            val cfg = UnlitShaderConfig {
-                pipeline { depthTest = DepthCompareOp.ALWAYS }
-                colorSpaceConversion = ColorSpaceConversion.AsIs
-                modelCustomizer = {
-                    val uv = interStageFloat2()
-                    vertexStage {
-                        main {
-                            uv.input set vertexAttrib(VertexLayouts.TexCoord.texCoord)
-                        }
-                    }
-                    fragmentStage {
-                        main {
-                            val metal = sampleTexture(texture2d("tMetal"), uv.output).a
-                            val rough = sampleTexture(texture2d("tRough"), uv.output).a
-                            val flags = sampleTexture(texture2d("tFlags"), uv.output).a
-                            val color = float4Var(float4Value(metal, rough, flags, 1f.const))
-                            getFloat4Port("baseColor").input(color)
-                        }
+        private fun normalShader(normalTex: Texture2d) = KslUnlitShader {
+            pipeline { depthTest = DepthCompareOp.ALWAYS }
+            color { constColor(Color.BLACK) }
+            modelCustomizer = {
+                val uv = interStageFloat2()
+                vertexStage {
+                    main { uv.input set vertexAttrib(VertexLayouts.TexCoord.texCoord) }
+                }
+                fragmentStage {
+                    main {
+                        val normalTex = texture2dInt("normalTex")
+                        val baseColorPort = getFloat4Port("baseColor")
+                        val normalEnc by normalTex.load((uv.output * normalTex.size().toFloat2()).toInt2()).x
+                        val normalDec by decodeNormalInt(normalEnc) * 0.5f.const + 0.5f.const
+                        baseColorPort.input(float4Value(normalDec, 1f.const))
                     }
                 }
             }
+        }.apply {
+            bindTexture2d("normalTex", normalTex)
+        }
+
+        private fun objectIdShader(objectIds: Texture2d) = KslUnlitShader {
+            pipeline { depthTest = DepthCompareOp.ALWAYS }
+            color { constColor(Color.BLACK) }
+            modelCustomizer = {
+                val uv = interStageFloat2()
+                vertexStage {
+                    main { uv.input set vertexAttrib(VertexLayouts.TexCoord.texCoord) }
+                }
+                fragmentStage {
+                    main {
+                        val objectIds = texture2dInt("objectIds")
+                        val baseColorPort = getFloat4Port("baseColor")
+                        val objectId by objectIds.load((uv.output * objectIds.size().toFloat2()).toInt2()).x
+                        val objectColor by noise13(objectId.toUint1())
+                        baseColorPort.input(float4Value(objectColor, 1f.const))
+                    }
+                }
+            }
+        }.apply {
+            bindTexture2d("objectIds", objectIds)
         }
     }
 }

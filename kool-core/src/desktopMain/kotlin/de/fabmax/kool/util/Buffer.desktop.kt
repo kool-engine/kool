@@ -19,11 +19,45 @@ inline fun <R> Int32Buffer.useRaw(block: (IntBuffer) -> R): R = (this as Int32Bu
 inline fun <R> Float32Buffer.useRaw(block: (FloatBuffer) -> R): R = (this as Float32BufferImpl).useRaw(block)
 inline fun <R> MixedBuffer.useRaw(block: (ByteBuffer) -> R): R = (this as MixedBufferImpl).useRaw(block)
 
+
+fun Uint8BufferImpl(capacity: Int, isAutoLimit: Boolean = false) = Uint8BufferImpl(
+    buffer = ByteBuffer.allocateDirect(capacity).order(ByteOrder.nativeOrder()),
+    isAutoLimit = isAutoLimit
+)
+
+fun Uint8BufferImpl(data: ByteArray): Uint8BufferImpl {
+    val buf = Uint8BufferImpl(ByteBuffer.allocateDirect(data.size).order(ByteOrder.nativeOrder()), false)
+    buf.put(data)
+    return buf
+}
+
+fun Uint16BufferImpl(capacity: Int, isAutoLimit: Boolean = false) = Uint16BufferImpl(
+    buffer = ByteBuffer.allocateDirect(capacity * 2).order(ByteOrder.nativeOrder()).asShortBuffer(),
+    isAutoLimit = isAutoLimit
+)
+
+fun Int32BufferImpl(capacity: Int, isAutoLimit: Boolean = false) = Int32BufferImpl(
+    buffer = ByteBuffer.allocateDirect(capacity * 4).order(ByteOrder.nativeOrder()).asIntBuffer(),
+    isAutoLimit = isAutoLimit
+)
+
+fun Float32BufferImpl(capacity: Int, isAutoLimit: Boolean = false) = Float32BufferImpl(
+    buffer = ByteBuffer.allocateDirect(capacity * 4).order(ByteOrder.nativeOrder()).asFloatBuffer(),
+    isAutoLimit = isAutoLimit
+)
+
+fun MixedBufferImpl(capacity: Int, isAutoLimit: Boolean = false) = MixedBufferImpl(
+    buffer = ByteBuffer.allocateDirect(capacity).order(ByteOrder.nativeOrder()),
+    isAutoLimit = isAutoLimit
+)
+
 abstract class GenericBuffer<B: NioBuffer>(
     override val capacity: Int,
     protected val buffer: B,
     isAutoLimit: Boolean
 ) : Buffer {
+    @PublishedApi
+    internal var modCount = 0
 
     override var isAutoLimit: Boolean = isAutoLimit
         set(value) {
@@ -36,6 +70,7 @@ abstract class GenericBuffer<B: NioBuffer>(
     override var limit: Int
         get() = if (isAutoLimit) pos else buffer.limit()
         set(value) {
+            modCount++
             buffer.limit(value)
             isAutoLimit = false
         }
@@ -43,6 +78,7 @@ abstract class GenericBuffer<B: NioBuffer>(
     override var position: Int
         get() = pos
         set(value) {
+            modCount++
             buffer.position(value)
             pos = value
         }
@@ -50,6 +86,7 @@ abstract class GenericBuffer<B: NioBuffer>(
     protected var pos = 0
 
     override fun clear() {
+        modCount++
         buffer.clear()
         position = 0
     }
@@ -70,46 +107,46 @@ abstract class GenericBuffer<B: NioBuffer>(
     }
 
     inline fun <R> useRaw(block: (B) -> R): R {
+        val modBefore = modCount
         val result = block(getRawBuffer())
         finishRawBuffer()
+        val modAfter = modCount
+        if (modBefore != modAfter) {
+            logE { "Buffer was modified externally while used raw" }
+        }
         return result
     }
 }
 
-class Uint8BufferImpl(buffer: ByteBuffer, isAutoLimit: Boolean = false) :
-    GenericBuffer<ByteBuffer>(buffer.capacity(), buffer, isAutoLimit), Uint8Buffer
-{
-
-    constructor(capacity: Int, isAutoLimit: Boolean = false) : this(
-        ByteBuffer.allocateDirect(capacity).order(ByteOrder.nativeOrder()),
-        isAutoLimit
-    )
-
-    constructor(data: ByteArray): this(ByteBuffer.allocateDirect(data.size).order(ByteOrder.nativeOrder()), false) {
-        put(data)
-    }
-
+class Uint8BufferImpl(
+    buffer: ByteBuffer,
+    isAutoLimit: Boolean = false
+) : GenericBuffer<ByteBuffer>(buffer.capacity(), buffer, isAutoLimit), Uint8Buffer {
     override fun get(i: Int): UByte {
         return buffer[i].toUByte()
     }
 
     override fun set(i: Int, value: UByte) {
+        modCount++
         buffer.put(i, value.toByte())
     }
 
     override fun put(value: UByte): Uint8Buffer {
+        modCount++
         buffer.put(value.toByte())
         pos++
         return this
     }
 
     override fun put(data: ByteArray, offset: Int, len: Int): Uint8Buffer {
+        modCount++
         buffer.put(data, offset, len)
         pos += len
         return this
     }
 
     override fun put(data: Uint8Buffer): Uint8Buffer {
+        modCount++
         data.useRaw {
             buffer.put(it)
             pos += data.limit
@@ -118,33 +155,35 @@ class Uint8BufferImpl(buffer: ByteBuffer, isAutoLimit: Boolean = false) :
     }
 }
 
-class Uint16BufferImpl(buffer: ShortBuffer, isAutoLimit: Boolean = false) :
-    GenericBuffer<ShortBuffer>(buffer.capacity(), buffer, isAutoLimit), Uint16Buffer
-{
-
-    constructor(capacity: Int, isAutoLimit: Boolean = false) : this(ByteBuffer.allocateDirect(capacity * 2).order(ByteOrder.nativeOrder()).asShortBuffer(), isAutoLimit)
-
+class Uint16BufferImpl(
+    buffer: ShortBuffer,
+    isAutoLimit: Boolean = false
+) : GenericBuffer<ShortBuffer>(buffer.capacity(), buffer, isAutoLimit), Uint16Buffer {
     override fun get(i: Int): UShort {
         return buffer[i].toUShort()
     }
 
     override fun set(i: Int, value: UShort) {
+        modCount++
         buffer.put(i, value.toShort())
     }
 
     override fun put(value: UShort): Uint16Buffer {
+        modCount++
         buffer.put(value.toShort())
         pos++
         return this
     }
 
     override fun put(data: ShortArray, offset: Int, len: Int): Uint16Buffer {
+        modCount++
         buffer.put(data, offset, len)
         pos += len
         return this
     }
 
     override fun put(data: Uint16Buffer): Uint16Buffer {
+        modCount++
         data.useRaw {
             buffer.put(it)
             pos += data.limit
@@ -156,30 +195,31 @@ class Uint16BufferImpl(buffer: ShortBuffer, isAutoLimit: Boolean = false) :
 class Int32BufferImpl(buffer: IntBuffer, isAutoLimit: Boolean = false) :
     GenericBuffer<IntBuffer>(buffer.capacity(), buffer, isAutoLimit), Int32Buffer
 {
-
-    constructor(capacity: Int, isAutoLimit: Boolean = false) : this(ByteBuffer.allocateDirect(capacity * 4).order(ByteOrder.nativeOrder()).asIntBuffer(), isAutoLimit)
-
     override fun get(i: Int): Int {
         return buffer[i]
     }
 
     override fun set(i: Int, value: Int) {
+        modCount++
         buffer.put(i, value)
     }
 
     override fun put(value: Int): Int32Buffer {
+        modCount++
         buffer.put(value)
         pos++
         return this
     }
 
     override fun put(data: IntArray, offset: Int, len: Int): Int32Buffer {
+        modCount++
         buffer.put(data, offset, len)
         pos += len
         return this
     }
 
     override fun put(data: Int32Buffer): Int32Buffer {
+        modCount++
         data.useRaw {
             buffer.put(it)
             pos += data.limit
@@ -194,30 +234,31 @@ class Int32BufferImpl(buffer: IntBuffer, isAutoLimit: Boolean = false) :
 class Float32BufferImpl(buffer: FloatBuffer, isAutoLimit: Boolean = false) :
     GenericBuffer<FloatBuffer>(buffer.capacity(), buffer, isAutoLimit), Float32Buffer
 {
-
-    constructor(capacity: Int, isAutoLimit: Boolean = false) : this(ByteBuffer.allocateDirect(capacity * 4).order(ByteOrder.nativeOrder()).asFloatBuffer(), isAutoLimit)
-
     override fun get(i: Int): Float {
         return buffer[i]
     }
 
     override fun set(i: Int, value: Float) {
+        modCount++
         buffer.put(i, value)
     }
 
     override fun put(value: Float): Float32Buffer {
+        modCount++
         buffer.put(value)
         pos++
         return this
     }
 
     override fun put(data: FloatArray, offset: Int, len: Int): Float32Buffer {
+        modCount++
         buffer.put(data, offset, len)
         pos += len
         return this
     }
 
     override fun put(data: Float32Buffer): Float32Buffer {
+        modCount++
         data.useRaw {
             buffer.put(it)
             pos += data.limit
@@ -229,28 +270,29 @@ class Float32BufferImpl(buffer: FloatBuffer, isAutoLimit: Boolean = false) :
 class MixedBufferImpl(buffer: ByteBuffer, isAutoLimit: Boolean = false) :
     GenericBuffer<ByteBuffer>(buffer.capacity(), buffer, isAutoLimit), MixedBuffer
 {
-
-    constructor(capacity: Int, isAutoLimit: Boolean = false) : this(ByteBuffer.allocateDirect(capacity).order(ByteOrder.nativeOrder()), isAutoLimit)
-
     override fun put(data: MixedBuffer): MixedBuffer {
+        modCount++
         data.useRaw { buffer.put(it) }
         pos += data.limit
         return this
     }
 
     override fun putUint8(value: UByte): MixedBuffer {
+        modCount++
         buffer.put(value.toByte())
         pos++
         return this
     }
 
     override fun putUint8(data: ByteArray, offset: Int, len: Int): MixedBuffer {
+        modCount++
         buffer.put(data, offset, len)
         pos += len
         return this
     }
 
     override fun putUint8(data: Uint8Buffer): MixedBuffer {
+        modCount++
         data.useRaw { buffer.put(it) }
         pos += data.limit
         return this
@@ -261,17 +303,20 @@ class MixedBufferImpl(buffer: ByteBuffer, isAutoLimit: Boolean = false) :
     }
 
     override fun setUint8(byteIndex: Int, value: UByte): MixedBuffer {
+        modCount++
         buffer.put(byteIndex, value.toByte())
         return this
     }
 
     override fun putUint16(value: UShort): MixedBuffer {
+        modCount++
         buffer.putShort(value.toShort())
         pos += SIZEOF_SHORT
         return this
     }
 
     override fun putUint16(data: ShortArray, offset: Int, len: Int): MixedBuffer {
+        modCount++
         if (len <= BUFFER_CONV_THRESH) {
             for (i in 0 until len) {
                 buffer.putShort(data[offset + i])
@@ -284,6 +329,7 @@ class MixedBufferImpl(buffer: ByteBuffer, isAutoLimit: Boolean = false) :
     }
 
     override fun putUint16(data: Uint16Buffer): MixedBuffer {
+        modCount++
         if (data.limit <= BUFFER_CONV_THRESH) {
             for (i in 0 until data.limit) {
                 buffer.putShort(data[i].toShort())
@@ -302,17 +348,20 @@ class MixedBufferImpl(buffer: ByteBuffer, isAutoLimit: Boolean = false) :
     }
 
     override fun setUint16(byteIndex: Int, value: UShort): MixedBuffer {
+        modCount++
         buffer.putShort(byteIndex, value.toShort())
         return this
     }
 
     override fun putInt32(value: Int): MixedBuffer {
+        modCount++
         buffer.putInt(value)
         pos += SIZEOF_INT
         return this
     }
 
     override fun putInt32(data: IntArray, offset: Int, len: Int): MixedBuffer {
+        modCount++
         if (len <= BUFFER_CONV_THRESH) {
             for (i in 0 until len) {
                 buffer.putInt(data[offset + i])
@@ -325,6 +374,7 @@ class MixedBufferImpl(buffer: ByteBuffer, isAutoLimit: Boolean = false) :
     }
 
     override fun putInt32(data: Int32Buffer): MixedBuffer {
+        modCount++
         if (data.limit <= BUFFER_CONV_THRESH) {
             for (i in 0 until data.limit) {
                 buffer.putInt(data[i])
@@ -343,17 +393,20 @@ class MixedBufferImpl(buffer: ByteBuffer, isAutoLimit: Boolean = false) :
     }
 
     override fun setInt32(byteIndex: Int, value: Int): MixedBuffer {
+        modCount++
         buffer.putInt(byteIndex, value)
         return this
     }
 
     override fun putFloat32(value: Float): MixedBuffer {
+        modCount++
         buffer.putFloat(value)
         pos += SIZEOF_FLOAT
         return this
     }
 
     override fun putFloat32(data: FloatArray, offset: Int, len: Int): MixedBuffer {
+        modCount++
         if (len <= BUFFER_CONV_THRESH) {
             for (i in 0 until len) {
                 buffer.putFloat(data[offset + i])
@@ -366,6 +419,7 @@ class MixedBufferImpl(buffer: ByteBuffer, isAutoLimit: Boolean = false) :
     }
 
     override fun putFloat32(data: Float32Buffer): MixedBuffer {
+        modCount++
         if (data.limit <= BUFFER_CONV_THRESH) {
             for (i in 0 until data.limit) {
                 buffer.putFloat(data[i])
@@ -384,11 +438,13 @@ class MixedBufferImpl(buffer: ByteBuffer, isAutoLimit: Boolean = false) :
     }
 
     override fun setFloat32(byteIndex: Int, value: Float): MixedBuffer {
+        modCount++
         buffer.putFloat(byteIndex, value)
         return this
     }
 
     override fun putPadding(nBytes: Int): MixedBuffer {
+        modCount++
         pos += nBytes
         buffer.position(pos)
         return this

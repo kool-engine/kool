@@ -29,6 +29,33 @@ class ComputePassVk(val parentPass: ComputePass, val backend: RenderBackendVk) :
 
         val tasks = parentPass.tasks
         passEncoderState.ensureRenderPassInactive()
+
+        // make previous graphics / transfer writes visible before compute tasks sample or read resources.
+        with(passEncoderState.stack) {
+            val dependency = callocVkDependencyInfo {
+                val barrier = VkMemoryBarrier2.calloc(1)
+                barrier.`sType$Default`()
+                barrier.srcAccessMask(
+                    VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT or
+                    VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT or
+                    VK_ACCESS_2_TRANSFER_WRITE_BIT or
+                    VK_ACCESS_2_MEMORY_WRITE_BIT
+                )
+                barrier.srcStageMask(
+                    VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT or
+                    VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT
+                )
+                barrier.dstAccessMask(
+                    VK_ACCESS_2_MEMORY_READ_BIT or
+                    VK_ACCESS_2_SHADER_SAMPLED_READ_BIT or
+                    VK_ACCESS_2_SHADER_STORAGE_READ_BIT
+                )
+                barrier.dstStageMask(VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT)
+                pMemoryBarriers(barrier)
+            }
+            vkCmdPipelineBarrier2KHR(passEncoderState.commandBuffer, dependency)
+        }
+
         for (i in tasks.indices) {
             val task = tasks[i]
             if (task.isEnabled) {
@@ -56,12 +83,19 @@ class ComputePassVk(val parentPass: ComputePass, val backend: RenderBackendVk) :
                         vkCmdDispatch(passEncoderState.commandBuffer, task.numGroups.x, task.numGroups.y, task.numGroups.z)
 
                         with(passEncoderState.stack) {
-                            val dependecy = callocVkDependencyInfo {
+                            val dependency = callocVkDependencyInfo {
                                 val barrier = VkMemoryBarrier2.calloc(1)
                                 barrier.`sType$Default`()
-                                barrier.srcAccessMask(VK_ACCESS_2_MEMORY_WRITE_BIT)
+                                barrier.srcAccessMask(
+                                    VK_ACCESS_2_MEMORY_WRITE_BIT or
+                                    VK_ACCESS_2_SHADER_STORAGE_WRITE_BIT
+                                )
                                 barrier.srcStageMask(VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT)
-                                barrier.dstAccessMask(VK_ACCESS_2_MEMORY_READ_BIT)
+                                barrier.dstAccessMask(
+                                    VK_ACCESS_2_MEMORY_READ_BIT or
+                                    VK_ACCESS_2_SHADER_SAMPLED_READ_BIT or
+                                    VK_ACCESS_2_SHADER_STORAGE_READ_BIT
+                                )
                                 barrier.dstStageMask(
                                     VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT or
                                     VK_PIPELINE_STAGE_2_PRE_RASTERIZATION_SHADERS_BIT or
@@ -70,7 +104,7 @@ class ComputePassVk(val parentPass: ComputePass, val backend: RenderBackendVk) :
                                 )
                                 pMemoryBarriers(barrier)
                             }
-                            vkCmdPipelineBarrier2KHR(passEncoderState.commandBuffer, dependecy)
+                            vkCmdPipelineBarrier2KHR(passEncoderState.commandBuffer, dependency)
                         }
 
                         task.afterDispatch()

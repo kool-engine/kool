@@ -51,7 +51,7 @@ class PassEncoderState(val backend: RenderBackendVk) {
         with(stack) {
             commandBuffer.end()
             backend.device.graphicsQueue.submit(backend.swapchain.inFlightFence, this) {
-                pWaitDstStageMask(ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT))
+                pWaitDstStageMask(ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT or VK_PIPELINE_STAGE_TRANSFER_BIT))
                 pCommandBuffers(pointers(commandBuffer))
                 pSignalSemaphores(longs(backend.swapchain.renderFinishedSema.handle))
                 pWaitSemaphores(longs(backend.swapchain.imageAvailableSema.handle))

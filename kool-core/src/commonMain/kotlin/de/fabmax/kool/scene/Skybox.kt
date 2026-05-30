@@ -59,11 +59,11 @@ object Skybox {
             PipelineConfig(cullMethod = CullMethod.CULL_FRONT_FACES, isWriteDepth = false)
         )
     {
-        val skies = List(2) { textureCube("tSky_$it") }
-        var skyWeights: Vec2f by uniform2f("uSkyWeights", Vec2f.X_AXIS)
+        val skies = List(2) { bindTextureCube("tSky_$it") }
+        var skyWeights: Vec2f by bindUniformFloat2("uSkyWeights", Vec2f.X_AXIS)
 
-        var skyOrientation: Mat3f by uniformMat3f("uSkyOrientation")
-        var lod: Float by uniform1f("uLod")
+        var skyOrientation: Mat3f by bindUniformMat3("uSkyOrientation")
+        var lod: Float by bindUniformFloat1("uLod")
 
         fun setSingleSky(skyTex: TextureCube?) = setBlendSkies(skyTex, 1f, skyTex, 0f)
 
@@ -102,9 +102,9 @@ object Skybox {
                         val skies = List(2) { textureCube("tSky_$it") }
                         val skyWeights = uniformFloat2("uSkyWeights")
                         val texLod = uniformFloat1("uLod")
-                        val color = float3Var(sampleTexture(skies[0], orientedPos.output, texLod).rgb * skyWeights.x)
+                        val color = float3Var(skies[0].sample(orientedPos.output, texLod).rgb * skyWeights.x)
                         `if` (skyWeights.y gt 0f.const) {
-                            color += sampleTexture(skies[1], orientedPos.output, texLod).rgb * skyWeights.y
+                            color += skies[1].sample(orientedPos.output, texLod).rgb * skyWeights.y
                         }
                         colorOutput(convertColorSpace(color, colorSpaceConversion), 1f.const)
                         outDepth set depthMode.far.const

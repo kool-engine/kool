@@ -322,7 +322,7 @@ class WgslGenerator private constructor(
         return "vec2i(textureDimensions(${textureSize.storageTex.generateExpression()}))"
     }
 
-    override fun imageTextureRead(expression: KslImageTextureLoad<*>): String {
+    override fun imageTextureRead(expression: KslImageTextureLoad<*, *>): String {
         val textureName = expression.sampler.generateExpression()
         val coord = expression.coord.generateExpression()
         val level = expression.lod?.generateExpression() ?: "0"
@@ -700,6 +700,13 @@ class WgslGenerator private constructor(
                 KslColorSampler2dArray -> "sampler" to "texture_2d_array<f32>"
                 KslColorSamplerCubeArray -> "sampler" to "texture_cube_array<f32>"
 
+                KslIntSampler2d -> "sampler" to "texture_2d<i32>"
+                KslIntSampler3d -> "sampler" to "texture_3d<i32>"
+                KslIntSampler2dArray -> "sampler" to "texture_2d<i32>"
+                KslUintSampler2d -> "sampler" to "texture_2d<u32>"
+                KslUintSampler3d -> "sampler" to "texture_3d<u32>"
+                KslUintSampler2dArray -> "sampler" to "texture_2d<u32>"
+
                 KslDepthSampler2d -> "sampler_comparison" to "texture_depth_2d"
                 KslDepthSamplerCube -> "sampler_comparison" to "texture_depth_cube"
                 KslDepthSampler2dArray -> "sampler_comparison" to "texture_depth_2d_array"
@@ -787,7 +794,11 @@ class WgslGenerator private constructor(
 
         fun storageTextureFormatQualifier(texFormat: TexFormat): String {
             return when (texFormat) {
+                TexFormat.R -> "r8unorm"                // texture formats tier 1
+                TexFormat.RG -> "rg8unorm"              // texture formats tier 1
                 TexFormat.RGBA -> "rgba8unorm"
+                TexFormat.R_F16 -> "r16float"           // texture formats tier 1
+                TexFormat.RG_F16 -> "rg16float"         // texture formats tier 1
                 TexFormat.RGBA_F16 -> "rgba16float"
                 TexFormat.R_F32 -> "r32float"
                 TexFormat.RG_F32 -> "rg32float"
@@ -798,8 +809,7 @@ class WgslGenerator private constructor(
                 TexFormat.R_U32 -> "r32uint"
                 TexFormat.RG_U32 -> "rg32uint"
                 TexFormat.RGBA_U32 -> "rgba32uint"
-                TexFormat.RG11B10_F -> "rgba16float"        // wgsl does not support rg11b10 as storage texture format -> use f16 as fallback
-                else -> error("unsupported storage texture format: $texFormat")
+                TexFormat.RG11B10_F -> "rg11b10ufloat"  // texture formats tier 1
             }
         }
     }

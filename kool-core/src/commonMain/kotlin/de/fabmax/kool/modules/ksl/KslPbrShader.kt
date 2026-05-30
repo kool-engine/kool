@@ -18,16 +18,16 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
     constructor(block: Config.Builder.() -> Unit) : this(Config.Builder().apply(block).build())
 
     // basic material properties
-    var roughness: Float by propertyUniform(cfg.roughnessCfg)
-    var roughnessMap: Texture2d? by propertyTexture(cfg.roughnessCfg)
-    var metallic: Float by propertyUniform(cfg.metallicCfg)
-    var metallicMap: Texture2d? by propertyTexture(cfg.metallicCfg)
+    var roughness: Float by bindPropertyUniform(cfg.roughnessCfg)
+    var roughnessMap: Texture2d? by bindPropertyTexture(cfg.roughnessCfg)
+    var metallic: Float by bindPropertyUniform(cfg.metallicCfg)
+    var metallicMap: Texture2d? by bindPropertyTexture(cfg.metallicCfg)
 
-    val reflectionMaps = List(2) { textureCube("tReflectionMap_$it") }
-    var reflectionMapWeights: Vec2f by uniform2f("uReflectionWeights")
-    var reflectionStrength: Vec4f by uniform4f("uReflectionStrength", Vec4f(cfg.reflectionStrength, 0f))
+    val reflectionMaps = List(2) { bindTextureCube("tReflectionMap_$it") }
+    var reflectionMapWeights: Vec2f by bindUniformFloat2("uReflectionWeights")
+    var reflectionStrength: Vec4f by bindUniformFloat4("uReflectionStrength", Vec4f(cfg.reflectionStrength, 0f))
 
-    var brdfLut: Texture2d? by texture2d("tBrdfLut")
+    var brdfLut: Texture2d? by bindTexture2d("tBrdfLut")
 
     val roughnessCfg = cfg.roughnessCfg
     val metallicCfg = cfg.metallicCfg
@@ -135,10 +135,10 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
             val reflectionMaps = if (cfg.isTextureReflection) {
                 List(2) { textureCube("tReflectionMap_$it") }
             } else {
-                null
+                emptyList()
             }
 
-            val material = pbrMaterialBlock(cfg.lightingCfg.maxNumberOfLights, reflectionMaps, brdfLut) {
+            val material = pbrMaterialBlock(cfg.lightingCfg.maxNumberOfLights, reflectionMaps, brdfLut, cfg.lightingCfg.normalLightRange) {
                 inCamPos(camData.position)
                 inNormal(normal)
                 inFragmentPos(fragmentWorldPos)

@@ -116,7 +116,7 @@ class HelloStructs : DemoScene("Hello Structs") {
 
         // bind the uniform struct defined in the shader. Binding is done only based on the name. Make sure
         // to use the correct struct type here.
-        val structBinding = demoShader.uniformStruct("colors", FlatColorStruct)
+        val structBinding = demoShader.bindUniformStruct("colors", FlatColorStruct)
 
         onUpdate {
             // set shader input colors (updated on each frame).

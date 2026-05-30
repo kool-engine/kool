@@ -81,6 +81,9 @@ sealed class PipelineVk(
         val checkReleasable: Releasable = gpuTexture ?: this
         checkReleasable.checkIsNotReleased()
         uploadData?.let { backend.textureLoader.loadTexture(this) }
+        if (!isLoaded && this is StorageTexture) {
+            backend.textureLoader.createStorageTextureIfNeeded(this, null)
+        }
         return isLoaded
     }
 

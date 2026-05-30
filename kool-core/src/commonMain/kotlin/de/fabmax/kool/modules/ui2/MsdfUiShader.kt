@@ -17,8 +17,8 @@ class MsdfUiShader(
         blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA
     )
 ) : KslShader(model, pipelineCfg) {
-    var fontMap by texture2d("tFontMap")
-    var pxRangeScale by uniform1f("uPxRange", 1f)
+    var fontMap by bindTexture2d("tFontMap")
+    var pxRangeScale by bindUniformFloat1("uPxRange", 1f)
 
     class Model : KslProgram("Msdf UI2 Shader") {
         init {
@@ -77,7 +77,7 @@ class MsdfUiShader(
                         discard()
 
                     }.`else` {
-                        val msdfVals = float4Var(sampleTexture(fontMap, uv.output, 0f.const))
+                        val msdfVals = float4Var(fontMap.sample(uv.output, 0f.const))
                         val color = float4Var(fgColor.output)
                         val pxRange = float1Var(msdfProps.output.x * uniformFloat1("uPxRange"))
                         val weight = msdfProps.output.y

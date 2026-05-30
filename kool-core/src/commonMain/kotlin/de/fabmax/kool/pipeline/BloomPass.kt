@@ -7,17 +7,26 @@ import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.util.SyncedScope
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.releaseWith
+import kotlinx.coroutines.launch
 import kotlin.math.max
 
 class BloomPass(
-    val inputTexture: Texture2d,
+    inputTexture: Texture2d,
     val inPlace: Boolean = KoolSystem.requireContext().backend.features.readWriteStorageTextures
 ) : ComputePass("Bloom Pass") {
 
-    private val idealWidth: Int get() = (inputTexture.width / 2).coerceAtLeast(1)
-    private val idealHeight: Int get() = (inputTexture.height / 2).coerceAtLeast(1)
+    val inputShader = downSamplingShader()
+    var inputTexture by inputShader.bindTexture2d(
+        textureName = "sampleInput",
+        defaultVal = inputTexture,
+        defaultSampler = SamplerSettings().clamped().copy(baseMipLevel = 0, numMipLevels = 1),
+    )
+
+    private val idealWidth: Int get() = (checkNotNull(inputTexture).width / 2).coerceAtLeast(1)
+    private val idealHeight: Int get() = (checkNotNull(inputTexture).height / 2).coerceAtLeast(1)
     private var levels: Int = levelsForSize(idealWidth, idealHeight)
 
     var threshold = 1f
@@ -25,7 +34,14 @@ class BloomPass(
     var radius = 2f
     var strength = 1f
 
-    val bloomMap = StorageTexture2d(idealWidth, idealHeight, TexFormat.RG11B10_F, MipMapping.Limited(levels), name = "bloomMap")
+    val bloomMap = StorageTexture2d(
+        width = idealWidth,
+        height = idealHeight,
+        format = TexFormat.RG11B10_F,
+        mipMapping = MipMapping.Limited(levels),
+        name = "bloomMap",
+        samplerSettings = SamplerSettings().clamped()
+    )
     val downSampleTex = if (inPlace) bloomMap else StorageTexture2d(
         width = idealWidth,
         height = idealHeight,
@@ -34,7 +50,7 @@ class BloomPass(
         name = "downSampleTex"
     )
 
-    private val downSampleShader = downSamplingShader()
+    private val downSampleShaderLower = downSamplingShader()
     private val upSampleShader = upSamplingShader()
 
     val width: Int get() = bloomMap.width
@@ -42,7 +58,7 @@ class BloomPass(
 
     init {
         logD { "Using $levels bloom levels, in place: $inPlace" }
-        makeDownSamplePasses()
+        makeDownSampleLowerPasses()
         makeUpSamplePasses()
         bloomMap.releaseWith(this)
         if (!inPlace) {
@@ -53,40 +69,57 @@ class BloomPass(
             val requiredWidth = idealWidth
             val requiredHeight = idealHeight
             if (requiredWidth != width || requiredHeight != height) {
-                levels = levelsForSize(requiredWidth, requiredHeight)
-                logD { "Resizing bloom pass to $requiredWidth x $requiredHeight ($levels levels)" }
-                bloomMap.resize(requiredWidth, requiredHeight, MipMapping.Limited(levels))
-                if (!inPlace) {
-                    downSampleTex.resize(requiredWidth, requiredHeight, MipMapping.Limited(levels))
-                }
+                SyncedScope.launch {
+                    levels = levelsForSize(requiredWidth, requiredHeight)
+                    logD { "Resizing bloom pass to $requiredWidth x $requiredHeight ($levels levels)" }
+                    bloomMap.resize(requiredWidth, requiredHeight, MipMapping.Limited(levels))
+                    if (!inPlace) {
+                        downSampleTex.resize(requiredWidth, requiredHeight, MipMapping.Limited(levels))
+                    }
 
-                tasks.toList().forEach { removeAndReleaseTask(it) }
-                makeDownSamplePasses()
-                makeUpSamplePasses()
+                    clearAndReleaseTasks()
+                    makeDownSampleFirstPass()
+                    makeDownSampleLowerPasses()
+                    makeUpSamplePasses()
+                }
             }
         }
     }
 
-    private fun makeDownSamplePasses() {
-        val sampleInput = downSampleShader.texture2d("sampleInput")
-        val downSampled = downSampleShader.storageTexture2d("downSampled")
-        var uThreshold by downSampleShader.uniform4f("threshold")
-        var uInputTexelSize by downSampleShader.uniform2f("inputTexelSize")
+    private fun makeDownSampleFirstPass() {
+        val groupsX = (width + 7) / 8
+        val groupsY = (height + 7) / 8
+        val task = addTask(inputShader, Vec3i(groupsX, groupsY, 1))
 
-        for (level in 0 until levels) {
+        var uThreshold by inputShader.bindUniformFloat4("threshold")
+        val inputTexelSize = Vec2f(1f / (2 * width), 1f / (2 * height))
+        inputShader.bindUniformFloat2("inputTexelSize").set(inputTexelSize)
+        inputShader.bindStorageTexture2d("downSampled", downSampleTex, 0)
+        task.onBeforeDispatch {
+            uThreshold = Vec4f(thresholdLuminanceFactors, threshold)
+        }
+    }
+
+    private fun makeDownSampleLowerPasses() {
+        val sampleInput = downSampleShaderLower.bindTexture2d("sampleInput")
+        val downSampled = downSampleShaderLower.bindStorageTexture2d("downSampled")
+        var uThreshold by downSampleShaderLower.bindUniformFloat4("threshold")
+        var uInputTexelSize by downSampleShaderLower.bindUniformFloat2("inputTexelSize")
+
+        for (level in 1 until levels) {
             val groupsX = ((width shr level) + 7) / 8
             val groupsY = ((height shr level) + 7) / 8
-            val task = addTask(downSampleShader, Vec3i(groupsX, groupsY, 1))
-            val input = if (level == 0) inputTexture else downSampleTex
+            val task = addTask(downSampleShaderLower, Vec3i(groupsX, groupsY, 1))
+            val input = downSampleTex
             val inputSampler = SamplerSettings().clamped().copy(baseMipLevel = (level - 1).coerceAtLeast(0), numMipLevels = 1)
             val inputTexelSize = Vec2f(1f / ((2 * width) shr level), 1f / ((2 * height) shr level))
             val key = "$level"
 
             task.onBeforeDispatch {
-                downSampleShader.createdPipeline?.swapPipelineDataCapturing(key) {
+                downSampleShaderLower.swapPipelineDataCapturing(key) {
                     sampleInput.set(input, inputSampler)
                     downSampled.set(downSampleTex, level)
-                    uThreshold = if (level == 0) Vec4f(thresholdLuminanceFactors, threshold) else Vec4f.ZERO
+                    uThreshold = Vec4f.ZERO
                     uInputTexelSize = inputTexelSize
                 }
             }
@@ -94,12 +127,12 @@ class BloomPass(
     }
 
     private fun makeUpSamplePasses() {
-        val sampleInput = upSampleShader.texture2d("sampleInput")
-        val downSampled = upSampleShader.storageTexture2d("downSampled")
-        val upSampled = upSampleShader.storageTexture2d("upSampled")
-        var uInputTexelSize by upSampleShader.uniform2f("inputTexelSize")
-        var uRadius by upSampleShader.uniform1f("radius", radius)
-        var uOutputScale by upSampleShader.uniform1f("outputScale", radius)
+        val sampleInput = upSampleShader.bindTexture2d("sampleInput")
+        val downSampled = upSampleShader.bindStorageTexture2d("downSampled")
+        val upSampled = upSampleShader.bindStorageTexture2d("upSampled")
+        var uInputTexelSize by upSampleShader.bindUniformFloat2("inputTexelSize")
+        var uRadius by upSampleShader.bindUniformFloat1("radius", radius)
+        var uOutputScale by upSampleShader.bindUniformFloat1("outputScale", radius)
 
         for (level in (levels - 2) downTo 0) {
             val groupsX = ((width shr level) + 7) / 8

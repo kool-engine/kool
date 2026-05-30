@@ -103,6 +103,8 @@ class KslStructArray<S: Struct>(struct: KslStruct<S>, arraySize: Int) : KslArray
 
 sealed class KslColorSampler<C: KslFloatType>(typeName: String) : KslSamplerType<KslFloat4>(typeName)
 sealed class KslDepthSampler<C: KslFloatType>(typeName: String) : KslSamplerType<KslFloat1>(typeName)
+sealed class KslIntSampler<C: KslFloatType>(typeName: String) : KslSamplerType<KslInt4>(typeName)
+sealed class KslUintSampler<C: KslFloatType>(typeName: String) : KslSamplerType<KslUint4>(typeName)
 
 interface KslSampler1dType
 interface KslSampler2dType
@@ -122,6 +124,12 @@ data object KslDepthSamplerCube : KslDepthSampler<KslFloat3>("depthSamplerCube")
 data object KslDepthSampler2dArray : KslDepthSampler<KslFloat2>("depthSampler2dArray"), KslSampler2dType, KslSamplerArrayType
 data object KslDepthSamplerCubeArray : KslDepthSampler<KslFloat3>("depthSamplerCubeArray"), KslSamplerCubeType, KslSamplerArrayType
 
+data object KslIntSampler2d : KslIntSampler<KslFloat2>("isampler2d"), KslSampler2dType
+data object KslIntSampler3d : KslIntSampler<KslFloat3>("isampler3d"), KslSampler3dType
+data object KslIntSampler2dArray : KslIntSampler<KslFloat2>("isampler2dArray"), KslSampler2dType, KslSamplerArrayType
+data object KslUintSampler2d : KslUintSampler<KslFloat2>("usampler2d"), KslSampler2dType
+data object KslUintSampler3d : KslUintSampler<KslFloat3>("usampler3d"), KslSampler3dType
+data object KslUintSampler2dArray : KslUintSampler<KslFloat2>("usampler2dArray"), KslSampler2dType, KslSamplerArrayType
 
 class KslStructStorageType<T: Struct>(structType: KslStruct<T>) : KslStorageType<KslStruct<T>>("KslStructStorageType<${structType.typeName}>", structType)
 

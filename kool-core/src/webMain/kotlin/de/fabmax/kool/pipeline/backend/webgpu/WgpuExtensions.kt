@@ -130,6 +130,13 @@ val FilterMethod.wgpu: GPUFilterMode
         FilterMethod.LINEAR -> GPUFilterMode.linear
     }
 
+fun FilterMethod.wgpuMipFilter(isMipMapped: Boolean): GPUMipmapFilterMode {
+    return when (this) {
+        FilterMethod.LINEAR if isMipMapped -> GPUMipmapFilterMode.linear
+        else -> GPUMipmapFilterMode.nearest
+    }
+}
+
 val PrimitiveType.wgpu: GPUPrimitiveTopology
     get() = when (this) {
         PrimitiveType.LINES -> GPUPrimitiveTopology.lineList
@@ -175,12 +182,14 @@ val TexFormat.wgpuStorage: GPUTextureFormat
         TexFormat.R_U32 -> GPUTextureFormat.r32uint
         TexFormat.RG_U32 -> GPUTextureFormat.rg32uint
         TexFormat.RGBA_U32 -> GPUTextureFormat.rgba32uint
-        TexFormat.RG11B10_F -> GPUTextureFormat.rgba16float
+        TexFormat.RG11B10_F -> GPUTextureFormat.rg11b10ufloat
     }
 
 val TextureSampleType.wgpu: GPUTextureSampleType
-    get() = when (this) {
+    get() =  when (this) {
         TextureSampleType.FLOAT -> GPUTextureSampleType.float
         TextureSampleType.UNFILTERABLE_FLOAT -> GPUTextureSampleType.unfilterableFloat
         TextureSampleType.DEPTH -> GPUTextureSampleType.depth
+        TextureSampleType.INT -> GPUTextureSampleType.sint
+        TextureSampleType.UINT -> GPUTextureSampleType.uint
     }

@@ -2,6 +2,7 @@ package de.fabmax.kool.demo.physics.vehicle.ui
 
 import de.fabmax.kool.demo.UiSizes
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.pipeline.deferred2.Deferred2Pipeline
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -13,7 +14,22 @@ class Timer(val vehicleUi: VehicleUi) : Composable {
     val sec1Time = mutableStateOf(0f)
     val sec2Time = mutableStateOf(0f)
 
-    private val isHeadlights = mutableStateOf(vehicleUi.vehicle.isHeadlightsOn).onChange { _, new -> vehicleUi.vehicle.isHeadlightsOn = new }
+    private val isReflections = mutableStateOf(true).onChange { _, new ->
+        val pipeline = vehicleUi.vehicle.demo.deferredPipeline
+        if (new) {
+            pipeline.enableScreenSpaceReflections()
+            pipeline.tsaa = Deferred2Pipeline.TSAA_4
+            pipeline.filterPass.filterWeight = 8f
+            pipeline.aoPass.temporalKernels = 4
+            pipeline.aoPass.kernelSize = 8
+        } else {
+            pipeline.disableScreenSpaceReflections()
+            pipeline.tsaa = Deferred2Pipeline.TSAA_NONE
+            pipeline.filterPass.filterWeight = 0f
+            pipeline.aoPass.temporalKernels = 1
+            pipeline.aoPass.kernelSize = 16
+        }
+    }
     private val isSound = mutableStateOf(false).onChange { _, new -> vehicleUi.onToggleSound(new) }
 
     private class TimerBackground(val bgColor: Color) : UiRenderer<UiNode> {
@@ -156,18 +172,18 @@ class Timer(val vehicleUi: VehicleUi) : Composable {
                     modifier
                         .width(Grow.Std)
                         .height(Grow.Std)
-                    Text("Headlights".l) {
+                    Text("Reflections".l) {
                         modifier
                             .width(Grow.Std)
                             .height(Grow.Std)
                             .margin(end = sizes.gap)
                             .baselineMargin(sizes.gap * 1.5f)
                             .textColor(labelColor)
-                            .onClick { isHeadlights.toggle() }
+                            .onClick { isReflections.toggle() }
                     }
-                    Switch(isHeadlights.use()) {
+                    Switch(isReflections.use()) {
                         modifier
-                            .onToggle { isHeadlights.set(it) }
+                            .onToggle { isReflections.set(it) }
                             .margin(end = sizes.smallGap, top = sizes.smallGap * 0.5f)
                     }
                 }

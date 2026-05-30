@@ -17,7 +17,7 @@ class Physics2dWorld(
     val simulationListeners = BufferedList<InterpolatableSimulation>()
 
     private var registeredAtScene: Scene? = null
-    private val onRenderSceneHook = OnRenderScene { simStepper.stepPhysics() }
+    private val onRenderSceneHook = OnRenderScene { simStepper.stepPhysics(Time.deltaT) }
 
     val simStepper: SimulationStepper = AsyncSimulationStepper(
         simulation = SimStepCallbacks(),

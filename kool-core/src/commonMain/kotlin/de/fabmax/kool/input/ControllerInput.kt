@@ -87,11 +87,11 @@ abstract class Controller(val id: Int) {
         }
     }
 
-    fun setButtonMapping(button: ControllerButton, index: Int) {
+    protected fun setButtonMapping(button: ControllerButton, index: Int) {
         buttonMap[button] = index
     }
 
-    fun setAxisMapping(axis: ControllerAxis, index: Int) {
+    protected fun setAxisMapping(axis: ControllerAxis, index: Int) {
         axisMap[axis] = index
     }
 
@@ -115,6 +115,8 @@ abstract class Controller(val id: Int) {
         buttonMonitors.forEach { it.listeners -= listener }
         buttonMonitors.removeAll { it.listeners.isEmpty() }
     }
+
+    abstract fun rumble(intensityLow: Float, intensityHigh: Float, durationMillis: Int)
 
     open fun onDisconnect() {
         logI { "Controller disconnected: $name" }

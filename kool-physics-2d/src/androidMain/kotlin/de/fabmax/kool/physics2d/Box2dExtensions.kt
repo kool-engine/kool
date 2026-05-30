@@ -1,6 +1,7 @@
 package de.fabmax.kool.physics2d
 
 import box2dandroid.*
+import box2dandroid.b2Vec2Array
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.util.ScopedMemory
@@ -9,6 +10,15 @@ fun ScopedMemory.allocVec2(v: Vec2f) = allocVec2(v.x, v.y)
 fun ScopedMemory.allocVec2(x: Float, y: Float) = autoDelete(b2Vec2(), b2Vec2::destroy).also {
     it.x = x
     it.y = y
+}
+
+fun ScopedMemory.allocVec2Array(points: List<Vec2f>) = autoDelete(b2Vec2Array(points.size), b2Vec2Array::destroy).also {
+    val point = allocVec2(0f, 0f)
+    for (i in points.indices) {
+        point.x = points[i].x
+        point.y = points[i].y
+        it.set(i, point)
+    }
 }
 
 fun ScopedMemory.allocRotation(r: Rotation) = autoDelete(b2Rot(), b2Rot::destroy).also {
@@ -43,6 +53,7 @@ fun ScopedMemory.allocCircle(radius: Float) = autoDelete(b2Circle(), b2Circle::d
     it.radius = radius
 }
 
+fun ScopedMemory.allocChainDef() = autoDelete(b2ChainDef(), b2ChainDef::destroy)
 fun ScopedMemory.allocBodyDef() = autoDelete(b2BodyDef(), b2BodyDef::destroy)
 fun ScopedMemory.allocShapeDef() = autoDelete(b2ShapeDef(), b2ShapeDef::destroy)
 fun ScopedMemory.allocWordDef() = autoDelete(b2WorldDef(), b2WorldDef::destroy)

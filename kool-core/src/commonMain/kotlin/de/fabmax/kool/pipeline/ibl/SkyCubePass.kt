@@ -9,10 +9,7 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.blocks.modelMatrix
-import de.fabmax.kool.modules.ksl.lang.KslProgram
-import de.fabmax.kool.modules.ksl.lang.minus
-import de.fabmax.kool.modules.ksl.lang.times
-import de.fabmax.kool.modules.ksl.lang.xyz
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
@@ -146,19 +143,19 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
     private class SkyShader(opticalDepthLut: Texture2d)
         : KslShader(atmoProg(), FullscreenShaderUtil.fullscreenShaderPipelineCfg)
     {
-        var opticalDepthLut by texture2d("tOpticalDepthLut", opticalDepthLut)
+        var opticalDepthLut by bindTexture2d("tOpticalDepthLut", opticalDepthLut)
 
-        var dirToSun by uniform3f("uDirToSun")
-        var sunColor by uniformColor("uSunColor")
+        var dirToSun by bindUniformFloat3("uDirToSun")
+        var sunColor by bindUniformColor("uSunColor")
 
-        var planetCenter by uniform3f("uPlanetCenter", Vec3f(0f, -60f, 0f))
-        var surfaceRadius by uniform1f("uSurfaceRadius", 60f)
-        var atmosphereRadius by uniform1f("uAtmosphereRadius", 65f)
-        var scatteringCoeffs by uniform3f("uScatteringCoeffs", Vec3f(0.274f, 1.536f, 3.859f))
-        var mieG by uniform1f("uMieG", 0.8f)
-        var mieColor by uniform4f("uMieColor", Vec4f(1f, 0.35f, 0.35f, 0.5f))
-        var rayleighColor by uniform4f("uRayleighColor", Vec4f(0.5f, 0.5f, 1.0f, 1.0f))
-        var randomOffset by uniform2f("uAtmoRandOffset", Vec2f(1337f, 1337f))
+        var planetCenter by bindUniformFloat3("uPlanetCenter", Vec3f(0f, -60f, 0f))
+        var surfaceRadius by bindUniformFloat1("uSurfaceRadius", 60f)
+        var atmosphereRadius by bindUniformFloat1("uAtmosphereRadius", 65f)
+        var scatteringCoeffs by bindUniformFloat3("uScatteringCoeffs", Vec3f(0.274f, 1.536f, 3.859f))
+        var mieG by bindUniformFloat1("uMieG", 0.8f)
+        var mieColor by bindUniformFloat4("uMieColor", Vec4f(1f, 0.35f, 0.35f, 0.5f))
+        var rayleighColor by bindUniformFloat4("uRayleighColor", Vec4f(0.5f, 0.5f, 1.0f, 1.0f))
+        var randomOffset by bindUniformFloat2("uAtmoRandOffset", Vec2f(1337f, 1337f))
 
         companion object {
             private fun atmoProg() = KslProgram("Sky atmosphere").apply {

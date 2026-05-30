@@ -7,17 +7,18 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.vertexAttrib
 
-fun KslScopeBuilder.vertexTransformBlock(cfg: BasicVertexConfig, block: VertexTransformBlock.() -> Unit): VertexTransformBlock {
-    val vertexBlock = VertexTransformBlock(cfg, parentStage.program.nextName("vertexBlock"), this)
+context(builder: KslScopeBuilder)
+fun vertexTransformBlock(cfg: BasicVertexConfig, block: VertexTransformBlock.() -> Unit): VertexTransformBlock {
+    val vertexBlock = VertexTransformBlock(cfg, builder.parentStage.program.nextName("vertexBlock"), builder)
     vertexBlock.block()
-    ops += vertexBlock
+    builder.ops += vertexBlock
     return vertexBlock
 }
 
 class VertexTransformBlock(val cfg: BasicVertexConfig, name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
     val inLocalPos = inFloat3()
-    val inLocalNormal = inFloat3(defaultValue = KslValueFloat3(0f, 0f, 0f))
-    val inLocalTangent = inFloat4(defaultValue = KslValueFloat4(0f, 0f, 0f, 0f))
+    val inLocalNormal = inFloat3(defaultValue = float3Value(0f, 0f, 0f))
+    val inLocalTangent = inFloat4(defaultValue = float4Value(0f, 0f, 0f, 0f))
 
     val outModelMat = outMat4()
     val outWorldPos = outFloat3()
@@ -25,7 +26,7 @@ class VertexTransformBlock(val cfg: BasicVertexConfig, name: String, parentScope
     val outWorldTangent = outFloat4()
 
     init {
-        body.apply {
+        body {
             val stage = parentStage as? KslVertexStage ?: throw IllegalStateException("VertexTransformBlock is only allowed in vertex stage")
 
             val localPos = float3Var(inLocalPos)
@@ -37,7 +38,7 @@ class VertexTransformBlock(val cfg: BasicVertexConfig, name: String, parentScope
             } else {
                 cfg.modelMatrixComposition.forEachIndexed { i, mat ->
                     val srcMat = when (mat) {
-                        ModelMatrixComposition.UniformModelMat -> parentStage.program.modelMatrix().matrix
+                        ModelMatrixComposition.UniformModelMat -> modelMatrix().matrix
                         is ModelMatrixComposition.InstanceModelMat -> stage.instanceAttribMat4(mat.attributeName)
                     }
                     if (i == 0) {
@@ -56,7 +57,7 @@ class VertexTransformBlock(val cfg: BasicVertexConfig, name: String, parentScope
             }
 
             if (cfg.isMorphing) {
-                val morphData = stage.program.morphWeightData()
+                val morphData = morphWeightData()
                 cfg.morphAttributes.forEachIndexed { i, morphAttrib ->
                     val weight = getMorphWeightComponent(i, morphData)
                     when {

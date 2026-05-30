@@ -98,8 +98,10 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
             val untilFocused = t + ((dtFocused - dtCurrent) * 1e9).toLong()
             val untilUnfocused = t + ((dtUnfocused - dtCurrent) * 1e9).toLong()
             delayFrameRender(untilFocused, untilUnfocused)
+            prevFrameTime = System.nanoTime()
+        } else {
+            prevFrameTime = t
         }
-        prevFrameTime = t
     }
 
     private fun delayFrameRender(untilFocused: Long, untilUnfocused: Long) {

@@ -57,7 +57,7 @@ class WgpuDrawPipeline(
                 if (vertexBinding.strideBytes == 0) null else {
                     GPUVertexBufferLayout(
                         arrayStride = vertexBinding.strideBytes.toLong(),
-                        attributes = attributes.toTypedArray(),
+                        attributes = Array(attributes.size) { attributes[it] },
                         stepMode = when (vertexBinding.inputRate) {
                             InputRate.VERTEX -> GPUVertexStepMode.vertex
                             InputRate.INSTANCE -> GPUVertexStepMode.instance

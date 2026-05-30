@@ -5,19 +5,20 @@ import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.demo.physics.vehicle.ui.VehicleUi
+import de.fabmax.kool.input.KeyboardInput
+import de.fabmax.kool.input.LocalKeyCode
 import de.fabmax.kool.math.*
+import de.fabmax.kool.modules.gltf.GltfDeferredShaderFactory
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.gltf.GltfMaterialConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
-import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
+import de.fabmax.kool.modules.ksl.toConfig
+import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.modules.ui2.UiSurface
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.physics.util.ActorTrackingCamRig
-import de.fabmax.kool.pipeline.DepthCompareOp
-import de.fabmax.kool.pipeline.deferred.DeferredPipeline
-import de.fabmax.kool.pipeline.deferred.DeferredPipelineConfig
-import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
+import de.fabmax.kool.pipeline.deferred2.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 
@@ -28,7 +29,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
     private val groundNormal by texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
     private val vehicleModel by model(
         "${DemoLoader.modelPath}/kool-car.glb",
-        GltfLoadConfig(materialConfig = GltfMaterialConfig(isDeferredShading = true))
+        GltfLoadConfig(materialConfig = GltfMaterialConfig(shaderFactory = GltfDeferredShaderFactory))
     )
 
     lateinit var vehicleWorld: VehicleWorld
@@ -38,10 +39,13 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
     private var track: Track? = null
     var timer: TrackTimer? = null
 
-    private lateinit var deferredPipeline: DeferredPipeline
+    internal lateinit var deferredPipeline: Deferred2Pipeline
 
     override suspend fun loadResources(ctx: KoolContext) {
-        val shadows = CascadedShadowMap(mainScene, mainScene.lighting.lights[0], maxRange = 400f, mapSizes = listOf(4096, 2048, 2048)).apply {
+        val sceneCam = PerspectiveCamera()
+        val sceneContent = Node()
+
+        val shadows = CascadedShadowMap(sceneCam, sceneContent, mainScene.lighting.lights[0], maxRange = 400f, mapSizes = listOf(4096, 2048, 2048)).apply {
             mapRanges[0].set(0f, 0.03f)
             mapRanges[1].set(0.03f, 0.17f)
             mapRanges[2].set(0.17f, 1f)
@@ -50,52 +54,50 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
                 map.shaderDepthOffset = if (i == 0) -0.0004f else -0.002f
             }
         }
-        showLoadText("Loading Physics".l())
+        shadows.addToScene(mainScene)
 
         showLoadText("Creating Deferred Render Pipeline".l())
-        val defCfg = DeferredPipelineConfig().apply {
-            maxGlobalLights = 1
-            isWithAmbientOcclusion = true
-            isWithScreenSpaceReflections = false
-            isWithBloom = true
-            isWithVignette = true
+        deferredPipeline = Deferred2Pipeline(
+            content = sceneContent,
+            camera = sceneCam,
+            scene = mainScene,
+            ibl = ibl,
+            lighting = mainScene.lighting,
+            shadowMapConfig = listOf(shadows).toConfig(),
+            renderScale = 1f / UiScale.windowScale.value,
+        )
+        deferredPipeline.enableScreenSpaceReflections()
+        deferredPipeline.lightingPass.ambientShadowFactor = 0.3f
+        val bloom = deferredPipeline.installBloomPass()
+        mainScene += deferredPipeline.defaultOutputQuad(bloom, vignette = Vignette())
+        shadows.drawNode = deferredPipeline.content
 
-            bloomKernelSize = 10
-            bloomAvgDownSampling = false
-
-            useImageBasedLighting(ibl)
-            useShadowMaps(emptyList())
-            useShadowMaps(listOf(shadows))
-
-            // set output depth compare op to ALWAYS, so that the skybox with maximum depth value is drawn
-            outputDepthTest = DepthCompareOp.ALWAYS
-        }
-        deferredPipeline = DeferredPipeline(mainScene, defCfg).apply {
-            aoPipeline?.mapSize = 0.75f
-            lightingPassShader.ambientShadowFactor = 0.3f
-            lightingPassContent += Skybox.cube(ibl.reflectionMap, 1f, colorSpaceConversion = ColorSpaceConversion.AsIs)
-        }
-        mainScene += deferredPipeline.createDefaultOutputQuad()
-
-        shadows.drawNode = deferredPipeline.sceneContent
+        val deferredLights = DeferredLights(deferredPipeline)
 
         showLoadText("Creating Physics World".l())
         val physics = PhysicsWorld(mainScene)
-        vehicleWorld = VehicleWorld(mainScene, physics, deferredPipeline)
+        vehicleWorld = VehicleWorld(mainScene, physics, deferredPipeline, deferredLights)
 
         vehicle = DemoVehicle(this@VehicleDemo, vehicleModel, ctx)
         showLoadText("Loading Vehicle Audio".l())
         vehicle.vehicleAudio.loadAudio()
 
         showLoadText("Creating Physics World".l())
-        deferredPipeline.sceneContent.apply {
+        deferredPipeline.content.apply {
             addNode(vehicle.vehicleGroup)
-
             makeGround()
             showLoadText("Creating Playground".l())
             Playground.makePlayground(vehicleWorld)
             showLoadText("Creating Track".l())
             makeTrack(vehicleWorld)
+            addNode(deferredLights)
+        }
+
+        val lightToggleListener = KeyboardInput.addKeyListener(LocalKeyCode('l'), "Toggle head lights", filter = { it.isPressed }) {
+            vehicle.isHeadlightsOn = !vehicle.isHeadlightsOn
+        }
+        mainScene.onRelease {
+            KeyboardInput.removeKeyListener(lightToggleListener)
         }
     }
 
@@ -105,12 +107,12 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             setColor(Color.WHITE, 0.75f)
         }
 
+        val camera = deferredPipeline.camera
         val camRig = ActorTrackingCamRig(vehicleWorld.physics, vehicle.vehicle).apply {
-            camera.setClipRange(1f, 1e9f)
             camera.setupCamera(Vec3f(0f, 2.75f, 6f), lookAt = Vec3f(0f, 1.75f, 0f))
             addNode(camera)
         }
-        addNode(camRig)
+        deferredPipeline.content.addNode(camRig)
 
         onUpdate += {
             updateDashboard()
@@ -226,7 +228,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
                     stepsY = sizeY.toInt() / 100
                 }
             }
-            shader = deferredKslPbrShader {
+            shader = gbufferShader {
                 color {
                     textureColor(groundAlbedo)
                     constColor(color(100), blendMode = ColorBlockConfig.BlendMode.Multiply)
@@ -234,6 +236,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
                 normalMapping {
                     useNormalMap(groundNormal)
                 }
+                roughness(0.35f)
             }
         }
 

@@ -2,7 +2,7 @@ package de.fabmax.kool.demo.procedural
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
-import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
+import de.fabmax.kool.pipeline.deferred2.gbufferShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.geometry.*
@@ -21,7 +21,7 @@ class Table(demo: ProceduralDemo) : Mesh<VertexLayouts.PositionNormalTexCoordTan
             geometry.generateTangents()
         }
 
-        shader = deferredKslPbrShader {
+        shader = gbufferShader {
             color { textureColor(demo.tableColor) }
             normalMapping { useNormalMap(demo.tableNormal) }
             roughness { textureProperty(demo.tableRoughness) }

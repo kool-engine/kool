@@ -19,16 +19,21 @@ import kotlin.math.abs
  * @author fabmax
  */
 
-fun orbitCamera(view: RenderPass.View, name: String? = null, block: OrbitInputTransform.() -> Unit): OrbitInputTransform {
+fun orbitCamera(camera: Camera, name: String? = null, block: OrbitInputTransform.() -> Unit): OrbitInputTransform {
     val orbitCam = OrbitInputTransform(name)
-    orbitCam.addNode(view.camera)
+    orbitCam.addNode(camera)
     orbitCam.block()
-    view.drawNode.addNode(orbitCam)
 
     InputStack.defaultInputHandler.pointerListeners += orbitCam
     orbitCam.onRelease {
         InputStack.defaultInputHandler.pointerListeners -= orbitCam
     }
+    return orbitCam
+}
+
+fun orbitCamera(view: RenderPass.View, name: String? = null, block: OrbitInputTransform.() -> Unit): OrbitInputTransform {
+    val orbitCam = orbitCamera(view.camera, name, block)
+    view.drawNode.addNode(orbitCam)
     return orbitCam
 }
 

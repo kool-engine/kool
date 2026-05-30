@@ -50,7 +50,7 @@ class SwingWindowSubsystem(
         AWTVK.getSurfaceExtensionName()
     )
 
-    override fun createWindow(clientApi: ClientApi, glCallbacks: GlWindowCallbacks?, ctx: Lwjgl3Context): KoolWindowJvm {
+    override fun createWindow(clientApi: ClientApi, glInitCallback: GlInitCallback?, ctx: Lwjgl3Context): KoolWindowJvm {
         check(canvasWrapper == null)
 
         val canvas = if (providedCanvas != null) {
@@ -108,7 +108,7 @@ class SwingWindowSubsystem(
         }
 
         if (canvas is KoolGlCanvas) {
-            canvas.glCallbacks = glCallbacks
+            canvas.glInitCallback = glInitCallback
             SwingUtilities.invokeAndWait {
                 require(canvas.isValid)
                 canvas.initCanvas()
@@ -172,7 +172,7 @@ class SwingWindowSubsystem(
     private fun unmanagedRenderLoop() {
         val ctx = KoolSystem.requireContext() as Lwjgl3Context
         runBlocking {
-            logI { "Starting unmanaged render loop" }
+            logI(tag = "SwingWindowSubsystem") { "Starting unmanaged render loop" }
             val window = canvasWrapper!!
             while (!isCloseRequested) {
                 window.pollEvents()
@@ -189,7 +189,8 @@ class SwingWindowSubsystem(
 }
 
 class KoolGlCanvas(data: GLData = DEFAULT_GL_DATA) : AWTGLCanvas(data) {
-    internal var glCallbacks: GlWindowCallbacks? = null
+    internal var ctx: Lwjgl3Context? = null
+    internal var glInitCallback: GlInitCallback? = null
 
     fun initCanvas() {
         beforeRender()
@@ -201,11 +202,11 @@ class KoolGlCanvas(data: GLData = DEFAULT_GL_DATA) : AWTGLCanvas(data) {
     }
 
     override fun initGL() {
-        glCallbacks?.initGl()
+        checkNotNull(glInitCallback).initGl()
     }
 
     override fun paintGL() {
-        glCallbacks?.drawFrame()
+        runBlocking { ctx?.renderFrame() }
         glEnd()
         swapBuffers()
     }

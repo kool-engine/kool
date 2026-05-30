@@ -50,11 +50,13 @@ interface GlApi {
     val INVALID_INDEX: Int
     val LINEAR: Int
     val LINEAR_MIPMAP_LINEAR: Int
+    val LINEAR_MIPMAP_NEAREST: Int
     val LINES: Int
     val LINK_STATUS: Int
     val LOWER_LEFT: Int
     val MIRRORED_REPEAT: Int
     val NEAREST: Int
+    val NEAREST_MIPMAP_LINEAR: Int
     val NEAREST_MIPMAP_NEAREST: Int
     val NEGATIVE_ONE_TO_ONE: Int
     val NONE: Int

@@ -1,191 +1,126 @@
 package de.fabmax.kool.pipeline.ao
 
-import de.fabmax.kool.math.Vec2i
-import de.fabmax.kool.math.clamp
-import de.fabmax.kool.pipeline.NormalLinearDepthMapPass
-import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.deferred.DeferredPassSwapListener
-import de.fabmax.kool.pipeline.deferred.DeferredPasses
+import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.deferred.DeferredPipeline
-import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.BaseReleasable
-import kotlin.math.max
+import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.PerspectiveCamera
+import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.Releasable
+import de.fabmax.kool.util.Uint8Buffer
+import kotlin.jvm.JvmInline
+import kotlin.math.*
+import kotlin.random.Random
 
-abstract class AoPipeline : BaseReleasable() {
+interface AoPipeline : Releasable {
+    val aoMap: Texture2d
+    var isEnabled: Boolean
 
-    abstract val aoPass: AmbientOcclusionPass
-    abstract val denoisePass: AoDenoisePass
-
-    // ao map size relative to screen resolution
-    var mapSize = 0.7f
-
-    val aoMap: Texture2d get() = denoisePass.colorTexture!!
-
-    var radius: Float
-        get() = aoPass.radius
-        set(value) {
-            aoPass.radius = value
-            denoisePass.radius = value
-        }
-
+    var radius: AoRadius
     var strength: Float
-        get() = aoPass.strength
-        set(value) { aoPass.strength = value }
-
-    var power: Float
-        get() = aoPass.power
-        set(value) { aoPass.power = value }
-
-    var bias: Float
-        get() = aoPass.bias
-        set(value) { aoPass.bias = value }
-
-    var kernelSz: Int
-        get() = aoPass.kernelSz
-        set(value) { aoPass.kernelSz = value }
-
-    var isEnabled = true
-        set(value) {
-            field = value
-            updateEnabled()
-        }
-
-    protected open fun updateEnabled() {
-        aoPass.isEnabled = isEnabled
-
-        if (isEnabled) {
-            denoisePass.isEnabled = true
-            denoisePass.clearAndDisable = false
-            if (aoPass !in denoisePass.dependencies) {
-                denoisePass.dependencies += aoPass
-            }
-        } else {
-            denoisePass.clearAndDisable = true
-            denoisePass.dependencies -= aoPass
-        }
-    }
-
-    class ForwardAoPipeline(
-        val scene: Scene,
-        camera: PerspectiveCamera,
-        drawNode: Node
-    ) : AoPipeline() {
-
-        val depthPass: NormalLinearDepthMapPass
-        override val aoPass: AmbientOcclusionPass
-        override val denoisePass: AoDenoisePass
-
-        private var mapWidth = max(32, (scene.mainRenderPass.viewport.width * mapSize).toInt())
-        private var mapHeight = max(32, (scene.mainRenderPass.viewport.height * mapSize).toInt())
-
-        private val onRenderSceneCallback = OnRenderScene { onRenderScene() }
-
-        val proxyCamera = PerspectiveProxyCam(camera)
-
-        init {
-            depthPass = NormalLinearDepthMapPass(drawNode, initialSize = Vec2i(mapWidth, mapHeight))
-            depthPass.camera = proxyCamera
-            depthPass.isUpdateDrawNode = false
-            depthPass.isReleaseDrawNode = false
-            depthPass.onBeforeCollectDrawCommands += { proxyCamera.sync(it) }
-
-            aoPass = AmbientOcclusionPass(AoSetup.forward(depthPass), mapWidth, mapHeight)
-            aoPass.sceneCam = proxyCamera
-            aoPass.dependsOn(depthPass)
-            denoisePass = AoDenoisePass(aoPass, "a")
-            denoisePass.linearDepth = depthPass.normalDepthMap
-            denoisePass.dependsOn(aoPass)
-
-            scene.addOffscreenPass(depthPass)
-            scene.addOffscreenPass(aoPass)
-            scene.addOffscreenPass(denoisePass)
-
-            scene.onRenderScene += onRenderSceneCallback
-        }
-
-        private fun onRenderScene() {
-            val mapW = (scene.mainRenderPass.viewport.width * mapSize).toInt()
-            val mapH = (scene.mainRenderPass.viewport.height * mapSize).toInt()
-
-            if (isEnabled && mapW > 0 && mapH > 0) {
-                depthPass.setSize(mapW, mapH)
-                aoPass.setSize(mapW, mapH)
-            }
-            if (isEnabled && mapW > 0 && mapH > 0) {
-                denoisePass.setSize(mapW, mapH)
-            }
-        }
-
-        override fun updateEnabled() {
-            super.updateEnabled()
-            depthPass.isEnabled = isEnabled
-        }
-
-        override fun doRelease() {
-            scene.removeOffscreenPass(depthPass)
-            scene.removeOffscreenPass(aoPass)
-            scene.removeOffscreenPass(denoisePass)
-            depthPass.release()
-            aoPass.release()
-            denoisePass.release()
-        }
-    }
-
-    class DeferredAoPipeline(val deferredPipeline: DeferredPipeline) : AoPipeline(), DeferredPassSwapListener {
-        override val aoPass: AmbientOcclusionPass
-        override val denoisePass: AoDenoisePass
-
-        private var mapWidth = max(32, (deferredPipeline.scene.mainRenderPass.viewport.width * mapSize).toInt())
-        private var mapHeight = max(32, (deferredPipeline.scene.mainRenderPass.viewport.height * mapSize).toInt())
-
-        init {
-            aoPass = AmbientOcclusionPass(AoSetup.deferred(), mapWidth, mapHeight)
-            denoisePass = AoDenoisePass(aoPass, "z")
-            denoisePass.dependsOn(aoPass)
-
-            deferredPipeline.passes.forEach { aoPass.dependsOn(it.materialPass) }
-
-            deferredPipeline.scene.addOffscreenPass(aoPass)
-            deferredPipeline.scene.addOffscreenPass(denoisePass)
-        }
-
-        override fun onSwap(previousPasses: DeferredPasses, currentPasses: DeferredPasses) {
-            aoPass.aoPassShader.createdPipeline?.swapPipelineData(currentPasses)
-            denoisePass.denoiseShader.createdPipeline?.swapPipelineData(currentPasses)
-
-            aoPass.sceneCam = currentPasses.materialPass.camera
-            aoPass.deferredPosition = currentPasses.materialPass.positionFlags
-            aoPass.deferredNormal = currentPasses.materialPass.normalRoughness
-            denoisePass.linearDepth = currentPasses.materialPass.positionFlags
-        }
-
-        fun checkSize(viewportW: Int, viewportH: Int) {
-            val width = (viewportW * mapSize).toInt().clamp(1, 4096)
-            val height = (viewportH * mapSize).toInt().clamp(1, 4096)
-
-            if (aoPass.isEnabled && (width != aoPass.width || height != aoPass.height)) {
-                aoPass.setSize(width, height)
-            }
-            if (denoisePass.isEnabled && (width != denoisePass.width || height != denoisePass.height)) {
-                denoisePass.setSize(width, height)
-            }
-        }
-
-        override fun doRelease() {
-            deferredPipeline.scene.removeOffscreenPass(aoPass)
-            deferredPipeline.scene.removeOffscreenPass(denoisePass)
-            aoPass.release()
-            denoisePass.release()
-        }
-    }
+    var falloff: Float
+    var kernelSize: Int
 
     companion object {
-        fun createForward(
+        fun createForwardCompute(
+            scene: Scene,
+            camera: PerspectiveCamera = (scene.camera as PerspectiveCamera),
+            drawNode: Node = scene
+        ) = ComputeAoPipeline(scene, camera, drawNode)
+
+        fun createForwardLegacy(
             scene: Scene,
             camera: PerspectiveCamera = (scene.camera as PerspectiveCamera),
             drawNode: Node = scene
         ) = ForwardAoPipeline(scene, camera, drawNode)
 
+        fun createForward(
+            scene: Scene,
+            camera: PerspectiveCamera = (scene.camera as PerspectiveCamera),
+            drawNode: Node = scene
+        ): AoPipeline = if (KoolSystem.requireContext().backend.features.computeShaders) {
+            createForwardCompute(scene, camera, drawNode)
+        } else {
+            createForwardLegacy(scene, camera, drawNode)
+        }
+
         fun createDeferred(deferredPipeline: DeferredPipeline) = DeferredAoPipeline(deferredPipeline)
+
+        fun generateAoSampleDirs(numDirs: Int, numTemporal: Int = 1): List<Vec3f> {
+            val scales = (0 until numDirs).map { lerp(0.1f, 1f, (it.toFloat() / (numDirs-1)).pow(2)) }
+            val r = Random(12345)
+            val dirs = (0 until numDirs * numTemporal).map { i ->
+                hammersley(i, numDirs * numTemporal)
+            }.shuffled(r)
+
+            return buildList {
+                repeat(numTemporal) { t ->
+                    repeat(numDirs) { i ->
+                        val xi = dirs[i + t * numDirs]
+                        val phi = 2f * PI.toFloat() * xi.x
+                        val cosTheta = sqrt((1f - xi.y))
+                        val sinTheta = sqrt(1f - cosTheta * cosTheta)
+
+                        val k = MutableVec3f(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta + 0.1f).norm()
+                        add(k.mul(scales[i]))
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun hammersley(i: Int, n: Int): Vec2f {
+    return Vec2f(i.toFloat() / n.toFloat(), radicalInverse(i))
+}
+
+private fun radicalInverse(pBits: Int): Float {
+    var bits = pBits.toLong()
+    bits = (bits shl 16) or (bits shr 16)
+    bits = ((bits and 0x55555555) shl 1) or ((bits and 0xAAAAAAAA) shr 1)
+    bits = ((bits and 0x33333333) shl 2) or ((bits and 0xCCCCCCCC) shr 2)
+    bits = ((bits and 0x0F0F0F0F) shl 4) or ((bits and 0xF0F0F0F0) shr 4)
+    bits = ((bits and 0x00FF00FF) shl 8) or ((bits and 0xFF00FF00) shr 8)
+    return bits.toFloat() / 0x100000000
+}
+
+private fun lerp(a: Float, b: Float, f: Float): Float {
+    return a + f * (b - a)
+}
+
+internal fun generateFilterNoiseTex(size: Int): Texture2d {
+    val noiseLen = size * size
+    val buf = Uint8Buffer(2 * noiseLen)
+    val rand = Random(0x1deadb0b)
+    val rotAngles = (0 until noiseLen).map { 2f * PI.toFloat() * it / noiseLen }.shuffled(rand)
+
+    for (i in 0 until (size * size)) {
+        val ang = rotAngles[i]
+        val x = cos(ang)
+        val y = sin(ang)
+        buf[i*2+0] = ((x * 0.5f + 0.5f) * 255).toInt().toUByte()
+        buf[i*2+1] = ((y * 0.5f + 0.5f) * 255).toInt().toUByte()
+    }
+
+    val data = BufferedImageData2d(buf, size, size, TexFormat.RG)
+    return Texture2d(TexFormat.RG, MipMapping.Off, SamplerSettings().nearest(), "ao_noise_tex") { data }
+}
+
+@JvmInline
+value class AoRadius(val radius: Float) {
+    companion object {
+        /**
+         * Absolute radius in world space units.
+         */
+        fun absoluteRadius(radius: Float) = AoRadius(abs(radius))
+
+        /**
+         * Relative radius depending on screen depth. E.g., a relative radius of 0.05 resolves to a world space radius
+         * of 1 unit in 20 units distance.
+         */
+        fun relativeRadius(radius: Float) = AoRadius(-abs(radius))
     }
 }

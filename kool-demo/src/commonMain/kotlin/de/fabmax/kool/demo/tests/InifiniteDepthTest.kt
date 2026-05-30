@@ -6,6 +6,10 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
+import de.fabmax.kool.modules.ksl.lang.const
+import de.fabmax.kool.modules.ksl.lang.float4Value
+import de.fabmax.kool.modules.ksl.lang.interStageFloat4
+import de.fabmax.kool.modules.ksl.lang.set
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor

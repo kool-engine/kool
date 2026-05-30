@@ -9,14 +9,11 @@ import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
-import de.fabmax.kool.modules.ksl.lang.b
-import de.fabmax.kool.modules.ksl.lang.g
-import de.fabmax.kool.modules.ksl.lang.getFloat4Port
-import de.fabmax.kool.modules.ksl.lang.r
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.ClearColorDontCare
 import de.fabmax.kool.pipeline.DepthCompareOp
-import de.fabmax.kool.pipeline.ao.AoPipeline
+import de.fabmax.kool.pipeline.ao.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.RectProps
 import de.fabmax.kool.toString
@@ -48,11 +45,11 @@ class AoDemo : DemoScene("Ambient Occlusion") {
     private val showAoMapValues = listOf("None", "Filtered", "Noisy")
     private val showAoMapIndex = mutableStateOf(0)
 
-    private val aoRadius = mutableStateOf(1f).onChange { _, new -> aoPipeline.radius = new }
-    private val aoPower = mutableStateOf(1f).onChange { _, new -> aoPipeline.power = new }
+    private val aoRadius = mutableStateOf(1f).onChange { _, new -> aoPipeline.radius = AoRadius.absoluteRadius(new) }
+    private val aoFalloff = mutableStateOf(1f).onChange { _, new -> aoPipeline.falloff = new }
     private val aoStrength = mutableStateOf(1f).onChange { _, new -> aoPipeline.strength = new }
-    private val aoSamples = mutableStateOf(16).onChange { _, new -> aoPipeline.kernelSz = new }
-    private val aoMapSize = mutableStateOf(1f).onChange { _, new -> aoPipeline.mapSize = new }
+    private val aoSamples = mutableStateOf(16).onChange { _, new -> aoPipeline.kernelSize = new }
+    private val aoMapSize = mutableStateOf(1f).onChange { _, new -> (aoPipeline as? ForwardAoPipeline)?.mapSize = new }
 
     private lateinit var orbitCam: OrbitInputTransform
 
@@ -78,11 +75,11 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         shadows.add(shadowMap)
 
         aoPipeline = AoPipeline.createForward(mainScene)
-        aoRadius.set(aoPipeline.radius)
-        aoPower.set(aoPipeline.power)
+        aoMapSize.set((aoPipeline as? ForwardAoPipeline)?.mapSize ?: 0.5f)
+        aoRadius.set(aoPipeline.radius.radius)
+        aoFalloff.set(aoPipeline.falloff)
         aoStrength.set(aoPipeline.strength)
-        aoSamples.set(aoPipeline.kernelSz)
-        aoMapSize.set(aoPipeline.mapSize)
+        aoSamples.set(aoPipeline.kernelSize)
 
         addTeapots()
 
@@ -190,9 +187,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
                 color { textureColor(albedoMap) }
                 normalMapping { useNormalMap(normalMap) }
                 roughness { textureProperty(roughnessMap) }
-                ao {
-                    textureProperty(ambientOcclusionMap)
-                }
+                ao { textureProperty(ambientOcclusionMap) }
                 lighting {
                     enableSsao(aoPipeline.aoMap)
                     imageBasedAmbientLight(ibl.irradianceMap)
@@ -256,9 +251,9 @@ class AoDemo : DemoScene("Ambient Occlusion") {
             }
         }
         MenuRow {
-            Text("Power".l) { labelStyle(lblW) }
-            MenuSlider(log(aoPower.use(), 10f), log(0.2f, 10f), log(5f, 10f), txtWidth = txtW) {
-                aoPower.set(10f.pow(it))
+            Text("Falloff".l) { labelStyle(lblW) }
+            MenuSlider(log(aoFalloff.use(), 10f), log(0.2f, 10f), log(5f, 10f), txtWidth = txtW) {
+                aoFalloff.set(10f.pow(it))
             }
         }
         MenuRow {
@@ -273,17 +268,25 @@ class AoDemo : DemoScene("Ambient Occlusion") {
                 aoSamples.set(it.roundToInt())
             }
         }
-        MenuRow {
-            Text("Map Size".l) { labelStyle(lblW) }
-            MenuSlider(aoMapSize.use(), 0.1f, 1f, { it.toString(1) }, txtW) {
-                aoMapSize.set((it * 10).roundToInt() / 10f)
+        if (aoPipeline is ForwardAoPipeline) {
+            MenuRow {
+                Text("Map Size".l) { labelStyle(lblW) }
+                MenuSlider(aoMapSize.use(), 0.1f, 1f, { it.toString(1) }, txtW) {
+                    aoMapSize.set((it * 10).roundToInt() / 10f)
+                }
             }
         }
 
         if (showAoMapIndex.value != 0) {
             val shader = when (showAoMapIndex.value) {
                 1 -> aoMapShader.apply { colorMap = aoPipeline.aoMap }
-                2 -> noisyAoMapShader.apply { colorMap = aoPipeline.aoPass.colorTexture }
+                2 -> noisyAoMapShader.apply {
+                    colorMap = when (val ao = aoPipeline) {
+                        is LegacyAoPipeline -> ao.aoPass.colorTexture
+                        is ComputeAoPipeline -> ao.computePass.aoNoisy
+                        else -> null
+                    }
+                }
                 else -> null
             }
             if (shader != null) {

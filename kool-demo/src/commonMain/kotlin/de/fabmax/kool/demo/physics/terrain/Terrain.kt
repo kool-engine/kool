@@ -171,7 +171,7 @@ class Terrain(val demo: TerrainDemo, val heightMap: Heightmap) {
                             }
 
                             val splatMapSampler = texture2d("tSplatMap")
-                            val splatWeights = float4Var(sampleTexture(splatMapSampler, splatCoords))
+                            val splatWeights = float4Var(splatMapSampler.sample(splatCoords))
 
                             val wDeepWater = 1f.const - smoothStep((-30f).const, (-2f).const, material.inFragmentPos.y)
                             val wBeach = float1Var(splatWeights.r * (1f.const - wDeepWater))
@@ -226,8 +226,8 @@ class Terrain(val demo: TerrainDemo, val heightMap: Heightmap) {
                 KslBlinnPhongShader { terrainConfig() }
             }
             // do not forget to assign the splat map to the corresponding sampler
-            shader.texture2d("tSplatMap", splatMap)
-            shader.uniform1f(TERRAIN_SHADER_DISCARD_HEIGHT).set(1000f)
+            shader.bindTexture2d("tSplatMap", splatMap)
+            shader.bindUniformFloat1(TERRAIN_SHADER_DISCARD_HEIGHT).set(1000f)
             return shader
         }
     }

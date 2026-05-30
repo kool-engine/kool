@@ -207,6 +207,7 @@ open class Color(open val r: Float, open val g: Float, open val b: Float, open v
         const val GAMMA_sRGB_TO_LINEAR = 2.2f
         const val GAMMA_LINEAR_TO_sRGB = 1f / 2.2f
 
+        val ZERO = Color(0.0f, 0.0f, 0.0f, 0.0f)
         val BLACK = Color(0.0f, 0.0f, 0.0f, 1.0f)
         val DARK_GRAY = Color(0.25f, 0.25f, 0.25f, 1.0f)
         val GRAY = Color(0.5f, 0.5f, 0.5f, 1.0f)

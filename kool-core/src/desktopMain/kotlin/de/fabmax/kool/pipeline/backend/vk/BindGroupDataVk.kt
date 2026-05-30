@@ -85,7 +85,9 @@ class BindGroupDataVk(
         }
         for (i in storageTextureBindings.indices) {
             val tex = storageTextureBindings[i]
-            tex.binding.storageTexture?.checkTextureSize(passEncoderState.commandBuffer)
+            tex.binding.storageTexture?.let {
+                backend.textureLoader.createStorageTextureIfNeeded(it, passEncoderState.commandBuffer)
+            }
             if (tex.binding.storageTexture?.asTexture?.gpuTexture !== tex.boundImage) {
                 // underlying gpu texture has changed, e.g. because render attachment of a render pass was recreated
                 resetBindGroup = true
@@ -99,15 +101,8 @@ class BindGroupDataVk(
             val ubo = bindGroup.uboBindings[i]
             if (ubo.isUpdate(frameIdx, ubo.binding.modCount.count) || resetBindGroup) {
                 ubo.binding.buffer.buffer.useRaw { raw -> ubo.mappedBuffers[frameIdx].put(raw).flip() }
+                backend.memManager.flushBuffer(ubo.buffers[frameIdx].vkBuffer)
             }
-        }
-    }
-
-    private fun StorageTexture.checkTextureSize(commandBuffer: VkCommandBuffer) {
-        val tex = asTexture
-        val gpu = asTexture.gpuTexture
-        if (gpu == null || gpu.width != tex.width || gpu.height != tex.height || gpu.depth != tex.depth) {
-            backend.textureLoader.createStorageTexture(this, tex.width, tex.height, tex.depth, commandBuffer)
         }
     }
 
@@ -299,16 +294,25 @@ class BindGroupDataVk(
             view?.let { backend.device.destroyImageView(it) }
             sampler?.let { backend.device.destroySampler(it) }
 
-            val maxAnisotropy = if (
-                tex.mipMapping.isMipMapped &&
-                samplerSettings.minFilter == FilterMethod.LINEAR &&
-                samplerSettings.magFilter == FilterMethod.LINEAR
-            ) samplerSettings.maxAnisotropy else 1
-
             val isDepthTex = binding.layout.sampleType == TextureSampleType.DEPTH
             val isUnfilterable = binding.layout.sampleType == TextureSampleType.UNFILTERABLE_FLOAT
             val compare = if (isDepthTex) samplerSettings.compareOp.vk else VK_COMPARE_OP_ALWAYS
 
+            val maxAnisotropy = if (
+                tex.mipMapping.isMipMapped &&
+                samplerSettings.minFilter == FilterMethod.LINEAR &&
+                samplerSettings.magFilter == FilterMethod.LINEAR &&
+                samplerSettings.mipFilter == FilterMethod.LINEAR &&
+                !isUnfilterable && !isDepthTex
+            ) samplerSettings.maxAnisotropy else 1
+
+            if (isUnfilterable && (
+                samplerSettings.magFilter != FilterMethod.NEAREST ||
+                samplerSettings.minFilter != FilterMethod.NEAREST ||
+                samplerSettings.mipFilter != FilterMethod.NEAREST
+            )) {
+                logE { "Texture ${tex.name} is marked unfilterable (in bind group ${data.layout.name}), but sampler settings specify filtering" }
+            }
             sampler = backend.device.createSampler {
                 magFilter(if (isUnfilterable) VK_FILTER_NEAREST else samplerSettings.magFilter.vk)
                 minFilter(if (isUnfilterable) VK_FILTER_NEAREST else samplerSettings.minFilter.vk)
@@ -316,7 +320,11 @@ class BindGroupDataVk(
                 addressModeV(samplerSettings.addressModeV.vk)
                 addressModeW(samplerSettings.addressModeW.vk)
 
-                mipmapMode(if (tex.mipMapping.isMipMapped) VK_SAMPLER_MIPMAP_MODE_LINEAR else VK_SAMPLER_MIPMAP_MODE_NEAREST)
+                if (tex.mipMapping.isMipMapped && samplerSettings.mipFilter == FilterMethod.LINEAR) {
+                    mipmapMode( VK_SAMPLER_MIPMAP_MODE_LINEAR)
+                } else {
+                    mipmapMode( VK_SAMPLER_MIPMAP_MODE_NEAREST)
+                }
                 maxLod(VK_LOD_CLAMP_NONE)
 
                 val anisotropy = maxAnisotropy.toFloat().coerceAtMost(backend.physicalDevice.maxAnisotropy)
@@ -380,7 +388,7 @@ class BindGroupDataVk(
         }
 
         private fun checkView(stack: MemoryStack) {
-            val tex = checkNotNull(binding.storageTexture) { "Cannot create storage texture binding from null texture" }
+            val tex = checkNotNull(binding.storageTexture) { "Cannot create storage texture binding from null texture (${data.name})" }
             val image = checkNotNull(tex.asTexture.gpuTexture as ImageVk?) { "Cannot create storage texture binding from null texture" }
 
             if (boundImage == image) {
@@ -427,6 +435,7 @@ class BindGroupDataVk(
                         is Float32Buffer -> upload.useRaw { stagingBuf.mapped!!.asFloatBuffer().put(it) }
                         is MixedBuffer -> upload.useRaw { stagingBuf.mapped!!.put(it) }
                     }
+                    backend.memManager.flushBuffer(stagingBuf)
                     gpuBuffer.copyFrom(stagingBuf, passEncoderState.commandBuffer)
                 }
             }
@@ -471,6 +480,7 @@ class BindGroupDataVk(
                 )
                 if (buffer.uploadData == null) {
                     vkCmdFillBuffer(commandBuffer, gpuBuffer.vkBuffer.handle, 0L, VK_WHOLE_SIZE, 0)
+                    bufferTransferWriteBarrier(commandBuffer)
                 }
                 buffer.gpuBuffer = gpuBuffer
             }

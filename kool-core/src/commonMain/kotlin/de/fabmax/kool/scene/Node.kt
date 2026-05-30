@@ -199,11 +199,16 @@ open class Node(name: String? = null) : BaseReleasable() {
 
     fun updateModelMat(): Boolean = transform.applyToModelMat(parent?.modelMatrixData, modelMatrixData)
 
-    fun updateModelMatRecursive() {
+    fun updateModelMatRecursiveDown() {
         updateModelMat()
         for (i in children.indices) {
-            children[i].updateModelMatRecursive()
+            children[i].updateModelMatRecursiveDown()
         }
+    }
+
+    fun updateModelMatRecursiveUp() {
+        parent?.updateModelMatRecursiveUp()
+        updateModelMat()
     }
 
     /**
@@ -403,7 +408,7 @@ open class Node(name: String? = null) : BaseReleasable() {
 // intentionally not a value class to avoid continuous boxing when used as a map key
 data class NodeId(val value: Long = UniqueId.nextId())
 
-fun Node.addGroup(name: String? = null, block: Node.() -> Unit): Node {
+inline fun Node.addGroup(name: String? = null, block: Node.() -> Unit): Node {
     val tg = Node(name)
     tg.block()
     addNode(tg)

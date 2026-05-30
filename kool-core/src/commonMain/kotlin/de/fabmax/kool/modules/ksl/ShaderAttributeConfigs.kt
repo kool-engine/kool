@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.ksl
 
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ksl.KslLitShader.AmbientLight
+import de.fabmax.kool.modules.ksl.ShadowMapConfig.Companion.SHADOW_SAMPLE_PATTERN_4x4
 import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
@@ -41,6 +42,14 @@ data class BasicVertexConfig(
                 }
                 field = value
             }
+
+        fun set(other: BasicVertexConfig) {
+            isFlipBacksideNormals = other.isFlipBacksideNormals
+            maxNumberOfBones = other.maxNumberOfBones
+            morphAttributes.addAll(other.morphAttributes)
+            displacementCfg.propertySources.addAll(other.displacementCfg.propertySources)
+            modelMatrixComposition = other.modelMatrixComposition
+        }
 
         fun enableArmatureFixedNumberOfBones(fixedNumberOfBones: Int): Builder {
             this.maxNumberOfBones = fixedNumberOfBones
@@ -116,6 +125,7 @@ data class LightingConfig(
     val flipBacksideNormals: Boolean,
     val isSsao: Boolean,
     val defaultSsaoMap: Texture2d?,
+    val normalLightRange: NormalLightRange,
 ) {
     class Builder {
         var ambientLight: AmbientLight = AmbientLight.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
@@ -125,6 +135,7 @@ data class LightingConfig(
         var flipBacksideNormals = false
         var isSsao = false
         var defaultSsaoMap: Texture2d? = null
+        var normalLightRange: NormalLightRange = NormalLightRange.ZeroToOne
 
         fun enableSsao(ssaoMap: Texture2d? = null): Builder {
             isSsao = ssaoMap != null
@@ -132,12 +143,12 @@ data class LightingConfig(
             return this
         }
 
-        fun addShadowMap(shadowMap: ShadowMap, samplePattern: List<Vec2f> = ShadowMapConfig.SHADOW_SAMPLE_PATTERN_4x4): Builder {
+        fun addShadowMap(shadowMap: ShadowMap, samplePattern: List<Vec2f> = SHADOW_SAMPLE_PATTERN_4x4): Builder {
             shadowMaps += ShadowMapConfig(shadowMap, samplePattern)
             return this
         }
 
-        fun addShadowMaps(shadowMaps: Collection<ShadowMap>, samplePattern: List<Vec2f> = ShadowMapConfig.SHADOW_SAMPLE_PATTERN_4x4): Builder {
+        fun addShadowMaps(shadowMaps: Collection<ShadowMap>, samplePattern: List<Vec2f> = SHADOW_SAMPLE_PATTERN_4x4): Builder {
             this.shadowMaps += shadowMaps.map { ShadowMapConfig(it, samplePattern) }
             return this
         }
@@ -166,9 +177,15 @@ data class LightingConfig(
                 flipBacksideNormals = flipBacksideNormals,
                 isSsao = isSsao,
                 defaultSsaoMap = defaultSsaoMap,
+                normalLightRange = normalLightRange
             )
         }
     }
+}
+
+enum class NormalLightRange {
+    ZeroToOne,
+    MinusOneToOne
 }
 
 data class ShadowMapConfig(val shadowMap: ShadowMap, val samplePattern: List<Vec2f> = SHADOW_SAMPLE_PATTERN_4x4) {
@@ -189,4 +206,8 @@ data class ShadowMapConfig(val shadowMap: ShadowMap, val samplePattern: List<Vec
             }
         }
     }
+}
+
+fun List<ShadowMap>.toConfig(samplePattern: List<Vec2f> = SHADOW_SAMPLE_PATTERN_4x4): List<ShadowMapConfig> {
+    return map { ShadowMapConfig(it, samplePattern) }
 }

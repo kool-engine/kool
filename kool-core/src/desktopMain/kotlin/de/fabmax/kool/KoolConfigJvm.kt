@@ -5,7 +5,7 @@ import de.fabmax.kool.pipeline.backend.BackendProvider
 import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.pipeline.backend.vk.VkSetup
 import de.fabmax.kool.platform.WindowSubsystem
-import de.fabmax.kool.platform.glfw.GlfwWindowSubsystem
+import de.fabmax.kool.platform.sdl.SdlWindowSubsystem
 import de.fabmax.kool.util.MsdfFontInfo
 import de.fabmax.kool.util.MsdfMeta
 import kotlinx.serialization.json.Json
@@ -36,7 +36,7 @@ data class KoolConfigJvm(
     val httpCacheDir: String = "./.httpCache",
 
     val renderBackend: BackendProvider = RenderBackendVk,
-    val windowSubsystem: WindowSubsystem = GlfwWindowSubsystem,
+    val windowSubsystem: WindowSubsystem = SdlWindowSubsystem,
     val vkSetup: VkSetup? = null,
     val windowTitle: String = "Kool App",
     val windowSize: Vec2i = Vec2i(1600, 900),

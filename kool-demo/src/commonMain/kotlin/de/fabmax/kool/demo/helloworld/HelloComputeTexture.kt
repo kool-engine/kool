@@ -7,7 +7,10 @@ import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.ComputePass
+import de.fabmax.kool.pipeline.SamplerSettings
+import de.fabmax.kool.pipeline.StorageTexture2d
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.launch
@@ -55,10 +58,10 @@ class HelloComputeTexture : DemoScene("Hello Compute Texture") {
 
         // create and bind the storage texture used as compute shader output
         val storageTexture = StorageTexture2d(storageSizeX, storageSizeY, TexFormat.RGBA_F32, samplerSettings = SamplerSettings().nearest())
-        computeShader.storageTexture2d("pixelStorage", storageTexture)
+        computeShader.bindStorageTexture2d("pixelStorage", storageTexture)
 
         // animate offset position to change the colors over time
-        var offsetPos by computeShader.uniform2f("uOffset")
+        var offsetPos by computeShader.bindUniformFloat2("uOffset")
         onUpdate {
             offsetPos = Vec2f((Time.gameTime * 0.1f).toFloat(), (Time.gameTime * 0.17f).toFloat())
         }
@@ -82,13 +85,13 @@ class HelloComputeTexture : DemoScene("Hello Compute Texture") {
                 fragmentStage {
                     main {
                         // TextureSampleType.UNFILTERABLE_FLOAT is needed for WebGPU only
-                        val storage = texture2d("pixelStorage", sampleType = TextureSampleType.UNFILTERABLE_FLOAT)
+                        val storage = texture2d("pixelStorage", isUnfilterable = true)
                         colorOutput(storage.sample(uv.output).rgb, 1f.const)
                     }
                 }
             }.apply {
                 // storage textures can also be used like regular textures
-                texture2d("pixelStorage", storageTexture)
+                bindTexture2d("pixelStorage", storageTexture)
             }
         }
 

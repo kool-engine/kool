@@ -65,7 +65,7 @@ data class GltfMesh(
 
             if (positionAcc == null) {
                 logW { "MeshPrimitive without position attribute" }
-                return IndexedVertexList(VertexLayouts.Empty)
+                return IndexedVertexList(VertexLayouts.Empty, isShared = true)
             }
 
             var generateTangents = false
@@ -95,7 +95,7 @@ data class GltfMesh(
                 morphAccessors.keys.forEach { attrib -> float3(attrib) }
             }
 
-            val verts = IndexedVertexList(layout)
+            val verts = IndexedVertexList(layout, isShared = true)
             val poss = Vec3fAccessor(positionAcc)
             val nrms = if (normalAcc != null) Vec3fAccessor(normalAcc) else null
             val tans = if (tangentAcc != null) Vec4fAccessor(tangentAcc) else null

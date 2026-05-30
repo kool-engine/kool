@@ -1,5 +1,7 @@
 package de.fabmax.kool.physics2d
 
+import de.fabmax.kool.math.Vec2f
+
 data class ShapeDef(
     val material: SurfaceMaterial = SurfaceMaterial.DEFAULT,
     val density: Float = ShapeDefDefaults.density,
@@ -16,6 +18,13 @@ data class ShapeDef(
         val DEFAULT = ShapeDef()
     }
 }
+
+data class ChainDef(
+    val points: List<Vec2f>,
+    val isLoop: Boolean = false,
+    val material: SurfaceMaterial = SurfaceMaterial.DEFAULT,
+    val filter: Filter = Filter.DEFAULT,
+)
 
 data class Filter(
     val categoryBits: Long = ShapeDefDefaults.categoryBits,

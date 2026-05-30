@@ -11,9 +11,7 @@ import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
-import de.fabmax.kool.modules.ksl.lang.plus
-import de.fabmax.kool.modules.ksl.lang.rgb
-import de.fabmax.kool.modules.ksl.lang.times
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
@@ -75,27 +73,11 @@ class HelloBloom : DemoScene("Bloom") {
 
         addTextureMesh {
             generateFullscreenQuad()
-            shader = KslShader("hdr-output") {
-                val uv = interStageFloat2()
-                fullscreenQuadVertexStage(uv)
-                fragmentStage {
-                    main {
-                        val hdrInput = texture2d("hdrPass")
-                        val bloomInput = texture2d("bloom")
+            shader = bloomOutputShader().apply {
+                bindTexture2d("hdrPass", hdrPass.colorTexture)
+                bindTexture2d("bloom", bloomPass.bloomMap)
 
-                        val hdr = float3Var(sampleTexture(hdrInput, uv.output).rgb)
-                        val bloom = float3Var(sampleTexture(bloomInput, uv.output, 0f.const).rgb)
-
-                        bloom set bloom * uniformFloat1("bloomIntensity")
-                        val sdr = convertColorSpace(hdr + bloom, ColorSpaceConversion.LinearToSrgbHdr())
-                        colorOutput(sdr)
-                    }
-                }
-            }.apply {
-                texture2d("hdrPass", hdrPass.colorTexture)
-                texture2d("bloom", bloomPass.bloomMap)
-
-                var bloomIntensity by uniform1f("bloomIntensity", bloomStrength.value)
+                var bloomIntensity by bindUniformFloat1("bloomIntensity", bloomStrength.value)
                 isBloomEnabled.onChange { _, flag -> bloomIntensity = if (flag) 1f else 0f }
             }
         }
@@ -197,6 +179,24 @@ class HelloBloom : DemoScene("Bloom") {
         MenuRow {
             Text("Bloom pass".l) { labelStyle(Grow.Std) }
             Text("${(bloomGpuTime.use().inWholeMicroseconds / 1000.0).toString(3)} ms") { labelStyle() }
+        }
+    }
+}
+
+private fun bloomOutputShader() = KslShader("hdr-output") {
+    val uv = interStageFloat2()
+    fullscreenQuadVertexStage(uv)
+    fragmentStage {
+        main {
+            val hdrInput = texture2d("hdrPass")
+            val bloomInput = texture2d("bloom")
+
+            val hdr = float3Var(hdrInput.sample(uv.output).rgb)
+            val bloom = float3Var(bloomInput.sample(uv.output, 0f.const).rgb)
+
+            bloom set bloom * uniformFloat1("bloomIntensity")
+            val sdr = convertColorSpace(hdr + bloom, ColorSpaceConversion.LinearToSrgbHdr())
+            colorOutput(sdr)
         }
     }
 }

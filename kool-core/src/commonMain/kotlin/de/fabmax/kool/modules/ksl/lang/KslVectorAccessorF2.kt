@@ -15,3 +15,6 @@ val KslExpression<KslFloat2>.yx get() = float2("yx")
 val KslExpression<KslFloat2>.rr get() = float2("rr")
 val KslExpression<KslFloat2>.gg get() = float2("gg")
 val KslExpression<KslFloat2>.gr get() = float2("gr")
+
+operator fun KslExprFloat2.component1(): KslExprFloat1 = x
+operator fun KslExprFloat2.component2(): KslExprFloat1 = y

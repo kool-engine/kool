@@ -2,6 +2,7 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.ViewData
+import de.fabmax.kool.input.Input
 import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.DepthMode
@@ -57,7 +58,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         protected set
 
     val proj = MutableMat4f()
-    private val lazyInvProj = LazyMat4f { proj.invert(it) }
+    val lazyInvProj = LazyMat4f { proj.invert(it) }
     val invProj: Mat4f get() = lazyInvProj.get()
 
     val dataF = DataF()
@@ -353,6 +354,18 @@ abstract class Camera(name: String = "camera") : Node(name) {
             lazyInvView.isDirty = true
             lazyInvViewProj.isDirty = true
         }
+    }
+}
+
+context(scene: Scene)
+fun Camera.computeMousePickRay(
+    result: RayF = RayF(),
+    pointer: Pointer = Input.pointer.primaryPointer,
+): RayF? {
+    return if (computePickRay(result, pointer, scene.mainRenderPass.viewport)) {
+        result
+    } else {
+        null
     }
 }
 

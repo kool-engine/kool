@@ -50,7 +50,7 @@ class CenterCircleHandle(
             handleTransform.markDirty()
 
             // update cached model matrices of handle and child meshes
-            updateModelMatRecursive()
+            updateModelMatRecursiveDown()
         }
     }
 

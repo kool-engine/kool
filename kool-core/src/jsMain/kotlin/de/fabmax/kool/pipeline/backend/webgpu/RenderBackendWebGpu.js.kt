@@ -99,6 +99,12 @@ actual class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
             logI { "Enabling rg11b10ufloat-renderable feature" }
             requiredFeatures.add("rg11b10ufloat-renderable")
         }
+        if ("texture-formats-tier1" in availableFeatures) {
+            logI { "Enabling texture-formats-tier1 feature" }
+            requiredFeatures.add("texture-formats-tier1")
+        } else {
+            logE { "Required WebGPU feature texture-formats-tier1 is missing" }
+        }
 
         try {
             val deviceDesc = GPUDeviceDescriptor(requiredFeatures)

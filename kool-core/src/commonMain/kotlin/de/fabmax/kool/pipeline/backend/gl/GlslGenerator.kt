@@ -284,7 +284,7 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
         return "imageSize(${textureSize.storageTex.generateExpression()})"
     }
 
-    override fun imageTextureRead(expression: KslImageTextureLoad<*>): String {
+    override fun imageTextureRead(expression: KslImageTextureLoad<*, *>): String {
         val sampler = expression.sampler.generateExpression()
         val isCompatSampler = hints.compat1dSampler &&
                 expression.sampler.expressionType is KslSampler1dType &&
@@ -806,6 +806,13 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
             KslColorSamplerCube -> "samplerCube"
             KslColorSampler2dArray -> "sampler2DArray"
             KslColorSamplerCubeArray -> "samplerCubeArray"
+
+            KslIntSampler2d -> "isampler2D"
+            KslIntSampler2dArray -> "isampler2DArray"
+            KslIntSampler3d -> "isampler3D"
+            KslUintSampler2d -> "usampler2D"
+            KslUintSampler2dArray -> "usampler2DArray"
+            KslUintSampler3d -> "usampler3D"
 
             KslDepthSampler2d -> "sampler2DShadow"
             KslDepthSamplerCube -> "samplerCubeShadow"

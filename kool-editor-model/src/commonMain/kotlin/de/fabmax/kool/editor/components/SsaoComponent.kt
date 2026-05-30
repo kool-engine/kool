@@ -6,6 +6,9 @@ import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.SsaoComponentData
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ao.AoPipeline
+import de.fabmax.kool.pipeline.ao.AoRadius
+import de.fabmax.kool.pipeline.ao.ForwardAoPipeline
+import de.fabmax.kool.pipeline.ao.LegacyAoPipeline
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.PerspectiveCamera
 
@@ -49,7 +52,7 @@ class SsaoComponent(
     }
 
     override fun updateSceneCamera(camera: Camera) {
-        val fwdPipeline = aoPipeline as? AoPipeline.ForwardAoPipeline ?: return
+        val fwdPipeline = aoPipeline as? ForwardAoPipeline ?: return
         val perspectiveCam = camera as? PerspectiveCamera ?: return
         fwdPipeline.proxyCamera.trackedCam = perspectiveCam
     }
@@ -57,11 +60,11 @@ class SsaoComponent(
     private fun applySettings(ssaoSettings: SsaoComponentData) {
         val radiusSign = if (ssaoSettings.isRelativeRadius) -1f else 1f
         aoPipeline?.apply {
-            mapSize = ssaoSettings.mapSize
-            kernelSz = ssaoSettings.samples
-            radius = ssaoSettings.radius * radiusSign
+            (this as? LegacyAoPipeline)?.mapSize = ssaoSettings.mapSize
+            kernelSize = ssaoSettings.samples
+            radius = AoRadius(ssaoSettings.radius * radiusSign)
             strength = ssaoSettings.strength
-            power = ssaoSettings.power
+            falloff = ssaoSettings.power
         }
     }
 

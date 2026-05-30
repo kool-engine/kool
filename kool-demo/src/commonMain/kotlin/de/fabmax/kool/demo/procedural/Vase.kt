@@ -3,7 +3,7 @@ package de.fabmax.kool.demo.procedural
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.rad
-import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
+import de.fabmax.kool.pipeline.deferred2.gbufferShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.geometry.IndexedVertexList
@@ -25,7 +25,7 @@ class Vase : Mesh<VertexLayouts.PositionNormalColor>(IndexedVertexList(VertexLay
             geometry.removeDegeneratedTriangles()
             geometry.generateNormals()
         }
-        shader = deferredKslPbrShader {
+        shader = gbufferShader {
             color { vertexColor() }
             roughness(0.3f)
         }
@@ -156,5 +156,4 @@ class Vase : Mesh<VertexLayouts.PositionNormalColor>(IndexedVertexList(VertexLay
             }
         }
     }
-
 }

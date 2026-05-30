@@ -3,6 +3,7 @@
 package de.fabmax.kool.input
 
 import de.fabmax.kool.Gamepad
+import de.fabmax.kool.GamepadHapticActuatorEffect
 import de.fabmax.kool.toFloat
 import de.fabmax.kool.util.logI
 import kotlin.js.get
@@ -71,6 +72,10 @@ class ControllerWeb(private var gamepad: Gamepad) : Controller(gamepad.index) {
                 axisStates[i] = gamepad.axes[i].toFloat()
             }
         }
+    }
+
+    override fun rumble(intensityLow: Float, intensityHigh: Float, durationMillis: Int) {
+        gamepad.vibrationActuator.playEffect("dual-rumble", GamepadHapticActuatorEffect(durationMillis, intensityLow, intensityHigh))
     }
 
     private fun Gamepad.getButtonState(index: Int): Boolean {
