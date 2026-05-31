@@ -34,16 +34,14 @@ class GbufferPass(
     val objectIds get() = colorTextures[3]
     val depth get() = depthTexture!!
 
-    internal val alphaMeshes = mutableListOf<Mesh<*>>()
-    internal val lightMeshes = mutableListOf<Mesh<*>>()
+    internal val lightingPassMeshes = mutableListOf<Mesh<*>>()
 
     init {
         camera = pipeline.camera
         onAfterCollectDrawCommands += { viewData ->
             val upload = pipeline.reprojectMatrixComputePass.uploadData.newVal
             upload.viewProjMat.set(viewData.drawQueue.viewProjMatF)
-            alphaMeshes.clear()
-            lightMeshes.clear()
+            lightingPassMeshes.clear()
 
             // This is a bit of a hack to prevent modifying data while it is uploaded to oldModelMats binding during
             // the first frame. Later frames do not upload data to oldModelMats because of buffer swapping. Therefore,
@@ -58,41 +56,34 @@ class GbufferPass(
             while (it.hasNext()) {
                 val cmd = it.next()
                 val mesh = cmd.mesh
-                if (!mesh.isOpaque) {
-                    alphaMeshes += cmd.mesh
-                    it.remove()
-                    drawQueue.recycleDrawCommand(cmd)
+                when (val shader = mesh.shader) {
+                    is DeferredObjectShader -> {
+                        val idRange = pipeline.idAllocator.getIdRange(cmd.mesh)
+                        val bufferPos = idRange.from * 16
+                        shader.objectId = idRange.from
 
-                } else {
-                    when (val shader = mesh.shader) {
-                        is GbufferShader -> {
-                            val idRange = pipeline.idAllocator.getIdRange(cmd.mesh)
-                            val bufferPos = idRange.from * 16
-                            shader.objectId = idRange.from
-
-                            if (canUpload) {
-                                upload.modelMats.limit = max(upload.modelMats.limit, bufferPos + idRange.size * 16)
-                                val instances = mesh.instances
-                                if (instances != null) {
-                                    val matrixExtractor = shader.config.instanceModelMatExtractor ?: DefaultInstanceModelMatrixExtractor
-                                    if (instances.numInstances > idRange.size) {
-                                        logE { "Mesh ${mesh.name} number of instances exceeds ID range: ${instances.numInstances} > ${idRange.size}" }
-                                    }
-                                    for (i in 0 until instances.numInstances.coerceAtMost(idRange.size)) {
-                                        upload.modelMats.position = bufferPos + i * 16
-                                        matrixExtractor.getModelMatrix(i, mesh, upload.modelMats)
-                                    }
-                                } else {
-                                    upload.modelMats.position = bufferPos
-                                    cmd.modelMatF.putTo(upload.modelMats)
+                        if (canUpload) {
+                            upload.modelMats.limit = max(upload.modelMats.limit, bufferPos + idRange.size * 16)
+                            val instances = mesh.instances
+                            if (instances != null) {
+                                val matrixExtractor = shader.instanceModelMatExtractor ?: DefaultInstanceModelMatrixExtractor
+                                if (instances.numInstances > idRange.size) {
+                                    logE { "Mesh ${mesh.name} number of instances exceeds ID range: ${instances.numInstances} > ${idRange.size}" }
                                 }
+                                for (i in 0 until instances.numInstances.coerceAtMost(idRange.size)) {
+                                    upload.modelMats.position = bufferPos + i * 16
+                                    matrixExtractor.getModelMatrix(i, mesh, upload.modelMats)
+                                }
+                            } else {
+                                upload.modelMats.position = bufferPos
+                                cmd.modelMatF.putTo(upload.modelMats)
                             }
                         }
-                        is DeferredLightShader -> {
-                            lightMeshes += cmd.mesh
-                            it.remove()
-                            drawQueue.recycleDrawCommand(cmd)
-                        }
+                    }
+                    else -> {
+                        lightingPassMeshes += cmd.mesh
+                        it.remove()
+                        drawQueue.recycleDrawCommand(cmd)
                     }
                 }
             }

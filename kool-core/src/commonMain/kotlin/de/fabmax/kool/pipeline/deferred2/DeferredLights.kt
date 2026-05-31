@@ -54,7 +54,7 @@ class DeferredLights(
     fun updateLightInstanceData() {
         pointLightInstances.clear()
         pointLightInstances.addInstances(pointLights.size) { buf ->
-            for (i in 0 until pointLights.size) {
+            for (i in pointLights.indices) {
                 buf.put { encodePoint(pointLights[i]) }
             }
         }
@@ -62,7 +62,7 @@ class DeferredLights(
             for (lights in spotLightMeshes.values) {
                 lights.instances.clear()
                 lights.instances.addInstances(lights.lights.size) { buf ->
-                    for (i in 0 until lights.lights.size) {
+                    for (i in lights.lights.indices) {
                         buf.put { encodeSpot(lights.lights[i]) }
                     }
                 }

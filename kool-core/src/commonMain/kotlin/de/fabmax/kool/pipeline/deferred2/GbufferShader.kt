@@ -20,7 +20,12 @@ fun gbufferShader(block: GbufferShaderConfig.Builder.() -> Unit): GbufferShader 
     return GbufferShader(cfg)
 }
 
-class GbufferShader(val config: GbufferShaderConfig) : KslShader("deferred2-gbuffer-shader") {
+interface DeferredObjectShader {
+    var objectId: Int
+    val instanceModelMatExtractor: InstanceModelMatrixExtractor?
+}
+
+class GbufferShader(val config: GbufferShaderConfig) : KslShader("deferred2-gbuffer-shader"), DeferredObjectShader {
     var color: Color by bindColorUniform(config.colorCfg)
     var colorMap: Texture2d? by bindColorTexture(config.colorCfg)
 
@@ -42,7 +47,10 @@ class GbufferShader(val config: GbufferShaderConfig) : KslShader("deferred2-gbuf
     var roughness: Float by bindPropertyUniform(config.roughnessCfg)
     var roughnessMap: Texture2d? by bindPropertyTexture(config.roughnessCfg)
 
-    var objectId: Int by bindUniformInt1("uObjectId")
+    var customId: Int by bindUniformInt1("uCustomId", config.customId)
+
+    override var objectId: Int by bindUniformInt1("uObjectId")
+    override val instanceModelMatExtractor: InstanceModelMatrixExtractor? get() = config.instanceModelMatExtractor
 
     init {
         pipelineConfig = PipelineConfig(blendMode = BlendMode.DISABLED, cullMethod = config.cullMethod)
@@ -61,7 +69,8 @@ class GbufferShader(val config: GbufferShaderConfig) : KslShader("deferred2-gbuf
         vertexStage {
             main {
                 val uObjectId = uniformInt1("uObjectId")
-                objectId.input set uObjectId + inInstanceIndex.toInt1()
+                val uCustomId = uniformInt1("uCustomId")
+                objectId.input set ((uObjectId + inInstanceIndex.toInt1()) or uCustomId)
 
                 val vertexBlock = vertexTransformBlock(config.vertexCfg) {
                     inLocalPos(vertexAttrib(VertexLayouts.Position.position))
@@ -149,6 +158,7 @@ class GbufferShaderConfig(builder: Builder) {
 
     val alphaMode: AlphaMode = builder.alphaMode
     val cullMethod: CullMethod = builder.cullMethod
+    val customId: Int = builder.customId
 
     val modelCustomizer: (KslProgram.() -> Unit)? = builder.modelCustomizer
 
@@ -166,6 +176,7 @@ class GbufferShaderConfig(builder: Builder) {
 
         var alphaMode: AlphaMode = AlphaMode.Blend
         var cullMethod: CullMethod = CullMethod.CULL_BACK_FACES
+        var customId: Int = 0
 
         var modelCustomizer: (KslProgram.() -> Unit)? = null
 

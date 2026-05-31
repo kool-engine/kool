@@ -44,7 +44,7 @@ class PbrMaterialBlock(
 
     val inAmbientOrientation = inMat3("inAmbientOrientation")
     val inIrradiance = inFloat3("inIrradiance")
-    val inAoFactor = inFloat1("inAoFactor", 0f.const)
+    val inAoFactor = inFloat1("inAoFactor", 1f.const)
 
     val outSpecular = outFloat3("outSpecular")
     val outSpecularFactor = outFloat3("outSpecularFactor")

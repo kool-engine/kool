@@ -27,7 +27,9 @@ class Deferred2Pipeline(
     val maxGlobalLights: Int = 1,
     var renderScale: Float = 1f,
     var tsaa: List<Vec2f> = TSAA_4,
-    maxObjects: Int = 16384
+    maxObjects: Int = 16384,
+    addDefaultSkybox: Boolean = true,
+    lightingMod: (KslProgram.() -> Unit)? = null,
 ) {
     val size: Vec2i get() = Vec2i(
         (scene.mainRenderPass.viewport.width * renderScale).toInt().coerceAtLeast(16),
@@ -50,7 +52,12 @@ class Deferred2Pipeline(
         initialSize = size,
         distFormat = TexFormat.R_F32,
     )
-    val lightingPass = LightingPass(size = size, pipeline = this)
+    val lightingPass = LightingPass(
+        size = size,
+        pipeline = this,
+        addDefaultSkybox = addDefaultSkybox,
+        lightingMod = lightingMod,
+    )
     val filterPass = TemporalFilterPass(size = size, pipeline = this)
 
     private val swapListeners = BufferedList<() -> Unit>()
@@ -59,6 +66,7 @@ class Deferred2Pipeline(
     init {
         aoPass.kernelSize = 32 / tsaa.size.coerceAtLeast(2)
         aoPass.temporalKernels = tsaa.size.coerceAtLeast(1)
+        aoPass.resize(size.x, size.y)
 
         scene.addComputePass(reprojectMatrixComputePass)
         scene.addOffscreenPass(gbuffers.a)

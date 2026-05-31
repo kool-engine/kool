@@ -58,6 +58,7 @@ class BloomPass(
 
     init {
         logD { "Using $levels bloom levels, in place: $inPlace" }
+        makeDownSampleFirstPass()
         makeDownSampleLowerPasses()
         makeUpSamplePasses()
         bloomMap.releaseWith(this)
@@ -253,7 +254,7 @@ class BloomPass(
     private fun levelsForSize(width: Int, height: Int): Int {
         var mipLevels = 1
         var s = max(width, height)
-        while (s >= 16) {
+        while (s >= 8) {
             mipLevels++
             s /= 2
         }
