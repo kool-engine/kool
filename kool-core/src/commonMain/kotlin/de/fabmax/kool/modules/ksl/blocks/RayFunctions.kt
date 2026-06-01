@@ -62,11 +62,16 @@ class RayPointDistance(parentScope: KslScopeBuilder) :
         val point = paramFloat3("point")
 
         body {
-            val w = float3Var(point - rayOrigin)
-            val c1 = float1Var(dot(w, rayDir))
-            val c2 = float1Var(dot(rayDir, rayDir))
-            val pn = float3Var(rayOrigin + rayDir * (c1 / c2))
-            float4Value(pn, length(pn - point) * sign(c1))
+            val result by 0f.const4
+            val l by (dot(point, rayDir) - dot(rayOrigin, rayDir)) / dot(rayDir, rayDir)
+            `if`(l gt 0f.const) {
+                result.xyz set rayOrigin + rayDir * l
+                result.w set length(result.xyz - point)
+            }.`else` {
+                result.xyz set rayOrigin
+                result.w set length(rayOrigin - point)
+            }
+            result
         }
     }
 
