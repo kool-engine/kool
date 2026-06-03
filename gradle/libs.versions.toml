@@ -21,7 +21,7 @@ box2d-wasm = "1.0.0"
 wgpu4k = "0.1.1"
 webgpu-ktypes = "0.0.8"
 rococoa = "0.0.1"
-jna = "5.18.1"
+jna = "5.19.0"
 
 [libraries]
 kotlin-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
