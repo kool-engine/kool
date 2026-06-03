@@ -40,7 +40,7 @@ class GbufferPass(
         camera = pipeline.camera
         onAfterCollectDrawCommands += { viewData ->
             val upload = pipeline.reprojectMatrixComputePass.uploadData.newVal
-            upload.viewProjMat.set(viewData.drawQueue.viewProjMatF)
+            upload.viewProjMat.set(pipeline.viewProjNoTsaa)
             lightingPassMeshes.clear()
 
             // This is a bit of a hack to prevent modifying data while it is uploaded to oldModelMats binding during

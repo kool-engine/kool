@@ -60,6 +60,9 @@ class Deferred2Pipeline(
     )
     val filterPass = TemporalFilterPass(size = size, pipeline = this)
 
+    internal val viewProjNoTsaa = MutableMat4f()
+    internal val invViewProjNoTsaa = MutableMat4f()
+
     private val swapListeners = BufferedList<() -> Unit>()
     private val resizeListeners = BufferedList<(Vec2i) -> Unit>()
 
@@ -86,6 +89,9 @@ class Deferred2Pipeline(
 
         val offsetMat = MutableMat4f()
         camera.onCameraUpdated += {
+            viewProjNoTsaa.set(camera.viewProj)
+            invViewProjNoTsaa.set(camera.invViewProj)
+
             val tsaa = tsaa
             if (tsaa.isNotEmpty()) {
                 val offset = tsaa[Time.frameCount % tsaa.size]
@@ -93,7 +99,9 @@ class Deferred2Pipeline(
                 val height = it.viewport.height
                 offsetMat.setIdentity().translate(offset.x / width, offset.y / height, 0f).mul(camera.proj)
                 camera.proj.set(offsetMat)
+                camera.proj.mul(camera.view, camera.dataF.viewProj)
                 camera.lazyInvProj.isDirty = true
+                camera.dataF.lazyInvViewProj.isDirty = true
             }
         }
 
@@ -122,7 +130,7 @@ class Deferred2Pipeline(
             set(it.view, camera.view)
             set(it.viewProj, camera.viewProj)
             set(it.invView, camera.invView)
-            set(it.invViewProj, camera.invViewProj)
+            set(it.invViewProj, invViewProjNoTsaa)
             set(it.oldViewProj, reprojectMatrixComputePass.uploadData.oldVal.viewProjMat)
             set(it.camPosition, camera.globalPos)
             set(it.camNear, camera.clipNear)
