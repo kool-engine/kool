@@ -23,7 +23,6 @@ fun FilePickerOptions(defaultFileName: String?, filterList: List<FileFilterItem>
         accept[it.mimeType.value] = it.fileExtensions.toTypedArray()
         type["accept"] = accept
         types.push(type)
-        Unit
     }
     return opts.unsafeCast<FilePickerOptions>()
 }
