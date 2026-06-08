@@ -12,6 +12,7 @@ import de.fabmax.kool.pipeline.PipelineConfig
 import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.util.Color
 
+@Suppress("DEPRECATION")
 class DeferredOutputShader(cfg: DeferredPipelineConfig, deferredPipeline: DeferredPipeline) :
     KslShader(
         Model(cfg),

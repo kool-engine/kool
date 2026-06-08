@@ -14,6 +14,8 @@ import de.fabmax.kool.util.*
 import kotlin.math.min
 import kotlin.math.roundToInt
 
+@Suppress("DEPRECATION")
+@Deprecated("Use Deferred2Pipeline instead")
 class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
 
     var renderResolution = 1f

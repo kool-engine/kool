@@ -47,6 +47,8 @@ interface AoPipeline : Releasable {
             createForwardLegacy(scene, camera, drawNode)
         }
 
+        @Suppress("DEPRECATION")
+        @Deprecated("Use Deferred2Pipeline instead")
         fun createDeferred(deferredPipeline: DeferredPipeline) = DeferredAoPipeline(deferredPipeline)
 
         fun generateAoSampleDirs(numDirs: Int, numTemporal: Int = 1): List<Vec3f> {

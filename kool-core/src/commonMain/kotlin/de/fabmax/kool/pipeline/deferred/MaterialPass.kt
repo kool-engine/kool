@@ -8,6 +8,7 @@ import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.PerspectiveProxyCam
 import de.fabmax.kool.util.Color
 
+@Suppress("DEPRECATION")
 class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
     OffscreenPass2d(
         drawNode = pipeline.sceneContent,

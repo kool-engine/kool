@@ -124,6 +124,8 @@ class ForwardAoPipeline(val scene: Scene, camera: PerspectiveCamera, drawNode: N
     }
 }
 
+@Suppress("DEPRECATION")
+@Deprecated("Use Deferred2Pipeline instead")
 class DeferredAoPipeline(val deferredPipeline: DeferredPipeline) : LegacyAoPipeline(), DeferredPassSwapListener {
     override val aoPass: AmbientOcclusionPass
     override val denoisePass: AoDenoisePass
