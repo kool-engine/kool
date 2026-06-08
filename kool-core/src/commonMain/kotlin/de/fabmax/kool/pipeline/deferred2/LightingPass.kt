@@ -291,7 +291,7 @@ fun KslScopeBuilder.screenReflect(
             val step by baseDist * 0.025f.const + noise.x * 0.01f.const
             val prevStep by 0f.const
             val stepScale by 1f.const
-            val directionFac by abs(dot(rayDir, normalize(origin)))
+            val directionFac by max(abs(dot(rayDir, normalize(origin))), 0.01f.const)
 
             repeat(16.const) {
                 val prevStepSize by abs(step - prevStep)
@@ -389,6 +389,9 @@ fun KslScopeBuilder.screenReflect(
         noise set noise13(noise.x)
     }
 
-    reflectionColorOut set reflectionColorOut / reflectionWeight
+    val result by reflectionColorOut / reflectionWeight
+    `if`(none(isNan(result))) {
+        reflectionColorOut set result
+    }
     return reflectionColorOut
 }
