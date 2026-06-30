@@ -14,6 +14,6 @@ dependencies {
     implementation(libs.plugindep.kotlin.atomicfu)
     implementation(libs.plugindep.kotlin.jsplainobjs)
     implementation(libs.plugindep.dokka)
-    implementation(libs.plugindep.android.library)
+    implementation(libs.plugindep.android.kmp.library)
     implementation(libs.plugindep.maven.publish)
 }

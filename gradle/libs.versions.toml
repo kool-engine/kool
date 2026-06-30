@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.2"
+agp = "9.2.1"
 compose = "1.11.1"
 compose-mini = "0.0.1"
 kotlin = "2.4.0"
@@ -21,7 +21,7 @@ box2d-wasm = "1.0.0"
 wgpu4k = "0.1.1"
 webgpu-ktypes = "0.0.8"
 rococoa = "0.0.1"
-jna = "5.19.0"
+jna = "5.19.1"
 
 [libraries]
 kotlin-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
@@ -72,7 +72,7 @@ plugindep-kotlin-serialization = { group = "org.jetbrains.kotlin", name = "kotli
 plugindep-kotlin-atomicfu = { group = "org.jetbrains.kotlin", name = "atomicfu", version.ref = "kotlin" }
 plugindep-kotlin-jsplainobjs = { module = "org.jetbrains.kotlin.plugin.js-plain-objects:org.jetbrains.kotlin.plugin.js-plain-objects.gradle.plugin", version.ref = "kotlin" }
 plugindep-dokka = { group = "org.jetbrains.dokka", name = "dokka-gradle-plugin", version.ref = "kotlin-dokka" }
-plugindep-android-library = { group = "com.android.library", name = "com.android.library.gradle.plugin", version.ref = "agp" }
+plugindep-android-kmp-library = { group = "com.android.kotlin.multiplatform.library", name = "com.android.kotlin.multiplatform.library.gradle.plugin", version.ref = "agp" }
 plugindep-maven-publish = { group = "com.vanniktech", name = "gradle-maven-publish-plugin", version = "0.37.0" }
 
 [plugins]

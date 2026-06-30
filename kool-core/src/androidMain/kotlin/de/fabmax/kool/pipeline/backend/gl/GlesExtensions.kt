@@ -14,9 +14,11 @@ import dalvik.annotation.optimization.CriticalNative
  */
 object GlesExtensions {
 
-    init {
-        System.loadLibrary("koolandroidnative")
-    }
+// todo: Move this into a separate library. Android native code isn't supported anymore for kotlin multiplatform projects.
+
+//    init {
+//        System.loadLibrary("koolandroidnative")
+//    }
 
     // https://registry.khronos.org/OpenGL/extensions/EXT/EXT_clip_control.txt
 
@@ -27,11 +29,11 @@ object GlesExtensions {
     const val CLIP_ORIGIN_EXT: Int = 0x935C
     const val CLIP_DEPTH_MODE_EXT: Int = 0x935D
 
-    external fun enableEXTclipControl(): Boolean
+//    external fun enableEXTclipControl(): Boolean
 
-    @JvmStatic
-    @CriticalNative
-    external fun clipControl(origin: Int, depth: Int)
+//    @JvmStatic
+//    @CriticalNative
+//    external fun clipControl(origin: Int, depth: Int)
 
     // https://registry.khronos.org/OpenGL/extensions/EXT/EXT_disjoint_timer_query.txt
 
@@ -43,17 +45,17 @@ object GlesExtensions {
     const val TIMESTAMP_EXT: Int = 0x8E28
     const val GPU_DISJOINT_EXT: Int = 0x8FBB
 
-    external fun enableEXTdisjointTimerQuery(): Boolean
+//    external fun enableEXTdisjointTimerQuery(): Boolean
 
-    @JvmStatic
-    @CriticalNative
-    external fun queryCounter(id: Int, target: Int)
+//    @JvmStatic
+//    @CriticalNative
+//    external fun queryCounter(id: Int, target: Int)
 
-    @JvmStatic
-    @CriticalNative
-    external fun getQueryObjecti64(id: Int, pname: Int): Long
+//    @JvmStatic
+//    @CriticalNative
+//    external fun getQueryObjecti64(id: Int, pname: Int): Long
 
-    @JvmStatic
-    @CriticalNative
-    external fun getQueryObjectui64(id: Int, pname: Int): Long
+//    @JvmStatic
+//    @CriticalNative
+//    external fun getQueryObjectui64(id: Int, pname: Int): Long
 }

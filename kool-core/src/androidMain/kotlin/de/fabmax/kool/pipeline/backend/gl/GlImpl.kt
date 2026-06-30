@@ -201,7 +201,7 @@ object GlImpl: GlApi {
     override fun clearBufferfv(buffer: Int, drawBuffer: Int, values: Float32Buffer) = values.useRaw { glClearBufferfv(buffer, drawBuffer, it) }
     override fun clearColor(r: Float, g: Float, b: Float, a: Float) = glClearColor(r, g, b, a)
     override fun clearDepth(depth: Float) = glClearDepthf(depth)
-    override fun clipControl(origin: Int, depth: Int) = GlesExtensions.clipControl(origin, depth)
+    override fun clipControl(origin: Int, depth: Int) = TODO("GlesExtensions.clipControl(origin, depth)")
     override fun createBuffer(): GlBuffer = GlBuffer(receiveInt { glGenBuffers(1, it) })
     override fun createFramebuffer(): GlFramebuffer = GlFramebuffer(receiveInt { glGenFramebuffers(1, it) })
     override fun createProgram(): GlProgram = GlProgram(glCreateProgram())
@@ -242,7 +242,7 @@ object GlImpl: GlApi {
     override fun getProgramInfoLog(program: GlProgram): String = glGetProgramInfoLog(program.handle)
     override fun getProgramParameter(program: GlProgram, param: Int): Int = receiveInt { glGetProgramiv(program.handle, param, it) }
     override fun getQueryParameter(query: GlQuery, param: Int): Any = receiveInt { glGetQueryObjectuiv(query.handle, param, it) }
-    override fun getQueryParameterU64(query: GlQuery, param: Int): Long = GlesExtensions.getQueryObjectui64(query.handle, param)
+    override fun getQueryParameterU64(query: GlQuery, param: Int): Long = TODO("GlesExtensions.getQueryObjectui64(query.handle, param)")
     override fun getShaderInfoLog(shader: GlShader): String = glGetShaderInfoLog(shader.handle)
     override fun getShaderParameter(shader: GlShader, param: Int): Int = receiveInt { glGetShaderiv(shader.handle, param, it) }
     override fun getUniformBlockIndex(program: GlProgram, uniformBlockName: String): Int = glGetUniformBlockIndex(program.handle, uniformBlockName)
@@ -251,7 +251,7 @@ object GlImpl: GlApi {
     override fun lineWidth(width: Float) = glLineWidth(width)
     override fun linkProgram(program: GlProgram) = glLinkProgram(program.handle)
     override fun memoryBarrier(barriers: Int) = glMemoryBarrier(barriers)
-    override fun queryCounter(query: GlQuery, target: Int) = GlesExtensions.queryCounter(query.handle, target)
+    override fun queryCounter(query: GlQuery, target: Int) = TODO("GlesExtensions.queryCounter(query.handle, target)")
     override fun readBuffer(src: Int) = glReadBuffer(src)
     override fun renderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int) = glRenderbufferStorage(target, internalformat, width, height)
     override fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int) = glRenderbufferStorageMultisample(target, samples, internalformat, width, height)
@@ -308,17 +308,17 @@ object GlImpl: GlApi {
             logD { "Anisotropic filtering available, max anisotropy: ${f[0]}" }
         }
 
-        var hasTimestampQuery = false
-        if ("GL_EXT_disjoint_timer_query" in extensions) {
-            hasTimestampQuery = GlesExtensions.enableEXTdisjointTimerQuery()
-            logD { "Enabled extension GL_EXT_disjoint_timer_query: $hasTimestampQuery" }
-        }
+        val hasTimestampQuery = false
+//        if ("GL_EXT_disjoint_timer_query" in extensions) {
+//            hasTimestampQuery = GlesExtensions.enableEXTdisjointTimerQuery()
+//            logD { "Enabled extension GL_EXT_disjoint_timer_query: $hasTimestampQuery" }
+//        }
 
-        var hasClipControl = false
-        if ("GL_EXT_clip_control" in extensions) {
-            hasClipControl = GlesExtensions.enableEXTclipControl()
-            logD { "Enabled extension GL_EXT_clip_control: $hasClipControl" }
-        }
+        val hasClipControl = false
+//        if ("GL_EXT_clip_control" in extensions) {
+//            hasClipControl = GlesExtensions.enableEXTclipControl()
+//            logD { "Enabled extension GL_EXT_clip_control: $hasClipControl" }
+//        }
 
         val maxTexUnits = getInteger(GL_MAX_TEXTURE_IMAGE_UNITS)
         val canFastCopyTextures = false

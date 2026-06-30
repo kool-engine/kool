@@ -21,7 +21,7 @@ tasks.register<UnCommentTask>("disableAndroidPlatform") {
     }
 
     commentLines += "alias(libs.plugins.androidLibrary)"
-    commentLines += "id(\"com.android.library\")"
+    commentLines += "id(\"com.android.kotlin.multiplatform.library\")"
     commentBlocks += "android"
 }
 
@@ -34,6 +34,6 @@ tasks.register<UnCommentTask>("enableAndroidPlatform") {
     }
 
     uncommentLines += "alias(libs.plugins.androidLibrary)"
-    uncommentLines += "id(\"com.android.library\")"
+    uncommentLines += "id(\"com.android.kotlin.multiplatform.library\")"
     uncommentBlocks += "android"
 }

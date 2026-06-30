@@ -49,20 +49,6 @@ kotlin {
     }
 }
 
-//android {
-//    externalNativeBuild {
-//        cmake {
-//            path = file("src/androidMain/cpp/CMakeLists.txt")
-//            version = "3.22.1"
-//        }
-//    }
-//}
-
-tasks["clean"].dependsOn("deleteExtras")
-tasks.register<Delete>("deleteExtras") {
-    delete("${project.projectDir}/.cxx")
-}
-
 tasks.register<GenerateVariantsFromFloatPrototype>("generateDoubleAndIntVariants") {
     filesToUpdate = kotlin.sourceSets.findByName("commonMain")?.kotlin
         ?.sourceDirectories
