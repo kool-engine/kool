@@ -40,7 +40,7 @@ object PlatformInputAndroid : PlatformInput, View.OnTouchListener, View.OnKeyLis
             val imm = KoolSystem.configAndroid.appContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             ctx.surfaceView.requestFocus()
             @Suppress("DEPRECATION")
-            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
+            imm.hideSoftInputFromWindow(ctx.surfaceView.windowToken, 0)
         }
     }
 
