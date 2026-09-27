@@ -6,7 +6,7 @@ plugins {
 kotlin {
 //    android {
 //        namespace = "de.fabmax.kool"
-//        compileSdk = 34
+//        compileSdk = 36
 //        minSdk = 24
 //        compilerOptions {
 //            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
