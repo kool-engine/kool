@@ -3,8 +3,6 @@
 package physx.prototypes
 
 import physx.*
-import kotlin.js.JsAny
-import kotlin.js.js
 
 val NativeArrayHelpers: NativeArrayHelpers = NativeArrayHelpers(PhysXJsLoader.physXJs)
 private fun NativeArrayHelpers(module: JsAny): NativeArrayHelpers = js("module.NativeArrayHelpers.prototype")

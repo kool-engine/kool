@@ -5,9 +5,6 @@
 
 package physx
 
-import kotlin.js.JsAny
-import kotlin.js.js
-
 external interface SupportFunctions : JsAny, DestroyableNative {
     /**
      * Native object address.
@@ -1631,6 +1628,16 @@ external interface PxOmniPvd : JsAny, DestroyableNative {
      */
     fun startSampling(): Boolean
 
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun stopSampling(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isSampling(): Boolean
+
     fun release()
 
 }
@@ -1648,7 +1655,10 @@ value class PxVisualizationParameterEnum private constructor(val value: Int) {
         val eCONTACT_POINT: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PxVisualizationParameterEnum_eCONTACT_POINT(PhysXJsLoader.physXJs))
         val eCONTACT_NORMAL: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PxVisualizationParameterEnum_eCONTACT_NORMAL(PhysXJsLoader.physXJs))
         val eCONTACT_ERROR: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PxVisualizationParameterEnum_eCONTACT_ERROR(PhysXJsLoader.physXJs))
-        val eCONTACT_FORCE: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PxVisualizationParameterEnum_eCONTACT_FORCE(PhysXJsLoader.physXJs))
+        val eCONTACT_IMPULSE: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PxVisualizationParameterEnum_eCONTACT_IMPULSE(PhysXJsLoader.physXJs))
+        val eFRICTION_POINT: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PxVisualizationParameterEnum_eFRICTION_POINT(PhysXJsLoader.physXJs))
+        val eFRICTION_NORMAL: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PxVisualizationParameterEnum_eFRICTION_NORMAL(PhysXJsLoader.physXJs))
+        val eFRICTION_IMPULSE: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PxVisualizationParameterEnum_eFRICTION_IMPULSE(PhysXJsLoader.physXJs))
         val eACTOR_AXES: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PxVisualizationParameterEnum_eACTOR_AXES(PhysXJsLoader.physXJs))
         val eCOLLISION_AABBS: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PxVisualizationParameterEnum_eCOLLISION_AABBS(PhysXJsLoader.physXJs))
         val eCOLLISION_SHAPES: PxVisualizationParameterEnum = PxVisualizationParameterEnum(PxVisualizationParameterEnum_eCOLLISION_SHAPES(PhysXJsLoader.physXJs))
@@ -1676,7 +1686,10 @@ value class PxVisualizationParameterEnum private constructor(val value: Int) {
             eCONTACT_POINT.value -> eCONTACT_POINT
             eCONTACT_NORMAL.value -> eCONTACT_NORMAL
             eCONTACT_ERROR.value -> eCONTACT_ERROR
-            eCONTACT_FORCE.value -> eCONTACT_FORCE
+            eCONTACT_IMPULSE.value -> eCONTACT_IMPULSE
+            eFRICTION_POINT.value -> eFRICTION_POINT
+            eFRICTION_NORMAL.value -> eFRICTION_NORMAL
+            eFRICTION_IMPULSE.value -> eFRICTION_IMPULSE
             eACTOR_AXES.value -> eACTOR_AXES
             eCOLLISION_AABBS.value -> eCOLLISION_AABBS
             eCOLLISION_SHAPES.value -> eCOLLISION_SHAPES
@@ -1708,7 +1721,10 @@ private fun PxVisualizationParameterEnum_eBODY_ANG_VELOCITY(module: JsAny): Int 
 private fun PxVisualizationParameterEnum_eCONTACT_POINT(module: JsAny): Int = js("module._emscripten_enum_PxVisualizationParameterEnum_eCONTACT_POINT()")
 private fun PxVisualizationParameterEnum_eCONTACT_NORMAL(module: JsAny): Int = js("module._emscripten_enum_PxVisualizationParameterEnum_eCONTACT_NORMAL()")
 private fun PxVisualizationParameterEnum_eCONTACT_ERROR(module: JsAny): Int = js("module._emscripten_enum_PxVisualizationParameterEnum_eCONTACT_ERROR()")
-private fun PxVisualizationParameterEnum_eCONTACT_FORCE(module: JsAny): Int = js("module._emscripten_enum_PxVisualizationParameterEnum_eCONTACT_FORCE()")
+private fun PxVisualizationParameterEnum_eCONTACT_IMPULSE(module: JsAny): Int = js("module._emscripten_enum_PxVisualizationParameterEnum_eCONTACT_IMPULSE()")
+private fun PxVisualizationParameterEnum_eFRICTION_POINT(module: JsAny): Int = js("module._emscripten_enum_PxVisualizationParameterEnum_eFRICTION_POINT()")
+private fun PxVisualizationParameterEnum_eFRICTION_NORMAL(module: JsAny): Int = js("module._emscripten_enum_PxVisualizationParameterEnum_eFRICTION_NORMAL()")
+private fun PxVisualizationParameterEnum_eFRICTION_IMPULSE(module: JsAny): Int = js("module._emscripten_enum_PxVisualizationParameterEnum_eFRICTION_IMPULSE()")
 private fun PxVisualizationParameterEnum_eACTOR_AXES(module: JsAny): Int = js("module._emscripten_enum_PxVisualizationParameterEnum_eACTOR_AXES()")
 private fun PxVisualizationParameterEnum_eCOLLISION_AABBS(module: JsAny): Int = js("module._emscripten_enum_PxVisualizationParameterEnum_eCOLLISION_AABBS()")
 private fun PxVisualizationParameterEnum_eCOLLISION_SHAPES(module: JsAny): Int = js("module._emscripten_enum_PxVisualizationParameterEnum_eCOLLISION_SHAPES()")

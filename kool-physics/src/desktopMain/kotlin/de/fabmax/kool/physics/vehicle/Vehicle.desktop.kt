@@ -15,7 +15,7 @@ import physx.physics.PxPairFlagEnum
 import physx.physics.PxQueryFlagEnum
 import physx.physics.PxShapeFlagEnum
 import physx.support.PxArray_PxReal
-import physx.vehicle2.*
+import physx.vehicle.*
 import kotlin.math.abs
 import kotlin.math.max
 

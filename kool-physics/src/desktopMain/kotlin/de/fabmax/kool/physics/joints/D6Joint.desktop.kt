@@ -236,12 +236,12 @@ class D6JointImpl(
 
     override fun enableAngularDriveY(drive: D6JointDrive) {
         targetDriveVelAngular.y = drive.targetVelocity
-        setDrive(PxD6DriveEnum.eSWING, drive)
+        setDrive(PxD6DriveEnum.eSWING1, drive)
     }
 
     override fun enableAngularDriveZ(drive: D6JointDrive) {
         targetDriveVelAngular.z = drive.targetVelocity
-        setDrive(PxD6DriveEnum.eSWING, drive)
+        setDrive(PxD6DriveEnum.eSWING2, drive)
     }
 
     override fun disableLinearDriveX() {
@@ -266,12 +266,12 @@ class D6JointImpl(
 
     override fun disableAngularDriveY() {
         targetDriveVelAngular.y = 0f
-        setDrive(PxD6DriveEnum.eSWING, D6JointDrive(0f, 0f, 0f, 0f))
+        setDrive(PxD6DriveEnum.eSWING1, D6JointDrive(0f, 0f, 0f, 0f))
     }
 
     override fun disableAngularDriveZ() {
         targetDriveVelAngular.y = 0f
-        setDrive(PxD6DriveEnum.eSWING, D6JointDrive(0f, 0f, 0f, 0f))
+        setDrive(PxD6DriveEnum.eSWING2, D6JointDrive(0f, 0f, 0f, 0f))
     }
 
     private fun setDrive(index: PxD6DriveEnum, drive: D6JointDrive) {

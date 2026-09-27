@@ -20,6 +20,11 @@ enum class ArticulationJointType {
     REVOLUTE,
 
     /**
+     * Single rotational DOF, e.g. an elbow joint or a rotational motor, position not wrapped
+     */
+    REVOLUTE_UNWRAPPED,
+
+    /**
      * Ball and socket joint with two or three DOFs
      */
     SPHERICAL

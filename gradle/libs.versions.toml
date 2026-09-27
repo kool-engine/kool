@@ -12,8 +12,8 @@ kotlinx-browser = "0.5.0"
 lwjgl = "3.4.3"
 jsvg = "2.2.0"
 androidsvg = "1.4"
-physx-jni = "2.7.2"
-physx-wasm = "2.7.2"
+physx-jni = "2.8.0"
+physx-wasm = "2.8.0"
 box2d-jni = "1.0.0"
 box2d-wasm = "1.0.0"
 
@@ -76,7 +76,7 @@ plugindep-android-kmp-library = { group = "com.android.kotlin.multiplatform.libr
 plugindep-maven-publish = { group = "com.vanniktech", name = "gradle-maven-publish-plugin", version = "0.37.0" }
 
 [plugins]
-webidl = { id = "de.fabmax.webidl-util", version = "0.10.5" }
+webidl = { id = "de.fabmax.webidl-util", version = "0.11.0" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose" }
 

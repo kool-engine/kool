@@ -5,9 +5,6 @@
 
 package physx
 
-import kotlin.js.JsAny
-import kotlin.js.js
-
 external interface PxDebugPoint : JsAny {
     /**
      * Native object address.
@@ -502,6 +499,30 @@ external interface PxDefaultErrorCallback : JsAny, DestroyableNative, PxErrorCal
 fun PxDefaultErrorCallback(_module: JsAny = PhysXJsLoader.physXJs): PxDefaultErrorCallback = js("new _module.PxDefaultErrorCallback()")
 
 fun PxDefaultErrorCallbackFromPointer(ptr: Int, _module: JsAny = PhysXJsLoader.physXJs): PxDefaultErrorCallback = js("_module.wrapPointer(ptr, _module.PxDefaultErrorCallback)")
+
+external interface PxDim3 : JsAny, DestroyableNative {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: unsigned long
+     */
+    var x: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var y: Int
+    /**
+     * WebIDL type: unsigned long
+     */
+    var z: Int
+}
+
+fun PxDim3(_module: JsAny = PhysXJsLoader.physXJs): PxDim3 = js("new _module.PxDim3()")
+
+fun PxDim3FromPointer(ptr: Int, _module: JsAny = PhysXJsLoader.physXJs): PxDim3 = js("_module.wrapPointer(ptr, _module.PxDim3)")
 
 external interface PxErrorCallback : JsAny, DestroyableNative {
     /**

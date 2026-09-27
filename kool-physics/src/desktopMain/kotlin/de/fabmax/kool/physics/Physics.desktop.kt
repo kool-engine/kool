@@ -14,9 +14,9 @@ import physx.geometry.PxConvexMesh
 import physx.physics.PxPairFlagEnum
 import physx.physics.PxPhysics
 import physx.support.PxPvd
-import physx.vehicle2.PxVehicleAxesEnum
-import physx.vehicle2.PxVehicleFrame
-import physx.vehicle2.PxVehicleTopLevelFunctions
+import physx.vehicle.PxVehicleAxesEnum
+import physx.vehicle.PxVehicleFrame
+import physx.vehicle.PxVehicleTopLevelFunctions
 import java.util.concurrent.Executors
 import kotlin.math.max
 import kotlin.math.min

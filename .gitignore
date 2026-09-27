@@ -5,7 +5,7 @@
 .idea
 .kotlin
 .storage
-assets
+/assets
 build
 dist
 kotlin-js-store

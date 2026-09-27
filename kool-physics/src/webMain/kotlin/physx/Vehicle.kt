@@ -5,9 +5,6 @@
 
 package physx
 
-import kotlin.js.JsAny
-import kotlin.js.js
-
 external interface PxVehicleTopLevelFunctions : JsAny {
     /**
      * Native object address.

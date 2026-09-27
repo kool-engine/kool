@@ -5,9 +5,6 @@
 
 package physx
 
-import kotlin.js.JsAny
-import kotlin.js.js
-
 external interface PxScene : JsAny, PxSceneSQSystem {
     /**
      * WebIDL type: VoidPtr
@@ -1203,6 +1200,42 @@ fun PxArticulationCacheFlags.isSet(flag: PxArticulationCacheFlagEnum) = isSet(fl
 fun PxArticulationCacheFlags.raise(flag: PxArticulationCacheFlagEnum) = raise(flag.value)
 fun PxArticulationCacheFlags.clear(flag: PxArticulationCacheFlagEnum) = clear(flag.value)
 
+external interface PxPerformanceEnvelope : JsAny, DestroyableNative {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: float
+     */
+    var maxEffort: Float
+    /**
+     * WebIDL type: float
+     */
+    var maxActuatorVelocity: Float
+    /**
+     * WebIDL type: float
+     */
+    var velocityDependentResistance: Float
+    /**
+     * WebIDL type: float
+     */
+    var speedEffortGradient: Float
+}
+
+fun PxPerformanceEnvelope(_module: JsAny = PhysXJsLoader.physXJs): PxPerformanceEnvelope = js("new _module.PxPerformanceEnvelope()")
+
+/**
+ * @param maxEffort                   WebIDL type: float
+ * @param maxActuatorVelocity         WebIDL type: float
+ * @param velocityDependentResistance WebIDL type: float
+ * @param speedEffortGradient         WebIDL type: float
+ */
+fun PxPerformanceEnvelope(maxEffort: Float, maxActuatorVelocity: Float, velocityDependentResistance: Float, speedEffortGradient: Float, _module: JsAny = PhysXJsLoader.physXJs): PxPerformanceEnvelope = js("new _module.PxPerformanceEnvelope(maxEffort, maxActuatorVelocity, velocityDependentResistance, speedEffortGradient)")
+
+fun PxPerformanceEnvelopeFromPointer(ptr: Int, _module: JsAny = PhysXJsLoader.physXJs): PxPerformanceEnvelope = js("_module.wrapPointer(ptr, _module.PxPerformanceEnvelope)")
+
 external interface PxArticulationDrive : JsAny, DestroyableNative {
     /**
      * Native object address.
@@ -1222,6 +1255,10 @@ external interface PxArticulationDrive : JsAny, DestroyableNative {
      */
     var maxForce: Float
     /**
+     * WebIDL type: [PxPerformanceEnvelope] (Value)
+     */
+    var envelope: PxPerformanceEnvelope
+    /**
      * WebIDL type: [PxArticulationDriveTypeEnum] (enum)
      */
     var driveType: Int
@@ -1232,10 +1269,10 @@ fun PxArticulationDrive(_module: JsAny = PhysXJsLoader.physXJs): PxArticulationD
 /**
  * @param stiffness WebIDL type: float
  * @param damping   WebIDL type: float
- * @param maxForce  WebIDL type: float
+ * @param envelope  WebIDL type: [PxPerformanceEnvelope] (Const, Ref)
  * @param driveType WebIDL type: [PxArticulationDriveTypeEnum] (enum)
  */
-fun PxArticulationDrive(stiffness: Float, damping: Float, maxForce: Float, driveType: Int, _module: JsAny = PhysXJsLoader.physXJs): PxArticulationDrive = js("new _module.PxArticulationDrive(stiffness, damping, maxForce, driveType)")
+fun PxArticulationDrive(stiffness: Float, damping: Float, envelope: PxPerformanceEnvelope, driveType: Int, _module: JsAny = PhysXJsLoader.physXJs): PxArticulationDrive = js("new _module.PxArticulationDrive(stiffness, damping, envelope, driveType)")
 
 fun PxArticulationDriveFromPointer(ptr: Int, _module: JsAny = PhysXJsLoader.physXJs): PxArticulationDrive = js("_module.wrapPointer(ptr, _module.PxArticulationDrive)")
 
@@ -1402,6 +1439,12 @@ external interface PxArticulationJointReducedCoordinate : JsAny, DestroyableNati
     fun setDriveParams(axis: Int, drive: PxArticulationDrive)
 
     /**
+     * @param axis WebIDL type: [PxArticulationAxisEnum] (enum)
+     * @return WebIDL type: [PxArticulationDrive] (Value)
+     */
+    fun getDriveParams(axis: Int): PxArticulationDrive
+
+    /**
      * @param axis   WebIDL type: [PxArticulationAxisEnum] (enum)
      * @param target WebIDL type: float
      */
@@ -1526,6 +1569,7 @@ fun PxArticulationJointReducedCoordinate.getMotion(axis: PxArticulationAxisEnum)
 fun PxArticulationJointReducedCoordinate.setLimitParams(axis: PxArticulationAxisEnum, limit: PxArticulationLimit) = setLimitParams(axis.value, limit)
 fun PxArticulationJointReducedCoordinate.getLimitParams(axis: PxArticulationAxisEnum) = getLimitParams(axis.value)
 fun PxArticulationJointReducedCoordinate.setDriveParams(axis: PxArticulationAxisEnum, drive: PxArticulationDrive) = setDriveParams(axis.value, drive)
+fun PxArticulationJointReducedCoordinate.getDriveParams(axis: PxArticulationAxisEnum) = getDriveParams(axis.value)
 fun PxArticulationJointReducedCoordinate.setDriveTarget(axis: PxArticulationAxisEnum, target: Float) = setDriveTarget(axis.value, target)
 fun PxArticulationJointReducedCoordinate.setDriveTarget(axis: PxArticulationAxisEnum, target: Float, autowake: Boolean) = setDriveTarget(axis.value, target, autowake)
 fun PxArticulationJointReducedCoordinate.getDriveTarget(axis: PxArticulationAxisEnum) = getDriveTarget(axis.value)
@@ -1846,17 +1890,7 @@ external interface PxArticulationReducedCoordinate : JsAny, DestroyableNative, P
     /**
      * @param cache WebIDL type: [PxArticulationCache] (Ref)
      */
-    fun computeGeneralizedGravityForce(cache: PxArticulationCache)
-
-    /**
-     * @param cache WebIDL type: [PxArticulationCache] (Ref)
-     */
     fun computeGravityCompensation(cache: PxArticulationCache)
-
-    /**
-     * @param cache WebIDL type: [PxArticulationCache] (Ref)
-     */
-    fun computeCoriolisAndCentrifugalForce(cache: PxArticulationCache)
 
     /**
      * @param cache WebIDL type: [PxArticulationCache] (Ref)
@@ -1882,11 +1916,6 @@ external interface PxArticulationReducedCoordinate : JsAny, DestroyableNative, P
      * @param cache WebIDL type: [PxArticulationCache] (Ref)
      */
     fun computeCoefficientMatrix(cache: PxArticulationCache)
-
-    /**
-     * @param cache WebIDL type: [PxArticulationCache] (Ref)
-     */
-    fun computeGeneralizedMassMatrix(cache: PxArticulationCache)
 
     /**
      * @param cache WebIDL type: [PxArticulationCache] (Ref)
@@ -3415,6 +3444,16 @@ external interface PxRigidBody : JsAny, PxRigidActor {
     fun getMaxAngularVelocity(): Float
 
     /**
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun getLinearAcceleration(): PxVec3
+
+    /**
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun getAngularAcceleration(): PxVec3
+
+    /**
      * @param force WebIDL type: [PxVec3] (Const, Ref)
      */
     fun addForce(force: PxVec3)
@@ -3541,6 +3580,10 @@ val PxRigidBody.linearVelocity
     get() = getLinearVelocity()
 val PxRigidBody.angularVelocity
     get() = getAngularVelocity()
+val PxRigidBody.linearAcceleration
+    get() = getLinearAcceleration()
+val PxRigidBody.angularAcceleration
+    get() = getAngularAcceleration()
 
 var PxRigidBody.cMassLocalPose
     get() = getCMassLocalPose()
@@ -3613,9 +3656,9 @@ external interface PxRigidBodyFlags : JsAny, DestroyableNative {
 }
 
 /**
- * @param flags WebIDL type: octet
+ * @param flags WebIDL type: unsigned short
  */
-fun PxRigidBodyFlags(flags: Byte, _module: JsAny = PhysXJsLoader.physXJs): PxRigidBodyFlags = js("new _module.PxRigidBodyFlags(flags)")
+fun PxRigidBodyFlags(flags: Short, _module: JsAny = PhysXJsLoader.physXJs): PxRigidBodyFlags = js("new _module.PxRigidBodyFlags(flags)")
 
 fun PxRigidBodyFlagsFromPointer(ptr: Int, _module: JsAny = PhysXJsLoader.physXJs): PxRigidBodyFlags = js("_module.wrapPointer(ptr, _module.PxRigidBodyFlags)")
 
@@ -5208,7 +5251,11 @@ value class PxSceneFlagEnum private constructor(val value: Int) {
         val eENABLE_GPU_DYNAMICS: PxSceneFlagEnum = PxSceneFlagEnum(PxSceneFlagEnum_eENABLE_GPU_DYNAMICS(PhysXJsLoader.physXJs))
         val eENABLE_ENHANCED_DETERMINISM: PxSceneFlagEnum = PxSceneFlagEnum(PxSceneFlagEnum_eENABLE_ENHANCED_DETERMINISM(PhysXJsLoader.physXJs))
         val eENABLE_FRICTION_EVERY_ITERATION: PxSceneFlagEnum = PxSceneFlagEnum(PxSceneFlagEnum_eENABLE_FRICTION_EVERY_ITERATION(PhysXJsLoader.physXJs))
+        val eENABLE_EXTERNAL_FORCES_EVERY_ITERATION_TGS: PxSceneFlagEnum = PxSceneFlagEnum(PxSceneFlagEnum_eENABLE_EXTERNAL_FORCES_EVERY_ITERATION_TGS(PhysXJsLoader.physXJs))
         val eENABLE_DIRECT_GPU_API: PxSceneFlagEnum = PxSceneFlagEnum(PxSceneFlagEnum_eENABLE_DIRECT_GPU_API(PhysXJsLoader.physXJs))
+        val eENABLE_BODY_ACCELERATIONS: PxSceneFlagEnum = PxSceneFlagEnum(PxSceneFlagEnum_eENABLE_BODY_ACCELERATIONS(PhysXJsLoader.physXJs))
+        val eDISABLE_SLEEPING: PxSceneFlagEnum = PxSceneFlagEnum(PxSceneFlagEnum_eDISABLE_SLEEPING(PhysXJsLoader.physXJs))
+        val eSOLVE_ARTICULATION_CONTACT_LAST: PxSceneFlagEnum = PxSceneFlagEnum(PxSceneFlagEnum_eSOLVE_ARTICULATION_CONTACT_LAST(PhysXJsLoader.physXJs))
         val eMUTABLE_FLAGS: PxSceneFlagEnum = PxSceneFlagEnum(PxSceneFlagEnum_eMUTABLE_FLAGS(PhysXJsLoader.physXJs))
         fun forValue(value: Int) = when(value) {
             eENABLE_ACTIVE_ACTORS.value -> eENABLE_ACTIVE_ACTORS
@@ -5224,7 +5271,11 @@ value class PxSceneFlagEnum private constructor(val value: Int) {
             eENABLE_GPU_DYNAMICS.value -> eENABLE_GPU_DYNAMICS
             eENABLE_ENHANCED_DETERMINISM.value -> eENABLE_ENHANCED_DETERMINISM
             eENABLE_FRICTION_EVERY_ITERATION.value -> eENABLE_FRICTION_EVERY_ITERATION
+            eENABLE_EXTERNAL_FORCES_EVERY_ITERATION_TGS.value -> eENABLE_EXTERNAL_FORCES_EVERY_ITERATION_TGS
             eENABLE_DIRECT_GPU_API.value -> eENABLE_DIRECT_GPU_API
+            eENABLE_BODY_ACCELERATIONS.value -> eENABLE_BODY_ACCELERATIONS
+            eDISABLE_SLEEPING.value -> eDISABLE_SLEEPING
+            eSOLVE_ARTICULATION_CONTACT_LAST.value -> eSOLVE_ARTICULATION_CONTACT_LAST
             eMUTABLE_FLAGS.value -> eMUTABLE_FLAGS
             else -> error("Invalid enum value $value for enum PxSceneFlagEnum")
         }
@@ -5244,7 +5295,11 @@ private fun PxSceneFlagEnum_eEXCLUDE_KINEMATICS_FROM_ACTIVE_ACTORS(module: JsAny
 private fun PxSceneFlagEnum_eENABLE_GPU_DYNAMICS(module: JsAny): Int = js("module._emscripten_enum_PxSceneFlagEnum_eENABLE_GPU_DYNAMICS()")
 private fun PxSceneFlagEnum_eENABLE_ENHANCED_DETERMINISM(module: JsAny): Int = js("module._emscripten_enum_PxSceneFlagEnum_eENABLE_ENHANCED_DETERMINISM()")
 private fun PxSceneFlagEnum_eENABLE_FRICTION_EVERY_ITERATION(module: JsAny): Int = js("module._emscripten_enum_PxSceneFlagEnum_eENABLE_FRICTION_EVERY_ITERATION()")
+private fun PxSceneFlagEnum_eENABLE_EXTERNAL_FORCES_EVERY_ITERATION_TGS(module: JsAny): Int = js("module._emscripten_enum_PxSceneFlagEnum_eENABLE_EXTERNAL_FORCES_EVERY_ITERATION_TGS()")
 private fun PxSceneFlagEnum_eENABLE_DIRECT_GPU_API(module: JsAny): Int = js("module._emscripten_enum_PxSceneFlagEnum_eENABLE_DIRECT_GPU_API()")
+private fun PxSceneFlagEnum_eENABLE_BODY_ACCELERATIONS(module: JsAny): Int = js("module._emscripten_enum_PxSceneFlagEnum_eENABLE_BODY_ACCELERATIONS()")
+private fun PxSceneFlagEnum_eDISABLE_SLEEPING(module: JsAny): Int = js("module._emscripten_enum_PxSceneFlagEnum_eDISABLE_SLEEPING()")
+private fun PxSceneFlagEnum_eSOLVE_ARTICULATION_CONTACT_LAST(module: JsAny): Int = js("module._emscripten_enum_PxSceneFlagEnum_eSOLVE_ARTICULATION_CONTACT_LAST()")
 private fun PxSceneFlagEnum_eMUTABLE_FLAGS(module: JsAny): Int = js("module._emscripten_enum_PxSceneFlagEnum_eMUTABLE_FLAGS()")
 
 value class PxSceneQueryUpdateModeEnum private constructor(val value: Int) {
@@ -5305,6 +5360,8 @@ value class PxArticulationCacheFlagEnum private constructor(val value: Int) {
         val eLINK_INCOMING_JOINT_FORCE: PxArticulationCacheFlagEnum = PxArticulationCacheFlagEnum(PxArticulationCacheFlagEnum_eLINK_INCOMING_JOINT_FORCE(PhysXJsLoader.physXJs))
         val eJOINT_TARGET_POSITIONS: PxArticulationCacheFlagEnum = PxArticulationCacheFlagEnum(PxArticulationCacheFlagEnum_eJOINT_TARGET_POSITIONS(PhysXJsLoader.physXJs))
         val eJOINT_TARGET_VELOCITIES: PxArticulationCacheFlagEnum = PxArticulationCacheFlagEnum(PxArticulationCacheFlagEnum_eJOINT_TARGET_VELOCITIES(PhysXJsLoader.physXJs))
+        val eLINK_FORCE: PxArticulationCacheFlagEnum = PxArticulationCacheFlagEnum(PxArticulationCacheFlagEnum_eLINK_FORCE(PhysXJsLoader.physXJs))
+        val eLINK_TORQUE: PxArticulationCacheFlagEnum = PxArticulationCacheFlagEnum(PxArticulationCacheFlagEnum_eLINK_TORQUE(PhysXJsLoader.physXJs))
         val eALL: PxArticulationCacheFlagEnum = PxArticulationCacheFlagEnum(PxArticulationCacheFlagEnum_eALL(PhysXJsLoader.physXJs))
         fun forValue(value: Int) = when(value) {
             eVELOCITY.value -> eVELOCITY
@@ -5318,6 +5375,8 @@ value class PxArticulationCacheFlagEnum private constructor(val value: Int) {
             eLINK_INCOMING_JOINT_FORCE.value -> eLINK_INCOMING_JOINT_FORCE
             eJOINT_TARGET_POSITIONS.value -> eJOINT_TARGET_POSITIONS
             eJOINT_TARGET_VELOCITIES.value -> eJOINT_TARGET_VELOCITIES
+            eLINK_FORCE.value -> eLINK_FORCE
+            eLINK_TORQUE.value -> eLINK_TORQUE
             eALL.value -> eALL
             else -> error("Invalid enum value $value for enum PxArticulationCacheFlagEnum")
         }
@@ -5335,6 +5394,8 @@ private fun PxArticulationCacheFlagEnum_eROOT_VELOCITIES(module: JsAny): Int = j
 private fun PxArticulationCacheFlagEnum_eLINK_INCOMING_JOINT_FORCE(module: JsAny): Int = js("module._emscripten_enum_PxArticulationCacheFlagEnum_eLINK_INCOMING_JOINT_FORCE()")
 private fun PxArticulationCacheFlagEnum_eJOINT_TARGET_POSITIONS(module: JsAny): Int = js("module._emscripten_enum_PxArticulationCacheFlagEnum_eJOINT_TARGET_POSITIONS()")
 private fun PxArticulationCacheFlagEnum_eJOINT_TARGET_VELOCITIES(module: JsAny): Int = js("module._emscripten_enum_PxArticulationCacheFlagEnum_eJOINT_TARGET_VELOCITIES()")
+private fun PxArticulationCacheFlagEnum_eLINK_FORCE(module: JsAny): Int = js("module._emscripten_enum_PxArticulationCacheFlagEnum_eLINK_FORCE()")
+private fun PxArticulationCacheFlagEnum_eLINK_TORQUE(module: JsAny): Int = js("module._emscripten_enum_PxArticulationCacheFlagEnum_eLINK_TORQUE()")
 private fun PxArticulationCacheFlagEnum_eALL(module: JsAny): Int = js("module._emscripten_enum_PxArticulationCacheFlagEnum_eALL()")
 
 value class PxArticulationDriveTypeEnum private constructor(val value: Int) {
@@ -5358,11 +5419,9 @@ private fun PxArticulationDriveTypeEnum_eNONE(module: JsAny): Int = js("module._
 value class PxArticulationFlagEnum private constructor(val value: Int) {
     companion object {
         val eFIX_BASE: PxArticulationFlagEnum = PxArticulationFlagEnum(PxArticulationFlagEnum_eFIX_BASE(PhysXJsLoader.physXJs))
-        val eDRIVE_LIMITS_ARE_FORCES: PxArticulationFlagEnum = PxArticulationFlagEnum(PxArticulationFlagEnum_eDRIVE_LIMITS_ARE_FORCES(PhysXJsLoader.physXJs))
         val eDISABLE_SELF_COLLISION: PxArticulationFlagEnum = PxArticulationFlagEnum(PxArticulationFlagEnum_eDISABLE_SELF_COLLISION(PhysXJsLoader.physXJs))
         fun forValue(value: Int) = when(value) {
             eFIX_BASE.value -> eFIX_BASE
-            eDRIVE_LIMITS_ARE_FORCES.value -> eDRIVE_LIMITS_ARE_FORCES
             eDISABLE_SELF_COLLISION.value -> eDISABLE_SELF_COLLISION
             else -> error("Invalid enum value $value for enum PxArticulationFlagEnum")
         }
@@ -5370,7 +5429,6 @@ value class PxArticulationFlagEnum private constructor(val value: Int) {
 }
 
 private fun PxArticulationFlagEnum_eFIX_BASE(module: JsAny): Int = js("module._emscripten_enum_PxArticulationFlagEnum_eFIX_BASE()")
-private fun PxArticulationFlagEnum_eDRIVE_LIMITS_ARE_FORCES(module: JsAny): Int = js("module._emscripten_enum_PxArticulationFlagEnum_eDRIVE_LIMITS_ARE_FORCES()")
 private fun PxArticulationFlagEnum_eDISABLE_SELF_COLLISION(module: JsAny): Int = js("module._emscripten_enum_PxArticulationFlagEnum_eDISABLE_SELF_COLLISION()")
 
 value class PxArticulationJointTypeEnum private constructor(val value: Int) {
@@ -5378,12 +5436,14 @@ value class PxArticulationJointTypeEnum private constructor(val value: Int) {
         val eFIX: PxArticulationJointTypeEnum = PxArticulationJointTypeEnum(PxArticulationJointTypeEnum_eFIX(PhysXJsLoader.physXJs))
         val ePRISMATIC: PxArticulationJointTypeEnum = PxArticulationJointTypeEnum(PxArticulationJointTypeEnum_ePRISMATIC(PhysXJsLoader.physXJs))
         val eREVOLUTE: PxArticulationJointTypeEnum = PxArticulationJointTypeEnum(PxArticulationJointTypeEnum_eREVOLUTE(PhysXJsLoader.physXJs))
+        val eREVOLUTE_UNWRAPPED: PxArticulationJointTypeEnum = PxArticulationJointTypeEnum(PxArticulationJointTypeEnum_eREVOLUTE_UNWRAPPED(PhysXJsLoader.physXJs))
         val eSPHERICAL: PxArticulationJointTypeEnum = PxArticulationJointTypeEnum(PxArticulationJointTypeEnum_eSPHERICAL(PhysXJsLoader.physXJs))
         val eUNDEFINED: PxArticulationJointTypeEnum = PxArticulationJointTypeEnum(PxArticulationJointTypeEnum_eUNDEFINED(PhysXJsLoader.physXJs))
         fun forValue(value: Int) = when(value) {
             eFIX.value -> eFIX
             ePRISMATIC.value -> ePRISMATIC
             eREVOLUTE.value -> eREVOLUTE
+            eREVOLUTE_UNWRAPPED.value -> eREVOLUTE_UNWRAPPED
             eSPHERICAL.value -> eSPHERICAL
             eUNDEFINED.value -> eUNDEFINED
             else -> error("Invalid enum value $value for enum PxArticulationJointTypeEnum")
@@ -5394,6 +5454,7 @@ value class PxArticulationJointTypeEnum private constructor(val value: Int) {
 private fun PxArticulationJointTypeEnum_eFIX(module: JsAny): Int = js("module._emscripten_enum_PxArticulationJointTypeEnum_eFIX()")
 private fun PxArticulationJointTypeEnum_ePRISMATIC(module: JsAny): Int = js("module._emscripten_enum_PxArticulationJointTypeEnum_ePRISMATIC()")
 private fun PxArticulationJointTypeEnum_eREVOLUTE(module: JsAny): Int = js("module._emscripten_enum_PxArticulationJointTypeEnum_eREVOLUTE()")
+private fun PxArticulationJointTypeEnum_eREVOLUTE_UNWRAPPED(module: JsAny): Int = js("module._emscripten_enum_PxArticulationJointTypeEnum_eREVOLUTE_UNWRAPPED()")
 private fun PxArticulationJointTypeEnum_eSPHERICAL(module: JsAny): Int = js("module._emscripten_enum_PxArticulationJointTypeEnum_eSPHERICAL()")
 private fun PxArticulationJointTypeEnum_eUNDEFINED(module: JsAny): Int = js("module._emscripten_enum_PxArticulationJointTypeEnum_eUNDEFINED()")
 
@@ -5483,6 +5544,7 @@ value class PxQueryFlagEnum private constructor(val value: Int) {
         val ePOSTFILTER: PxQueryFlagEnum = PxQueryFlagEnum(PxQueryFlagEnum_ePOSTFILTER(PhysXJsLoader.physXJs))
         val eANY_HIT: PxQueryFlagEnum = PxQueryFlagEnum(PxQueryFlagEnum_eANY_HIT(PhysXJsLoader.physXJs))
         val eNO_BLOCK: PxQueryFlagEnum = PxQueryFlagEnum(PxQueryFlagEnum_eNO_BLOCK(PhysXJsLoader.physXJs))
+        val eDISABLE_HARDCODED_FILTER: PxQueryFlagEnum = PxQueryFlagEnum(PxQueryFlagEnum_eDISABLE_HARDCODED_FILTER(PhysXJsLoader.physXJs))
         fun forValue(value: Int) = when(value) {
             eSTATIC.value -> eSTATIC
             eDYNAMIC.value -> eDYNAMIC
@@ -5490,6 +5552,7 @@ value class PxQueryFlagEnum private constructor(val value: Int) {
             ePOSTFILTER.value -> ePOSTFILTER
             eANY_HIT.value -> eANY_HIT
             eNO_BLOCK.value -> eNO_BLOCK
+            eDISABLE_HARDCODED_FILTER.value -> eDISABLE_HARDCODED_FILTER
             else -> error("Invalid enum value $value for enum PxQueryFlagEnum")
         }
     }
@@ -5501,6 +5564,7 @@ private fun PxQueryFlagEnum_ePREFILTER(module: JsAny): Int = js("module._emscrip
 private fun PxQueryFlagEnum_ePOSTFILTER(module: JsAny): Int = js("module._emscripten_enum_PxQueryFlagEnum_ePOSTFILTER()")
 private fun PxQueryFlagEnum_eANY_HIT(module: JsAny): Int = js("module._emscripten_enum_PxQueryFlagEnum_eANY_HIT()")
 private fun PxQueryFlagEnum_eNO_BLOCK(module: JsAny): Int = js("module._emscripten_enum_PxQueryFlagEnum_eNO_BLOCK()")
+private fun PxQueryFlagEnum_eDISABLE_HARDCODED_FILTER(module: JsAny): Int = js("module._emscripten_enum_PxQueryFlagEnum_eDISABLE_HARDCODED_FILTER()")
 
 value class PxQueryHitType private constructor(val value: Int) {
     companion object {
@@ -5548,7 +5612,6 @@ value class PxActorTypeEnum private constructor(val value: Int) {
         val eARTICULATION_LINK: PxActorTypeEnum = PxActorTypeEnum(PxActorTypeEnum_eARTICULATION_LINK(PhysXJsLoader.physXJs))
         val eDEFORMABLE_SURFACE: PxActorTypeEnum = PxActorTypeEnum(PxActorTypeEnum_eDEFORMABLE_SURFACE(PhysXJsLoader.physXJs))
         val eDEFORMABLE_VOLUME: PxActorTypeEnum = PxActorTypeEnum(PxActorTypeEnum_eDEFORMABLE_VOLUME(PhysXJsLoader.physXJs))
-        val eSOFTBODY: PxActorTypeEnum = PxActorTypeEnum(PxActorTypeEnum_eSOFTBODY(PhysXJsLoader.physXJs))
         val ePBD_PARTICLESYSTEM: PxActorTypeEnum = PxActorTypeEnum(PxActorTypeEnum_ePBD_PARTICLESYSTEM(PhysXJsLoader.physXJs))
         fun forValue(value: Int) = when(value) {
             eRIGID_STATIC.value -> eRIGID_STATIC
@@ -5556,7 +5619,6 @@ value class PxActorTypeEnum private constructor(val value: Int) {
             eARTICULATION_LINK.value -> eARTICULATION_LINK
             eDEFORMABLE_SURFACE.value -> eDEFORMABLE_SURFACE
             eDEFORMABLE_VOLUME.value -> eDEFORMABLE_VOLUME
-            eSOFTBODY.value -> eSOFTBODY
             ePBD_PARTICLESYSTEM.value -> ePBD_PARTICLESYSTEM
             else -> error("Invalid enum value $value for enum PxActorTypeEnum")
         }
@@ -5568,7 +5630,6 @@ private fun PxActorTypeEnum_eRIGID_DYNAMIC(module: JsAny): Int = js("module._ems
 private fun PxActorTypeEnum_eARTICULATION_LINK(module: JsAny): Int = js("module._emscripten_enum_PxActorTypeEnum_eARTICULATION_LINK()")
 private fun PxActorTypeEnum_eDEFORMABLE_SURFACE(module: JsAny): Int = js("module._emscripten_enum_PxActorTypeEnum_eDEFORMABLE_SURFACE()")
 private fun PxActorTypeEnum_eDEFORMABLE_VOLUME(module: JsAny): Int = js("module._emscripten_enum_PxActorTypeEnum_eDEFORMABLE_VOLUME()")
-private fun PxActorTypeEnum_eSOFTBODY(module: JsAny): Int = js("module._emscripten_enum_PxActorTypeEnum_eSOFTBODY()")
 private fun PxActorTypeEnum_ePBD_PARTICLESYSTEM(module: JsAny): Int = js("module._emscripten_enum_PxActorTypeEnum_ePBD_PARTICLESYSTEM()")
 
 value class PxActorTypeFlagEnum private constructor(val value: Int) {
@@ -5596,6 +5657,9 @@ value class PxRigidBodyFlagEnum private constructor(val value: Int) {
         val eENABLE_SPECULATIVE_CCD: PxRigidBodyFlagEnum = PxRigidBodyFlagEnum(PxRigidBodyFlagEnum_eENABLE_SPECULATIVE_CCD(PhysXJsLoader.physXJs))
         val eENABLE_CCD_MAX_CONTACT_IMPULSE: PxRigidBodyFlagEnum = PxRigidBodyFlagEnum(PxRigidBodyFlagEnum_eENABLE_CCD_MAX_CONTACT_IMPULSE(PhysXJsLoader.physXJs))
         val eRETAIN_ACCELERATIONS: PxRigidBodyFlagEnum = PxRigidBodyFlagEnum(PxRigidBodyFlagEnum_eRETAIN_ACCELERATIONS(PhysXJsLoader.physXJs))
+        val eFORCE_KINE_KINE_NOTIFICATIONS: PxRigidBodyFlagEnum = PxRigidBodyFlagEnum(PxRigidBodyFlagEnum_eFORCE_KINE_KINE_NOTIFICATIONS(PhysXJsLoader.physXJs))
+        val eFORCE_STATIC_KINE_NOTIFICATIONS: PxRigidBodyFlagEnum = PxRigidBodyFlagEnum(PxRigidBodyFlagEnum_eFORCE_STATIC_KINE_NOTIFICATIONS(PhysXJsLoader.physXJs))
+        val eENABLE_GYROSCOPIC_FORCES: PxRigidBodyFlagEnum = PxRigidBodyFlagEnum(PxRigidBodyFlagEnum_eENABLE_GYROSCOPIC_FORCES(PhysXJsLoader.physXJs))
         fun forValue(value: Int) = when(value) {
             eKINEMATIC.value -> eKINEMATIC
             eUSE_KINEMATIC_TARGET_FOR_SCENE_QUERIES.value -> eUSE_KINEMATIC_TARGET_FOR_SCENE_QUERIES
@@ -5605,6 +5669,9 @@ value class PxRigidBodyFlagEnum private constructor(val value: Int) {
             eENABLE_SPECULATIVE_CCD.value -> eENABLE_SPECULATIVE_CCD
             eENABLE_CCD_MAX_CONTACT_IMPULSE.value -> eENABLE_CCD_MAX_CONTACT_IMPULSE
             eRETAIN_ACCELERATIONS.value -> eRETAIN_ACCELERATIONS
+            eFORCE_KINE_KINE_NOTIFICATIONS.value -> eFORCE_KINE_KINE_NOTIFICATIONS
+            eFORCE_STATIC_KINE_NOTIFICATIONS.value -> eFORCE_STATIC_KINE_NOTIFICATIONS
+            eENABLE_GYROSCOPIC_FORCES.value -> eENABLE_GYROSCOPIC_FORCES
             else -> error("Invalid enum value $value for enum PxRigidBodyFlagEnum")
         }
     }
@@ -5618,6 +5685,9 @@ private fun PxRigidBodyFlagEnum_eENABLE_POSE_INTEGRATION_PREVIEW(module: JsAny):
 private fun PxRigidBodyFlagEnum_eENABLE_SPECULATIVE_CCD(module: JsAny): Int = js("module._emscripten_enum_PxRigidBodyFlagEnum_eENABLE_SPECULATIVE_CCD()")
 private fun PxRigidBodyFlagEnum_eENABLE_CCD_MAX_CONTACT_IMPULSE(module: JsAny): Int = js("module._emscripten_enum_PxRigidBodyFlagEnum_eENABLE_CCD_MAX_CONTACT_IMPULSE()")
 private fun PxRigidBodyFlagEnum_eRETAIN_ACCELERATIONS(module: JsAny): Int = js("module._emscripten_enum_PxRigidBodyFlagEnum_eRETAIN_ACCELERATIONS()")
+private fun PxRigidBodyFlagEnum_eFORCE_KINE_KINE_NOTIFICATIONS(module: JsAny): Int = js("module._emscripten_enum_PxRigidBodyFlagEnum_eFORCE_KINE_KINE_NOTIFICATIONS()")
+private fun PxRigidBodyFlagEnum_eFORCE_STATIC_KINE_NOTIFICATIONS(module: JsAny): Int = js("module._emscripten_enum_PxRigidBodyFlagEnum_eFORCE_STATIC_KINE_NOTIFICATIONS()")
+private fun PxRigidBodyFlagEnum_eENABLE_GYROSCOPIC_FORCES(module: JsAny): Int = js("module._emscripten_enum_PxRigidBodyFlagEnum_eENABLE_GYROSCOPIC_FORCES()")
 
 value class PxRigidDynamicLockFlagEnum private constructor(val value: Int) {
     companion object {
@@ -5735,7 +5805,6 @@ value class PxConstraintFlagEnum private constructor(val value: Int) {
         val eBROKEN: PxConstraintFlagEnum = PxConstraintFlagEnum(PxConstraintFlagEnum_eBROKEN(PhysXJsLoader.physXJs))
         val eCOLLISION_ENABLED: PxConstraintFlagEnum = PxConstraintFlagEnum(PxConstraintFlagEnum_eCOLLISION_ENABLED(PhysXJsLoader.physXJs))
         val eVISUALIZATION: PxConstraintFlagEnum = PxConstraintFlagEnum(PxConstraintFlagEnum_eVISUALIZATION(PhysXJsLoader.physXJs))
-        val eDRIVE_LIMITS_ARE_FORCES: PxConstraintFlagEnum = PxConstraintFlagEnum(PxConstraintFlagEnum_eDRIVE_LIMITS_ARE_FORCES(PhysXJsLoader.physXJs))
         val eIMPROVED_SLERP: PxConstraintFlagEnum = PxConstraintFlagEnum(PxConstraintFlagEnum_eIMPROVED_SLERP(PhysXJsLoader.physXJs))
         val eDISABLE_PREPROCESSING: PxConstraintFlagEnum = PxConstraintFlagEnum(PxConstraintFlagEnum_eDISABLE_PREPROCESSING(PhysXJsLoader.physXJs))
         val eENABLE_EXTENDED_LIMITS: PxConstraintFlagEnum = PxConstraintFlagEnum(PxConstraintFlagEnum_eENABLE_EXTENDED_LIMITS(PhysXJsLoader.physXJs))
@@ -5746,7 +5815,6 @@ value class PxConstraintFlagEnum private constructor(val value: Int) {
             eBROKEN.value -> eBROKEN
             eCOLLISION_ENABLED.value -> eCOLLISION_ENABLED
             eVISUALIZATION.value -> eVISUALIZATION
-            eDRIVE_LIMITS_ARE_FORCES.value -> eDRIVE_LIMITS_ARE_FORCES
             eIMPROVED_SLERP.value -> eIMPROVED_SLERP
             eDISABLE_PREPROCESSING.value -> eDISABLE_PREPROCESSING
             eENABLE_EXTENDED_LIMITS.value -> eENABLE_EXTENDED_LIMITS
@@ -5761,7 +5829,6 @@ value class PxConstraintFlagEnum private constructor(val value: Int) {
 private fun PxConstraintFlagEnum_eBROKEN(module: JsAny): Int = js("module._emscripten_enum_PxConstraintFlagEnum_eBROKEN()")
 private fun PxConstraintFlagEnum_eCOLLISION_ENABLED(module: JsAny): Int = js("module._emscripten_enum_PxConstraintFlagEnum_eCOLLISION_ENABLED()")
 private fun PxConstraintFlagEnum_eVISUALIZATION(module: JsAny): Int = js("module._emscripten_enum_PxConstraintFlagEnum_eVISUALIZATION()")
-private fun PxConstraintFlagEnum_eDRIVE_LIMITS_ARE_FORCES(module: JsAny): Int = js("module._emscripten_enum_PxConstraintFlagEnum_eDRIVE_LIMITS_ARE_FORCES()")
 private fun PxConstraintFlagEnum_eIMPROVED_SLERP(module: JsAny): Int = js("module._emscripten_enum_PxConstraintFlagEnum_eIMPROVED_SLERP()")
 private fun PxConstraintFlagEnum_eDISABLE_PREPROCESSING(module: JsAny): Int = js("module._emscripten_enum_PxConstraintFlagEnum_eDISABLE_PREPROCESSING()")
 private fun PxConstraintFlagEnum_eENABLE_EXTENDED_LIMITS(module: JsAny): Int = js("module._emscripten_enum_PxConstraintFlagEnum_eENABLE_EXTENDED_LIMITS()")
@@ -5860,9 +5927,11 @@ value class PxFilterObjectFlagEnum private constructor(val value: Int) {
     companion object {
         val eKINEMATIC: PxFilterObjectFlagEnum = PxFilterObjectFlagEnum(PxFilterObjectFlagEnum_eKINEMATIC(PhysXJsLoader.physXJs))
         val eTRIGGER: PxFilterObjectFlagEnum = PxFilterObjectFlagEnum(PxFilterObjectFlagEnum_eTRIGGER(PhysXJsLoader.physXJs))
+        val eCUSTOM_GEOMETRY: PxFilterObjectFlagEnum = PxFilterObjectFlagEnum(PxFilterObjectFlagEnum_eCUSTOM_GEOMETRY(PhysXJsLoader.physXJs))
         fun forValue(value: Int) = when(value) {
             eKINEMATIC.value -> eKINEMATIC
             eTRIGGER.value -> eTRIGGER
+            eCUSTOM_GEOMETRY.value -> eCUSTOM_GEOMETRY
             else -> error("Invalid enum value $value for enum PxFilterObjectFlagEnum")
         }
     }
@@ -5870,6 +5939,7 @@ value class PxFilterObjectFlagEnum private constructor(val value: Int) {
 
 private fun PxFilterObjectFlagEnum_eKINEMATIC(module: JsAny): Int = js("module._emscripten_enum_PxFilterObjectFlagEnum_eKINEMATIC()")
 private fun PxFilterObjectFlagEnum_eTRIGGER(module: JsAny): Int = js("module._emscripten_enum_PxFilterObjectFlagEnum_eTRIGGER()")
+private fun PxFilterObjectFlagEnum_eCUSTOM_GEOMETRY(module: JsAny): Int = js("module._emscripten_enum_PxFilterObjectFlagEnum_eCUSTOM_GEOMETRY()")
 
 value class PxForceModeEnum private constructor(val value: Int) {
     companion object {

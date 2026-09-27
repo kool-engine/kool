@@ -3,8 +3,6 @@
 package box2d.prototypes
 
 import box2d.*
-import kotlin.js.JsAny
-import kotlin.js.js
 
 val B2_AABB: B2_AABB = B2_AABB(Box2dWasmLoader.box2dWasm)
 private fun B2_AABB(module: JsAny): B2_AABB = js("module.B2_AABB.prototype")

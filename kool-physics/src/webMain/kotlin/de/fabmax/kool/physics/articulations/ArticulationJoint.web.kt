@@ -128,6 +128,7 @@ class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) :
             ArticulationJointType.FIX -> PxArticulationJointTypeEnum.eFIX
             ArticulationJointType.PRISMATIC -> PxArticulationJointTypeEnum.ePRISMATIC
             ArticulationJointType.REVOLUTE -> PxArticulationJointTypeEnum.eREVOLUTE
+            ArticulationJointType.REVOLUTE_UNWRAPPED -> PxArticulationJointTypeEnum.eREVOLUTE_UNWRAPPED
             ArticulationJointType.SPHERICAL -> PxArticulationJointTypeEnum.eSPHERICAL
         }
 

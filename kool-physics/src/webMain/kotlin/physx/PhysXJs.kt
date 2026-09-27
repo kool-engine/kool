@@ -5,9 +5,6 @@
 
 package physx
 
-import kotlin.js.JsAny
-import kotlin.js.js
-
 external interface PxTopLevelFunctions : JsAny {
     /**
      * Native object address.
@@ -339,6 +336,12 @@ external interface PxTopLevelFunctions : JsAny {
      * @param result   WebIDL type: [PxTransform] (Ref)
      */
     fun IntegrateTransform(curTrans: PxTransform, linvel: PxVec3, angvel: PxVec3, timeStep: Float, result: PxTransform)
+
+    /**
+     * @param mesh WebIDL type: [PxTriangleMesh] (Const, Ref)
+     * @return WebIDL type: [PxDim3] (Value)
+     */
+    fun GetTriangleMeshSDFDimensions(mesh: PxTriangleMesh): PxDim3
 
 }
 

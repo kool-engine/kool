@@ -18,7 +18,7 @@ import physx.physics.*
 import physx.support.PxArray_PxShapePtr
 import physx.support.PxArray_PxU32
 import physx.support.PxArray_PxVec3
-import physx.vehicle2.*
+import physx.vehicle.*
 
 val NativeObject.ptr: Long get() = address
 
@@ -174,7 +174,7 @@ fun MemoryStack.createPxConvexMeshGeometryFlags(flags: Int) = PxConvexMeshGeomet
 fun MemoryStack.createPxHitFlags(flags: Int) = PxHitFlags.createAt(this, MemoryStack::nmalloc, flags.toShort())
 fun MemoryStack.createPxMeshGeometryFlags(flags: Int) = PxMeshGeometryFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
 fun MemoryStack.createPxRevoluteJointFlags(flags: Int) = PxRevoluteJointFlags.createAt(this, MemoryStack::nmalloc, flags.toShort())
-fun MemoryStack.createPxRigidBodyFlags(flags: Int) = PxRigidBodyFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
+fun MemoryStack.createPxRigidBodyFlags(flags: Int) = PxRigidBodyFlags.createAt(this, MemoryStack::nmalloc, flags.toShort())
 fun MemoryStack.createPxRigidDynamicLockFlags(flags: Int) = PxRigidDynamicLockFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())
 fun MemoryStack.createPxSceneFlags(flags: Int) = PxSceneFlags.createAt(this, MemoryStack::nmalloc, flags)
 fun MemoryStack.createPxShapeFlags(flags: Int) = PxShapeFlags.createAt(this, MemoryStack::nmalloc, flags.toByte())

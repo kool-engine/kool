@@ -5,9 +5,6 @@
 
 package physx
 
-import kotlin.js.JsAny
-import kotlin.js.js
-
 external interface PxGjkQueryProximityInfoResult : JsAny, DestroyableNative {
     /**
      * Native object address.
@@ -442,6 +439,16 @@ external interface PxD6Joint : JsAny, DestroyableNative, PxJoint {
      */
     fun getDriveVelocity(linear: PxVec3, angular: PxVec3)
 
+    /**
+     * @param config WebIDL type: [PxD6AngularDriveConfigEnum] (enum)
+     */
+    fun setAngularDriveConfig(config: Int)
+
+    /**
+     * @return WebIDL type: [PxD6AngularDriveConfigEnum] (enum)
+     */
+    fun getAngularDriveConfig(): Int
+
 }
 
 fun PxD6JointFromPointer(ptr: Int, _module: JsAny = PhysXJsLoader.physXJs): PxD6Joint = js("_module.wrapPointer(ptr, _module.PxD6Joint)")
@@ -456,12 +463,16 @@ val PxD6Joint.swingZAngle
 var PxD6Joint.drivePosition
     get() = getDrivePosition()
     set(value) { setDrivePosition(value) }
+var PxD6Joint.angularDriveConfig: PxD6AngularDriveConfigEnum
+    get() = PxD6AngularDriveConfigEnum.forValue(getAngularDriveConfig())
+    set(value) { setAngularDriveConfig(value.value) }
 
 fun PxD6Joint.setMotion(axis: PxD6AxisEnum, type: PxD6MotionEnum) = setMotion(axis.value, type.value)
 fun PxD6Joint.getMotion(axis: PxD6AxisEnum) = PxD6MotionEnum.forValue(getMotion(axis.value))
 fun PxD6Joint.setLinearLimit(axis: PxD6AxisEnum, limit: PxJointLinearLimitPair) = setLinearLimit(axis.value, limit)
 fun PxD6Joint.setDrive(index: PxD6DriveEnum, drive: PxD6JointDrive) = setDrive(index.value, drive)
 fun PxD6Joint.getDrive(index: PxD6DriveEnum) = getDrive(index.value)
+fun PxD6Joint.setAngularDriveConfig(config: PxD6AngularDriveConfigEnum) = setAngularDriveConfig(config.value)
 
 external interface PxD6JointDrive : JsAny, DestroyableNative, PxSpring {
     /**
@@ -2002,6 +2013,21 @@ external interface PxSerializationRegistry : JsAny {
 
 fun PxSerializationRegistryFromPointer(ptr: Int, _module: JsAny = PhysXJsLoader.physXJs): PxSerializationRegistry = js("_module.wrapPointer(ptr, _module.PxSerializationRegistry)")
 
+value class PxD6AngularDriveConfigEnum private constructor(val value: Int) {
+    companion object {
+        val eSWING_TWIST: PxD6AngularDriveConfigEnum = PxD6AngularDriveConfigEnum(PxD6AngularDriveConfigEnum_eSWING_TWIST(PhysXJsLoader.physXJs))
+        val eSLERP: PxD6AngularDriveConfigEnum = PxD6AngularDriveConfigEnum(PxD6AngularDriveConfigEnum_eSLERP(PhysXJsLoader.physXJs))
+        fun forValue(value: Int) = when(value) {
+            eSWING_TWIST.value -> eSWING_TWIST
+            eSLERP.value -> eSLERP
+            else -> error("Invalid enum value $value for enum PxD6AngularDriveConfigEnum")
+        }
+    }
+}
+
+private fun PxD6AngularDriveConfigEnum_eSWING_TWIST(module: JsAny): Int = js("module._emscripten_enum_PxD6AngularDriveConfigEnum_eSWING_TWIST()")
+private fun PxD6AngularDriveConfigEnum_eSLERP(module: JsAny): Int = js("module._emscripten_enum_PxD6AngularDriveConfigEnum_eSLERP()")
+
 value class PxD6AxisEnum private constructor(val value: Int) {
     companion object {
         val eX: PxD6AxisEnum = PxD6AxisEnum(PxD6AxisEnum_eX(PhysXJsLoader.physXJs))
@@ -2034,16 +2060,18 @@ value class PxD6DriveEnum private constructor(val value: Int) {
         val eX: PxD6DriveEnum = PxD6DriveEnum(PxD6DriveEnum_eX(PhysXJsLoader.physXJs))
         val eY: PxD6DriveEnum = PxD6DriveEnum(PxD6DriveEnum_eY(PhysXJsLoader.physXJs))
         val eZ: PxD6DriveEnum = PxD6DriveEnum(PxD6DriveEnum_eZ(PhysXJsLoader.physXJs))
-        val eSWING: PxD6DriveEnum = PxD6DriveEnum(PxD6DriveEnum_eSWING(PhysXJsLoader.physXJs))
         val eTWIST: PxD6DriveEnum = PxD6DriveEnum(PxD6DriveEnum_eTWIST(PhysXJsLoader.physXJs))
         val eSLERP: PxD6DriveEnum = PxD6DriveEnum(PxD6DriveEnum_eSLERP(PhysXJsLoader.physXJs))
+        val eSWING1: PxD6DriveEnum = PxD6DriveEnum(PxD6DriveEnum_eSWING1(PhysXJsLoader.physXJs))
+        val eSWING2: PxD6DriveEnum = PxD6DriveEnum(PxD6DriveEnum_eSWING2(PhysXJsLoader.physXJs))
         fun forValue(value: Int) = when(value) {
             eX.value -> eX
             eY.value -> eY
             eZ.value -> eZ
-            eSWING.value -> eSWING
             eTWIST.value -> eTWIST
             eSLERP.value -> eSLERP
+            eSWING1.value -> eSWING1
+            eSWING2.value -> eSWING2
             else -> error("Invalid enum value $value for enum PxD6DriveEnum")
         }
     }
@@ -2052,21 +2080,25 @@ value class PxD6DriveEnum private constructor(val value: Int) {
 private fun PxD6DriveEnum_eX(module: JsAny): Int = js("module._emscripten_enum_PxD6DriveEnum_eX()")
 private fun PxD6DriveEnum_eY(module: JsAny): Int = js("module._emscripten_enum_PxD6DriveEnum_eY()")
 private fun PxD6DriveEnum_eZ(module: JsAny): Int = js("module._emscripten_enum_PxD6DriveEnum_eZ()")
-private fun PxD6DriveEnum_eSWING(module: JsAny): Int = js("module._emscripten_enum_PxD6DriveEnum_eSWING()")
 private fun PxD6DriveEnum_eTWIST(module: JsAny): Int = js("module._emscripten_enum_PxD6DriveEnum_eTWIST()")
 private fun PxD6DriveEnum_eSLERP(module: JsAny): Int = js("module._emscripten_enum_PxD6DriveEnum_eSLERP()")
+private fun PxD6DriveEnum_eSWING1(module: JsAny): Int = js("module._emscripten_enum_PxD6DriveEnum_eSWING1()")
+private fun PxD6DriveEnum_eSWING2(module: JsAny): Int = js("module._emscripten_enum_PxD6DriveEnum_eSWING2()")
 
 value class PxD6JointDriveFlagEnum private constructor(val value: Int) {
     companion object {
         val eACCELERATION: PxD6JointDriveFlagEnum = PxD6JointDriveFlagEnum(PxD6JointDriveFlagEnum_eACCELERATION(PhysXJsLoader.physXJs))
+        val eOUTPUT_FORCE: PxD6JointDriveFlagEnum = PxD6JointDriveFlagEnum(PxD6JointDriveFlagEnum_eOUTPUT_FORCE(PhysXJsLoader.physXJs))
         fun forValue(value: Int) = when(value) {
             eACCELERATION.value -> eACCELERATION
+            eOUTPUT_FORCE.value -> eOUTPUT_FORCE
             else -> error("Invalid enum value $value for enum PxD6JointDriveFlagEnum")
         }
     }
 }
 
 private fun PxD6JointDriveFlagEnum_eACCELERATION(module: JsAny): Int = js("module._emscripten_enum_PxD6JointDriveFlagEnum_eACCELERATION()")
+private fun PxD6JointDriveFlagEnum_eOUTPUT_FORCE(module: JsAny): Int = js("module._emscripten_enum_PxD6JointDriveFlagEnum_eOUTPUT_FORCE()")
 
 value class PxD6MotionEnum private constructor(val value: Int) {
     companion object {

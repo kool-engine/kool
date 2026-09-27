@@ -5,9 +5,6 @@
 
 package physx
 
-import kotlin.js.JsAny
-import kotlin.js.js
-
 external interface PxBVH33MidphaseDesc : JsAny, DestroyableNative {
     /**
      * Native object address.
@@ -254,11 +251,97 @@ val PxMidphaseDesc.type: PxMeshMidPhaseEnum
 
 fun PxMidphaseDesc.setToDefault(type: PxMeshMidPhaseEnum) = setToDefault(type.value)
 
+external interface PxSDFDesc : JsAny, DestroyableNative {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [PxBoundedData] (Value)
+     */
+    var sdf: PxBoundedData
+    /**
+     * WebIDL type: [PxDim3] (Value)
+     */
+    var dims: PxDim3
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var meshLower: PxVec3
+    /**
+     * WebIDL type: float
+     */
+    var spacing: Float
+    /**
+     * WebIDL type: unsigned long
+     */
+    var subgridSize: Int
+    /**
+     * WebIDL type: [PxSdfBitsPerSubgridPixelEnum] (enum)
+     */
+    var bitsPerSubgridPixel: Int
+    /**
+     * WebIDL type: [PxDim3] (Value)
+     */
+    var sdfSubgrids3DTexBlockDim: PxDim3
+    /**
+     * WebIDL type: [PxBoundedData] (Value)
+     */
+    var sdfSubgrids: PxBoundedData
+    /**
+     * WebIDL type: [PxBoundedData] (Value)
+     */
+    var sdfStartSlots: PxBoundedData
+    /**
+     * WebIDL type: float
+     */
+    var subgridsMinSdfValue: Float
+    /**
+     * WebIDL type: float
+     */
+    var subgridsMaxSdfValue: Float
+    /**
+     * WebIDL type: [PxBounds3] (Value)
+     */
+    var sdfBounds: PxBounds3
+    /**
+     * WebIDL type: float
+     */
+    var narrowBandThicknessRelativeToSdfBoundsDiagonal: Float
+    /**
+     * WebIDL type: unsigned long
+     */
+    var numThreadsForSdfConstruction: Int
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isValid(): Boolean
+
+}
+
+fun PxSDFDesc(_module: JsAny = PhysXJsLoader.physXJs): PxSDFDesc = js("new _module.PxSDFDesc()")
+
+fun PxSDFDescFromPointer(ptr: Int, _module: JsAny = PhysXJsLoader.physXJs): PxSDFDesc = js("_module.wrapPointer(ptr, _module.PxSDFDesc)")
+
+var PxSDFDesc.bitsPerSubgridPixelEnum: PxSdfBitsPerSubgridPixelEnum
+    get() = PxSdfBitsPerSubgridPixelEnum.forValue(bitsPerSubgridPixel)
+    set(value) { bitsPerSubgridPixel = value.value }
+
 external interface PxTriangleMeshDesc : JsAny, DestroyableNative, PxSimpleTriangleMesh {
     /**
      * WebIDL type: [PxTypedBoundedData_PxU16Const] (Const, Value)
      */
     var materialIndices: PxTypedBoundedData_PxU16Const
+    /**
+     * WebIDL type: [PxSDFDesc]
+     */
+    var sdfDesc: PxSDFDesc
+    /**
+     * WebIDL type: float
+     */
+    var geomEpsilon: Float
 }
 
 fun PxTriangleMeshDesc(_module: JsAny = PhysXJsLoader.physXJs): PxTriangleMeshDesc = js("new _module.PxTriangleMeshDesc()")
@@ -331,11 +414,15 @@ value class PxMeshPreprocessingFlagEnum private constructor(val value: Int) {
         val eDISABLE_CLEAN_MESH: PxMeshPreprocessingFlagEnum = PxMeshPreprocessingFlagEnum(PxMeshPreprocessingFlagEnum_eDISABLE_CLEAN_MESH(PhysXJsLoader.physXJs))
         val eDISABLE_ACTIVE_EDGES_PRECOMPUTE: PxMeshPreprocessingFlagEnum = PxMeshPreprocessingFlagEnum(PxMeshPreprocessingFlagEnum_eDISABLE_ACTIVE_EDGES_PRECOMPUTE(PhysXJsLoader.physXJs))
         val eFORCE_32BIT_INDICES: PxMeshPreprocessingFlagEnum = PxMeshPreprocessingFlagEnum(PxMeshPreprocessingFlagEnum_eFORCE_32BIT_INDICES(PhysXJsLoader.physXJs))
+        val eENABLE_VERT_MAPPING: PxMeshPreprocessingFlagEnum = PxMeshPreprocessingFlagEnum(PxMeshPreprocessingFlagEnum_eENABLE_VERT_MAPPING(PhysXJsLoader.physXJs))
+        val eENABLE_INERTIA: PxMeshPreprocessingFlagEnum = PxMeshPreprocessingFlagEnum(PxMeshPreprocessingFlagEnum_eENABLE_INERTIA(PhysXJsLoader.physXJs))
         fun forValue(value: Int) = when(value) {
             eWELD_VERTICES.value -> eWELD_VERTICES
             eDISABLE_CLEAN_MESH.value -> eDISABLE_CLEAN_MESH
             eDISABLE_ACTIVE_EDGES_PRECOMPUTE.value -> eDISABLE_ACTIVE_EDGES_PRECOMPUTE
             eFORCE_32BIT_INDICES.value -> eFORCE_32BIT_INDICES
+            eENABLE_VERT_MAPPING.value -> eENABLE_VERT_MAPPING
+            eENABLE_INERTIA.value -> eENABLE_INERTIA
             else -> error("Invalid enum value $value for enum PxMeshPreprocessingFlagEnum")
         }
     }
@@ -345,6 +432,8 @@ private fun PxMeshPreprocessingFlagEnum_eWELD_VERTICES(module: JsAny): Int = js(
 private fun PxMeshPreprocessingFlagEnum_eDISABLE_CLEAN_MESH(module: JsAny): Int = js("module._emscripten_enum_PxMeshPreprocessingFlagEnum_eDISABLE_CLEAN_MESH()")
 private fun PxMeshPreprocessingFlagEnum_eDISABLE_ACTIVE_EDGES_PRECOMPUTE(module: JsAny): Int = js("module._emscripten_enum_PxMeshPreprocessingFlagEnum_eDISABLE_ACTIVE_EDGES_PRECOMPUTE()")
 private fun PxMeshPreprocessingFlagEnum_eFORCE_32BIT_INDICES(module: JsAny): Int = js("module._emscripten_enum_PxMeshPreprocessingFlagEnum_eFORCE_32BIT_INDICES()")
+private fun PxMeshPreprocessingFlagEnum_eENABLE_VERT_MAPPING(module: JsAny): Int = js("module._emscripten_enum_PxMeshPreprocessingFlagEnum_eENABLE_VERT_MAPPING()")
+private fun PxMeshPreprocessingFlagEnum_eENABLE_INERTIA(module: JsAny): Int = js("module._emscripten_enum_PxMeshPreprocessingFlagEnum_eENABLE_INERTIA()")
 
 value class PxMeshMidPhaseEnum private constructor(val value: Int) {
     companion object {
@@ -360,4 +449,22 @@ value class PxMeshMidPhaseEnum private constructor(val value: Int) {
 
 private fun PxMeshMidPhaseEnum_eBVH33(module: JsAny): Int = js("module._emscripten_enum_PxMeshMidPhaseEnum_eBVH33()")
 private fun PxMeshMidPhaseEnum_eBVH34(module: JsAny): Int = js("module._emscripten_enum_PxMeshMidPhaseEnum_eBVH34()")
+
+value class PxSdfBitsPerSubgridPixelEnum private constructor(val value: Int) {
+    companion object {
+        val e8_BIT_PER_PIXEL: PxSdfBitsPerSubgridPixelEnum = PxSdfBitsPerSubgridPixelEnum(PxSdfBitsPerSubgridPixelEnum_e8_BIT_PER_PIXEL(PhysXJsLoader.physXJs))
+        val e16_BIT_PER_PIXEL: PxSdfBitsPerSubgridPixelEnum = PxSdfBitsPerSubgridPixelEnum(PxSdfBitsPerSubgridPixelEnum_e16_BIT_PER_PIXEL(PhysXJsLoader.physXJs))
+        val e32_BIT_PER_PIXEL: PxSdfBitsPerSubgridPixelEnum = PxSdfBitsPerSubgridPixelEnum(PxSdfBitsPerSubgridPixelEnum_e32_BIT_PER_PIXEL(PhysXJsLoader.physXJs))
+        fun forValue(value: Int) = when(value) {
+            e8_BIT_PER_PIXEL.value -> e8_BIT_PER_PIXEL
+            e16_BIT_PER_PIXEL.value -> e16_BIT_PER_PIXEL
+            e32_BIT_PER_PIXEL.value -> e32_BIT_PER_PIXEL
+            else -> error("Invalid enum value $value for enum PxSdfBitsPerSubgridPixelEnum")
+        }
+    }
+}
+
+private fun PxSdfBitsPerSubgridPixelEnum_e8_BIT_PER_PIXEL(module: JsAny): Int = js("module._emscripten_enum_PxSdfBitsPerSubgridPixelEnum_e8_BIT_PER_PIXEL()")
+private fun PxSdfBitsPerSubgridPixelEnum_e16_BIT_PER_PIXEL(module: JsAny): Int = js("module._emscripten_enum_PxSdfBitsPerSubgridPixelEnum_e16_BIT_PER_PIXEL()")
+private fun PxSdfBitsPerSubgridPixelEnum_e32_BIT_PER_PIXEL(module: JsAny): Int = js("module._emscripten_enum_PxSdfBitsPerSubgridPixelEnum_e32_BIT_PER_PIXEL()")
 

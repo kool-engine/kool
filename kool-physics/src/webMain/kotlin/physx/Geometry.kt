@@ -5,9 +5,6 @@
 
 package physx
 
-import kotlin.js.JsAny
-import kotlin.js.js
-
 external interface PxBoxGeometry : JsAny, DestroyableNative, PxGeometry {
     /**
      * WebIDL type: [PxVec3] (Value)
@@ -990,9 +987,9 @@ external interface PxMeshFlags : JsAny, DestroyableNative {
 }
 
 /**
- * @param flags WebIDL type: octet
+ * @param flags WebIDL type: unsigned short
  */
-fun PxMeshFlags(flags: Byte, _module: JsAny = PhysXJsLoader.physXJs): PxMeshFlags = js("new _module.PxMeshFlags(flags)")
+fun PxMeshFlags(flags: Short, _module: JsAny = PhysXJsLoader.physXJs): PxMeshFlags = js("new _module.PxMeshFlags(flags)")
 
 fun PxMeshFlagsFromPointer(ptr: Int, _module: JsAny = PhysXJsLoader.physXJs): PxMeshFlags = js("_module.wrapPointer(ptr, _module.PxMeshFlags)")
 
@@ -1676,6 +1673,16 @@ external interface PxTriangleMesh : JsAny, PxRefCounted {
      */
     fun getLocalBounds(): PxBounds3
 
+    /**
+     * @return WebIDL type: [PxRealConstPtr] (Const, Value)
+     */
+    fun getSDF(): PxRealConstPtr
+
+    /**
+     * @param prefer WebIDL type: boolean
+     */
+    fun setPreferSDFProjection(prefer: Boolean)
+
 }
 
 fun PxTriangleMeshFromPointer(ptr: Int, _module: JsAny = PhysXJsLoader.physXJs): PxTriangleMesh = js("_module.wrapPointer(ptr, _module.PxTriangleMesh)")
@@ -1696,6 +1703,8 @@ val PxTriangleMesh.trianglesRemap
     get() = getTrianglesRemap()
 val PxTriangleMesh.localBounds
     get() = getLocalBounds()
+val PxTriangleMesh.sDF
+    get() = getSDF()
 
 external interface PxTriangleMeshAnalysisResults : JsAny, DestroyableNative {
     /**
@@ -1930,14 +1939,17 @@ private fun PxMeshFlagEnum_e16_BIT_INDICES(module: JsAny): Int = js("module._ems
 
 value class PxMeshGeometryFlagEnum private constructor(val value: Int) {
     companion object {
+        val eTIGHT_BOUNDS: PxMeshGeometryFlagEnum = PxMeshGeometryFlagEnum(PxMeshGeometryFlagEnum_eTIGHT_BOUNDS(PhysXJsLoader.physXJs))
         val eDOUBLE_SIDED: PxMeshGeometryFlagEnum = PxMeshGeometryFlagEnum(PxMeshGeometryFlagEnum_eDOUBLE_SIDED(PhysXJsLoader.physXJs))
         fun forValue(value: Int) = when(value) {
+            eTIGHT_BOUNDS.value -> eTIGHT_BOUNDS
             eDOUBLE_SIDED.value -> eDOUBLE_SIDED
             else -> error("Invalid enum value $value for enum PxMeshGeometryFlagEnum")
         }
     }
 }
 
+private fun PxMeshGeometryFlagEnum_eTIGHT_BOUNDS(module: JsAny): Int = js("module._emscripten_enum_PxMeshGeometryFlagEnum_eTIGHT_BOUNDS()")
 private fun PxMeshGeometryFlagEnum_eDOUBLE_SIDED(module: JsAny): Int = js("module._emscripten_enum_PxMeshGeometryFlagEnum_eDOUBLE_SIDED()")
 
 value class PxTetrahedronMeshAnalysisResultEnum private constructor(val value: Int) {
@@ -2040,9 +2052,11 @@ value class PxTriangleMeshFlagEnum private constructor(val value: Int) {
     companion object {
         val e16_BIT_INDICES: PxTriangleMeshFlagEnum = PxTriangleMeshFlagEnum(PxTriangleMeshFlagEnum_e16_BIT_INDICES(PhysXJsLoader.physXJs))
         val eADJACENCY_INFO: PxTriangleMeshFlagEnum = PxTriangleMeshFlagEnum(PxTriangleMeshFlagEnum_eADJACENCY_INFO(PhysXJsLoader.physXJs))
+        val ePREFER_NO_SDF_PROJ: PxTriangleMeshFlagEnum = PxTriangleMeshFlagEnum(PxTriangleMeshFlagEnum_ePREFER_NO_SDF_PROJ(PhysXJsLoader.physXJs))
         fun forValue(value: Int) = when(value) {
             e16_BIT_INDICES.value -> e16_BIT_INDICES
             eADJACENCY_INFO.value -> eADJACENCY_INFO
+            ePREFER_NO_SDF_PROJ.value -> ePREFER_NO_SDF_PROJ
             else -> error("Invalid enum value $value for enum PxTriangleMeshFlagEnum")
         }
     }
@@ -2050,4 +2064,5 @@ value class PxTriangleMeshFlagEnum private constructor(val value: Int) {
 
 private fun PxTriangleMeshFlagEnum_e16_BIT_INDICES(module: JsAny): Int = js("module._emscripten_enum_PxTriangleMeshFlagEnum_e16_BIT_INDICES()")
 private fun PxTriangleMeshFlagEnum_eADJACENCY_INFO(module: JsAny): Int = js("module._emscripten_enum_PxTriangleMeshFlagEnum_eADJACENCY_INFO()")
+private fun PxTriangleMeshFlagEnum_ePREFER_NO_SDF_PROJ(module: JsAny): Int = js("module._emscripten_enum_PxTriangleMeshFlagEnum_ePREFER_NO_SDF_PROJ()")
 
