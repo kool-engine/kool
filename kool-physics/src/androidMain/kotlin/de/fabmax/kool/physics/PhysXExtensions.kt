@@ -17,7 +17,7 @@ import physxandroid.geometry.*
 import physxandroid.physics.*
 import physxandroid.support.PxArray_PxShapePtr
 import physxandroid.support.PxArray_PxVec3
-import physxandroid.vehicle2.*
+import physxandroid.vehicle.*
 
 val NativeObject.ptr: Long get() = address
 
@@ -160,7 +160,7 @@ fun ScopedMemory.createPxConvexMeshGeometryFlags(flags: Int) = autoDelete(PxConv
 fun ScopedMemory.createPxHitFlags(flags: Int) = autoDelete(PxHitFlags(flags.toShort()), PxHitFlags::destroy)
 fun ScopedMemory.createPxMeshGeometryFlags(flags: Int) = autoDelete(PxMeshGeometryFlags(flags.toByte()), PxMeshGeometryFlags::destroy)
 fun ScopedMemory.createPxRevoluteJointFlags(flags: Int) = autoDelete(PxRevoluteJointFlags(flags.toShort()), PxRevoluteJointFlags::destroy)
-fun ScopedMemory.createPxRigidBodyFlags(flags: Int) = autoDelete(PxRigidBodyFlags(flags.toByte()), PxRigidBodyFlags::destroy)
+fun ScopedMemory.createPxRigidBodyFlags(flags: Int) = autoDelete(PxRigidBodyFlags(flags.toShort()), PxRigidBodyFlags::destroy)
 fun ScopedMemory.createPxRigidDynamicLockFlags(flags: Int) = autoDelete(PxRigidDynamicLockFlags(flags.toByte()), PxRigidDynamicLockFlags::destroy)
 fun ScopedMemory.createPxSceneFlags(flags: Int) = autoDelete(PxSceneFlags(flags), PxSceneFlags::destroy)
 fun ScopedMemory.createPxShapeFlags(flags: Int) = autoDelete(PxShapeFlags(flags.toByte()), PxShapeFlags::destroy)

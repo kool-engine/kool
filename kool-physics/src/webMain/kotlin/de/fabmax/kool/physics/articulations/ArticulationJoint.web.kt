@@ -119,6 +119,7 @@ class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) :
             PxArticulationJointTypeEnum.eFIX -> ArticulationJointType.FIX
             PxArticulationJointTypeEnum.ePRISMATIC -> ArticulationJointType.PRISMATIC
             PxArticulationJointTypeEnum.eREVOLUTE -> ArticulationJointType.REVOLUTE
+            PxArticulationJointTypeEnum.eREVOLUTE_UNWRAPPED -> ArticulationJointType.REVOLUTE_UNWRAPPED
             PxArticulationJointTypeEnum.eSPHERICAL -> ArticulationJointType.SPHERICAL
             PxArticulationJointTypeEnum.eUNDEFINED -> throw IllegalStateException("Invalid joint type: $this")
             else -> throw IllegalStateException("Invalid joint type: $this")
