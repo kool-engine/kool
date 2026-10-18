@@ -2,7 +2,7 @@ rootProject.name = "kool"
 
 pluginManagement {
     repositories {
-        mavenLocal()
+        //mavenLocal()
         google()
         mavenCentral()
         gradlePluginPortal()
