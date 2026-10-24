@@ -22,6 +22,9 @@ private fun B2_CharacterMover(module: JsAny): B2_CharacterMover = js("module.B2_
 val B2_Collision: B2_Collision = B2_Collision(Box2dWasmLoader.box2dWasm)
 private fun B2_Collision(module: JsAny): B2_Collision = js("module.B2_Collision.prototype")
 
+val B2_Contact: B2_Contact = B2_Contact(Box2dWasmLoader.box2dWasm)
+private fun B2_Contact(module: JsAny): B2_Contact = js("module.B2_Contact.prototype")
+
 val B2_Distance: B2_Distance = B2_Distance(Box2dWasmLoader.box2dWasm)
 private fun B2_Distance(module: JsAny): B2_Distance = js("module.B2_Distance.prototype")
 
@@ -46,11 +49,14 @@ private fun B2_Math(module: JsAny): B2_Math = js("module.B2_Math.prototype")
 val B2_MotorJoint: B2_MotorJoint = B2_MotorJoint(Box2dWasmLoader.box2dWasm)
 private fun B2_MotorJoint(module: JsAny): B2_MotorJoint = js("module.B2_MotorJoint.prototype")
 
-val B2_MouseJoint: B2_MouseJoint = B2_MouseJoint(Box2dWasmLoader.box2dWasm)
-private fun B2_MouseJoint(module: JsAny): B2_MouseJoint = js("module.B2_MouseJoint.prototype")
+val B2_MoverJoint: B2_MoverJoint = B2_MoverJoint(Box2dWasmLoader.box2dWasm)
+private fun B2_MoverJoint(module: JsAny): B2_MoverJoint = js("module.B2_MoverJoint.prototype")
 
 val B2_Plane: B2_Plane = B2_Plane(Box2dWasmLoader.box2dWasm)
 private fun B2_Plane(module: JsAny): B2_Plane = js("module.B2_Plane.prototype")
+
+val B2_PogoJoint: B2_PogoJoint = B2_PogoJoint(Box2dWasmLoader.box2dWasm)
+private fun B2_PogoJoint(module: JsAny): B2_PogoJoint = js("module.B2_PogoJoint.prototype")
 
 val B2_PrismaticJoint: B2_PrismaticJoint = B2_PrismaticJoint(Box2dWasmLoader.box2dWasm)
 private fun B2_PrismaticJoint(module: JsAny): B2_PrismaticJoint = js("module.B2_PrismaticJoint.prototype")

@@ -15,7 +15,7 @@ data class BodyDef(
     val sleepThreshold: Float = BodyDefDefaults.sleepThreshold,
     val enableSleep: Boolean = BodyDefDefaults.enableSleep,
     val isAwake: Boolean = BodyDefDefaults.isAwake,
-    val fixedRotation: Boolean = BodyDefDefaults.fixedRotation,
+    val enableContactRecycling: Boolean = BodyDefDefaults.enableContactRecycling,
     val isBullet: Boolean = BodyDefDefaults.isBullet,
     val isEnabled: Boolean = BodyDefDefaults.isEnabled,
     val allowFastRotation: Boolean = BodyDefDefaults.allowFastRotation,
@@ -123,7 +123,7 @@ internal expect fun BodyId.setLinearVelocity(linearVelocity: Vec2f)
 internal expect fun BodyId.getAngularVelocity(): Float
 internal expect fun BodyId.setAngularVelocity(angularVelocity: Float)
 
-internal expect fun BodyId.setTargetTransform(target: Pose2f, duration: Float)
+internal expect fun BodyId.setTargetTransform(target: Pose2f, duration: Float, wake: Boolean = false)
 
 internal expect fun BodyId.addChain(chainDef: ChainDef): ChainId
 
@@ -136,7 +136,7 @@ internal expect object BodyDefDefaults {
     val sleepThreshold: Float
     val enableSleep: Boolean
     val isAwake: Boolean
-    val fixedRotation: Boolean
+    val enableContactRecycling: Boolean
     val isBullet: Boolean
     val isEnabled: Boolean
     val allowFastRotation: Boolean

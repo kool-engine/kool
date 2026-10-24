@@ -29,7 +29,7 @@ internal actual fun createBody(bodyDef: BodyDef, worldId: WorldId): BodyId = sco
     b2BodyDef.sleepThreshold = bodyDef.sleepThreshold
     b2BodyDef.enableSleep = bodyDef.enableSleep
     b2BodyDef.isAwake = bodyDef.isAwake
-    b2BodyDef.fixedRotation = bodyDef.fixedRotation
+    b2BodyDef.enableContactRecycling = bodyDef.enableContactRecycling
     b2BodyDef.isBullet = bodyDef.isBullet
     b2BodyDef.isEnabled = bodyDef.isEnabled
     b2BodyDef.allowFastRotation = bodyDef.allowFastRotation
@@ -75,7 +75,7 @@ internal actual fun BodyId.addChain(chainDef: ChainDef): ChainId = scopedMem {
     val points = allocVec2Array(chainDef.points)
 
     b2ChainDef.points = points.get(0)
-    b2ChainDef.count = points.length
+    b2ChainDef.pointCount = points.length
     b2ChainDef.isLoop = chainDef.isLoop
 
     val chainId = B2_Chain.createChain(id, b2ChainDef)
@@ -104,10 +104,10 @@ internal actual fun BodyId.getAngularVelocity(): Float = B2_Body.getAngularVeloc
 
 internal actual fun BodyId.setAngularVelocity(angularVelocity: Float) = B2_Body.setAngularVelocity(id, angularVelocity)
 
-internal actual fun BodyId.setTargetTransform(target: Pose2f, duration: Float) {
+internal actual fun BodyId.setTargetTransform(target: Pose2f, duration: Float, wake: Boolean) {
     scopedMem {
         val target = allocTransform(target)
-        B2_Body.setTargetTransform(id, target, duration)
+        B2_Body.setTargetTransform(id, target, duration, wake)
     }
 }
 
@@ -129,7 +129,7 @@ internal actual object BodyDefDefaults {
     actual val sleepThreshold: Float = defaults.sleepThreshold
     actual val enableSleep: Boolean = defaults.enableSleep
     actual val isAwake: Boolean = defaults.isAwake
-    actual val fixedRotation: Boolean = defaults.fixedRotation
+    actual val enableContactRecycling: Boolean = defaults.enableContactRecycling
     actual val isBullet: Boolean = defaults.isBullet
     actual val isEnabled: Boolean = defaults.isEnabled
     actual val allowFastRotation: Boolean = defaults.allowFastRotation

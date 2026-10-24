@@ -5,9 +5,6 @@
 
 package box2d
 
-import kotlin.js.JsAny
-import kotlin.js.js
-
 external interface B2_Shape : JsAny {
     /**
      * Native object address.
@@ -34,6 +31,14 @@ external interface B2_Shape : JsAny {
      * @return WebIDL type: unsigned long long
      */
     fun createSegmentShape(bodyId: Long, def: b2ShapeDef, segment: b2Segment): Long
+
+    /**
+     * @param bodyId       WebIDL type: unsigned long long
+     * @param def          WebIDL type: [b2ShapeDef] (Const)
+     * @param chainSegment WebIDL type: [b2ChainSegment] (Const)
+     * @return WebIDL type: unsigned long long
+     */
+    fun createChainSegmentShape(bodyId: Long, def: b2ShapeDef, chainSegment: b2ChainSegment): Long
 
     /**
      * @param bodyId  WebIDL type: unsigned long long
@@ -138,15 +143,15 @@ external interface B2_Shape : JsAny {
 
     /**
      * @param shapeId  WebIDL type: unsigned long long
-     * @param material WebIDL type: long
+     * @param material WebIDL type: unsigned long long
      */
-    fun setMaterial(shapeId: Long, material: Int)
+    fun setUserMaterial(shapeId: Long, material: Long)
 
     /**
      * @param shapeId WebIDL type: unsigned long long
-     * @return WebIDL type: long
+     * @return WebIDL type: unsigned long long
      */
-    fun getMaterial(shapeId: Long): Int
+    fun getUserMaterial(shapeId: Long): Long
 
     /**
      * @param shapeId         WebIDL type: unsigned long long
@@ -228,11 +233,12 @@ external interface B2_Shape : JsAny {
     fun testPoint(shapeId: Long, point: b2Vec2): Boolean
 
     /**
-     * @param shapeId WebIDL type: unsigned long long
-     * @param input   WebIDL type: [b2RayCastInput] (Const)
+     * @param shapeId     WebIDL type: unsigned long long
+     * @param origin      WebIDL type: [b2Vec2] (Ref)
+     * @param translation WebIDL type: [b2Vec2] (Ref)
      * @return WebIDL type: [b2CastOutput] (Value)
      */
-    fun rayCast(shapeId: Long, input: b2RayCastInput): b2CastOutput
+    fun castRay(shapeId: Long, origin: b2Vec2, translation: b2Vec2): b2CastOutput
 
     /**
      * @param shapeId WebIDL type: unsigned long long
@@ -289,6 +295,12 @@ external interface B2_Shape : JsAny {
     fun setPolygon(shapeId: Long, polygon: b2Polygon)
 
     /**
+     * @param shapeId      WebIDL type: unsigned long long
+     * @param chainSegment WebIDL type: [b2ChainSegment] (Const)
+     */
+    fun setChainSegment(shapeId: Long, chainSegment: b2ChainSegment)
+
+    /**
      * @param shapeId WebIDL type: unsigned long long
      * @return WebIDL type: unsigned long long
      */
@@ -314,23 +326,23 @@ external interface B2_Shape : JsAny {
     fun getSensorCapacity(shapeId: Long): Int
 
     /**
-     * @param shapeId  WebIDL type: unsigned long long
-     * @param overlaps WebIDL type: [b2ShapeIdArray]
+     * @param shapeId    WebIDL type: unsigned long long
+     * @param visitorIds WebIDL type: [b2ShapeIdArray]
      * @return WebIDL type: long
      */
-    fun getSensorOverlaps(shapeId: Long, overlaps: b2ShapeIdArray): Int
+    fun getSensorData(shapeId: Long, visitorIds: b2ShapeIdArray): Int
 
     /**
      * @param shapeId WebIDL type: unsigned long long
      * @return WebIDL type: [b2AABB] (Value)
      */
-    fun getAABB(shapeId: Long): b2AABB
+    fun getBounds(shapeId: Long): b2AABB
 
     /**
      * @param shapeId WebIDL type: unsigned long long
      * @return WebIDL type: [b2MassData] (Value)
      */
-    fun getMassData(shapeId: Long): b2MassData
+    fun computeMassData(shapeId: Long): b2MassData
 
     /**
      * @param shapeId WebIDL type: unsigned long long
@@ -338,6 +350,15 @@ external interface B2_Shape : JsAny {
      * @return WebIDL type: [b2Vec2] (Value)
      */
     fun getClosestPoint(shapeId: Long, target: b2Vec2): b2Vec2
+
+    /**
+     * @param shapeId WebIDL type: unsigned long long
+     * @param wind    WebIDL type: [b2Vec2] (Ref)
+     * @param drag    WebIDL type: float
+     * @param lift    WebIDL type: float
+     * @param wake    WebIDL type: boolean
+     */
+    fun applyWind(shapeId: Long, wind: b2Vec2, drag: Float, lift: Float, wake: Boolean)
 
 }
 
@@ -393,39 +414,23 @@ external interface B2_Chain : JsAny {
 
     /**
      * @param chainId  WebIDL type: unsigned long long
-     * @param friction WebIDL type: float
+     * @param material WebIDL type: [b2SurfaceMaterial] (Const)
      */
-    fun setFriction(chainId: Long, friction: Float)
+    fun setAllSurfaceMaterials(chainId: Long, material: b2SurfaceMaterial)
 
     /**
-     * @param chainId WebIDL type: unsigned long long
-     * @return WebIDL type: float
+     * @param chainId      WebIDL type: unsigned long long
+     * @param material     WebIDL type: [b2SurfaceMaterial] (Const)
+     * @param segmentIndex WebIDL type: long
      */
-    fun getFriction(chainId: Long): Float
+    fun setSurfaceMaterial(chainId: Long, material: b2SurfaceMaterial, segmentIndex: Int)
 
     /**
-     * @param chainId     WebIDL type: unsigned long long
-     * @param restitution WebIDL type: float
+     * @param chainId      WebIDL type: unsigned long long
+     * @param segmentIndex WebIDL type: long
+     * @return WebIDL type: [b2SurfaceMaterial] (Value)
      */
-    fun setRestitution(chainId: Long, restitution: Float)
-
-    /**
-     * @param chainId WebIDL type: unsigned long long
-     * @return WebIDL type: float
-     */
-    fun getRestitution(chainId: Long): Float
-
-    /**
-     * @param chainId  WebIDL type: unsigned long long
-     * @param material WebIDL type: long
-     */
-    fun setMaterial(chainId: Long, material: Int)
-
-    /**
-     * @param chainId WebIDL type: unsigned long long
-     * @return WebIDL type: long
-     */
-    fun getMaterial(chainId: Long): Int
+    fun getSurfaceMaterial(chainId: Long, segmentIndex: Int): b2SurfaceMaterial
 
 }
 
@@ -453,6 +458,10 @@ external interface b2ShapeDef : JsAny, DestroyableNative {
      * WebIDL type: [b2Filter] (Value)
      */
     var filter: b2Filter
+    /**
+     * WebIDL type: boolean
+     */
+    var enableCustomFiltering: Boolean
     /**
      * WebIDL type: boolean
      */
@@ -504,7 +513,15 @@ external interface b2ChainDef : JsAny, DestroyableNative {
     /**
      * WebIDL type: long
      */
-    var count: Int
+    var pointCount: Int
+    /**
+     * WebIDL type: [b2Vec2] (Value)
+     */
+    var ghost1: b2Vec2
+    /**
+     * WebIDL type: [b2Vec2] (Value)
+     */
+    var ghost2: b2Vec2
     /**
      * WebIDL type: [b2SurfaceMaterial] (Const)
      */
@@ -525,10 +542,6 @@ external interface b2ChainDef : JsAny, DestroyableNative {
      * WebIDL type: boolean
      */
     var enableSensorEvents: Boolean
-    /**
-     * WebIDL type: long
-     */
-    var internalValue: Int
 }
 
 fun b2ChainDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2ChainDef = js("new _module.b2ChainDef()")
@@ -606,9 +619,9 @@ external interface b2SurfaceMaterial : JsAny, DestroyableNative {
      */
     var tangentSpeed: Float
     /**
-     * WebIDL type: long
+     * WebIDL type: unsigned long long
      */
-    var userMaterialId: Int
+    var userMaterialId: Long
 }
 
 fun b2SurfaceMaterial(_module: JsAny = Box2dWasmLoader.box2dWasm): b2SurfaceMaterial = js("new _module.b2SurfaceMaterial()")
@@ -621,6 +634,10 @@ external interface b2ContactData : JsAny, DestroyableNative {
      */
     val ptr: Int
 
+    /**
+     * WebIDL type: [b2ContactId] (Value)
+     */
+    var contactId: b2ContactId
     /**
      * WebIDL type: [b2Manifold] (Value)
      */
@@ -850,6 +867,18 @@ external interface B2_Rot : JsAny {
     fun makeRot(radians: Float, result: b2Rot)
 
     /**
+     * @param unitVector WebIDL type: [b2Vec2] (Ref)
+     * @param result     WebIDL type: [b2Rot] (Ref)
+     */
+    fun makeRotFromUnitVector(unitVector: b2Vec2, result: b2Rot)
+
+    /**
+     * @param a      WebIDL type: [b2Rot] (Ref)
+     * @param result WebIDL type: [b2Rot] (Ref)
+     */
+    fun invertRot(a: b2Rot, result: b2Rot)
+
+    /**
      * @param q      WebIDL type: [b2Rot] (Ref)
      * @param result WebIDL type: [b2Rot] (Ref)
      */
@@ -884,18 +913,18 @@ external interface B2_Rot : JsAny {
     fun mulRot(q: b2Rot, r: b2Rot, result: b2Rot)
 
     /**
-     * @param q      WebIDL type: [b2Rot] (Ref)
-     * @param r      WebIDL type: [b2Rot] (Ref)
+     * @param a      WebIDL type: [b2Rot] (Ref)
+     * @param b      WebIDL type: [b2Rot] (Ref)
      * @param result WebIDL type: [b2Rot] (Ref)
      */
-    fun invMulRot(q: b2Rot, r: b2Rot, result: b2Rot)
+    fun invMulRot(a: b2Rot, b: b2Rot, result: b2Rot)
 
     /**
-     * @param b WebIDL type: [b2Rot] (Ref)
      * @param a WebIDL type: [b2Rot] (Ref)
+     * @param b WebIDL type: [b2Rot] (Ref)
      * @return WebIDL type: float
      */
-    fun relativeAngle(b: b2Rot, a: b2Rot): Float
+    fun relativeAngle(a: b2Rot, b: b2Rot): Float
 
     /**
      * @param radians WebIDL type: float
@@ -975,6 +1004,12 @@ external interface B2_Transform : JsAny {
      * @param result WebIDL type: [b2Transform] (Ref)
      */
     fun invMulTransforms(A: b2Transform, B: b2Transform, result: b2Transform)
+
+    /**
+     * @param t WebIDL type: [b2Transform] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun isValid(t: b2Transform): Boolean
 
 }
 
@@ -1130,7 +1165,13 @@ external interface B2_Math : JsAny {
      * @param q WebIDL type: [b2Rot] (Ref)
      * @return WebIDL type: boolean
      */
-    fun isValidRotation(q: b2Rot): Boolean
+    fun isValidRot(q: b2Rot): Boolean
+
+    /**
+     * @param t WebIDL type: [b2Transform] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun isValidTransform(t: b2Transform): Boolean
 
     /**
      * @param aabb WebIDL type: [b2AABB] (Ref)
@@ -1305,7 +1346,7 @@ external interface B2_Distance : JsAny {
      * @param q2 WebIDL type: [b2Vec2] (Ref)
      * @return WebIDL type: [b2SegmentDistanceResult] (Value)
      */
-    fun segmentDistance(p1: b2Vec2, q1: b2Vec2, p2: b2Vec2, q2: b2Vec2): b2SegmentDistanceResult
+    fun computeSegmentDistance(p1: b2Vec2, q1: b2Vec2, p2: b2Vec2, q2: b2Vec2): b2SegmentDistanceResult
 
     /**
      * @param input           WebIDL type: [b2DistanceInput] (Const)
@@ -1314,13 +1355,13 @@ external interface B2_Distance : JsAny {
      * @param simplexCapacity WebIDL type: long
      * @return WebIDL type: [b2DistanceOutput] (Value)
      */
-    fun shapeDistance(input: b2DistanceInput, cache: b2SimplexCache, simplexes: b2Simplex, simplexCapacity: Int): b2DistanceOutput
+    fun computeShapeDistance(input: b2DistanceInput, cache: b2SimplexCache, simplexes: b2Simplex, simplexCapacity: Int): b2DistanceOutput
 
     /**
      * @param input WebIDL type: [b2ShapeCastPairInput] (Const)
      * @return WebIDL type: [b2CastOutput] (Value)
      */
-    fun shapeCast(input: b2ShapeCastPairInput): b2CastOutput
+    fun castShape(input: b2ShapeCastPairInput): b2CastOutput
 
     /**
      * @param points WebIDL type: [b2Vec2Array]
@@ -1349,7 +1390,7 @@ external interface B2_Distance : JsAny {
      * @param input WebIDL type: [b2TOIInput] (Const)
      * @return WebIDL type: [b2TOIOutput] (Value)
      */
-    fun timeOfImpact(input: b2TOIInput): b2TOIOutput
+    fun computeTimeOfImpact(input: b2TOIInput): b2TOIOutput
 
 }
 
@@ -1435,11 +1476,7 @@ external interface b2DistanceInput : JsAny, DestroyableNative {
     /**
      * WebIDL type: [b2Transform] (Value)
      */
-    var transformA: b2Transform
-    /**
-     * WebIDL type: [b2Transform] (Value)
-     */
-    var transformB: b2Transform
+    var transform: b2Transform
     /**
      * WebIDL type: boolean
      */
@@ -1567,11 +1604,7 @@ external interface b2ShapeCastPairInput : JsAny, DestroyableNative {
     /**
      * WebIDL type: [b2Transform] (Value)
      */
-    var transformA: b2Transform
-    /**
-     * WebIDL type: [b2Transform] (Value)
-     */
-    var transformB: b2Transform
+    var transform: b2Transform
     /**
      * WebIDL type: [b2Vec2] (Value)
      */
@@ -1665,6 +1698,14 @@ external interface b2TOIOutput : JsAny, DestroyableNative {
      */
     var state: Int
     /**
+     * WebIDL type: [b2Vec2] (Value)
+     */
+    var point: b2Vec2
+    /**
+     * WebIDL type: [b2Vec2] (Value)
+     */
+    var normal: b2Vec2
+    /**
      * WebIDL type: float
      */
     var fraction: Float
@@ -1714,11 +1755,22 @@ external interface B2_World : JsAny {
     fun step(worldId: Long, timeStep: Float, subStepCount: Int)
 
     /**
+     * @param result WebIDL type: [b2DebugDraw] (Ref)
+     */
+    fun defaultDebugDraw(result: b2DebugDraw)
+
+    /**
      * @param worldId   WebIDL type: unsigned long long
      * @param draw      WebIDL type: [b2DebugDraw]
      * @param callbacks WebIDL type: [b2DebugDrawCallbacks]
      */
     fun draw(worldId: Long, draw: b2DebugDraw, callbacks: b2DebugDrawCallbacks)
+
+    /**
+     * @param worldId WebIDL type: unsigned long long
+     * @return WebIDL type: [b2AABB] (Value)
+     */
+    fun getBounds(worldId: Long): b2AABB
 
     /**
      * @param worldId WebIDL type: unsigned long long
@@ -1740,21 +1792,29 @@ external interface B2_World : JsAny {
 
     /**
      * @param worldId WebIDL type: unsigned long long
+     * @return WebIDL type: [b2JointEvents] (Value)
+     */
+    fun getJointEvents(worldId: Long): b2JointEvents
+
+    /**
+     * @param worldId WebIDL type: unsigned long long
+     * @param origin  WebIDL type: [b2Vec2] (Ref)
      * @param aabb    WebIDL type: [b2AABB] (Ref)
      * @param filter  WebIDL type: [b2QueryFilter] (Ref)
      * @param fcn     WebIDL type: [b2OverlapResultFcnI]
      * @return WebIDL type: [b2TreeStats] (Value)
      */
-    fun overlapAABB(worldId: Long, aabb: b2AABB, filter: b2QueryFilter, fcn: b2OverlapResultFcnI): b2TreeStats
+    fun overlapAABB(worldId: Long, origin: b2Vec2, aabb: b2AABB, filter: b2QueryFilter, fcn: b2OverlapResultFcnI): b2TreeStats
 
     /**
      * @param worldId WebIDL type: unsigned long long
+     * @param origin  WebIDL type: [b2Vec2] (Ref)
      * @param proxy   WebIDL type: [b2ShapeProxy] (Const)
      * @param filter  WebIDL type: [b2QueryFilter] (Ref)
      * @param fcn     WebIDL type: [b2OverlapResultFcnI]
      * @return WebIDL type: [b2TreeStats] (Value)
      */
-    fun overlapShape(worldId: Long, proxy: b2ShapeProxy, filter: b2QueryFilter, fcn: b2OverlapResultFcnI): b2TreeStats
+    fun overlapShape(worldId: Long, origin: b2Vec2, proxy: b2ShapeProxy, filter: b2QueryFilter, fcn: b2OverlapResultFcnI): b2TreeStats
 
     /**
      * @param worldId     WebIDL type: unsigned long long
@@ -1777,30 +1837,33 @@ external interface B2_World : JsAny {
 
     /**
      * @param worldId     WebIDL type: unsigned long long
+     * @param origin      WebIDL type: [b2Vec2] (Ref)
      * @param proxy       WebIDL type: [b2ShapeProxy] (Const)
      * @param translation WebIDL type: [b2Vec2] (Ref)
      * @param filter      WebIDL type: [b2QueryFilter] (Ref)
      * @param fcn         WebIDL type: [b2CastResultFcnI]
      * @return WebIDL type: [b2TreeStats] (Value)
      */
-    fun castShape(worldId: Long, proxy: b2ShapeProxy, translation: b2Vec2, filter: b2QueryFilter, fcn: b2CastResultFcnI): b2TreeStats
+    fun castShape(worldId: Long, origin: b2Vec2, proxy: b2ShapeProxy, translation: b2Vec2, filter: b2QueryFilter, fcn: b2CastResultFcnI): b2TreeStats
 
     /**
      * @param worldId     WebIDL type: unsigned long long
+     * @param origin      WebIDL type: [b2Vec2] (Ref)
      * @param mover       WebIDL type: [b2Capsule] (Const)
      * @param translation WebIDL type: [b2Vec2] (Ref)
      * @param filter      WebIDL type: [b2QueryFilter] (Ref)
      * @return WebIDL type: float
      */
-    fun castMover(worldId: Long, mover: b2Capsule, translation: b2Vec2, filter: b2QueryFilter): Float
+    fun castMover(worldId: Long, origin: b2Vec2, mover: b2Capsule, translation: b2Vec2, filter: b2QueryFilter): Float
 
     /**
      * @param worldId WebIDL type: unsigned long long
+     * @param origin  WebIDL type: [b2Vec2] (Ref)
      * @param mover   WebIDL type: [b2Capsule] (Const)
      * @param filter  WebIDL type: [b2QueryFilter] (Ref)
      * @param fcn     WebIDL type: [b2PlaneResultFcnI]
      */
-    fun collideMover(worldId: Long, mover: b2Capsule, filter: b2QueryFilter, fcn: b2PlaneResultFcnI)
+    fun collideMover(worldId: Long, origin: b2Vec2, mover: b2Capsule, filter: b2QueryFilter, fcn: b2PlaneResultFcnI)
 
     /**
      * @param worldId WebIDL type: unsigned long long
@@ -1837,6 +1900,30 @@ external interface B2_World : JsAny {
      * @return WebIDL type: float
      */
     fun getRestitutionThreshold(worldId: Long): Float
+
+    /**
+     * @param worldId    WebIDL type: unsigned long long
+     * @param iterations WebIDL type: long
+     */
+    fun setRestitutionIterations(worldId: Long, iterations: Int)
+
+    /**
+     * @param worldId WebIDL type: unsigned long long
+     * @return WebIDL type: long
+     */
+    fun getRestitutionIterations(worldId: Long): Int
+
+    /**
+     * @param worldId WebIDL type: unsigned long long
+     * @param flag    WebIDL type: boolean
+     */
+    fun enableRestitutionPropagation(worldId: Long, flag: Boolean)
+
+    /**
+     * @param worldId WebIDL type: unsigned long long
+     * @return WebIDL type: boolean
+     */
+    fun isRestitutionPropagationEnabled(worldId: Long): Boolean
 
     /**
      * @param worldId WebIDL type: unsigned long long
@@ -1901,16 +1988,46 @@ external interface B2_World : JsAny {
     fun setContactTuning(worldId: Long, hertz: Float, dampingRatio: Float, pushSpeed: Float)
 
     /**
-     * @param worldId            WebIDL type: unsigned long long
-     * @param maximumLinearSpeed WebIDL type: float
+     * @param worldId WebIDL type: unsigned long long
+     * @return WebIDL type: float
      */
-    fun setMaximumLinearSpeed(worldId: Long, maximumLinearSpeed: Float)
+    fun getContactTuningHertz(worldId: Long): Float
 
     /**
      * @param worldId WebIDL type: unsigned long long
      * @return WebIDL type: float
      */
-    fun getMaximumLinearSpeed(worldId: Long): Float
+    fun getContactTuningDampingRatio(worldId: Long): Float
+
+    /**
+     * @param worldId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getContactTuningPushSpeed(worldId: Long): Float
+
+    /**
+     * @param worldId         WebIDL type: unsigned long long
+     * @param recycleDistance WebIDL type: float
+     */
+    fun setContactRecycleDistance(worldId: Long, recycleDistance: Float)
+
+    /**
+     * @param worldId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getContactRecycleDistance(worldId: Long): Float
+
+    /**
+     * @param worldId            WebIDL type: unsigned long long
+     * @param maximumLinearSpeed WebIDL type: float
+     */
+    fun setMaxLinearSpeed(worldId: Long, maximumLinearSpeed: Float)
+
+    /**
+     * @param worldId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getMaxLinearSpeed(worldId: Long): Float
 
     /**
      * @param worldId WebIDL type: unsigned long long
@@ -1923,6 +2040,18 @@ external interface B2_World : JsAny {
      * @return WebIDL type: boolean
      */
     fun isWarmStartingEnabled(worldId: Long): Boolean
+
+    /**
+     * @param worldId WebIDL type: unsigned long long
+     * @param count   WebIDL type: long
+     */
+    fun setWorkerCount(worldId: Long, count: Int)
+
+    /**
+     * @param worldId WebIDL type: unsigned long long
+     * @return WebIDL type: long
+     */
+    fun getWorkerCount(worldId: Long): Int
 
     /**
      * @param worldId WebIDL type: unsigned long long
@@ -1944,8 +2073,20 @@ external interface B2_World : JsAny {
 
     /**
      * @param worldId WebIDL type: unsigned long long
+     * @return WebIDL type: [b2Capacity] (Value)
+     */
+    fun getMaxCapacity(worldId: Long): b2Capacity
+
+    /**
+     * @param worldId WebIDL type: unsigned long long
      */
     fun dumpMemoryStats(worldId: Long)
+
+    /**
+     * @param worldId WebIDL type: unsigned long long
+     * @return WebIDL type: unsigned long long
+     */
+    fun getStateHash(worldId: Long): Long
 
     /**
      * @param worldId  WebIDL type: unsigned long long
@@ -1968,7 +2109,7 @@ external interface B2_World : JsAny {
      * @param worldId WebIDL type: unsigned long long
      * @param flag    WebIDL type: boolean
      */
-    fun enableSpeculative(worldId: Long, flag: Boolean)
+    fun enableSSE2Fallback(worldId: Long, flag: Boolean)
 
 }
 
@@ -1987,13 +2128,10 @@ external interface TaskManager : JsAny, DestroyableNative {
     fun install(worldDef: b2WorldDef, threadCount: Int)
 
     /**
-     * @param start        WebIDL type: unsigned long
-     * @param end          WebIDL type: unsigned long
-     * @param threadIndex  WebIDL type: unsigned long
      * @param box2dTask    WebIDL type: unsigned long long
      * @param box2dContext WebIDL type: unsigned long long
      */
-    fun executeTask(start: Int, end: Int, threadIndex: Int, box2dTask: Long, box2dContext: Long)
+    fun executeTask(box2dTask: Long, box2dContext: Long)
 
 }
 
@@ -2002,12 +2140,10 @@ fun TaskManagerFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm)
 external interface TaskManagerImpl : TaskManager {
     /**
      * param box2dTask    WebIDL type: unsigned long long
-     * param itemCount    WebIDL type: long
-     * param minRange     WebIDL type: long
      * param box2dContext WebIDL type: unsigned long long
      * return WebIDL type: unsigned long long
      */
-    var enqueueTask: (box2dTask: Long, itemCount: Int, minRange: Int, box2dContext: Long) -> Long
+    var enqueueTask: (box2dTask: Long, box2dContext: Long) -> Long
 
     /**
      * param userTask WebIDL type: unsigned long long
@@ -2065,6 +2201,46 @@ external interface b2BodyMoveEvent : JsAny, DestroyableNative {
 fun b2BodyMoveEvent(_module: JsAny = Box2dWasmLoader.box2dWasm): b2BodyMoveEvent = js("new _module.b2BodyMoveEvent()")
 
 fun b2BodyMoveEventFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2BodyMoveEvent = js("_module.wrapPointer(ptr, _module.b2BodyMoveEvent)")
+
+external interface b2JointEvents : JsAny, DestroyableNative {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: long
+     */
+    var count: Int
+    /**
+     * WebIDL type: [b2JointEvent]
+     */
+    var jointEvents: b2JointEvent
+}
+
+fun b2JointEvents(_module: JsAny = Box2dWasmLoader.box2dWasm): b2JointEvents = js("new _module.b2JointEvents()")
+
+fun b2JointEventsFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2JointEvents = js("_module.wrapPointer(ptr, _module.b2JointEvents)")
+
+external interface b2JointEvent : JsAny, DestroyableNative {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [b2JointId] (Value)
+     */
+    var jointId: b2JointId
+    /**
+     * WebIDL type: VoidPtr
+     */
+    var userData: JsAny
+}
+
+fun b2JointEvent(_module: JsAny = Box2dWasmLoader.box2dWasm): b2JointEvent = js("new _module.b2JointEvent()")
+
+fun b2JointEventFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2JointEvent = js("_module.wrapPointer(ptr, _module.b2JointEvent)")
 
 external interface b2SensorEvents : JsAny, DestroyableNative {
     /**
@@ -2177,10 +2353,6 @@ external interface b2ContactBeginTouchEvent : JsAny, DestroyableNative {
     val ptr: Int
 
     /**
-     * WebIDL type: [b2Manifold] (Value)
-     */
-    var manifold: b2Manifold
-    /**
      * WebIDL type: [b2ShapeId] (Value)
      */
     var shapeIdA: b2ShapeId
@@ -2188,6 +2360,10 @@ external interface b2ContactBeginTouchEvent : JsAny, DestroyableNative {
      * WebIDL type: [b2ShapeId] (Value)
      */
     var shapeIdB: b2ShapeId
+    /**
+     * WebIDL type: [b2ContactId] (Value)
+     */
+    var contactId: b2ContactId
 }
 
 fun b2ContactBeginTouchEvent(_module: JsAny = Box2dWasmLoader.box2dWasm): b2ContactBeginTouchEvent = js("new _module.b2ContactBeginTouchEvent()")
@@ -2208,6 +2384,10 @@ external interface b2ContactEndTouchEvent : JsAny, DestroyableNative {
      * WebIDL type: [b2ShapeId] (Value)
      */
     var shapeIdB: b2ShapeId
+    /**
+     * WebIDL type: [b2ContactId] (Value)
+     */
+    var contactId: b2ContactId
 }
 
 fun b2ContactEndTouchEvent(_module: JsAny = Box2dWasmLoader.box2dWasm): b2ContactEndTouchEvent = js("new _module.b2ContactEndTouchEvent()")
@@ -2240,6 +2420,10 @@ external interface b2ContactHitEvent : JsAny, DestroyableNative {
      * WebIDL type: [b2ShapeId] (Value)
      */
     var shapeIdB: b2ShapeId
+    /**
+     * WebIDL type: [b2ContactId] (Value)
+     */
+    var contactId: b2ContactId
 }
 
 fun b2ContactHitEvent(_module: JsAny = Box2dWasmLoader.box2dWasm): b2ContactHitEvent = js("new _module.b2ContactHitEvent()")
@@ -2338,6 +2522,42 @@ fun b2ExplosionDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2ExplosionDef =
 
 fun b2ExplosionDefFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2ExplosionDef = js("_module.wrapPointer(ptr, _module.b2ExplosionDef)")
 
+external interface b2Capacity : JsAny, DestroyableNative {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: long
+     */
+    var staticShapeCount: Int
+    /**
+     * WebIDL type: long
+     */
+    var dynamicShapeCount: Int
+    /**
+     * WebIDL type: long
+     */
+    var staticBodyCount: Int
+    /**
+     * WebIDL type: long
+     */
+    var dynamicBodyCount: Int
+    /**
+     * WebIDL type: long
+     */
+    var contactCount: Int
+    /**
+     * WebIDL type: long
+     */
+    var arenaByteCount: Int
+}
+
+fun b2Capacity(_module: JsAny = Box2dWasmLoader.box2dWasm): b2Capacity = js("new _module.b2Capacity()")
+
+fun b2CapacityFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2Capacity = js("_module.wrapPointer(ptr, _module.b2Capacity)")
+
 external interface b2WorldDef : JsAny, DestroyableNative {
     /**
      * Native object address.
@@ -2353,6 +2573,14 @@ external interface b2WorldDef : JsAny, DestroyableNative {
      */
     var restitutionThreshold: Float
     /**
+     * WebIDL type: long
+     */
+    var restitutionIterations: Int
+    /**
+     * WebIDL type: boolean
+     */
+    var enableRestitutionPropagation: Boolean
+    /**
      * WebIDL type: float
      */
     var hitEventThreshold: Float
@@ -2367,7 +2595,7 @@ external interface b2WorldDef : JsAny, DestroyableNative {
     /**
      * WebIDL type: float
      */
-    var maxContactPushSpeed: Float
+    var contactSpeed: Float
     /**
      * WebIDL type: float
      */
@@ -2381,9 +2609,17 @@ external interface b2WorldDef : JsAny, DestroyableNative {
      */
     var enableContinuous: Boolean
     /**
+     * WebIDL type: long
+     */
+    var workerCount: Int
+    /**
      * WebIDL type: VoidPtr
      */
     var userData: JsAny
+    /**
+     * WebIDL type: [b2Capacity] (Value)
+     */
+    var capacity: b2Capacity
 }
 
 fun b2WorldDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2WorldDef = js("new _module.b2WorldDef()")
@@ -2401,13 +2637,29 @@ external interface b2DebugDraw : JsAny, DestroyableNative {
      */
     var drawingBounds: b2AABB
     /**
+     * WebIDL type: float
+     */
+    var forceScale: Float
+    /**
+     * WebIDL type: float
+     */
+    var jointScale: Float
+    /**
      * WebIDL type: boolean
      */
-    var useDrawingBounds: Boolean
+    var drawContacts: Boolean
+    /**
+     * WebIDL type: boolean
+     */
+    var drawAnchorA: Boolean
     /**
      * WebIDL type: boolean
      */
     var drawShapes: Boolean
+    /**
+     * WebIDL type: boolean
+     */
+    var drawChainNormals: Boolean
     /**
      * WebIDL type: boolean
      */
@@ -2431,19 +2683,7 @@ external interface b2DebugDraw : JsAny, DestroyableNative {
     /**
      * WebIDL type: boolean
      */
-    var drawContacts: Boolean
-    /**
-     * WebIDL type: boolean
-     */
     var drawGraphColors: Boolean
-    /**
-     * WebIDL type: boolean
-     */
-    var drawContactNormals: Boolean
-    /**
-     * WebIDL type: boolean
-     */
-    var drawContactImpulses: Boolean
     /**
      * WebIDL type: boolean
      */
@@ -2451,7 +2691,15 @@ external interface b2DebugDraw : JsAny, DestroyableNative {
     /**
      * WebIDL type: boolean
      */
-    var drawFrictionImpulses: Boolean
+    var drawContactNormals: Boolean
+    /**
+     * WebIDL type: boolean
+     */
+    var drawContactForces: Boolean
+    /**
+     * WebIDL type: boolean
+     */
+    var drawFrictionForces: Boolean
     /**
      * WebIDL type: boolean
      */
@@ -2496,11 +2744,12 @@ fun b2PlaneResultFcnIFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2
 
 external interface b2DebugDrawCallbacksImpl : b2DebugDrawCallbacks {
     /**
+     * param transform   WebIDL type: [b2Transform] (Ref)
      * param vertices    WebIDL type: [b2Vec2] (Const)
      * param vertexCount WebIDL type: long
      * param color       WebIDL type: long
      */
-    var drawPolygon: (vertices: Int, vertexCount: Int, color: Int) -> Unit
+    var drawPolygon: (transform: Int, vertices: Int, vertexCount: Int, color: Int) -> Unit
 
     /**
      * param transform   WebIDL type: [b2Transform] (Ref)
@@ -2520,10 +2769,11 @@ external interface b2DebugDrawCallbacksImpl : b2DebugDrawCallbacks {
 
     /**
      * param transform WebIDL type: [b2Transform] (Ref)
+     * param center    WebIDL type: [b2Vec2] (Ref)
      * param radius    WebIDL type: float
      * param color     WebIDL type: long
      */
-    var drawSolidCircle: (transform: Int, radius: Float, color: Int) -> Unit
+    var drawSolidCircle: (transform: Int, center: Int, radius: Float, color: Int) -> Unit
 
     /**
      * param p1     WebIDL type: [b2Vec2] (Ref)
@@ -2538,7 +2788,7 @@ external interface b2DebugDrawCallbacksImpl : b2DebugDrawCallbacks {
      * param p2    WebIDL type: [b2Vec2] (Ref)
      * param color WebIDL type: long
      */
-    var drawSegment: (p1: Int, p2: Int, color: Int) -> Unit
+    var drawLine: (p1: Int, p2: Int, color: Int) -> Unit
 
     /**
      * param transform WebIDL type: [b2Transform] (Ref)
@@ -2558,6 +2808,12 @@ external interface b2DebugDrawCallbacksImpl : b2DebugDrawCallbacks {
      * param color WebIDL type: long
      */
     var drawString: (p: Int, s: String, color: Int) -> Unit
+
+    /**
+     * param aabb  WebIDL type: [b2AABB] (Ref)
+     * param color WebIDL type: long
+     */
+    var drawBounds: (aabb: Int, color: Int) -> Unit
 
 }
 
@@ -2580,9 +2836,17 @@ external interface b2PreSolveFcnImpl : b2PreSolveFcnI {
      * param shapeIdA WebIDL type: unsigned long long
      * param shapeIdB WebIDL type: unsigned long long
      * param manifold WebIDL type: [b2Manifold]
+     */
+    var preSolveFcn: (shapeIdA: Long, shapeIdB: Long, manifold: Int) -> Unit
+
+    /**
+     * param shapeIdA WebIDL type: unsigned long long
+     * param shapeIdB WebIDL type: unsigned long long
+     * param point    WebIDL type: [b2Vec2] (Ref)
+     * param normal   WebIDL type: [b2Vec2] (Ref)
      * return WebIDL type: boolean
      */
-    var preSolveFcn: (shapeIdA: Long, shapeIdB: Long, manifold: Int) -> Boolean
+    var preContinuousFcn: (shapeIdA: Long, shapeIdB: Long, point: Int, normal: Int) -> Boolean
 
 }
 
@@ -2591,12 +2855,12 @@ fun b2PreSolveFcnImpl(_module: JsAny = Box2dWasmLoader.box2dWasm): b2PreSolveFcn
 external interface b2FrictionCallbackImpl : b2FrictionCallbackI {
     /**
      * param frictionA       WebIDL type: float
-     * param userMaterialIdA WebIDL type: long
+     * param userMaterialIdA WebIDL type: unsigned long long
      * param frictionB       WebIDL type: float
-     * param userMaterialIdB WebIDL type: long
+     * param userMaterialIdB WebIDL type: unsigned long long
      * return WebIDL type: float
      */
-    var frictionCallback: (frictionA: Float, userMaterialIdA: Int, frictionB: Float, userMaterialIdB: Int) -> Float
+    var frictionCallback: (frictionA: Float, userMaterialIdA: Long, frictionB: Float, userMaterialIdB: Long) -> Float
 
 }
 
@@ -2605,12 +2869,12 @@ fun b2FrictionCallbackImpl(_module: JsAny = Box2dWasmLoader.box2dWasm): b2Fricti
 external interface b2RestitutionCallbackImpl : b2RestitutionCallbackI {
     /**
      * param restitutionA    WebIDL type: float
-     * param userMaterialIdA WebIDL type: long
+     * param userMaterialIdA WebIDL type: unsigned long long
      * param restitutionB    WebIDL type: float
-     * param userMaterialIdB WebIDL type: long
+     * param userMaterialIdB WebIDL type: unsigned long long
      * return WebIDL type: float
      */
-    var restitutionCallback: (restitutionA: Float, userMaterialIdA: Int, restitutionB: Float, userMaterialIdB: Int) -> Float
+    var restitutionCallback: (restitutionA: Float, userMaterialIdA: Long, restitutionB: Float, userMaterialIdB: Long) -> Float
 
 }
 
@@ -2633,9 +2897,9 @@ external interface b2CastResultFcnImpl : b2CastResultFcnI {
      * param point    WebIDL type: [b2Vec2] (Ref)
      * param normal   WebIDL type: [b2Vec2] (Ref)
      * param fraction WebIDL type: float
-     * return WebIDL type: boolean
+     * return WebIDL type: float
      */
-    var castResultFcn: (shapeId: Long, point: Int, normal: Int, fraction: Float) -> Boolean
+    var castResultFcn: (shapeId: Long, point: Int, normal: Int, fraction: Float) -> Float
 
 }
 
@@ -2659,6 +2923,10 @@ external interface b2Counters : JsAny, DestroyableNative {
      */
     val ptr: Int
 
+    /**
+     * WebIDL type: unsigned long long
+     */
+    var byteCount: Long
     /**
      * WebIDL type: long
      */
@@ -2694,16 +2962,20 @@ external interface b2Counters : JsAny, DestroyableNative {
     /**
      * WebIDL type: long
      */
-    var byteCount: Int
-    /**
-     * WebIDL type: long
-     */
     var taskCount: Int
     /**
      * WebIDL type: long
      */
     fun get_colorCounts(index: Int): Int
     fun set_colorCounts(index: Int, value: Int)
+    /**
+     * WebIDL type: long
+     */
+    var awakeContactCount: Int
+    /**
+     * WebIDL type: long
+     */
+    var recycledContactCount: Int
 }
 
 fun b2Counters(_module: JsAny = Box2dWasmLoader.box2dWasm): b2Counters = js("new _module.b2Counters()")
@@ -2738,15 +3010,11 @@ external interface b2Profile : JsAny, DestroyableNative {
     /**
      * WebIDL type: float
      */
-    var mergeIslands: Float
+    var solverSetup: Float
     /**
      * WebIDL type: float
      */
-    var prepareStages: Float
-    /**
-     * WebIDL type: float
-     */
-    var solveConstraints: Float
+    var constraints: Float
     /**
      * WebIDL type: float
      */
@@ -2774,7 +3042,7 @@ external interface b2Profile : JsAny, DestroyableNative {
     /**
      * WebIDL type: float
      */
-    var applyRestitution: Float
+    var restitution: Float
     /**
      * WebIDL type: float
      */
@@ -2787,6 +3055,14 @@ external interface b2Profile : JsAny, DestroyableNative {
      * WebIDL type: float
      */
     var transforms: Float
+    /**
+     * WebIDL type: float
+     */
+    var sensorHits: Float
+    /**
+     * WebIDL type: float
+     */
+    var jointEvents: Float
     /**
      * WebIDL type: float
      */
@@ -2825,9 +3101,19 @@ external interface B2_Base : JsAny {
     fun getVersion(): b2Version
 
     /**
-     * @return WebIDL type: long
+     * @return WebIDL type: unsigned long long
      */
-    fun getByteCount(): Int
+    fun getByteCount(): Long
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isDoublePrecision(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isAVX2Available(): Boolean
 
     /**
      * @param worldId WebIDL type: [b2WorldId] (Ref)
@@ -3035,6 +3321,34 @@ external interface b2JointId : JsAny, DestroyableNative {
 fun b2JointId(_module: JsAny = Box2dWasmLoader.box2dWasm): b2JointId = js("new _module.b2JointId()")
 
 fun b2JointIdFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2JointId = js("_module.wrapPointer(ptr, _module.b2JointId)")
+
+external interface b2ContactId : JsAny, DestroyableNative {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: unsigned long
+     */
+    var generation: Int
+    /**
+     * WebIDL type: long
+     */
+    var index1: Int
+    /**
+     * WebIDL type: short
+     */
+    var padding: Short
+    /**
+     * WebIDL type: unsigned short
+     */
+    var world0: Short
+}
+
+fun b2ContactId(_module: JsAny = Box2dWasmLoader.box2dWasm): b2ContactId = js("new _module.b2ContactId()")
+
+fun b2ContactIdFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2ContactId = js("_module.wrapPointer(ptr, _module.b2ContactId)")
 
 external interface b2ShapeIdArray : JsAny, DestroyableNative {
     /**
@@ -3266,7 +3580,7 @@ external interface B2_Body : JsAny {
      * @param bodyId WebIDL type: unsigned long long
      * @return WebIDL type: [b2AABB] (Value)
      */
-    fun computeAABB(bodyId: Long): b2AABB
+    fun computeBounds(bodyId: Long): b2AABB
 
     /**
      * @param bodyId     WebIDL type: unsigned long long
@@ -3324,8 +3638,9 @@ external interface B2_Body : JsAny {
      * @param bodyId   WebIDL type: unsigned long long
      * @param target   WebIDL type: [b2Transform] (Ref)
      * @param timeStep WebIDL type: float
+     * @param wake     WebIDL type: boolean
      */
-    fun setTargetTransform(bodyId: Long, target: b2Transform, timeStep: Float)
+    fun setTargetTransform(bodyId: Long, target: b2Transform, timeStep: Float, wake: Boolean)
 
     /**
      * @param bodyId     WebIDL type: unsigned long long
@@ -3362,6 +3677,11 @@ external interface B2_Body : JsAny {
      * @param wake   WebIDL type: boolean
      */
     fun applyTorque(bodyId: Long, torque: Float, wake: Boolean)
+
+    /**
+     * @param bodyId WebIDL type: unsigned long long
+     */
+    fun clearForces(bodyId: Long)
 
     /**
      * @param bodyId  WebIDL type: unsigned long long
@@ -3401,13 +3721,13 @@ external interface B2_Body : JsAny {
      * @param bodyId WebIDL type: unsigned long long
      * @return WebIDL type: [b2Vec2] (Value)
      */
-    fun getLocalCenterOfMass(bodyId: Long): b2Vec2
+    fun getLocalCenter(bodyId: Long): b2Vec2
 
     /**
      * @param bodyId WebIDL type: unsigned long long
      * @return WebIDL type: [b2Vec2] (Value)
      */
-    fun getWorldCenterOfMass(bodyId: Long): b2Vec2
+    fun getWorldCenter(bodyId: Long): b2Vec2
 
     /**
      * @param bodyId   WebIDL type: unsigned long long
@@ -3424,7 +3744,7 @@ external interface B2_Body : JsAny {
     /**
      * @param bodyId WebIDL type: unsigned long long
      */
-    fun applyMassFromShapes(bodyId: Long)
+    fun updateMassFromShapes(bodyId: Long)
 
     /**
      * @param bodyId        WebIDL type: unsigned long long
@@ -3475,16 +3795,21 @@ external interface B2_Body : JsAny {
     fun setAwake(bodyId: Long, awake: Boolean)
 
     /**
+     * @param bodyId WebIDL type: unsigned long long
+     */
+    fun wakeTouching(bodyId: Long)
+
+    /**
      * @param bodyId      WebIDL type: unsigned long long
      * @param enableSleep WebIDL type: boolean
      */
-    fun enableSleep(bodyId: Long, enableSleep: Boolean)
+    fun enableSleeping(bodyId: Long, enableSleep: Boolean)
 
     /**
      * @param bodyId WebIDL type: unsigned long long
      * @return WebIDL type: boolean
      */
-    fun isSleepEnabled(bodyId: Long): Boolean
+    fun isSleepingEnabled(bodyId: Long): Boolean
 
     /**
      * @param bodyId         WebIDL type: unsigned long long
@@ -3497,6 +3822,18 @@ external interface B2_Body : JsAny {
      * @return WebIDL type: float
      */
     fun getSleepThreshold(bodyId: Long): Float
+
+    /**
+     * @param bodyId       WebIDL type: unsigned long long
+     * @param safetyFactor WebIDL type: float
+     */
+    fun setSafetyFactor(bodyId: Long, safetyFactor: Float)
+
+    /**
+     * @param bodyId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getSafetyFactor(bodyId: Long): Float
 
     /**
      * @param bodyId WebIDL type: unsigned long long
@@ -3516,15 +3853,15 @@ external interface B2_Body : JsAny {
 
     /**
      * @param bodyId WebIDL type: unsigned long long
-     * @param flag   WebIDL type: boolean
+     * @param locks  WebIDL type: [b2MotionLocks] (Ref)
      */
-    fun setFixedRotation(bodyId: Long, flag: Boolean)
+    fun setMotionLocks(bodyId: Long, locks: b2MotionLocks)
 
     /**
      * @param bodyId WebIDL type: unsigned long long
-     * @return WebIDL type: boolean
+     * @return WebIDL type: [b2MotionLocks] (Value)
      */
-    fun isFixedRotation(bodyId: Long): Boolean
+    fun getMotionLocks(bodyId: Long): b2MotionLocks
 
     /**
      * @param bodyId WebIDL type: unsigned long long
@@ -3537,6 +3874,18 @@ external interface B2_Body : JsAny {
      * @return WebIDL type: boolean
      */
     fun isBullet(bodyId: Long): Boolean
+
+    /**
+     * @param bodyId WebIDL type: unsigned long long
+     * @param flag   WebIDL type: boolean
+     */
+    fun enableContactRecycling(bodyId: Long, flag: Boolean)
+
+    /**
+     * @param bodyId WebIDL type: unsigned long long
+     * @return WebIDL type: boolean
+     */
+    fun isContactRecyclingEnabled(bodyId: Long): Boolean
 
     /**
      * @param bodyId WebIDL type: unsigned long long
@@ -3594,6 +3943,24 @@ external interface B2_Body : JsAny {
      * @return WebIDL type: long
      */
     fun getContactData(bodyId: Long, contactData: b2ContactDataArray): Int
+
+    /**
+     * @param bodyId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getMinExtent(bodyId: Long): Float
+
+    /**
+     * @param bodyId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getMaxExtent(bodyId: Long): Float
+
+    /**
+     * @param bodyId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getMaxExtentFromOrigin(bodyId: Long): Float
 
     /**
      * @param bodyId WebIDL type: unsigned long long
@@ -3668,6 +4035,10 @@ external interface b2BodyDef : JsAny, DestroyableNative {
      */
     var sleepThreshold: Float
     /**
+     * WebIDL type: float
+     */
+    var safetyFactor: Float
+    /**
      * WebIDL type: DOMString (Const)
      */
     var name: String
@@ -3676,6 +4047,10 @@ external interface b2BodyDef : JsAny, DestroyableNative {
      */
     var userData: JsAny
     /**
+     * WebIDL type: [b2MotionLocks] (Value)
+     */
+    var motionLocks: b2MotionLocks
+    /**
      * WebIDL type: boolean
      */
     var enableSleep: Boolean
@@ -3683,10 +4058,6 @@ external interface b2BodyDef : JsAny, DestroyableNative {
      * WebIDL type: boolean
      */
     var isAwake: Boolean
-    /**
-     * WebIDL type: boolean
-     */
-    var fixedRotation: Boolean
     /**
      * WebIDL type: boolean
      */
@@ -3699,6 +4070,10 @@ external interface b2BodyDef : JsAny, DestroyableNative {
      * WebIDL type: boolean
      */
     var allowFastRotation: Boolean
+    /**
+     * WebIDL type: boolean
+     */
+    var enableContactRecycling: Boolean
 }
 
 fun b2BodyDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2BodyDef = js("new _module.b2BodyDef()")
@@ -3708,6 +4083,52 @@ fun b2BodyDefFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): 
 var b2BodyDef.typeEnum: b2BodyType
     get() = b2BodyType.forValue(type)
     set(value) { type = value.value }
+
+external interface b2MotionLocks : JsAny, DestroyableNative {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: boolean
+     */
+    var linearX: Boolean
+    /**
+     * WebIDL type: boolean
+     */
+    var linearY: Boolean
+    /**
+     * WebIDL type: boolean
+     */
+    var angularZ: Boolean
+}
+
+fun b2MotionLocks(_module: JsAny = Box2dWasmLoader.box2dWasm): b2MotionLocks = js("new _module.b2MotionLocks()")
+
+fun b2MotionLocksFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2MotionLocks = js("_module.wrapPointer(ptr, _module.b2MotionLocks)")
+
+external interface B2_Contact : JsAny {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param id WebIDL type: [b2ContactId] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun isValid(id: b2ContactId): Boolean
+
+    /**
+     * @param contactId WebIDL type: [b2ContactId] (Ref)
+     * @return WebIDL type: [b2ContactData] (Value)
+     */
+    fun getData(contactId: b2ContactId): b2ContactData
+
+}
+
+fun B2_ContactFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_Contact = js("_module.wrapPointer(ptr, _module.B2_Contact)")
 
 external interface B2_CharacterMover : JsAny {
     /**
@@ -3747,6 +4168,10 @@ external interface b2PlaneResult : JsAny, DestroyableNative {
      * WebIDL type: [b2Plane] (Value)
      */
     var plane: b2Plane
+    /**
+     * WebIDL type: [b2Vec2] (Value)
+     */
+    var point: b2Vec2
 }
 
 fun b2PlaneResult(_module: JsAny = Box2dWasmLoader.box2dWasm): b2PlaneResult = js("new _module.b2PlaneResult()")
@@ -3794,7 +4219,7 @@ external interface b2PlaneSolverResult : JsAny, DestroyableNative {
     /**
      * WebIDL type: [b2Vec2] (Value)
      */
-    var translation: b2Vec2
+    var delta: b2Vec2
 }
 
 fun b2PlaneSolverResult(_module: JsAny = Box2dWasmLoader.box2dWasm): b2PlaneSolverResult = js("new _module.b2PlaneSolverResult()")
@@ -3843,52 +4268,28 @@ external interface B2_Joint : JsAny {
     fun getWorld(jointId: Long): Int
 
     /**
-     * @param jointId WebIDL type: unsigned long long
-     * @return WebIDL type: [b2Vec2] (Value)
+     * @param jointId    WebIDL type: unsigned long long
+     * @param localFrame WebIDL type: [b2Transform] (Ref)
      */
-    fun getLocalAnchorA(jointId: Long): b2Vec2
+    fun setLocalFrameA(jointId: Long, localFrame: b2Transform)
 
     /**
      * @param jointId WebIDL type: unsigned long long
-     * @return WebIDL type: [b2Vec2] (Value)
+     * @return WebIDL type: [b2Transform] (Value)
      */
-    fun getLocalAnchorB(jointId: Long): b2Vec2
+    fun getLocalFrameA(jointId: Long): b2Transform
 
     /**
-     * @param jointId     WebIDL type: unsigned long long
-     * @param localAnchor WebIDL type: [b2Vec2] (Ref)
+     * @param jointId    WebIDL type: unsigned long long
+     * @param localFrame WebIDL type: [b2Transform] (Ref)
      */
-    fun setLocalAnchorA(jointId: Long, localAnchor: b2Vec2)
-
-    /**
-     * @param jointId     WebIDL type: unsigned long long
-     * @param localAnchor WebIDL type: [b2Vec2] (Ref)
-     */
-    fun setLocalAnchorB(jointId: Long, localAnchor: b2Vec2)
+    fun setLocalFrameB(jointId: Long, localFrame: b2Transform)
 
     /**
      * @param jointId WebIDL type: unsigned long long
-     * @return WebIDL type: float
+     * @return WebIDL type: [b2Transform] (Value)
      */
-    fun getReferenceAngle(jointId: Long): Float
-
-    /**
-     * @param jointId        WebIDL type: unsigned long long
-     * @param angleInRadians WebIDL type: float
-     */
-    fun setReferenceAngle(jointId: Long, angleInRadians: Float)
-
-    /**
-     * @param jointId   WebIDL type: unsigned long long
-     * @param localAxis WebIDL type: [b2Vec2] (Ref)
-     */
-    fun setLocalAxisA(jointId: Long, localAxis: b2Vec2)
-
-    /**
-     * @param jointId WebIDL type: unsigned long long
-     * @return WebIDL type: [b2Vec2] (Value)
-     */
-    fun getLocalAxisA(jointId: Long): b2Vec2
+    fun getLocalFrameB(jointId: Long): b2Transform
 
     /**
      * @param jointId       WebIDL type: unsigned long long
@@ -3962,9 +4363,89 @@ external interface B2_Joint : JsAny {
      */
     fun setConstraintTuning(jointId: Long, hertz: Float, dampingRatio: Float)
 
+    /**
+     * @param jointId   WebIDL type: unsigned long long
+     * @param threshold WebIDL type: float
+     */
+    fun setForceThreshold(jointId: Long, threshold: Float)
+
+    /**
+     * @param jointId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getForceThreshold(jointId: Long): Float
+
+    /**
+     * @param jointId   WebIDL type: unsigned long long
+     * @param threshold WebIDL type: float
+     */
+    fun setTorqueThreshold(jointId: Long, threshold: Float)
+
+    /**
+     * @param jointId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getTorqueThreshold(jointId: Long): Float
+
 }
 
 fun B2_JointFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_Joint = js("_module.wrapPointer(ptr, _module.B2_Joint)")
+
+external interface b2JointDef : JsAny, DestroyableNative {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: VoidPtr
+     */
+    var userData: JsAny
+    /**
+     * WebIDL type: [b2BodyId] (Value)
+     */
+    var bodyIdA: b2BodyId
+    /**
+     * WebIDL type: [b2BodyId] (Value)
+     */
+    var bodyIdB: b2BodyId
+    /**
+     * WebIDL type: [b2Transform] (Value)
+     */
+    var localFrameA: b2Transform
+    /**
+     * WebIDL type: [b2Transform] (Value)
+     */
+    var localFrameB: b2Transform
+    /**
+     * WebIDL type: float
+     */
+    var forceThreshold: Float
+    /**
+     * WebIDL type: float
+     */
+    var torqueThreshold: Float
+    /**
+     * WebIDL type: float
+     */
+    var constraintHertz: Float
+    /**
+     * WebIDL type: float
+     */
+    var constraintDampingRatio: Float
+    /**
+     * WebIDL type: float
+     */
+    var drawScale: Float
+    /**
+     * WebIDL type: boolean
+     */
+    var collideConnected: Boolean
+}
+
+fun b2JointDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2JointDef = js("new _module.b2JointDef()")
+
+fun b2JointDefFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2JointDef = js("_module.wrapPointer(ptr, _module.b2JointDef)")
 
 external interface B2_DistanceJoint : JsAny {
     /**
@@ -3988,13 +4469,13 @@ external interface B2_DistanceJoint : JsAny {
      * @param jointId WebIDL type: unsigned long long
      * @param length  WebIDL type: float
      */
-    fun setLength(jointId: Long, length: Float)
+    fun setRestLength(jointId: Long, length: Float)
 
     /**
      * @param jointId WebIDL type: unsigned long long
      * @return WebIDL type: float
      */
-    fun getLength(jointId: Long): Float
+    fun getRestLength(jointId: Long): Float
 
     /**
      * @param jointId      WebIDL type: unsigned long long
@@ -4007,6 +4488,25 @@ external interface B2_DistanceJoint : JsAny {
      * @return WebIDL type: boolean
      */
     fun isSpringEnabled(jointId: Long): Boolean
+
+    /**
+     * @param jointId    WebIDL type: unsigned long long
+     * @param lowerForce WebIDL type: float
+     * @param upperForce WebIDL type: float
+     */
+    fun setSpringForceRange(jointId: Long, lowerForce: Float, upperForce: Float)
+
+    /**
+     * @param jointId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getSpringForceRangeLower(jointId: Long): Float
+
+    /**
+     * @param jointId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getSpringForceRangeUpper(jointId: Long): Float
 
     /**
      * @param jointId WebIDL type: unsigned long long
@@ -4033,6 +4533,12 @@ external interface B2_DistanceJoint : JsAny {
     fun getSpringDampingRatio(jointId: Long): Float
 
     /**
+     * @param jointId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getSpringForce(jointId: Long): Float
+
+    /**
      * @param jointId     WebIDL type: unsigned long long
      * @param enableLimit WebIDL type: boolean
      */
@@ -4049,19 +4555,19 @@ external interface B2_DistanceJoint : JsAny {
      * @param minLength WebIDL type: float
      * @param maxLength WebIDL type: float
      */
-    fun setLengthRange(jointId: Long, minLength: Float, maxLength: Float)
+    fun setLimits(jointId: Long, minLength: Float, maxLength: Float)
 
     /**
      * @param jointId WebIDL type: unsigned long long
      * @return WebIDL type: float
      */
-    fun getMinLength(jointId: Long): Float
+    fun getLowerLimit(jointId: Long): Float
 
     /**
      * @param jointId WebIDL type: unsigned long long
      * @return WebIDL type: float
      */
-    fun getMaxLength(jointId: Long): Float
+    fun getUpperLimit(jointId: Long): Float
 
     /**
      * @param jointId WebIDL type: unsigned long long
@@ -4085,13 +4591,13 @@ external interface B2_DistanceJoint : JsAny {
      * @param jointId    WebIDL type: unsigned long long
      * @param motorSpeed WebIDL type: float
      */
-    fun setMotorSpeed(jointId: Long, motorSpeed: Float)
+    fun setTargetMotorSpeed(jointId: Long, motorSpeed: Float)
 
     /**
      * @param jointId WebIDL type: unsigned long long
      * @return WebIDL type: float
      */
-    fun getMotorSpeed(jointId: Long): Float
+    fun getTargetMotorSpeed(jointId: Long): Float
 
     /**
      * @param jointId WebIDL type: unsigned long long
@@ -4109,7 +4615,7 @@ external interface B2_DistanceJoint : JsAny {
      * @param jointId WebIDL type: unsigned long long
      * @return WebIDL type: float
      */
-    fun getMotorForce(jointId: Long): Float
+    fun getCurrentMotorForce(jointId: Long): Float
 
 }
 
@@ -4122,17 +4628,29 @@ external interface b2DistanceJointDef : JsAny, DestroyableNative {
     val ptr: Int
 
     /**
-     * WebIDL type: [b2BodyId] (Value)
+     * WebIDL type: [b2JointDef] (Value)
      */
-    var bodyIdA: b2BodyId
+    var base: b2JointDef
     /**
-     * WebIDL type: [b2BodyId] (Value)
+     * WebIDL type: float
      */
-    var bodyIdB: b2BodyId
+    var length: Float
     /**
      * WebIDL type: boolean
      */
-    var collideConnected: Boolean
+    var enableSpring: Boolean
+    /**
+     * WebIDL type: float
+     */
+    var lowerSpringForce: Float
+    /**
+     * WebIDL type: float
+     */
+    var upperSpringForce: Float
+    /**
+     * WebIDL type: float
+     */
+    var hertz: Float
     /**
      * WebIDL type: float
      */
@@ -4142,37 +4660,17 @@ external interface b2DistanceJointDef : JsAny, DestroyableNative {
      */
     var enableLimit: Boolean
     /**
-     * WebIDL type: boolean
-     */
-    var enableMotor: Boolean
-    /**
-     * WebIDL type: boolean
-     */
-    var enableSpring: Boolean
-    /**
      * WebIDL type: float
      */
-    var hertz: Float
-    /**
-     * WebIDL type: long
-     */
-    var internalValue: Int
-    /**
-     * WebIDL type: float
-     */
-    var length: Float
-    /**
-     * WebIDL type: [b2Vec2] (Value)
-     */
-    var localAnchorA: b2Vec2
-    /**
-     * WebIDL type: [b2Vec2] (Value)
-     */
-    var localAnchorB: b2Vec2
+    var minLength: Float
     /**
      * WebIDL type: float
      */
     var maxLength: Float
+    /**
+     * WebIDL type: boolean
+     */
+    var enableMotor: Boolean
     /**
      * WebIDL type: float
      */
@@ -4180,15 +4678,7 @@ external interface b2DistanceJointDef : JsAny, DestroyableNative {
     /**
      * WebIDL type: float
      */
-    var minLength: Float
-    /**
-     * WebIDL type: float
-     */
     var motorSpeed: Float
-    /**
-     * WebIDL type: VoidPtr
-     */
-    var userData: JsAny
 }
 
 fun b2DistanceJointDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2DistanceJointDef = js("new _module.b2DistanceJointDef()")
@@ -4224,17 +4714,9 @@ external interface b2FilterJointDef : JsAny, DestroyableNative {
     val ptr: Int
 
     /**
-     * WebIDL type: [b2BodyId] (Value)
+     * WebIDL type: [b2JointDef] (Value)
      */
-    var bodyIdA: b2BodyId
-    /**
-     * WebIDL type: [b2BodyId] (Value)
-     */
-    var bodyIdB: b2BodyId
-    /**
-     * WebIDL type: VoidPtr
-     */
-    var userData: JsAny
+    var base: b2JointDef
 }
 
 fun b2FilterJointDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2FilterJointDef = js("new _module.b2FilterJointDef()")
@@ -4260,64 +4742,124 @@ external interface B2_MotorJoint : JsAny {
     fun defaultMotorJointDef(result: b2MotorJointDef)
 
     /**
-     * @param jointId      WebIDL type: unsigned long long
-     * @param linearOffset WebIDL type: [b2Vec2] (Ref)
+     * @param jointId  WebIDL type: unsigned long long
+     * @param velocity WebIDL type: [b2Vec2] (Ref)
      */
-    fun setLinearOffset(jointId: Long, linearOffset: b2Vec2)
+    fun setLinearVelocity(jointId: Long, velocity: b2Vec2)
 
     /**
      * @param jointId WebIDL type: unsigned long long
      * @return WebIDL type: [b2Vec2] (Value)
      */
-    fun getLinearOffset(jointId: Long): b2Vec2
+    fun getLinearVelocity(jointId: Long): b2Vec2
 
     /**
-     * @param jointId       WebIDL type: unsigned long long
-     * @param angularOffset WebIDL type: float
+     * @param jointId  WebIDL type: unsigned long long
+     * @param velocity WebIDL type: float
      */
-    fun setAngularOffset(jointId: Long, angularOffset: Float)
+    fun setAngularVelocity(jointId: Long, velocity: Float)
 
     /**
      * @param jointId WebIDL type: unsigned long long
      * @return WebIDL type: float
      */
-    fun getAngularOffset(jointId: Long): Float
+    fun getAngularVelocity(jointId: Long): Float
 
     /**
      * @param jointId  WebIDL type: unsigned long long
      * @param maxForce WebIDL type: float
      */
-    fun setMaxForce(jointId: Long, maxForce: Float)
+    fun setMaxVelocityForce(jointId: Long, maxForce: Float)
 
     /**
      * @param jointId WebIDL type: unsigned long long
      * @return WebIDL type: float
      */
-    fun getMaxForce(jointId: Long): Float
+    fun getMaxVelocityForce(jointId: Long): Float
 
     /**
      * @param jointId   WebIDL type: unsigned long long
      * @param maxTorque WebIDL type: float
      */
-    fun setMaxTorque(jointId: Long, maxTorque: Float)
+    fun setMaxVelocityTorque(jointId: Long, maxTorque: Float)
 
     /**
      * @param jointId WebIDL type: unsigned long long
      * @return WebIDL type: float
      */
-    fun getMaxTorque(jointId: Long): Float
+    fun getMaxVelocityTorque(jointId: Long): Float
 
     /**
-     * @param jointId          WebIDL type: unsigned long long
-     * @param correctionFactor WebIDL type: float
+     * @param jointId WebIDL type: unsigned long long
+     * @param hertz   WebIDL type: float
      */
-    fun setCorrectionFactor(jointId: Long, correctionFactor: Float)
+    fun setLinearHertz(jointId: Long, hertz: Float)
 
     /**
      * @param jointId WebIDL type: unsigned long long
      * @return WebIDL type: float
      */
-    fun getCorrectionFactor(jointId: Long): Float
+    fun getLinearHertz(jointId: Long): Float
+
+    /**
+     * @param jointId WebIDL type: unsigned long long
+     * @param damping WebIDL type: float
+     */
+    fun setLinearDampingRatio(jointId: Long, damping: Float)
+
+    /**
+     * @param jointId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getLinearDampingRatio(jointId: Long): Float
+
+    /**
+     * @param jointId WebIDL type: unsigned long long
+     * @param hertz   WebIDL type: float
+     */
+    fun setAngularHertz(jointId: Long, hertz: Float)
+
+    /**
+     * @param jointId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getAngularHertz(jointId: Long): Float
+
+    /**
+     * @param jointId WebIDL type: unsigned long long
+     * @param damping WebIDL type: float
+     */
+    fun setAngularDampingRatio(jointId: Long, damping: Float)
+
+    /**
+     * @param jointId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getAngularDampingRatio(jointId: Long): Float
+
+    /**
+     * @param jointId  WebIDL type: unsigned long long
+     * @param maxForce WebIDL type: float
+     */
+    fun setMaxSpringForce(jointId: Long, maxForce: Float)
+
+    /**
+     * @param jointId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getMaxSpringForce(jointId: Long): Float
+
+    /**
+     * @param jointId   WebIDL type: unsigned long long
+     * @param maxTorque WebIDL type: float
+     */
+    fun setMaxSpringTorque(jointId: Long, maxTorque: Float)
+
+    /**
+     * @param jointId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getMaxSpringTorque(jointId: Long): Float
 
 }
 
@@ -4330,52 +4872,56 @@ external interface b2MotorJointDef : JsAny, DestroyableNative {
     val ptr: Int
 
     /**
-     * WebIDL type: float
+     * WebIDL type: [b2JointDef] (Value)
      */
-    var angularOffset: Float
-    /**
-     * WebIDL type: [b2BodyId] (Value)
-     */
-    var bodyIdA: b2BodyId
-    /**
-     * WebIDL type: [b2BodyId] (Value)
-     */
-    var bodyIdB: b2BodyId
-    /**
-     * WebIDL type: boolean
-     */
-    var collideConnected: Boolean
-    /**
-     * WebIDL type: float
-     */
-    var correctionFactor: Float
-    /**
-     * WebIDL type: long
-     */
-    var internalValue: Int
+    var base: b2JointDef
     /**
      * WebIDL type: [b2Vec2] (Value)
      */
-    var linearOffset: b2Vec2
+    var linearVelocity: b2Vec2
     /**
      * WebIDL type: float
      */
-    var maxForce: Float
+    var maxVelocityForce: Float
     /**
      * WebIDL type: float
      */
-    var maxTorque: Float
+    var angularVelocity: Float
     /**
-     * WebIDL type: VoidPtr
+     * WebIDL type: float
      */
-    var userData: JsAny
+    var maxVelocityTorque: Float
+    /**
+     * WebIDL type: float
+     */
+    var linearHertz: Float
+    /**
+     * WebIDL type: float
+     */
+    var linearDampingRatio: Float
+    /**
+     * WebIDL type: float
+     */
+    var maxSpringForce: Float
+    /**
+     * WebIDL type: float
+     */
+    var angularHertz: Float
+    /**
+     * WebIDL type: float
+     */
+    var angularDampingRatio: Float
+    /**
+     * WebIDL type: float
+     */
+    var maxSpringTorque: Float
 }
 
 fun b2MotorJointDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2MotorJointDef = js("new _module.b2MotorJointDef()")
 
 fun b2MotorJointDefFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2MotorJointDef = js("_module.wrapPointer(ptr, _module.b2MotorJointDef)")
 
-external interface B2_MouseJoint : JsAny {
+external interface B2_MoverJoint : JsAny {
     /**
      * Native object address.
      */
@@ -4383,27 +4929,97 @@ external interface B2_MouseJoint : JsAny {
 
     /**
      * @param worldId WebIDL type: unsigned long long
-     * @param def     WebIDL type: [b2MouseJointDef] (Const)
+     * @param def     WebIDL type: [b2MoverJointDef] (Const)
      * @return WebIDL type: unsigned long long
      */
-    fun createMouseJoint(worldId: Long, def: b2MouseJointDef): Long
+    fun createMoverJoint(worldId: Long, def: b2MoverJointDef): Long
 
     /**
-     * @param result WebIDL type: [b2MouseJointDef] (Ref)
+     * @param result WebIDL type: [b2MoverJointDef] (Ref)
      */
-    fun defaultMouseJointDef(result: b2MouseJointDef)
+    fun defaultMoverJointDef(result: b2MoverJointDef)
 
     /**
-     * @param jointId WebIDL type: unsigned long long
-     * @param target  WebIDL type: [b2Vec2] (Ref)
+     * @param jointId  WebIDL type: unsigned long long
+     * @param velocity WebIDL type: [b2Vec2] (Ref)
      */
-    fun setTarget(jointId: Long, target: b2Vec2)
+    fun setLinearVelocity(jointId: Long, velocity: b2Vec2)
 
     /**
      * @param jointId WebIDL type: unsigned long long
      * @return WebIDL type: [b2Vec2] (Value)
      */
-    fun getTarget(jointId: Long): b2Vec2
+    fun getLinearVelocity(jointId: Long): b2Vec2
+
+    /**
+     * @param jointId  WebIDL type: unsigned long long
+     * @param maxForce WebIDL type: [b2Vec2] (Ref)
+     */
+    fun setMaxVelocityForce(jointId: Long, maxForce: b2Vec2)
+
+    /**
+     * @param jointId WebIDL type: unsigned long long
+     * @return WebIDL type: [b2Vec2] (Value)
+     */
+    fun getMaxVelocityForce(jointId: Long): b2Vec2
+
+}
+
+fun B2_MoverJointFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_MoverJoint = js("_module.wrapPointer(ptr, _module.B2_MoverJoint)")
+
+external interface b2MoverJointDef : JsAny, DestroyableNative {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [b2JointDef] (Value)
+     */
+    var base: b2JointDef
+    /**
+     * WebIDL type: [b2Vec2] (Value)
+     */
+    var linearVelocity: b2Vec2
+    /**
+     * WebIDL type: [b2Vec2] (Value)
+     */
+    var maxVelocityForce: b2Vec2
+}
+
+fun b2MoverJointDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2MoverJointDef = js("new _module.b2MoverJointDef()")
+
+fun b2MoverJointDefFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2MoverJointDef = js("_module.wrapPointer(ptr, _module.b2MoverJointDef)")
+
+external interface B2_PogoJoint : JsAny {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param worldId WebIDL type: unsigned long long
+     * @param def     WebIDL type: [b2PogoJointDef] (Const)
+     * @return WebIDL type: unsigned long long
+     */
+    fun createPogoJoint(worldId: Long, def: b2PogoJointDef): Long
+
+    /**
+     * @param result WebIDL type: [b2PogoJointDef] (Ref)
+     */
+    fun defaultPogoJointDef(result: b2PogoJointDef)
+
+    /**
+     * @param jointId WebIDL type: unsigned long long
+     * @param length  WebIDL type: float
+     */
+    fun setRestLength(jointId: Long, length: Float)
+
+    /**
+     * @param jointId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getRestLength(jointId: Long): Float
 
     /**
      * @param jointId WebIDL type: unsigned long long
@@ -4430,39 +5046,45 @@ external interface B2_MouseJoint : JsAny {
     fun getSpringDampingRatio(jointId: Long): Float
 
     /**
-     * @param jointId  WebIDL type: unsigned long long
-     * @param maxForce WebIDL type: float
+     * @param jointId WebIDL type: unsigned long long
+     * @return WebIDL type: float
      */
-    fun setMaxForce(jointId: Long, maxForce: Float)
+    fun getCurrentLength(jointId: Long): Float
 
     /**
      * @param jointId WebIDL type: unsigned long long
      * @return WebIDL type: float
      */
-    fun getMaxForce(jointId: Long): Float
+    fun getCurrentSpeed(jointId: Long): Float
+
+    /**
+     * @param jointId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getImpulse(jointId: Long): Float
 
 }
 
-fun B2_MouseJointFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_MouseJoint = js("_module.wrapPointer(ptr, _module.B2_MouseJoint)")
+fun B2_PogoJointFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_PogoJoint = js("_module.wrapPointer(ptr, _module.B2_PogoJoint)")
 
-external interface b2MouseJointDef : JsAny, DestroyableNative {
+external interface b2PogoJointDef : JsAny, DestroyableNative {
     /**
      * Native object address.
      */
     val ptr: Int
 
     /**
-     * WebIDL type: [b2BodyId] (Value)
+     * WebIDL type: [b2JointDef] (Value)
      */
-    var bodyIdA: b2BodyId
+    var base: b2JointDef
     /**
-     * WebIDL type: [b2BodyId] (Value)
+     * WebIDL type: [b2Vec2] (Value)
      */
-    var bodyIdB: b2BodyId
+    var normal: b2Vec2
     /**
-     * WebIDL type: boolean
+     * WebIDL type: float
      */
-    var collideConnected: Boolean
+    var hertz: Float
     /**
      * WebIDL type: float
      */
@@ -4470,28 +5092,28 @@ external interface b2MouseJointDef : JsAny, DestroyableNative {
     /**
      * WebIDL type: float
      */
-    var hertz: Float
-    /**
-     * WebIDL type: long
-     */
-    var internalValue: Int
+    var restLength: Float
     /**
      * WebIDL type: float
      */
-    var maxForce: Float
+    var maxTensionForce: Float
     /**
-     * WebIDL type: [b2Vec2] (Value)
+     * WebIDL type: float
      */
-    var target: b2Vec2
+    var maxCompressionForce: Float
     /**
-     * WebIDL type: VoidPtr
+     * WebIDL type: float
      */
-    var userData: JsAny
+    var impulse: Float
+    /**
+     * WebIDL type: float
+     */
+    var velocity: Float
 }
 
-fun b2MouseJointDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2MouseJointDef = js("new _module.b2MouseJointDef()")
+fun b2PogoJointDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2PogoJointDef = js("new _module.b2PogoJointDef()")
 
-fun b2MouseJointDefFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2MouseJointDef = js("_module.wrapPointer(ptr, _module.b2MouseJointDef)")
+fun b2PogoJointDefFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2PogoJointDef = js("_module.wrapPointer(ptr, _module.b2PogoJointDef)")
 
 external interface B2_PrismaticJoint : JsAny {
     /**
@@ -4606,13 +5228,13 @@ external interface B2_PrismaticJoint : JsAny {
      * @param jointId    WebIDL type: unsigned long long
      * @param motorSpeed WebIDL type: float
      */
-    fun setMotorSpeed(jointId: Long, motorSpeed: Float)
+    fun setTargetMotorSpeed(jointId: Long, motorSpeed: Float)
 
     /**
      * @param jointId WebIDL type: unsigned long long
      * @return WebIDL type: float
      */
-    fun getMotorSpeed(jointId: Long): Float
+    fun getTargetMotorSpeed(jointId: Long): Float
 
     /**
      * @param jointId WebIDL type: unsigned long long
@@ -4630,19 +5252,19 @@ external interface B2_PrismaticJoint : JsAny {
      * @param jointId WebIDL type: unsigned long long
      * @return WebIDL type: float
      */
-    fun getMotorForce(jointId: Long): Float
+    fun getCurrentTranslation(jointId: Long): Float
 
     /**
      * @param jointId WebIDL type: unsigned long long
      * @return WebIDL type: float
      */
-    fun getTranslation(jointId: Long): Float
+    fun getCurrentSpeed(jointId: Long): Float
 
     /**
      * @param jointId WebIDL type: unsigned long long
      * @return WebIDL type: float
      */
-    fun getSpeed(jointId: Long): Float
+    fun getCurrentMotorForce(jointId: Long): Float
 
 }
 
@@ -4655,29 +5277,9 @@ external interface b2PrismaticJointDef : JsAny, DestroyableNative {
     val ptr: Int
 
     /**
-     * WebIDL type: [b2BodyId] (Value)
+     * WebIDL type: [b2JointDef] (Value)
      */
-    var bodyIdA: b2BodyId
-    /**
-     * WebIDL type: [b2BodyId] (Value)
-     */
-    var bodyIdB: b2BodyId
-    /**
-     * WebIDL type: boolean
-     */
-    var collideConnected: Boolean
-    /**
-     * WebIDL type: float
-     */
-    var dampingRatio: Float
-    /**
-     * WebIDL type: boolean
-     */
-    var enableLimit: Boolean
-    /**
-     * WebIDL type: boolean
-     */
-    var enableMotor: Boolean
+    var base: b2JointDef
     /**
      * WebIDL type: boolean
      */
@@ -4687,25 +5289,29 @@ external interface b2PrismaticJointDef : JsAny, DestroyableNative {
      */
     var hertz: Float
     /**
-     * WebIDL type: long
+     * WebIDL type: float
      */
-    var internalValue: Int
+    var dampingRatio: Float
     /**
-     * WebIDL type: [b2Vec2] (Value)
+     * WebIDL type: float
      */
-    var localAnchorA: b2Vec2
+    var targetTranslation: Float
     /**
-     * WebIDL type: [b2Vec2] (Value)
+     * WebIDL type: boolean
      */
-    var localAnchorB: b2Vec2
-    /**
-     * WebIDL type: [b2Vec2] (Value)
-     */
-    var localAxisA: b2Vec2
+    var enableLimit: Boolean
     /**
      * WebIDL type: float
      */
     var lowerTranslation: Float
+    /**
+     * WebIDL type: float
+     */
+    var upperTranslation: Float
+    /**
+     * WebIDL type: boolean
+     */
+    var enableMotor: Boolean
     /**
      * WebIDL type: float
      */
@@ -4714,18 +5320,6 @@ external interface b2PrismaticJointDef : JsAny, DestroyableNative {
      * WebIDL type: float
      */
     var motorSpeed: Float
-    /**
-     * WebIDL type: float
-     */
-    var referenceAngle: Float
-    /**
-     * WebIDL type: float
-     */
-    var upperTranslation: Float
-    /**
-     * WebIDL type: VoidPtr
-     */
-    var userData: JsAny
 }
 
 fun b2PrismaticJointDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2PrismaticJointDef = js("new _module.b2PrismaticJointDef()")
@@ -4799,12 +5393,6 @@ external interface B2_RevoluteJoint : JsAny {
     fun getTargetAngle(jointId: Long): Float
 
     /**
-     * @param jointId WebIDL type: unsigned long long
-     * @return WebIDL type: float
-     */
-    fun getAngle(jointId: Long): Float
-
-    /**
      * @param jointId     WebIDL type: unsigned long long
      * @param enableLimit WebIDL type: boolean
      */
@@ -4851,19 +5439,13 @@ external interface B2_RevoluteJoint : JsAny {
      * @param jointId    WebIDL type: unsigned long long
      * @param motorSpeed WebIDL type: float
      */
-    fun setMotorSpeed(jointId: Long, motorSpeed: Float)
+    fun setTargetMotorSpeed(jointId: Long, motorSpeed: Float)
 
     /**
      * @param jointId WebIDL type: unsigned long long
      * @return WebIDL type: float
      */
-    fun getMotorSpeed(jointId: Long): Float
-
-    /**
-     * @param jointId WebIDL type: unsigned long long
-     * @return WebIDL type: float
-     */
-    fun getMotorTorque(jointId: Long): Float
+    fun getTargetMotorSpeed(jointId: Long): Float
 
     /**
      * @param jointId WebIDL type: unsigned long long
@@ -4877,6 +5459,24 @@ external interface B2_RevoluteJoint : JsAny {
      */
     fun getMaxMotorTorque(jointId: Long): Float
 
+    /**
+     * @param jointId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getCurrentAngle(jointId: Long): Float
+
+    /**
+     * @param jointId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getCurrentSpeed(jointId: Long): Float
+
+    /**
+     * @param jointId WebIDL type: unsigned long long
+     * @return WebIDL type: float
+     */
+    fun getCurrentMotorTorque(jointId: Long): Float
+
 }
 
 fun B2_RevoluteJointFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): B2_RevoluteJoint = js("_module.wrapPointer(ptr, _module.B2_RevoluteJoint)")
@@ -4888,33 +5488,13 @@ external interface b2RevoluteJointDef : JsAny, DestroyableNative {
     val ptr: Int
 
     /**
-     * WebIDL type: [b2BodyId] (Value)
+     * WebIDL type: [b2JointDef] (Value)
      */
-    var bodyIdA: b2BodyId
-    /**
-     * WebIDL type: [b2BodyId] (Value)
-     */
-    var bodyIdB: b2BodyId
-    /**
-     * WebIDL type: boolean
-     */
-    var collideConnected: Boolean
+    var base: b2JointDef
     /**
      * WebIDL type: float
      */
-    var dampingRatio: Float
-    /**
-     * WebIDL type: float
-     */
-    var drawSize: Float
-    /**
-     * WebIDL type: boolean
-     */
-    var enableLimit: Boolean
-    /**
-     * WebIDL type: boolean
-     */
-    var enableMotor: Boolean
+    var targetAngle: Float
     /**
      * WebIDL type: boolean
      */
@@ -4924,21 +5504,25 @@ external interface b2RevoluteJointDef : JsAny, DestroyableNative {
      */
     var hertz: Float
     /**
-     * WebIDL type: long
+     * WebIDL type: float
      */
-    var internalValue: Int
+    var dampingRatio: Float
     /**
-     * WebIDL type: [b2Vec2] (Value)
+     * WebIDL type: boolean
      */
-    var localAnchorA: b2Vec2
-    /**
-     * WebIDL type: [b2Vec2] (Value)
-     */
-    var localAnchorB: b2Vec2
+    var enableLimit: Boolean
     /**
      * WebIDL type: float
      */
     var lowerAngle: Float
+    /**
+     * WebIDL type: float
+     */
+    var upperAngle: Float
+    /**
+     * WebIDL type: boolean
+     */
+    var enableMotor: Boolean
     /**
      * WebIDL type: float
      */
@@ -4947,18 +5531,6 @@ external interface b2RevoluteJointDef : JsAny, DestroyableNative {
      * WebIDL type: float
      */
     var motorSpeed: Float
-    /**
-     * WebIDL type: float
-     */
-    var referenceAngle: Float
-    /**
-     * WebIDL type: float
-     */
-    var upperAngle: Float
-    /**
-     * WebIDL type: VoidPtr
-     */
-    var userData: JsAny
 }
 
 fun b2RevoluteJointDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2RevoluteJointDef = js("new _module.b2RevoluteJointDef()")
@@ -5042,29 +5614,17 @@ external interface b2WeldJointDef : JsAny, DestroyableNative {
     val ptr: Int
 
     /**
+     * WebIDL type: [b2JointDef] (Value)
+     */
+    var base: b2JointDef
+    /**
      * WebIDL type: float
      */
-    var angularDampingRatio: Float
+    var linearHertz: Float
     /**
      * WebIDL type: float
      */
     var angularHertz: Float
-    /**
-     * WebIDL type: [b2BodyId] (Value)
-     */
-    var bodyIdA: b2BodyId
-    /**
-     * WebIDL type: [b2BodyId] (Value)
-     */
-    var bodyIdB: b2BodyId
-    /**
-     * WebIDL type: boolean
-     */
-    var collideConnected: Boolean
-    /**
-     * WebIDL type: long
-     */
-    var internalValue: Int
     /**
      * WebIDL type: float
      */
@@ -5072,23 +5632,7 @@ external interface b2WeldJointDef : JsAny, DestroyableNative {
     /**
      * WebIDL type: float
      */
-    var linearHertz: Float
-    /**
-     * WebIDL type: [b2Vec2] (Value)
-     */
-    var localAnchorA: b2Vec2
-    /**
-     * WebIDL type: [b2Vec2] (Value)
-     */
-    var localAnchorB: b2Vec2
-    /**
-     * WebIDL type: float
-     */
-    var referenceAngle: Float
-    /**
-     * WebIDL type: VoidPtr
-     */
-    var userData: JsAny
+    var angularDampingRatio: Float
 }
 
 fun b2WeldJointDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2WeldJointDef = js("new _module.b2WeldJointDef()")
@@ -5196,13 +5740,13 @@ external interface B2_WheelJoint : JsAny {
      * @param jointId    WebIDL type: unsigned long long
      * @param motorSpeed WebIDL type: float
      */
-    fun setMotorSpeed(jointId: Long, motorSpeed: Float)
+    fun setTargetMotorSpeed(jointId: Long, motorSpeed: Float)
 
     /**
      * @param jointId WebIDL type: unsigned long long
      * @return WebIDL type: float
      */
-    fun getMotorSpeed(jointId: Long): Float
+    fun getTargetMotorSpeed(jointId: Long): Float
 
     /**
      * @param jointId WebIDL type: unsigned long long
@@ -5220,7 +5764,7 @@ external interface B2_WheelJoint : JsAny {
      * @param jointId WebIDL type: unsigned long long
      * @return WebIDL type: float
      */
-    fun getMotorTorque(jointId: Long): Float
+    fun getCurrentMotorTorque(jointId: Long): Float
 
 }
 
@@ -5233,29 +5777,9 @@ external interface b2WheelJointDef : JsAny, DestroyableNative {
     val ptr: Int
 
     /**
-     * WebIDL type: [b2BodyId] (Value)
+     * WebIDL type: [b2JointDef] (Value)
      */
-    var bodyIdA: b2BodyId
-    /**
-     * WebIDL type: [b2BodyId] (Value)
-     */
-    var bodyIdB: b2BodyId
-    /**
-     * WebIDL type: boolean
-     */
-    var collideConnected: Boolean
-    /**
-     * WebIDL type: float
-     */
-    var dampingRatio: Float
-    /**
-     * WebIDL type: boolean
-     */
-    var enableLimit: Boolean
-    /**
-     * WebIDL type: boolean
-     */
-    var enableMotor: Boolean
+    var base: b2JointDef
     /**
      * WebIDL type: boolean
      */
@@ -5265,25 +5789,25 @@ external interface b2WheelJointDef : JsAny, DestroyableNative {
      */
     var hertz: Float
     /**
-     * WebIDL type: long
+     * WebIDL type: float
      */
-    var internalValue: Int
+    var dampingRatio: Float
     /**
-     * WebIDL type: [b2Vec2] (Value)
+     * WebIDL type: boolean
      */
-    var localAnchorA: b2Vec2
-    /**
-     * WebIDL type: [b2Vec2] (Value)
-     */
-    var localAnchorB: b2Vec2
-    /**
-     * WebIDL type: [b2Vec2] (Value)
-     */
-    var localAxisA: b2Vec2
+    var enableLimit: Boolean
     /**
      * WebIDL type: float
      */
     var lowerTranslation: Float
+    /**
+     * WebIDL type: float
+     */
+    var upperTranslation: Float
+    /**
+     * WebIDL type: boolean
+     */
+    var enableMotor: Boolean
     /**
      * WebIDL type: float
      */
@@ -5292,14 +5816,6 @@ external interface b2WheelJointDef : JsAny, DestroyableNative {
      * WebIDL type: float
      */
     var motorSpeed: Float
-    /**
-     * WebIDL type: float
-     */
-    var upperTranslation: Float
-    /**
-     * WebIDL type: VoidPtr
-     */
-    var userData: JsAny
 }
 
 fun b2WheelJointDef(_module: JsAny = Box2dWasmLoader.box2dWasm): b2WheelJointDef = js("new _module.b2WheelJointDef()")
@@ -5314,113 +5830,101 @@ external interface B2_Collision : JsAny {
 
     /**
      * @param circleA WebIDL type: [b2Circle] (Const)
-     * @param xfA     WebIDL type: [b2Transform] (Ref)
      * @param circleB WebIDL type: [b2Circle] (Const)
-     * @param xfB     WebIDL type: [b2Transform] (Ref)
-     * @return WebIDL type: [b2Manifold] (Value)
+     * @param xf      WebIDL type: [b2Transform] (Ref)
+     * @return WebIDL type: [b2LocalManifold] (Value)
      */
-    fun collideCircles(circleA: b2Circle, xfA: b2Transform, circleB: b2Circle, xfB: b2Transform): b2Manifold
+    fun collideCircles(circleA: b2Circle, circleB: b2Circle, xf: b2Transform): b2LocalManifold
 
     /**
      * @param capsuleA WebIDL type: [b2Capsule] (Const)
-     * @param xfA      WebIDL type: [b2Transform] (Ref)
      * @param circleB  WebIDL type: [b2Circle] (Const)
-     * @param xfB      WebIDL type: [b2Transform] (Ref)
-     * @return WebIDL type: [b2Manifold] (Value)
+     * @param xf       WebIDL type: [b2Transform] (Ref)
+     * @return WebIDL type: [b2LocalManifold] (Value)
      */
-    fun collideCapsuleAndCircle(capsuleA: b2Capsule, xfA: b2Transform, circleB: b2Circle, xfB: b2Transform): b2Manifold
+    fun collideCapsuleAndCircle(capsuleA: b2Capsule, circleB: b2Circle, xf: b2Transform): b2LocalManifold
 
     /**
      * @param segmentA WebIDL type: [b2Segment] (Const)
-     * @param xfA      WebIDL type: [b2Transform] (Ref)
      * @param circleB  WebIDL type: [b2Circle] (Const)
-     * @param xfB      WebIDL type: [b2Transform] (Ref)
-     * @return WebIDL type: [b2Manifold] (Value)
+     * @param xf       WebIDL type: [b2Transform] (Ref)
+     * @return WebIDL type: [b2LocalManifold] (Value)
      */
-    fun collideSegmentAndCircle(segmentA: b2Segment, xfA: b2Transform, circleB: b2Circle, xfB: b2Transform): b2Manifold
+    fun collideSegmentAndCircle(segmentA: b2Segment, circleB: b2Circle, xf: b2Transform): b2LocalManifold
 
     /**
      * @param polygonA WebIDL type: [b2Polygon] (Const)
-     * @param xfA      WebIDL type: [b2Transform] (Ref)
      * @param circleB  WebIDL type: [b2Circle] (Const)
-     * @param xfB      WebIDL type: [b2Transform] (Ref)
-     * @return WebIDL type: [b2Manifold] (Value)
+     * @param xf       WebIDL type: [b2Transform] (Ref)
+     * @return WebIDL type: [b2LocalManifold] (Value)
      */
-    fun collidePolygonAndCircle(polygonA: b2Polygon, xfA: b2Transform, circleB: b2Circle, xfB: b2Transform): b2Manifold
+    fun collidePolygonAndCircle(polygonA: b2Polygon, circleB: b2Circle, xf: b2Transform): b2LocalManifold
 
     /**
      * @param capsuleA WebIDL type: [b2Capsule] (Const)
-     * @param xfA      WebIDL type: [b2Transform] (Ref)
      * @param capsuleB WebIDL type: [b2Capsule] (Const)
-     * @param xfB      WebIDL type: [b2Transform] (Ref)
-     * @return WebIDL type: [b2Manifold] (Value)
+     * @param xf       WebIDL type: [b2Transform] (Ref)
+     * @return WebIDL type: [b2LocalManifold] (Value)
      */
-    fun collideCapsules(capsuleA: b2Capsule, xfA: b2Transform, capsuleB: b2Capsule, xfB: b2Transform): b2Manifold
+    fun collideCapsules(capsuleA: b2Capsule, capsuleB: b2Capsule, xf: b2Transform): b2LocalManifold
 
     /**
      * @param segmentA WebIDL type: [b2Segment] (Const)
-     * @param xfA      WebIDL type: [b2Transform] (Ref)
      * @param capsuleB WebIDL type: [b2Capsule] (Const)
-     * @param xfB      WebIDL type: [b2Transform] (Ref)
-     * @return WebIDL type: [b2Manifold] (Value)
+     * @param xf       WebIDL type: [b2Transform] (Ref)
+     * @return WebIDL type: [b2LocalManifold] (Value)
      */
-    fun collideSegmentAndCapsule(segmentA: b2Segment, xfA: b2Transform, capsuleB: b2Capsule, xfB: b2Transform): b2Manifold
+    fun collideSegmentAndCapsule(segmentA: b2Segment, capsuleB: b2Capsule, xf: b2Transform): b2LocalManifold
 
     /**
      * @param polygonA WebIDL type: [b2Polygon] (Const)
-     * @param xfA      WebIDL type: [b2Transform] (Ref)
      * @param capsuleB WebIDL type: [b2Capsule] (Const)
-     * @param xfB      WebIDL type: [b2Transform] (Ref)
-     * @return WebIDL type: [b2Manifold] (Value)
+     * @param xf       WebIDL type: [b2Transform] (Ref)
+     * @return WebIDL type: [b2LocalManifold] (Value)
      */
-    fun collidePolygonAndCapsule(polygonA: b2Polygon, xfA: b2Transform, capsuleB: b2Capsule, xfB: b2Transform): b2Manifold
+    fun collidePolygonAndCapsule(polygonA: b2Polygon, capsuleB: b2Capsule, xf: b2Transform): b2LocalManifold
 
     /**
      * @param polygonA WebIDL type: [b2Polygon] (Const)
-     * @param xfA      WebIDL type: [b2Transform] (Ref)
      * @param polygonB WebIDL type: [b2Polygon] (Const)
-     * @param xfB      WebIDL type: [b2Transform] (Ref)
-     * @return WebIDL type: [b2Manifold] (Value)
+     * @param xf       WebIDL type: [b2Transform] (Ref)
+     * @return WebIDL type: [b2LocalManifold] (Value)
      */
-    fun collidePolygons(polygonA: b2Polygon, xfA: b2Transform, polygonB: b2Polygon, xfB: b2Transform): b2Manifold
+    fun collidePolygons(polygonA: b2Polygon, polygonB: b2Polygon, xf: b2Transform): b2LocalManifold
 
     /**
      * @param segmentA WebIDL type: [b2Segment] (Const)
-     * @param xfA      WebIDL type: [b2Transform] (Ref)
      * @param polygonB WebIDL type: [b2Polygon] (Const)
-     * @param xfB      WebIDL type: [b2Transform] (Ref)
-     * @return WebIDL type: [b2Manifold] (Value)
+     * @param xf       WebIDL type: [b2Transform] (Ref)
+     * @return WebIDL type: [b2LocalManifold] (Value)
      */
-    fun collideSegmentAndPolygon(segmentA: b2Segment, xfA: b2Transform, polygonB: b2Polygon, xfB: b2Transform): b2Manifold
+    fun collideSegmentAndPolygon(segmentA: b2Segment, polygonB: b2Polygon, xf: b2Transform): b2LocalManifold
 
     /**
      * @param segmentA WebIDL type: [b2ChainSegment] (Const)
-     * @param xfA      WebIDL type: [b2Transform] (Ref)
      * @param circleB  WebIDL type: [b2Circle] (Const)
-     * @param xfB      WebIDL type: [b2Transform] (Ref)
-     * @return WebIDL type: [b2Manifold] (Value)
+     * @param xf       WebIDL type: [b2Transform] (Ref)
+     * @return WebIDL type: [b2LocalManifold] (Value)
      */
-    fun collideChainSegmentAndCircle(segmentA: b2ChainSegment, xfA: b2Transform, circleB: b2Circle, xfB: b2Transform): b2Manifold
+    fun collideChainSegmentAndCircle(segmentA: b2ChainSegment, circleB: b2Circle, xf: b2Transform): b2LocalManifold
 
     /**
      * @param segmentA WebIDL type: [b2ChainSegment] (Const)
-     * @param xfA      WebIDL type: [b2Transform] (Ref)
      * @param capsuleB WebIDL type: [b2Capsule] (Const)
-     * @param xfB      WebIDL type: [b2Transform] (Ref)
+     * @param xf       WebIDL type: [b2Transform] (Ref)
      * @param cache    WebIDL type: [b2SimplexCache]
-     * @return WebIDL type: [b2Manifold] (Value)
+     * @return WebIDL type: [b2LocalManifold] (Value)
      */
-    fun collideChainSegmentAndCapsule(segmentA: b2ChainSegment, xfA: b2Transform, capsuleB: b2Capsule, xfB: b2Transform, cache: b2SimplexCache): b2Manifold
+    fun collideChainSegmentAndCapsule(segmentA: b2ChainSegment, capsuleB: b2Capsule, xf: b2Transform, cache: b2SimplexCache): b2LocalManifold
 
     /**
      * @param segmentA WebIDL type: [b2ChainSegment] (Const)
-     * @param xfA      WebIDL type: [b2Transform] (Ref)
      * @param polygonB WebIDL type: [b2Polygon] (Const)
-     * @param xfB      WebIDL type: [b2Transform] (Ref)
+     * @param xf       WebIDL type: [b2Transform] (Ref)
      * @param cache    WebIDL type: [b2SimplexCache]
-     * @return WebIDL type: [b2Manifold] (Value)
+     * @return WebIDL type: [b2LocalManifold] (Value)
      */
-    fun collideChainSegmentAndPolygon(segmentA: b2ChainSegment, xfA: b2Transform, polygonB: b2Polygon, xfB: b2Transform, cache: b2SimplexCache): b2Manifold
+    fun collideChainSegmentAndPolygon(segmentA: b2ChainSegment, polygonB: b2Polygon, xf: b2Transform, cache: b2SimplexCache): b2LocalManifold
 
 }
 
@@ -5457,13 +5961,13 @@ external interface b2ManifoldPoint : JsAny, DestroyableNative {
      */
     var persisted: Boolean
     /**
-     * WebIDL type: [b2Vec2] (Value)
-     */
-    var point: b2Vec2
-    /**
      * WebIDL type: float
      */
     var separation: Float
+    /**
+     * WebIDL type: float
+     */
+    var baseSeparation: Float
     /**
      * WebIDL type: float
      */
@@ -5509,6 +6013,58 @@ fun b2ManifoldFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm):
 
 inline fun b2Manifold.getPoints(index: Int) = get_points(index)
 inline fun b2Manifold.setPoints(index: Int, value: b2ManifoldPoint) = set_points(index, value)
+
+external interface b2LocalManifoldPoint : JsAny, DestroyableNative {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [b2Vec2] (Value)
+     */
+    var point: b2Vec2
+    /**
+     * WebIDL type: float
+     */
+    var separation: Float
+    /**
+     * WebIDL type: unsigned short
+     */
+    var id: Short
+}
+
+fun b2LocalManifoldPoint(_module: JsAny = Box2dWasmLoader.box2dWasm): b2LocalManifoldPoint = js("new _module.b2LocalManifoldPoint()")
+
+fun b2LocalManifoldPointFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2LocalManifoldPoint = js("_module.wrapPointer(ptr, _module.b2LocalManifoldPoint)")
+
+external interface b2LocalManifold : JsAny, DestroyableNative {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [b2Vec2] (Value)
+     */
+    var normal: b2Vec2
+    /**
+     * WebIDL type: [b2LocalManifoldPoint] (Value)
+     */
+    fun get_points(index: Int): b2LocalManifoldPoint
+    fun set_points(index: Int, value: b2LocalManifoldPoint)
+    /**
+     * WebIDL type: long
+     */
+    var pointCount: Int
+}
+
+fun b2LocalManifold(_module: JsAny = Box2dWasmLoader.box2dWasm): b2LocalManifold = js("new _module.b2LocalManifold()")
+
+fun b2LocalManifoldFromPointer(ptr: Int, _module: JsAny = Box2dWasmLoader.box2dWasm): b2LocalManifold = js("_module.wrapPointer(ptr, _module.b2LocalManifold)")
+
+inline fun b2LocalManifold.getPoints(index: Int) = get_points(index)
+inline fun b2LocalManifold.setPoints(index: Int, value: b2LocalManifoldPoint) = set_points(index, value)
 
 external interface B2_Geometry : JsAny {
     /**
@@ -5624,106 +6180,106 @@ external interface B2_Geometry : JsAny {
      * @param transform WebIDL type: [b2Transform] (Ref)
      * @return WebIDL type: [b2AABB] (Value)
      */
-    fun computeCircleAABB(shape: b2Circle, transform: b2Transform): b2AABB
+    fun computeCircleBounds(shape: b2Circle, transform: b2Transform): b2AABB
 
     /**
      * @param shape     WebIDL type: [b2Capsule] (Const)
      * @param transform WebIDL type: [b2Transform] (Ref)
      * @return WebIDL type: [b2AABB] (Value)
      */
-    fun computeCapsuleAABB(shape: b2Capsule, transform: b2Transform): b2AABB
+    fun computeCapsuleBounds(shape: b2Capsule, transform: b2Transform): b2AABB
 
     /**
      * @param shape     WebIDL type: [b2Polygon] (Const)
      * @param transform WebIDL type: [b2Transform] (Ref)
      * @return WebIDL type: [b2AABB] (Value)
      */
-    fun computePolygonAABB(shape: b2Polygon, transform: b2Transform): b2AABB
+    fun computePolygonBounds(shape: b2Polygon, transform: b2Transform): b2AABB
 
     /**
      * @param shape     WebIDL type: [b2Segment] (Const)
      * @param transform WebIDL type: [b2Transform] (Ref)
      * @return WebIDL type: [b2AABB] (Value)
      */
-    fun computeSegmentAABB(shape: b2Segment, transform: b2Transform): b2AABB
+    fun computeSegmentBounds(shape: b2Segment, transform: b2Transform): b2AABB
 
     /**
-     * @param point WebIDL type: [b2Vec2] (Ref)
      * @param shape WebIDL type: [b2Circle] (Const)
+     * @param point WebIDL type: [b2Vec2] (Ref)
      * @return WebIDL type: boolean
      */
-    fun pointInCircle(point: b2Vec2, shape: b2Circle): Boolean
+    fun pointInCircle(shape: b2Circle, point: b2Vec2): Boolean
 
     /**
-     * @param point WebIDL type: [b2Vec2] (Ref)
      * @param shape WebIDL type: [b2Capsule] (Const)
+     * @param point WebIDL type: [b2Vec2] (Ref)
      * @return WebIDL type: boolean
      */
-    fun pointInCapsule(point: b2Vec2, shape: b2Capsule): Boolean
+    fun pointInCapsule(shape: b2Capsule, point: b2Vec2): Boolean
 
     /**
-     * @param point WebIDL type: [b2Vec2] (Ref)
      * @param shape WebIDL type: [b2Polygon] (Const)
+     * @param point WebIDL type: [b2Vec2] (Ref)
      * @return WebIDL type: boolean
      */
-    fun pointInPolygon(point: b2Vec2, shape: b2Polygon): Boolean
+    fun pointInPolygon(shape: b2Polygon, point: b2Vec2): Boolean
 
     /**
-     * @param input WebIDL type: [b2RayCastInput] (Const)
      * @param shape WebIDL type: [b2Circle] (Const)
-     * @return WebIDL type: [b2CastOutput] (Value)
-     */
-    fun rayCastCircle(input: b2RayCastInput, shape: b2Circle): b2CastOutput
-
-    /**
      * @param input WebIDL type: [b2RayCastInput] (Const)
-     * @param shape WebIDL type: [b2Capsule] (Const)
      * @return WebIDL type: [b2CastOutput] (Value)
      */
-    fun rayCastCapsule(input: b2RayCastInput, shape: b2Capsule): b2CastOutput
+    fun castRayCircle(shape: b2Circle, input: b2RayCastInput): b2CastOutput
 
     /**
-     * @param input    WebIDL type: [b2RayCastInput] (Const)
+     * @param shape WebIDL type: [b2Capsule] (Const)
+     * @param input WebIDL type: [b2RayCastInput] (Const)
+     * @return WebIDL type: [b2CastOutput] (Value)
+     */
+    fun castRayCapsule(shape: b2Capsule, input: b2RayCastInput): b2CastOutput
+
+    /**
      * @param shape    WebIDL type: [b2Segment] (Const)
+     * @param input    WebIDL type: [b2RayCastInput] (Const)
      * @param oneSided WebIDL type: boolean
      * @return WebIDL type: [b2CastOutput] (Value)
      */
-    fun rayCastSegment(input: b2RayCastInput, shape: b2Segment, oneSided: Boolean): b2CastOutput
+    fun castRaySegment(shape: b2Segment, input: b2RayCastInput, oneSided: Boolean): b2CastOutput
 
     /**
+     * @param shape WebIDL type: [b2Polygon] (Const)
      * @param input WebIDL type: [b2RayCastInput] (Const)
-     * @param shape WebIDL type: [b2Polygon] (Const)
      * @return WebIDL type: [b2CastOutput] (Value)
      */
-    fun rayCastPolygon(input: b2RayCastInput, shape: b2Polygon): b2CastOutput
+    fun castRayPolygon(shape: b2Polygon, input: b2RayCastInput): b2CastOutput
 
     /**
-     * @param input WebIDL type: [b2ShapeCastInput] (Const)
      * @param shape WebIDL type: [b2Circle] (Const)
+     * @param input WebIDL type: [b2ShapeCastInput] (Const)
      * @return WebIDL type: [b2CastOutput] (Value)
      */
-    fun shapeCastCircle(input: b2ShapeCastInput, shape: b2Circle): b2CastOutput
+    fun castShapeCircle(shape: b2Circle, input: b2ShapeCastInput): b2CastOutput
 
     /**
-     * @param input WebIDL type: [b2ShapeCastInput] (Const)
      * @param shape WebIDL type: [b2Capsule] (Const)
+     * @param input WebIDL type: [b2ShapeCastInput] (Const)
      * @return WebIDL type: [b2CastOutput] (Value)
      */
-    fun shapeCastCapsule(input: b2ShapeCastInput, shape: b2Capsule): b2CastOutput
+    fun castShapeCapsule(shape: b2Capsule, input: b2ShapeCastInput): b2CastOutput
 
     /**
-     * @param input WebIDL type: [b2ShapeCastInput] (Const)
      * @param shape WebIDL type: [b2Segment] (Const)
+     * @param input WebIDL type: [b2ShapeCastInput] (Const)
      * @return WebIDL type: [b2CastOutput] (Value)
      */
-    fun shapeCastSegment(input: b2ShapeCastInput, shape: b2Segment): b2CastOutput
+    fun castShapeSegment(shape: b2Segment, input: b2ShapeCastInput): b2CastOutput
 
     /**
-     * @param input WebIDL type: [b2ShapeCastInput] (Const)
      * @param shape WebIDL type: [b2Polygon] (Const)
+     * @param input WebIDL type: [b2ShapeCastInput] (Const)
      * @return WebIDL type: [b2CastOutput] (Value)
      */
-    fun shapeCastPolygon(input: b2ShapeCastInput, shape: b2Polygon): b2CastOutput
+    fun castShapePolygon(shape: b2Polygon, input: b2ShapeCastInput): b2CastOutput
 
     /**
      * @param points WebIDL type: [b2Vec2Array]
@@ -6103,7 +6659,8 @@ value class b2JointType private constructor(val value: Int) {
         val b2_distanceJoint: b2JointType = b2JointType(b2JointType_b2_distanceJoint(Box2dWasmLoader.box2dWasm))
         val b2_filterJoint: b2JointType = b2JointType(b2JointType_b2_filterJoint(Box2dWasmLoader.box2dWasm))
         val b2_motorJoint: b2JointType = b2JointType(b2JointType_b2_motorJoint(Box2dWasmLoader.box2dWasm))
-        val b2_mouseJoint: b2JointType = b2JointType(b2JointType_b2_mouseJoint(Box2dWasmLoader.box2dWasm))
+        val b2_moverJoint: b2JointType = b2JointType(b2JointType_b2_moverJoint(Box2dWasmLoader.box2dWasm))
+        val b2_pogoJoint: b2JointType = b2JointType(b2JointType_b2_pogoJoint(Box2dWasmLoader.box2dWasm))
         val b2_prismaticJoint: b2JointType = b2JointType(b2JointType_b2_prismaticJoint(Box2dWasmLoader.box2dWasm))
         val b2_revoluteJoint: b2JointType = b2JointType(b2JointType_b2_revoluteJoint(Box2dWasmLoader.box2dWasm))
         val b2_weldJoint: b2JointType = b2JointType(b2JointType_b2_weldJoint(Box2dWasmLoader.box2dWasm))
@@ -6112,7 +6669,8 @@ value class b2JointType private constructor(val value: Int) {
             b2_distanceJoint.value -> b2_distanceJoint
             b2_filterJoint.value -> b2_filterJoint
             b2_motorJoint.value -> b2_motorJoint
-            b2_mouseJoint.value -> b2_mouseJoint
+            b2_moverJoint.value -> b2_moverJoint
+            b2_pogoJoint.value -> b2_pogoJoint
             b2_prismaticJoint.value -> b2_prismaticJoint
             b2_revoluteJoint.value -> b2_revoluteJoint
             b2_weldJoint.value -> b2_weldJoint
@@ -6125,7 +6683,8 @@ value class b2JointType private constructor(val value: Int) {
 private fun b2JointType_b2_distanceJoint(module: JsAny): Int = js("module._emscripten_enum_b2JointType_b2_distanceJoint()")
 private fun b2JointType_b2_filterJoint(module: JsAny): Int = js("module._emscripten_enum_b2JointType_b2_filterJoint()")
 private fun b2JointType_b2_motorJoint(module: JsAny): Int = js("module._emscripten_enum_b2JointType_b2_motorJoint()")
-private fun b2JointType_b2_mouseJoint(module: JsAny): Int = js("module._emscripten_enum_b2JointType_b2_mouseJoint()")
+private fun b2JointType_b2_moverJoint(module: JsAny): Int = js("module._emscripten_enum_b2JointType_b2_moverJoint()")
+private fun b2JointType_b2_pogoJoint(module: JsAny): Int = js("module._emscripten_enum_b2JointType_b2_pogoJoint()")
 private fun b2JointType_b2_prismaticJoint(module: JsAny): Int = js("module._emscripten_enum_b2JointType_b2_prismaticJoint()")
 private fun b2JointType_b2_revoluteJoint(module: JsAny): Int = js("module._emscripten_enum_b2JointType_b2_revoluteJoint()")
 private fun b2JointType_b2_weldJoint(module: JsAny): Int = js("module._emscripten_enum_b2JointType_b2_weldJoint()")

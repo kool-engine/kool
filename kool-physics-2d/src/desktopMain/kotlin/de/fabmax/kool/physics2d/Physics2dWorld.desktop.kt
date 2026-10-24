@@ -13,12 +13,13 @@ internal actual fun createWorld(worldDef: WorldDef): Pair<WorldId, Releasable?> 
     return scopedMem {
         val b2WorldDef = allocWordDef()
         B2_World.defaultWorldDef(b2WorldDef)
+
         b2WorldDef.gravity = allocVec2(worldDef.gravity)
         b2WorldDef.restitutionThreshold = worldDef.restitutionThreshold
         b2WorldDef.hitEventThreshold = worldDef.hitEventThreshold
         b2WorldDef.contactHertz = worldDef.contactHertz
         b2WorldDef.contactDampingRatio = worldDef.contactDampingRatio
-        b2WorldDef.maxContactPushSpeed = worldDef.maxContactPushSpeed
+        b2WorldDef.contactSpeed = worldDef.contactSpeed
         b2WorldDef.maximumLinearSpeed = worldDef.maximumLinearSpeed
         b2WorldDef.enableSleep = worldDef.enableSleep
         b2WorldDef.enableContinuous = worldDef.enableContinuous
@@ -49,7 +50,7 @@ internal actual object WorldDefDefaults {
     actual val hitEventThreshold: Float = defaults.hitEventThreshold
     actual val contactHertz: Float = defaults.contactHertz
     actual val contactDampingRatio: Float = defaults.contactDampingRatio
-    actual val maxContactPushSpeed: Float = defaults.maxContactPushSpeed
+    actual val contactSpeed: Float = defaults.contactSpeed
     actual val maximumLinearSpeed: Float = defaults.maximumLinearSpeed
     actual val enableSleep: Boolean = defaults.enableSleep
     actual val enableContinuous: Boolean = defaults.enableContinuous

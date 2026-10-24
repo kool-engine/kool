@@ -41,7 +41,7 @@ data class SurfaceMaterial(
     val restitution: Float = ShapeDefDefaults.restitution,
     val rollingResistance: Float = ShapeDefDefaults.rollingResistance,
     val tangentSpeed: Float = ShapeDefDefaults.tangentSpeed,
-    val userMaterialId: Int = ShapeDefDefaults.userMaterialId,
+    val userMaterialId: Long = ShapeDefDefaults.userMaterialId,
     val customColor: Int = ShapeDefDefaults.customColor,
 ) {
     companion object {
@@ -73,6 +73,6 @@ internal expect object ShapeDefDefaults {
     val restitution: Float
     val rollingResistance: Float
     val tangentSpeed: Float
-    val userMaterialId: Int
+    val userMaterialId: Long
     val customColor: Int
 }

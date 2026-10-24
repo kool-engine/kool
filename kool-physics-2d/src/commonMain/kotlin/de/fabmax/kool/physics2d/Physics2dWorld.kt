@@ -83,7 +83,7 @@ data class WorldDef(
     val hitEventThreshold: Float = WorldDefDefaults.hitEventThreshold,
     val contactHertz: Float = WorldDefDefaults.contactHertz,
     val contactDampingRatio: Float = WorldDefDefaults.contactDampingRatio,
-    val maxContactPushSpeed: Float = WorldDefDefaults.maxContactPushSpeed,
+    val contactSpeed: Float = WorldDefDefaults.contactSpeed,
     val maximumLinearSpeed: Float = WorldDefDefaults.maximumLinearSpeed,
     val enableSleep: Boolean = WorldDefDefaults.enableSleep,
     val enableContinuous: Boolean = WorldDefDefaults.enableContinuous,
@@ -100,7 +100,7 @@ fun Physics2dWorld(
     hitEventThreshold: Float = WorldDefDefaults.hitEventThreshold,
     contactHertz: Float = WorldDefDefaults.contactHertz,
     contactDampingRatio: Float = WorldDefDefaults.contactDampingRatio,
-    maxContactPushSpeed: Float = WorldDefDefaults.maxContactPushSpeed,
+    contactSpeed: Float = WorldDefDefaults.contactSpeed,
     maximumLinearSpeed: Float = WorldDefDefaults.maximumLinearSpeed,
     enableSleep: Boolean = WorldDefDefaults.enableSleep,
     enableContinuous: Boolean = WorldDefDefaults.enableContinuous,
@@ -112,7 +112,7 @@ fun Physics2dWorld(
         hitEventThreshold = hitEventThreshold,
         contactHertz = contactHertz,
         contactDampingRatio = contactDampingRatio,
-        maxContactPushSpeed = maxContactPushSpeed,
+        contactSpeed = contactSpeed,
         maximumLinearSpeed = maximumLinearSpeed,
         enableSleep = enableSleep,
         enableContinuous = enableContinuous,
@@ -138,7 +138,7 @@ internal expect object WorldDefDefaults {
     val hitEventThreshold: Float
     val contactHertz: Float
     val contactDampingRatio: Float
-    val maxContactPushSpeed: Float
+    val contactSpeed: Float
     val maximumLinearSpeed: Float
     val enableSleep: Boolean
     val enableContinuous: Boolean

@@ -23,6 +23,6 @@ internal actual object ShapeDefDefaults {
     actual val restitution: Float = defaults.material.restitution
     actual val rollingResistance: Float = defaults.material.rollingResistance
     actual val tangentSpeed: Float = defaults.material.tangentSpeed
-    actual val userMaterialId: Int = defaults.material.userMaterialId
+    actual val userMaterialId: Long = defaults.material.userMaterialId
     actual val customColor: Int = defaults.material.customColor
 }
