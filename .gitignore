@@ -8,7 +8,6 @@
 /assets
 build
 dist
-kotlin-js-store
 kool-demo/runtimeLibs
 *.iml
 *.kjsm
