@@ -13,12 +13,12 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
 
     val vkDevice: VkDevice
     val graphicsQueue: VkQueue
-    val presentQueue: VkQueue
+    val presentQueue: VkQueue?
     val transferQueue: VkQueue
     val computeQueue: VkQueue?
 
     val graphicsQueueProperties: VkQueueFamilyProperties
-    val presentQueueProperties: VkQueueFamilyProperties
+    val presentQueueProperties: VkQueueFamilyProperties?
     val transferQueueProperties: VkQueueFamilyProperties
     val computeQueueProperties: VkQueueFamilyProperties?
 
@@ -34,7 +34,7 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
                 }
             }
 
-            val enableExtensions = backend.setup.requestedDeviceExtensions.filter { it.name in physicalDevice.availableDeviceExtensions }
+            val enableExtensions = backend.requestedDeviceExtensions.filter { it.name in physicalDevice.availableDeviceExtensions }
             val extNames = mallocPointer(enableExtensions.size)
             logD("Device") { "Enabling device extensions:" }
             enableExtensions.forEachIndexed { i, extension ->
@@ -71,12 +71,12 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
             }
 
             val graphicsQueueIdx = physicalDevice.queueFamiliyIndices.graphicsFamily!!
-            val presentQueueIdx = physicalDevice.queueFamiliyIndices.presentFamily!!
+            val presentQueueIdx = physicalDevice.queueFamiliyIndices.presentFamily
             val transferQueueIdx = physicalDevice.queueFamiliyIndices.transferFamily ?: graphicsQueueIdx
             val computeQueueIdx = physicalDevice.queueFamiliyIndices.computeFamily
 
             graphicsQueue = getQueue(graphicsQueueIdx, 0)
-            presentQueue = getQueue(presentQueueIdx, 0)
+            presentQueue = presentQueueIdx?.let { getQueue(it, 0) }
             transferQueue = getQueue(transferQueueIdx, 0)
             computeQueue = computeQueueIdx?.let { getQueue(it, 0) }
 
@@ -84,7 +84,7 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
                 vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice.vkPhysicalDevice, cnt, buf)
             }
             graphicsQueueProperties = queueProperties[graphicsQueueIdx]
-            presentQueueProperties = queueProperties[presentQueueIdx]
+            presentQueueProperties = presentQueueIdx?.let { queueProperties[it] }
             transferQueueProperties = queueProperties[transferQueueIdx]
             computeQueueProperties = computeQueueIdx?.let { queueProperties[it] }
         }

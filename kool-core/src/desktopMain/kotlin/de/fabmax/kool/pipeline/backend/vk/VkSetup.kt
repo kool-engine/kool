@@ -16,6 +16,7 @@ import org.lwjgl.vulkan.KHRPortabilityEnumeration.VK_KHR_PORTABILITY_ENUMERATION
 import org.lwjgl.vulkan.KHRPortabilitySubset.VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME
 import org.lwjgl.vulkan.KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME
 import org.lwjgl.vulkan.KHRSynchronization2.VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME
+import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VK11.VK_API_VERSION_1_1
 import org.lwjgl.vulkan.VK12.VK_API_VERSION_1_2
 import org.lwjgl.vulkan.VK13.VK_API_VERSION_1_3
@@ -39,7 +40,17 @@ class VkSetup(
 
     val preferredColorSpace: ColorSpace = ColorSpace.sRGB,
 
+    /**
+     * Name of the device to use. If no device with exactly this name exists, the first device containing the given
+     * string in its name (ignoring case) is used, e.g. "llvmpipe" selects Mesa's software renderer (lavapipe).
+     */
     val forceDeviceName: String? = null,
+
+    /**
+     * Preferred device type, used if multiple suitable devices are available and [forceDeviceName] is not set.
+     */
+    val preferredDeviceType: DeviceType = DeviceType.DiscreteGpu,
+
     val recreateSurfaceWithSwapchain: Boolean = false,
 ) {
     val requestedLayers = mutableSetOf<RequestedFeature>()
@@ -48,7 +59,7 @@ class VkSetup(
     val requestedDeviceExtensions = mutableSetOf(deviceExtensionSwapchain)
 
     init {
-        requestedLayers.addOrRemove(RequestedFeature("VK_LAYER_KHRONOS_validation", false), isValidation)
+        requestedLayers.addOrRemove(RequestedFeature(VALIDATION_LAYER, false), isValidation)
         requestedInstanceExtensions.addOrRemove(
             RequestedFeature(EXTDebugUtils.VK_EXT_DEBUG_UTILS_EXTENSION_NAME, false),
             isValidation
@@ -86,6 +97,8 @@ class VkSetup(
     data class RequestedFeature(val name: String, val isRequired: Boolean)
 
     companion object {
+        const val VALIDATION_LAYER = "VK_LAYER_KHRONOS_validation"
+
         val instanceExtensionPortability = RequestedFeature(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME, false)
         val deviceExtensionPortability = RequestedFeature(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME, false)
         val deviceExtensionSwapchain = RequestedFeature(VK_KHR_SWAPCHAIN_EXTENSION_NAME, true)
@@ -112,4 +125,11 @@ enum class ColorSpace {
     sRGB,
     AdobeRGB,
     DCI_P3,
+}
+
+enum class DeviceType(val vkDeviceType: Int) {
+    DiscreteGpu(VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU),
+    IntegratedGpu(VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU),
+    VirtualGpu(VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU),
+    Cpu(VK_PHYSICAL_DEVICE_TYPE_CPU),
 }

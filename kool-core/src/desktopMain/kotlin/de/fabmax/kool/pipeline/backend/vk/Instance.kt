@@ -9,11 +9,42 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
+import java.util.concurrent.CopyOnWriteArrayList
 
 class Instance(val backend: RenderBackendVk, appName: String) : BaseReleasable() {
 
     val vkInstance: VkInstance
     private var debugMessenger = 0L
+
+    /**
+     * Names of the layers enabled for this instance (requested layers, which are not available are skipped).
+     */
+    var enabledLayers: Set<String> = emptySet()
+        private set
+
+    /**
+     * True if the validation layer is enabled and validation messages are reported.
+     */
+    val isValidationActive: Boolean get() = debugMessenger != 0L && VkSetup.VALIDATION_LAYER in enabledLayers
+
+    /**
+     * Error messages reported by the validation layer (only available if validation is enabled via
+     * [VkSetup.isValidation]). Only the first [MAX_RECORDED_VALIDATION_ERRORS] errors are recorded.
+     */
+    val validationErrors: List<String>
+        field = CopyOnWriteArrayList<String>()
+
+    /**
+     * Total number of error messages reported by the validation layer since the last call to
+     * [clearValidationErrors].
+     */
+    var validationErrorCount = 0
+        private set
+
+    fun clearValidationErrors() {
+        validationErrors.clear()
+        validationErrorCount = 0
+    }
 
     init {
         scopedMem {
@@ -80,6 +111,7 @@ class Instance(val backend: RenderBackendVk, appName: String) : BaseReleasable()
         }
 
         val enableLayers = backend.setup.requestedLayers - missingLayers
+        enabledLayers = enableLayers.map { it.name }.toSet()
         return if (enableLayers.isNotEmpty()) {
             val ptrs = mallocPointer(enableLayers.size)
             logD("Instance") { "Enabling layers:" }
@@ -145,6 +177,12 @@ class Instance(val backend: RenderBackendVk, appName: String) : BaseReleasable()
             val logStr = arg.pMessage()?.let { MemoryUtil.memUTF8(it) } ?: "<null>"
             val msgSplit = logStr.replace(" | ", "\n")
 
+            if (messageSeverity >= EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+                validationErrorCount++
+                if (validationErrors.size < MAX_RECORDED_VALIDATION_ERRORS) {
+                    validationErrors += logStr
+                }
+            }
             when {
                 messageSeverity >= EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT -> logE(tag) { msgSplit }
                 messageSeverity >= EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT -> logW(tag) { msgSplit }
@@ -153,6 +191,10 @@ class Instance(val backend: RenderBackendVk, appName: String) : BaseReleasable()
             }
             VK_FALSE
         }
+    }
+
+    companion object {
+        const val MAX_RECORDED_VALIDATION_ERRORS = 100
     }
 
     private fun getMessageTypeName(messageType: Int): String {

@@ -1,0 +1,49 @@
+name: Render Tests
+
+# Headless Vulkan render tests (kool-core/src/desktopTest/kotlin/de/fabmax/kool/rendertest), run on Mesa's software
+# Vulkan implementation (lavapipe) with the Vulkan validation layer enabled. Currently only triggered manually.
+on:
+  workflow_dispatch:
+    inputs:
+      updateReferences:
+        description: 'Generate new reference images (uploaded as artifact) instead of comparing'
+        type: boolean
+        default: false
+
+jobs:
+  render-tests:
+    name: Render tests (lavapipe)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+
+      - name: Install lavapipe and Vulkan validation layer
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mesa-vulkan-drivers vulkan-validationlayers vulkan-tools
+          vulkaninfo --summary
+
+      - name: Run render tests
+        run: >
+          ./gradlew :kool-core:renderTest
+          -Pkool.renderTest.device=llvmpipe
+          -Pkool.renderTest.requireValidation=true
+          -Pkool.renderTest.updateReferences=${{ inputs.updateReferences }}
+
+      - name: Upload test report and images
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: render-test-results
+          path: |
+            kool-core/build/reports/tests/renderTest
+            kool-core/build/reports/render-tests
+            kool-core/src/desktopTest/resources/render-references

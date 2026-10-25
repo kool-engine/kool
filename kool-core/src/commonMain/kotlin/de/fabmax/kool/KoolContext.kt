@@ -78,6 +78,8 @@ abstract class KoolContext {
         Time.frameCount++
     }
 
+    protected fun incrementFrameTimeBy(dt: Double) = incrementFrameTime(prevFrameTime + dt)
+
     protected suspend fun render(): FrameData {
         val frameData = frameDatas[frameDataPtr].also { it.reset() }
         frameDataPtr = ++frameDataPtr and 1

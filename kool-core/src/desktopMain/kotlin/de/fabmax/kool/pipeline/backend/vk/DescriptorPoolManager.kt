@@ -19,7 +19,7 @@ class DescriptorPoolManager(val backend: RenderBackendVk) : BaseReleasable() {
         poolLayout: PoolLayout,
         layout: VkDescriptorSetLayout,
         stack: MemoryStack,
-        numSets: Int = Swapchain.MAX_FRAMES_IN_FLIGHT
+        numSets: Int = FrameSync.MAX_FRAMES_IN_FLIGHT
     ): List<VkDescriptorSet> {
         return pools.getOrPut(poolLayout) { DescriptorPools(poolLayout) }.allocateSets(layout, numSets, stack)
     }

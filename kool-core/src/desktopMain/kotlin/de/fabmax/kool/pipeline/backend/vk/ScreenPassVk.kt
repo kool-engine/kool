@@ -1,6 +1,8 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.PassData
+import de.fabmax.kool.configJvm
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.logI
@@ -8,60 +10,71 @@ import de.fabmax.kool.util.releaseWith
 import org.lwjgl.vulkan.KHRCopyCommands2.vkCmdBlitImage2KHR
 import org.lwjgl.vulkan.KHRDynamicRendering.vkCmdBeginRenderingKHR
 import org.lwjgl.vulkan.KHRDynamicRendering.vkCmdEndRenderingKHR
-import org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 
 class ScreenPassVk(backend: RenderBackendVk) :
-    RenderPassVk(true, backend.swapchain.numSamples, backend)
+    RenderPassVk(true, KoolSystem.configJvm.numSamples, backend)
 {
-    private val _colorTargetFormats = mutableListOf(backend.physicalDevice.querySurfaceFormat().format())
-    override val colorTargetFormats: List<Int> get() = _colorTargetFormats
+    override val colorTargetFormats: List<Int>
+        field = mutableListOf(backend.output.renderFormat)
     private var isStore = false
 
     private lateinit var colorImage: ImageVk
     private lateinit var depthImage: ImageVk
-    private lateinit var resolveImage: ImageVk
+    private var resolveImage: ImageVk? = null
     private lateinit var colorImageView: VkImageView
     private lateinit var depthImageView: VkImageView
-    private lateinit var resolveImageView: VkImageView
 
     private var colorImageViews: List<VkImageView> = emptyList()
     private var resolveImageViews: List<VkImageView> = emptyList()
+
+    /**
+     * Single-sampled final output image of the screen pass: The resolve image if multi-sampling is enabled, the
+     * color image otherwise.
+     */
+    val outputImage: ImageVk get() = resolveImage ?: colorImage
 
     private val frameCopyPasses = mutableMapOf<FrameCopy, ScreenCopy>()
 
     init {
         releaseWith(backend.device)
-        onSwapchainRecreated()
+        onOutputRecreated()
     }
 
-    fun onSwapchainRecreated() {
+    fun onOutputRecreated() {
         // todo: if this would really change, draw pipelines would also need to be recreated...
-        _colorTargetFormats[0] = backend.physicalDevice.querySurfaceFormat().format()
+        colorTargetFormats[0] = backend.output.renderFormat
         backend.commandPool.singleShotCommands { commandBuffer ->
             val (cImage, cImageView) = createColorResources(numSamples, commandBuffer)
-            colorImage = cImage.also { it.releaseWith(backend.swapchain) }
+            colorImage = cImage.also { it.releaseWith(backend.output) }
             colorImageView = cImageView
             colorImageViews = listOf(cImageView)
 
             val (dImage, dImageView) = createDepthResources(commandBuffer)
-            depthImage = dImage.also { it.releaseWith(backend.swapchain) }
+            depthImage = dImage.also { it.releaseWith(backend.output) }
             depthImageView = dImageView
 
-            val (rImage, rImageView) = createColorResources(1, commandBuffer)
-            resolveImage = rImage.also { it.releaseWith(backend.swapchain) }
-            resolveImageView = rImageView
-            resolveImageViews = listOf(rImageView)
+            if (isMultiSampled) {
+                val (rImage, rImageView) = createColorResources(1, commandBuffer)
+                resolveImage = rImage.also { it.releaseWith(backend.output) }
+                resolveImageViews = listOf(rImageView)
+            } else {
+                // without multi-sampling, the color image is directly used as output, no need to resolve anything
+                resolveImage = null
+                resolveImageViews = emptyList()
+            }
         }
     }
 
     override fun beginRenderPass(passEncoderState: PassEncoderState, forceLoad: Boolean) {
         val isLoad = forceLoad || passEncoderState.renderPass.colorAttachments[0].clearColor == ClearColorLoad
-        val storeOp = if (isStore) VK_ATTACHMENT_STORE_OP_STORE else VK_ATTACHMENT_STORE_OP_DONT_CARE
+        // without multi-sampling the color image is the output image and needs to be stored in any case
+        val storeOp = if (isStore || !isMultiSampled) VK_ATTACHMENT_STORE_OP_STORE else VK_ATTACHMENT_STORE_OP_DONT_CARE
 
-        val srcLayout = if (isLoad) resolveImage.lastKnownLayout else VK_IMAGE_LAYOUT_UNDEFINED
-        resolveImage.transitionLayout(
+        val output = outputImage
+        val srcLayout = if (isLoad) output.lastKnownLayout else VK_IMAGE_LAYOUT_UNDEFINED
+        output.transitionLayout(
             oldLayout = srcLayout,
             newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
             commandBuffer = passEncoderState.commandBuffer,
@@ -81,12 +94,14 @@ class ScreenPassVk(backend: RenderBackendVk) :
         vkCmdBeginRenderingKHR(passEncoderState.commandBuffer, renderingInfo)
     }
 
-    fun blitOutputImage(passEncoderState: PassEncoderState) {
-        val swapchain = backend.swapchain
-        val dstImage = swapchain.images[backend.swapchain.nextSwapImage]
-
-        resolveImage.transitionLayout(
-            oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+    /**
+     * Blits the screen pass output into the given destination image (e.g. a swapchain image). The previous content
+     * of [dstImage] is discarded, after the blit [dstImage] is transitioned into [dstLayout].
+     */
+    fun blitOutputImage(dstImage: VkImage, dstWidth: Int, dstHeight: Int, dstLayout: Int, passEncoderState: PassEncoderState) {
+        val srcImage = outputImage
+        srcImage.transitionLayout(
+            oldLayout = srcImage.lastKnownLayout,
             newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
             commandBuffer = passEncoderState.commandBuffer,
             stack = passEncoderState.stack
@@ -105,8 +120,8 @@ class ScreenPassVk(backend: RenderBackendVk) :
 
         val blit = passEncoderState.stack.callocVkBlitImageInfo2 {
             val region = passEncoderState.stack.callocVkImageBlit2N(1) {
-                srcOffsets(1).set(resolveImage.width, resolveImage.height, 1)
-                dstOffsets(1).set(swapchain.width, swapchain.height, 1)
+                srcOffsets(1).set(srcImage.width, srcImage.height, 1)
+                dstOffsets(1).set(dstWidth, dstHeight, 1)
                 srcSubresource {
                     it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
                     it.layerCount(1)
@@ -116,7 +131,7 @@ class ScreenPassVk(backend: RenderBackendVk) :
                     it.layerCount(1)
                 }
             }
-            srcImage(resolveImage.vkImage.handle)
+            srcImage(srcImage.vkImage.handle)
             srcImageLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
             dstImage(dstImage.handle)
             dstImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
@@ -127,7 +142,7 @@ class ScreenPassVk(backend: RenderBackendVk) :
 
         dstImage.transitionLayout(
             oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+            newLayout = dstLayout,
             aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
             baseMipLevel = 0,
             mipLevels = 1,
@@ -144,7 +159,7 @@ class ScreenPassVk(backend: RenderBackendVk) :
     override fun generateMipLevels(passEncoderState: PassEncoderState) { }
 
     override fun copy(frameCopy: FrameCopy, passEncoderState: PassEncoderState) {
-        if (!isStore) {
+        if (!isStore && isMultiSampled) {
             isStore = true
             logI { "Screen copy requested. Enabling screen copy feature. First capture might be corrupted." }
         }
@@ -156,9 +171,9 @@ class ScreenPassVk(backend: RenderBackendVk) :
         val renderScale = backend.window.renderResolutionFactor
         val imgInfo = ImageInfo(
             imageType = VK_IMAGE_TYPE_2D,
-            format = backend.swapchain.imageFormat,
-            width = (backend.swapchain.width * renderScale).toInt(),
-            height = (backend.swapchain.height * renderScale).toInt(),
+            format = backend.output.renderFormat,
+            width = (backend.output.width * renderScale).toInt(),
+            height = (backend.output.height * renderScale).toInt(),
             depth = 1,
             arrayLayers = 1,
             mipLevels = 1,
@@ -180,14 +195,14 @@ class ScreenPassVk(backend: RenderBackendVk) :
         val imgInfo = ImageInfo(
             imageType = VK_IMAGE_TYPE_2D,
             format = backend.physicalDevice.depthFormat,
-            width = (backend.swapchain.width * renderScale).toInt(),
-            height = (backend.swapchain.height * renderScale).toInt(),
+            width = (backend.output.width * renderScale).toInt(),
+            height = (backend.output.height * renderScale).toInt(),
             depth = 1,
             arrayLayers = 1,
             mipLevels = 1,
             samples = numSamples,
             tiling = VK_IMAGE_TILING_OPTIMAL,
-            usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT or VK_IMAGE_USAGE_SAMPLED_BIT,
+            usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT or VK_IMAGE_USAGE_SAMPLED_BIT or VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
             aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
             label = "screen-depth"
         )
@@ -227,14 +242,14 @@ class ScreenPassVk(backend: RenderBackendVk) :
 
                 val imgInfo = ImageInfo(
                     imageType = VK_IMAGE_TYPE_2D,
-                    format = backend.physicalDevice.querySurfaceFormat().format(),
+                    format = colorTargetFormats[0],
                     width = colorImage.width,
                     height = colorImage.height,
                     depth = 1,
                     arrayLayers = 1,
                     mipLevels = 1,
                     samples = VK_SAMPLE_COUNT_1_BIT,
-                    usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or VK_IMAGE_USAGE_SAMPLED_BIT,
+                    usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or VK_IMAGE_USAGE_SAMPLED_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT,
                     aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
                     label = colorDst.name
                 )
@@ -265,7 +280,7 @@ class ScreenPassVk(backend: RenderBackendVk) :
                     arrayLayers = 1,
                     mipLevels = 1,
                     samples = VK_SAMPLE_COUNT_1_BIT,
-                    usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT or VK_IMAGE_USAGE_SAMPLED_BIT,
+                    usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT or VK_IMAGE_USAGE_SAMPLED_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT,
                     aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
                     label = depthDst.name
                 )
@@ -283,7 +298,16 @@ class ScreenPassVk(backend: RenderBackendVk) :
             val depthCopyImg = getOrCreateDepthCopy()
 
             passEncoderState.ensureRenderPassInactive()
+            if (isMultiSampled) {
+                resolveCopy(colorCopyImg, depthCopyImg, passEncoderState)
+            } else {
+                // single-sampled images can't be resolved -> copy them instead
+                colorCopyImg?.copyFromImage(colorImage, passEncoderState.commandBuffer, stack = passEncoderState.stack)
+                depthCopyImg?.copyFromImage(depthImage, passEncoderState.commandBuffer, stack = passEncoderState.stack)
+            }
+        }
 
+        private fun resolveCopy(colorCopyImg: ImageVk?, depthCopyImg: ImageVk?, passEncoderState: PassEncoderState) {
             colorCopyImg?.transitionLayout(
                 oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
                 newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,

@@ -3,7 +3,7 @@ package de.fabmax.kool.pipeline.backend.vk
 internal object ReleaseQueue {
     private val queuedReleases = mutableListOf<QueuedRelease>()
 
-    fun enqueue(ticks: Int = Swapchain.MAX_FRAMES_IN_FLIGHT, task: () -> Unit) {
+    fun enqueue(ticks: Int = FrameSync.MAX_FRAMES_IN_FLIGHT, task: () -> Unit) {
         queuedReleases += QueuedRelease(ticks, task)
     }
 

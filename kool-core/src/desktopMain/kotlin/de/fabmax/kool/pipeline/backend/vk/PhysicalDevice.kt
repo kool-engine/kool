@@ -40,6 +40,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
     val depthFormat: Int
 
     private val selectedDevice: PhysicalDeviceWrapper
+    private val isPresentRequired: Boolean get() = backend.surface != null
     private val imgFormatTilingFeatures = mutableMapOf<Int, Int>()
 
     init {
@@ -108,13 +109,6 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
         releaseWith(backend.instance)
     }
 
-    fun querySurfaceFormat(): VkSurfaceFormatKHR {
-        return scopedMem {
-            val swapChainInfo = selectedDevice.querySwapChainSupport(this)
-            swapChainInfo.chooseSurfaceFormat()
-        }
-    }
-
     fun querySwapchainSupport(stack: MemoryStack): SwapChainSupportDetails {
         return selectedDevice.querySwapChainSupport(stack)
     }
@@ -122,6 +116,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
     private fun MemoryStack.selectPhysicalDevice(devices: List<PhysicalDeviceWrapper>): PhysicalDeviceWrapper {
         backend.setup.forceDeviceName?.let { name ->
             val forced = devices.find { it.properties.deviceNameString() == name }
+                ?: devices.find { it.properties.deviceNameString().contains(name, ignoreCase = true) }
             if (forced != null) {
                 logI("PhysicalDevice") { "Forced device selection to device \"$name\"" }
                 return forced
@@ -131,9 +126,9 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
         }
 
         val suitableDevices = devices.filter {
-            it.queueFamiliyIndices.isComplete &&
-                    it.isSupportingExtensions(backend.setup.requestedDeviceExtensions) &&
-                    it.querySwapChainSupport(this).isValid
+            it.queueFamiliyIndices.isComplete(isPresentRequired) &&
+                    it.isSupportingExtensions(backend.requestedDeviceExtensions) &&
+                    (!isPresentRequired || it.querySwapChainSupport(this).isValid)
         }
         check(suitableDevices.isNotEmpty()) {
             "No suitable Vulkan devices found! Available devices: " +
@@ -145,7 +140,8 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
             logI("PhysicalDevice") { "Multiple Vulkan capable GPUs found:" }
             suitableDevices.forEach { dev -> logI("PhysicalDevice") { "  ${dev.properties.deviceNameString()}" } }
         }
-        return suitableDevices.find { it.properties.deviceType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU } ?: devices.first()
+        val preferredType = backend.setup.preferredDeviceType.vkDeviceType
+        return suitableDevices.find { it.properties.deviceType() == preferredType } ?: suitableDevices.first()
     }
 
     private fun getMaxUsableSampleCount(): Int {
@@ -235,9 +231,12 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
                 var transferFamily: Int? = null
                 for (i in 0 until nFams[0]) {
                     val props = queueFamilies[i]
-                    vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, backend.surface.surfaceHandle, ip)
-                    if (presentFamily == null && props.queueCount() > 0 && ip[0] != 0) {
-                        presentFamily = i
+                    val surface = backend.surface
+                    if (surface != null) {
+                        vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface.surfaceHandle, ip)
+                        if (presentFamily == null && props.queueCount() > 0 && ip[0] != 0) {
+                            presentFamily = i
+                        }
                     }
                     if (graphicsFamily == null && props.queueCount() > 0 && props.queueFlags() and VK_QUEUE_GRAPHICS_BIT != 0) {
                         graphicsFamily = i
@@ -269,7 +268,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
             fmts: VkSurfaceFormatKHR.Buffer? = null
         ): SwapChainSupportDetails {
             val ip = stack.mallocInt(1)
-            val surface = backend.surface.surfaceHandle
+            val surface = checkNotNull(backend.surface) { "Swapchain support can't be queried in headless mode" }.surfaceHandle
 
             val capabilities = caps ?: VkSurfaceCapabilitiesKHR.malloc(stack)
             vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, capabilities)
@@ -303,12 +302,15 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
         val presentFamily: Int?,
         val transferFamily: Int?
     ) {
-        val isComplete = graphicsFamily != null && presentFamily != null
         val uniqueFamilies: Set<Int> = buildSet {
             if (graphicsFamily != null) { add(graphicsFamily) }
             if (computeFamily != null) { add(computeFamily) }
             if (presentFamily != null) { add(presentFamily) }
             if (transferFamily != null) { add(transferFamily) }
+        }
+
+        fun isComplete(isPresentRequired: Boolean): Boolean {
+            return graphicsFamily != null && (presentFamily != null || !isPresentRequired)
         }
     }
 

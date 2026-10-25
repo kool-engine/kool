@@ -31,7 +31,7 @@ class BindGroupDataVk(
     init {
         data.bufferedBindings.forEach { binding ->
             when (binding) {
-                is BindGroupData.UniformBufferBindingData<*> -> uboBindings += UboBinding(binding, Swapchain.MAX_FRAMES_IN_FLIGHT)
+                is BindGroupData.UniformBufferBindingData<*> -> uboBindings += UboBinding(binding, FrameSync.MAX_FRAMES_IN_FLIGHT)
                 is BindGroupData.StorageBufferBindingData -> storageBufferBindings += StorageBufferBinding(binding)
 
                 is BindGroupData.Texture1dBindingData -> textureBindings += TextureBinding(binding, VK_IMAGE_VIEW_TYPE_1D)
@@ -133,7 +133,7 @@ class BindGroupDataVk(
             backend.descriptorPools.releaseSets(poolLayout, descriptorSets)
             descriptorSets = backend.descriptorPools.allocateSets(poolLayout, gpuLayout, this)
             val numBindings = uboBindings.size + storageBufferBindings.size + textureBindings.size + storageTextureBindings.size
-            val descriptorWrite = callocVkWriteDescriptorSetN(Swapchain.MAX_FRAMES_IN_FLIGHT * numBindings) { }
+            val descriptorWrite = callocVkWriteDescriptorSetN(FrameSync.MAX_FRAMES_IN_FLIGHT * numBindings) { }
             var descriptorWriteIdx = 0
             descriptorSets.forEachIndexed { setIdx, descriptorSet ->
                 uboBindings.forEach { ubo ->
@@ -171,7 +171,7 @@ class BindGroupDataVk(
                 scopedMem {
                     val backend = KoolSystem.requireContext().backend as RenderBackendVk
                     val emptyLayout = PoolLayout(0, 0, 0, 0)
-                    val emptyPool = backend.device.createDescriptorPool(this) { maxSets(Swapchain.MAX_FRAMES_IN_FLIGHT) }
+                    val emptyPool = backend.device.createDescriptorPool(this) { maxSets(FrameSync.MAX_FRAMES_IN_FLIGHT) }
                     val emptySetLayout = backend.device.createDescriptorSetLayout { }
                     val emptySet = backend.device.allocateDescriptorSets {
                         descriptorPool(emptyPool.handle)

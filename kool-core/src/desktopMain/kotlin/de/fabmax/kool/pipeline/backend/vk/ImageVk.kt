@@ -167,7 +167,9 @@ class ImageVk(
                 }
                 vkCmdCopyImage(commandBuffer, src.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
             }
-            src.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, src.lastKnownLayout, commandBuffer, stack = this)
+            if (srcLayout != VK_IMAGE_LAYOUT_UNDEFINED) {
+                src.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, srcLayout, commandBuffer, stack = this)
+            }
             transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dstLayout, commandBuffer, stack = this)
         }
     }
