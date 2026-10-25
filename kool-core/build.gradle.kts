@@ -106,3 +106,46 @@ tasks.register<VersionNameUpdate>("updateVersion") {
 
 tasks["compileKotlinJs"].dependsOn("generateTypeVariants")
 tasks["compileKotlinDesktop"].dependsOn("generateTypeVariants")
+
+// Render tests render images with the headless Vulkan backend and compare them against reference images. They
+// require a Vulkan capable device (or a software implementation like lavapipe) and are therefore not part of the
+// regular desktopTest task. Run them via `./gradlew :kool-core:renderTest`. Gradle properties prefixed with
+// `kool.renderTest.` are forwarded as system properties, e.g. `-Pkool.renderTest.updateReferences=true` re-generates
+// the reference images (see RenderTestContext for all options).
+val renderTestPackage = "de/fabmax/kool/rendertest/**"
+val desktopTestTask = tasks.named<Test>("desktopTest") {
+    exclude(renderTestPackage)
+}
+
+tasks.register<Test>("renderTest") {
+    group = "verification"
+    description = "Runs the headless Vulkan render tests, comparing rendered images against reference images."
+
+    testClassesDirs = files(desktopTestTask.map { it.testClassesDirs })
+    classpath = files(desktopTestTask.map { it.classpath })
+    javaLauncher = desktopTestTask.flatMap { it.javaLauncher }
+    useJUnit()
+    include(renderTestPackage)
+
+    // there can only be one kool context per JVM: use a separate JVM for each test class
+    forkEvery = 1
+    jvmArgs("--enable-native-access=ALL-UNNAMED")
+
+    val referenceDir = layout.projectDirectory.dir("src/desktopTest/resources/render-references")
+    val reportDir = layout.buildDirectory.dir("reports/render-tests/images")
+    systemProperty("java.awt.headless", "true")
+    systemProperty("kool.renderTest.referenceDir", referenceDir.asFile.absolutePath)
+    systemProperty("kool.renderTest.reportDir", reportDir.get().asFile.absolutePath)
+    providers.gradlePropertiesPrefixedBy("kool.renderTest.").get().forEach { (key, value) ->
+        systemProperty(key, value)
+    }
+    testLogging {
+        events("passed", "skipped", "failed")
+        showStandardStreams = true
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+
+    // rendering depends on the GPU / driver, never consider this up-to-date
+    outputs.upToDateWhen { false }
+    doFirst { reportDir.get().asFile.deleteRecursively() }
+}

@@ -4,6 +4,7 @@ import de.fabmax.kool.*
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGl
+import de.fabmax.kool.platform.headless.HeadlessWindowSubsystem
 import de.fabmax.kool.util.ApplicationScope
 import de.fabmax.kool.util.KoolDispatchers
 import de.fabmax.kool.util.logE
@@ -13,6 +14,7 @@ import java.awt.Desktop
 import java.net.URI
 import java.util.*
 import kotlin.math.min
+import kotlin.time.DurationUnit
 
 suspend fun Lwjgl3Context(): Lwjgl3Context {
     val config = KoolSystem.configJvm
@@ -44,7 +46,7 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
 
         backend = when {
             backendResult.isSuccess -> backendResult.getOrThrow()
-            config.useOpenGlFallback && backendProvider != RenderBackendGl -> {
+            config.useOpenGlFallback && backendProvider != RenderBackendGl && windowSubsystem !is HeadlessWindowSubsystem -> {
                 logE { "Failed creating render backend ${backendProvider.displayName}: ${backendResult.exceptionOrNull()}\nFalling back to OpenGL" }
                 RenderBackendGl.createBackend(this@Lwjgl3Context).getOrThrow()
             }
@@ -79,7 +81,12 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
 
         val frameData = nextFrameData?.await() ?: render()
         frameData.syncData()
-        incrementFrameTime()
+        val fixedTimeStep = (windowSubsystem as? HeadlessWindowSubsystem)?.fixedTimeStep
+        if (fixedTimeStep != null) {
+            incrementFrameTimeBy(fixedTimeStep.toDouble(DurationUnit.SECONDS))
+        } else {
+            incrementFrameTime()
+        }
 
         if (config.asyncSceneUpdate) {
             nextFrameData = ApplicationScope.async { render() }

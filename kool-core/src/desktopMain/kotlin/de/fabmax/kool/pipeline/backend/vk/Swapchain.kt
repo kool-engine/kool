@@ -1,42 +1,40 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.configJvm
 import de.fabmax.kool.math.Vec2i
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.cancelReleaseWith
+import de.fabmax.kool.util.logT
+import de.fabmax.kool.util.releaseWith
+import de.fabmax.kool.util.scopedMem
 import org.lwjgl.BufferUtils
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.KHRSurface.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
 import org.lwjgl.vulkan.KHRSwapchain.*
 import org.lwjgl.vulkan.VK10.*
 
-class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
+class Swapchain(val backend: RenderBackendVk, surface: Surface) : FrameOutput() {
 
     private val physicalDevice: PhysicalDevice get() = backend.physicalDevice
     private val device: Device get() = backend.device
+    private val frameIndex: Int get() = backend.frameSync.currentFrameIndex
 
     private val nextImage = BufferUtils.createIntBuffer(1)
     val nextSwapImage: Int get() = nextImage[0]
-    var currentFrameIndex = 0
-        private set
 
     val vkSwapchain: VkSwapchain
     val imageFormat: Int
     val images: List<VkImage>
     val imageViews: List<VkImageView>
-    val numSamples = KoolSystem.configJvm.numSamples.coerceAtMost(backend.features.maxSamples)
 
     val extent: Vec2i
-    val width: Int get() = extent.x
-    val height: Int get() = extent.y
+    override val width: Int get() = extent.x
+    override val height: Int get() = extent.y
+    override val renderFormat: Int get() = imageFormat
 
     private val imageAvailableSemas: List<VkSemaphore>
     private val renderFinishedSemas: List<VkSemaphore>
-    private val inFlightFences: List<VkFence>
 
-    val imageAvailableSema: VkSemaphore get() = imageAvailableSemas[currentFrameIndex]
-    val renderFinishedSema: VkSemaphore get() = renderFinishedSemas[currentFrameIndex]
-    val inFlightFence: VkFence get() = inFlightFences[currentFrameIndex]
+    override val waitSemaphore: VkSemaphore get() = imageAvailableSemas[frameIndex]
+    override val signalSemaphore: VkSemaphore get() = renderFinishedSemas[frameIndex]
 
     init {
         scopedMem {
@@ -50,7 +48,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
             }
 
             vkSwapchain = device.createSwapchain(this) {
-                surface(backend.surface.surfaceHandle)
+                surface(surface.surfaceHandle)
                 minImageCount(imageCount)
                 imageFormat(surfaceFormat.format())
                 imageColorSpace(surfaceFormat.colorSpace())
@@ -62,10 +60,11 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
                 presentMode(presentMode)
                 clipped(true)
 
-                val indices = physicalDevice.queueFamiliyIndices
-                if (indices.graphicsFamily != indices.presentFamily) {
+                val graphicsFamily = physicalDevice.queueFamiliyIndices.graphicsFamily!!
+                val presentFamily = physicalDevice.queueFamiliyIndices.presentFamily!!
+                if (graphicsFamily != presentFamily) {
                     imageSharingMode(VK_SHARING_MODE_CONCURRENT)
-                    pQueueFamilyIndices(ints(indices.graphicsFamily!!, indices.presentFamily!!))
+                    pQueueFamilyIndices(ints(graphicsFamily, presentFamily))
                 } else {
                     imageSharingMode(VK_SHARING_MODE_EXCLUSIVE)
                 }
@@ -93,15 +92,10 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
             }
 
             imageAvailableSemas = buildList {
-                repeat(MAX_FRAMES_IN_FLIGHT) { add(device.createSemaphore(this@scopedMem)) }
+                repeat(FrameSync.MAX_FRAMES_IN_FLIGHT) { add(device.createSemaphore(this@scopedMem)) }
             }
             renderFinishedSemas = buildList {
-                repeat(MAX_FRAMES_IN_FLIGHT) { add(device.createSemaphore(this@scopedMem)) }
-            }
-            inFlightFences = buildList {
-                repeat(MAX_FRAMES_IN_FLIGHT) {
-                    add(device.createFence(this@scopedMem) { flags(VK_FENCE_CREATE_SIGNALED_BIT) })
-                }
+                repeat(FrameSync.MAX_FRAMES_IN_FLIGHT) { add(device.createSemaphore(this@scopedMem)) }
             }
         }
 
@@ -109,10 +103,8 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
         logT { "Created swap chain" }
     }
 
-    fun acquireNextImage(): Boolean {
-        vkWaitForFences(device.vkDevice, inFlightFence.handle, true, -1)
-        vkResetFences(device.vkDevice, inFlightFence.handle)
-        return when (vkAcquireNextImageKHR(device.vkDevice, vkSwapchain.handle, -1, imageAvailableSema.handle, 0, nextImage)) {
+    override fun acquireNextImage(): Boolean {
+        return when (vkAcquireNextImageKHR(device.vkDevice, vkSwapchain.handle, -1, waitSemaphore.handle, 0, nextImage)) {
             VK_SUCCESS -> true
             VK_SUBOPTIMAL_KHR -> true   // also considered OK
             VK_ERROR_OUT_OF_DATE_KHR -> false
@@ -120,20 +112,29 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
         }
     }
 
-    fun presentNextImage(stack: MemoryStack): Boolean {
+    override fun recordOutput(screenPass: ScreenPassVk, passEncoderState: PassEncoderState) {
+        screenPass.blitOutputImage(
+            dstImage = images[nextSwapImage],
+            dstWidth = width,
+            dstHeight = height,
+            dstLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+            passEncoderState = passEncoderState
+        )
+    }
+
+    override fun present(stack: MemoryStack): Boolean {
         stack.apply {
             val presentInfo = callocVkPresentInfoKHR {
-                pWaitSemaphores(longs(renderFinishedSema.handle))
+                pWaitSemaphores(longs(signalSemaphore.handle))
                 pSwapchains(longs(vkSwapchain.handle))
                 swapchainCount(1)
                 pImageIndices(nextImage)
             }
-            currentFrameIndex = (currentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT
-            return when (vkQueuePresentKHR(device.presentQueue, presentInfo)) {
+            return when (vkQueuePresentKHR(device.presentQueue!!, presentInfo)) {
                 VK_SUCCESS -> true
                 VK_SUBOPTIMAL_KHR -> true   // also considered OK
                 VK_ERROR_OUT_OF_DATE_KHR -> false
-                else -> error("failed to acquire swap chain image")
+                else -> error("failed to present swap chain image")
             }
         }
     }
@@ -146,12 +147,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
 
         imageAvailableSemas.forEach { device.destroySemaphore(it) }
         renderFinishedSemas.forEach { device.destroySemaphore(it) }
-        inFlightFences.forEach { device.destroyFence(it) }
 
         logT { "Destroyed swap chain" }
-    }
-
-    companion object {
-        const val MAX_FRAMES_IN_FLIGHT = 2
     }
 }

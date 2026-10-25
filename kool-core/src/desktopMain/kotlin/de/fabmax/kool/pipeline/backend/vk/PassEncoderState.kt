@@ -21,7 +21,7 @@ class PassEncoderState(val backend: RenderBackendVk) {
     val gpuRenderPass: RenderPassVk get() = _gpuRenderPass!!
     val renderPass: RenderPass get() = _renderPass!!
     val stack: MemoryStack get() = _stack!!
-    val frameIndex: Int get() = backend.swapchain.currentFrameIndex
+    val frameIndex: Int get() = backend.frameSync.currentFrameIndex
 
     var isPassActive = false
         private set
@@ -50,12 +50,18 @@ class PassEncoderState(val backend: RenderBackendVk) {
 
         with(stack) {
             commandBuffer.end()
-            backend.device.graphicsQueue.submit(backend.swapchain.inFlightFence, this) {
-                pWaitDstStageMask(ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT or VK_PIPELINE_STAGE_TRANSFER_BIT))
+            val waitSema = backend.output.waitSemaphore
+            val signalSema = backend.output.signalSemaphore
+            backend.device.graphicsQueue.submit(backend.frameSync.inFlightFence, this) {
                 pCommandBuffers(pointers(commandBuffer))
-                pSignalSemaphores(longs(backend.swapchain.renderFinishedSema.handle))
-                pWaitSemaphores(longs(backend.swapchain.imageAvailableSema.handle))
-                waitSemaphoreCount(1)
+                if (waitSema != null) {
+                    pWaitDstStageMask(ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT or VK_PIPELINE_STAGE_TRANSFER_BIT))
+                    pWaitSemaphores(longs(waitSema.handle))
+                    waitSemaphoreCount(1)
+                }
+                if (signalSema != null) {
+                    pSignalSemaphores(longs(signalSema.handle))
+                }
             }
             _commandBuffer = null
         }

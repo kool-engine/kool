@@ -29,7 +29,7 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
         return buffer
     }
 
-    fun freeBuffer(buffer: VkBuffer, deferTicks: Int = Swapchain.MAX_FRAMES_IN_FLIGHT) {
+    fun freeBuffer(buffer: VkBuffer, deferTicks: Int = FrameSync.MAX_FRAMES_IN_FLIGHT) {
         check(buffer in buffers) { "buffer was already release" }
         buffers -= buffer
         impl.freeBuffer(deferTicks, buffer)
@@ -46,7 +46,7 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
     inline fun stagingBuffer(
         size: Long,
         usage: Int = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-        bufferDeleteTicks: Int = Swapchain.MAX_FRAMES_IN_FLIGHT,
+        bufferDeleteTicks: Int = FrameSync.MAX_FRAMES_IN_FLIGHT,
         block: (VkBuffer) -> Unit
     ) {
         val stagingInfo = MemoryInfo(
@@ -66,7 +66,7 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
         return image
     }
 
-    fun freeImage(image: VkImage, deferTicks: Int = Swapchain.MAX_FRAMES_IN_FLIGHT) {
+    fun freeImage(image: VkImage, deferTicks: Int = FrameSync.MAX_FRAMES_IN_FLIGHT) {
         images -= image
         impl.freeImage(deferTicks, image)
     }

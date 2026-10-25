@@ -11,6 +11,7 @@ import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.platform.KoolWindowJvm
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.createVkWindow
+import de.fabmax.kool.platform.headless.HeadlessWindow
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.CompletableDeferred
@@ -32,15 +33,22 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     val setup = KoolSystem.configJvm.vkSetup ?: VkSetup()
 
+    /**
+     * Device extensions requested by [setup], minus the ones not needed in the current mode (i.e. no swapchain
+     * extension in headless mode).
+     */
+    val requestedDeviceExtensions: Set<VkSetup.RequestedFeature>
+
     val instance: Instance
-    var surface: Surface
+    var surface: Surface?; private set
     val physicalDevice: PhysicalDevice
     val device: Device
     val memManager: MemoryManager
     val commandPool: CommandPool
     val commandBuffers: List<VkCommandBuffer>
     val descriptorPools: DescriptorPoolManager
-    var swapchain: Swapchain; private set
+    val frameSync: FrameSync
+    var output: FrameOutput; private set
     val textureLoader: TextureLoaderVk
     val pipelineManager: PipelineManager
     val screenPass: ScreenPassVk
@@ -60,11 +68,23 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     private var recreateSurfaceFlag = false
 
+    /**
+     * Window used in headless mode, null in regular windowed mode.
+     */
+    private val headlessWindow: HeadlessWindow?
+    val isHeadless: Boolean get() = headlessWindow != null
+
     init {
         window = ctx.windowSubsystem.createVkWindow(ctx)
         window.setFullscreen(KoolSystem.configJvm.isFullscreen)
+        headlessWindow = window as? HeadlessWindow
+        requestedDeviceExtensions = if (isHeadless) {
+            setup.requestedDeviceExtensions - VkSetup.deviceExtensionSwapchain
+        } else {
+            setup.requestedDeviceExtensions
+        }
         instance = Instance(this, KoolSystem.configJvm.windowTitle)
-        surface = Surface(this)
+        surface = if (isHeadless) null else Surface(this)
         window.setVisible(KoolSystem.configJvm.showWindowOnStart)
 
         physicalDevice = PhysicalDevice(this)
@@ -98,9 +118,10 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
         memManager = MemoryManager(this)
         commandPool = CommandPool(this, device.graphicsQueue)
-        commandBuffers = commandPool.allocateCommandBuffers(Swapchain.MAX_FRAMES_IN_FLIGHT)
+        commandBuffers = commandPool.allocateCommandBuffers(FrameSync.MAX_FRAMES_IN_FLIGHT)
         descriptorPools = DescriptorPoolManager(this)
-        swapchain = Swapchain(this)
+        frameSync = FrameSync(this)
+        output = createOutput()
         timestampQueryPool = TimestampQueryPool(this)
         textureLoader = TextureLoaderVk(this)
         pipelineManager = PipelineManager(this)
@@ -125,8 +146,17 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         BackendStats.resetPerFrameCounts()
 
         scopedMem {
-            var imgOk = swapchain.acquireNextImage()
+            if (windowResized) {
+                // recreate output before rendering the frame, so that the frame is rendered with the new size
+                logD { "Recreate frame output (window resized)" }
+                windowResized = false
+                recreateOutput(setup.recreateSurfaceWithSwapchain)
+            }
+
+            frameSync.waitForCurrentFrame()
+            var imgOk = output.acquireNextImage()
             if (imgOk) {
+                frameSync.resetCurrentFence()
                 ReleaseQueue.processQueue()
 
                 passEncoderState.beginFrame(this)
@@ -147,7 +177,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
                     // copy all buffers requested for readback to temporary buffers using the current command encoder
                     copyReadbacks(passEncoderState)
                 }
-                screenPass.blitOutputImage(passEncoderState)
+                output.recordOutput(screenPass, passEncoderState)
                 frameTimer.end(passEncoderState.commandBuffer)
                 timestampQueryPool.pollResults(passEncoderState.commandBuffer, this)
                 passEncoderState.endFrame()
@@ -157,12 +187,12 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
                     vkQueueWaitIdle(device.graphicsQueue)
                     mapReadbacks()
                 }
-                imgOk = swapchain.presentNextImage(this)
+                imgOk = output.present(this)
+                frameSync.advanceFrame()
             }
-            if (!imgOk || windowResized || recreateSurfaceFlag) {
-                logD { "Recreate swapchain" }
-                windowResized = false
-                recreateSwapchain(setup.recreateSurfaceWithSwapchain || recreateSurfaceFlag)
+            if (!imgOk || recreateSurfaceFlag) {
+                logD { "Recreate frame output" }
+                recreateOutput(setup.recreateSurfaceWithSwapchain || recreateSurfaceFlag)
                 recreateSurfaceFlag = false
             }
         }
@@ -210,7 +240,8 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override fun cleanup(ctx: KoolContext) {
         device.waitForIdle()
         ReleaseQueue.processQueue(true)
-        surface.release()
+        output.release()
+        surface?.release()
         instance.release()
         ReleaseQueue.processQueue(true)
     }
@@ -340,7 +371,11 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         }
     }
 
-    private fun recreateSwapchain(recreateSurface: Boolean) {
+    private fun createOutput(): FrameOutput {
+        return headlessWindow?.let { HeadlessOutput(this, it) } ?: Swapchain(this, checkNotNull(surface))
+    }
+
+    private fun recreateOutput(recreateSurface: Boolean) {
         // Theoretically it might be possible for the swapchain image format to change (e.g. because the window
         // is moved to another monitor with HDR) in that case the screen render pass would also need to be
         // recreated.
@@ -348,13 +383,13 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         // for all the fuzz.
 
         device.waitForIdle()
-        swapchain.release()
-        if (recreateSurface) {
-            surface.release()
+        output.release()
+        if (recreateSurface && !isHeadless) {
+            surface?.release()
             surface = Surface(this)
         }
-        swapchain = Swapchain(this)
-        screenPass.onSwapchainRecreated()
+        output = createOutput()
+        screenPass.onOutputRecreated()
     }
 
     private interface GpuReadback
