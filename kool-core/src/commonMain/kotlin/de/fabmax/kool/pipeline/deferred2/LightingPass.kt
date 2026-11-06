@@ -389,9 +389,5 @@ fun KslScopeBuilder.screenReflect(
         noise set noise13(noise.x)
     }
 
-    val result by reflectionColorOut / reflectionWeight
-    `if`(none(isNan(result))) {
-        reflectionColorOut set result
-    }
-    return reflectionColorOut
+    return clamp(reflectionColorOut / reflectionWeight, 0f.const3, 100f.const3)
 }
